@@ -11,7 +11,15 @@ let db: ReturnType<typeof drizzle<typeof schema>> | null = null
 export function getDb() {
   if (!db) {
     sqlite = new Database(dbPath, { readonly: true })
-    sqlite.pragma('journal_mode = WAL')
+    // Vercel은 읽기 전용 파일시스템이므로 WAL 모드 사용 안 함
+    // 로컬 개발 환경에서만 WAL 모드 사용
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        sqlite.pragma('journal_mode = WAL')
+      } catch {
+        // WAL 모드 설정 실패 시 무시
+      }
+    }
     db = drizzle(sqlite, { schema })
   }
   return db
