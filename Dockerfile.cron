@@ -1,0 +1,30 @@
+# Cron Job Container for Data Collection
+FROM python:3.11-alpine
+
+WORKDIR /app
+
+# Install cron and timezone support
+RUN apk add --no-cache dcron tzdata
+
+# Set timezone to Seoul
+ENV TZ=Asia/Seoul
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Copy Python script and requirements
+COPY scripts/requirements.txt ./scripts/
+COPY scripts/update_data.py ./scripts/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r scripts/requirements.txt
+
+# Copy cron configuration
+COPY docker/crontab /etc/crontabs/root
+
+# Copy entrypoint script
+COPY docker/cron-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Create data directory
+RUN mkdir -p /app/data
+
+ENTRYPOINT ["/entrypoint.sh"]

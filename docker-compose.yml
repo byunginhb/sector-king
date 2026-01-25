@@ -1,0 +1,33 @@
+services:
+  # Next.js 웹 애플리케이션
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      # SQLite DB를 호스트와 공유 (데이터 영속성)
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/map"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 데이터 수집 Cron Job 컨테이너
+  cron:
+    build:
+      context: .
+      dockerfile: Dockerfile.cron
+    volumes:
+      # 웹 서버와 동일한 DB 공유
+      - ./data:/app/data
+    environment:
+      - TZ=Asia/Seoul
+    restart: unless-stopped
+    depends_on:
+      - web

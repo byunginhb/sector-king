@@ -1,0 +1,8 @@
+# Cron job for daily data collection
+# Format: minute hour day month weekday command
+
+# KST 00:00 (자정) - 매일 데이터 수집
+0 0 * * * /usr/bin/python3 /app/scripts/update_data.py >> /var/log/cron.log 2>&1
+
+# Optional: KST 09:00 - 미국 장 마감 후 추가 수집 (원하면 주석 해제)
+# 0 9 * * * /usr/bin/python3 /app/scripts/update_data.py >> /var/log/cron.log 2>&1

@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(pnpm rebuild:*)",
+      "Bash(pnpm test:*)",
+      "Bash(kill:*)",
+      "Bash(lsof:*)",
+      "Bash(pnpm build:*)",
+      "Bash(curl:*)",
+      "Bash(npx shadcn@latest add dropdown-menu:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(pnpm db:seed:*)"
+    ]
+  }
+}

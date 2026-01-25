@@ -1,26 +1,121 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Tailwind v4: Use class-based dark mode instead of prefers-color-scheme */
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Light mode - Readability focused design */
+    --background: 220 14% 97%;         /* #F6F7F9 연한 회색 배경 */
+    --foreground: 218 20% 27%;         /* #374151 Primary Text */
+    --card: 0 0% 100%;                 /* #FFFFFF 순백 카드 */
+    --card-foreground: 221 39% 11%;    /* #111827 Card Title */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%; /* #0F172A Section Title */
+    --primary: 43 96% 50%;             /* #F59E0B Star/Accent */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;          /* #F3F4F6 Pill Default bg */
+    --secondary-foreground: 217 33% 17%; /* #1F2937 Pill text */
+    --muted: 210 40% 96.5%;            /* #F1F5F9 Card Header bg */
+    --muted-foreground: 220 9% 46%;    /* #6B7280 Secondary Text */
+    --accent: 30 100% 96%;             /* #FFF7ED Highlight bg */
+    --accent-foreground: 17 89% 40%;   /* #C2410C Highlight text */
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 14% 91%;             /* #E5E7EB */
+    --input: 220 14% 91%;
+    --ring: 43 96% 50%;
+    --radius: 0.75rem;                 /* 12px */
+  }
+
+  .dark {
+    /* Dark mode with warm undertones */
+    --background: 20 10% 8%;
+    --foreground: 30 10% 95%;
+    --card: 20 10% 10%;
+    --card-foreground: 30 10% 95%;
+    --popover: 20 10% 10%;
+    --popover-foreground: 30 10% 95%;
+    --primary: 30 15% 70%;
+    --primary-foreground: 20 10% 8%;
+    --secondary: 20 10% 15%;
+    --secondary-foreground: 30 10% 95%;
+    --muted: 20 10% 15%;
+    --muted-foreground: 30 5% 55%;
+    --accent: 20 10% 18%;
+    --accent-foreground: 30 15% 80%;
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 20 10% 18%;
+    --input: 20 10% 18%;
+    --ring: 30 15% 70%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Unified neutral pastel design */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  /* Prevent Chrome's automatic dark mode */
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom scrollbar */
+@layer components {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
 }
