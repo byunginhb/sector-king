@@ -1,0 +1,9 @@
+# SQLite database - treat as binary, no line ending conversion
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+
+# Lock files
+*.db-journal binary
+*.db-wal binary
+*.db-shm binary
