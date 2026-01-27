@@ -34,5 +34,8 @@ jobs:
           git config --local user.name "GitHub Action"
           git add data/hegemony.db .gitattributes
           git diff --staged --quiet || git commit -m "chore: daily data update $(date +'%Y-%m-%d')"
+          # Stash any unstaged changes (e.g., SQLite WAL files) before rebase
+          git stash --include-untracked || true
           git pull --rebase origin main
+          git stash pop || true
           git push
