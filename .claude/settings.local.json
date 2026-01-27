@@ -12,7 +12,8 @@
       "Bash(curl:*)",
       "Bash(npx shadcn@latest add dropdown-menu:*)",
       "Bash(npx shadcn@latest add:*)",
-      "Bash(pnpm db:seed:*)"
+      "Bash(pnpm db:seed:*)",
+      "Bash(sqlite3:*)"
     ]
   }
 }

@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
-import { formatDate } from '@/lib/format'
+import { formatDate, toLocalDateString } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 interface DateSelectorProps {
@@ -35,14 +35,14 @@ export function DateSelector({
 
   // Function to check if a date is available (has saved data)
   const isDateAvailable = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = toLocalDateString(date)
     return availableDateSet.has(dateStr)
   }
 
   // Handle date selection
   const handleSelect = (date: Date | undefined) => {
     if (date) {
-      const dateStr = date.toISOString().split('T')[0]
+      const dateStr = toLocalDateString(date)
       if (availableDateSet.has(dateStr)) {
         onDateChange(dateStr)
         setOpen(false)
@@ -96,7 +96,7 @@ export function DateSelector({
           modifiers={{
             available: (date) => isDateAvailable(date),
             latest: (date) => {
-              const dateStr = date.toISOString().split('T')[0]
+              const dateStr = toLocalDateString(date)
               return dateStr === latestDate
             },
           }}
