@@ -139,8 +139,8 @@ export function HegemonyMap() {
               />
             ))}
           </div>
-          <div className="w-64 shrink-0">
-            <div className="sticky top-24 space-y-4">
+          <div className="w-[520px] shrink-0">
+            <div className="sticky top-24 grid grid-cols-2 gap-4">
               <CompanyStatistics sectorCompanies={sectorCompanies} />
               <PriceChangeCard />
             </div>

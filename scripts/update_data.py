@@ -10,63 +10,19 @@ import yfinance as yf
 
 DB_PATH = Path(__file__).parent.parent / "data" / "hegemony.db"
 
-TICKERS = [
-    # US Stocks (Tech)
-    "AAPL",
-    "MSFT",
-    "GOOGL",
-    "AMZN",
-    "META",
-    "NVDA",
-    "TSM",
-    "AMD",
-    "INTC",
-    "QCOM",
-    "AVGO",
-    "NFLX",
-    "DIS",
-    "WMT",
-    "BABA",
-    "TSLA",
-    "COIN",
-    "SNAP",
-    "IONQ",
-    "RKLB",
-    "MU",
-    # Korean Stocks
-    "005930.KS",  # Samsung Electronics
-    "000660.KS",  # SK Hynix
-    "005380.KS",  # Hyundai Motor
-    # Other Markets
-    "1810.HK",  # Xiaomi
-    "2454.TW",  # MediaTek
-    # Fintech
-    "V",  # Visa
-    "MA",  # Mastercard
-    "PYPL",  # PayPal
-    "JPM",  # JPMorgan
-    "SQ",  # Block
-    "SOFI",  # SoFi
-    "LMND",  # Lemonade
-    "ROOT",  # Root
-    # Healthcare
-    "LLY",  # Eli Lilly
-    "JNJ",  # Johnson & Johnson
-    "PFE",  # Pfizer
-    "MRNA",  # Moderna
-    "REGN",  # Regeneron
-    "VRTX",  # Vertex
-    "ABT",  # Abbott
-    "MDT",  # Medtronic
-    "ISRG",  # Intuitive Surgical
-    "VEEV",  # Veeva
-    "TDOC",  # Teladoc
-    # Entertainment
-    "EA",  # Electronic Arts
-    "SPOT",  # Spotify
-    "U",  # Unity
-    "RBLX",  # Roblox
-]
+# Invalid tickers that should be skipped (e.g., wrong format in DB)
+SKIP_TICKERS = {
+    "CATL",  # Invalid - should be 300750.SZ
+}
+
+
+def get_tickers_from_db(conn: sqlite3.Connection) -> list[str]:
+    """Get all unique tickers from sector_companies table."""
+    cursor = conn.execute(
+        "SELECT DISTINCT ticker FROM sector_companies ORDER BY ticker"
+    )
+    tickers = [row[0] for row in cursor.fetchall() if row[0] not in SKIP_TICKERS]
+    return tickers
 
 
 def fetch_stock_data(ticker: str) -> dict | None:
@@ -183,15 +139,20 @@ def main():
 
     conn = sqlite3.connect(DB_PATH)
 
+    # Get tickers from DB (sector_companies table)
+    tickers = get_tickers_from_db(conn)
+
     results = []
     failed = []
 
     print(f"Starting data update at {datetime.now().isoformat()}")
     print(f"Database: {DB_PATH}")
-    print(f"Tickers to update: {len(TICKERS)}")
+    print(f"Tickers to update: {len(tickers)} (from sector_companies)")
+    if SKIP_TICKERS:
+        print(f"Skipped tickers: {SKIP_TICKERS}")
     print("=" * 50)
 
-    for ticker in TICKERS:
+    for ticker in tickers:
         print(f"Fetching {ticker}...", end=" ")
         data = fetch_stock_data(ticker)
         if data:
@@ -210,7 +171,7 @@ def main():
         print(f"Failed: {failed}")
 
     # Exit with error if more than 50% of tickers failed
-    if len(failed) > len(TICKERS) * 0.5:
+    if len(failed) > len(tickers) * 0.5:
         conn.close()
         print("Error: More than 50% of tickers failed")
         sys.exit(1)
