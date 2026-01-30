@@ -8,6 +8,8 @@ import { CategoryComparisonChart } from './category-comparison-chart'
 import { TopSectorsGrowthChart } from './top-sectors-growth-chart'
 import { CompanyTrendChart } from './company-trend-chart'
 import { CompanyRankingTable } from './company-ranking-table'
+import { CompanyDetail } from '@/components/company-detail'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
 type DaysFilter = '7' | '30' | 'all'
@@ -17,6 +19,7 @@ export function StatisticsPage() {
   const [sort, setSort] = useState<'count' | 'marketCap' | 'name'>('count')
   const [order, setOrder] = useState<'asc' | 'desc'>('desc')
   const [page, setPage] = useState(1)
+  const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
 
   // Fetch data
   const { data: sectorTrends, isLoading: sectorLoading } = useTrends({
@@ -199,10 +202,17 @@ export function StatisticsPage() {
             order={order}
             onSortChange={handleSortChange}
             onPageChange={handlePageChange}
+            onCompanyClick={setSelectedTicker}
             isLoading={statsLoading}
           />
         </div>
       </main>
+
+      <Dialog open={!!selectedTicker} onOpenChange={(open) => !open && setSelectedTicker(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {selectedTicker && <CompanyDetail ticker={selectedTicker} />}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

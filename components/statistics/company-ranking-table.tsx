@@ -14,6 +14,7 @@ interface CompanyRankingTableProps {
   order: 'asc' | 'desc'
   onSortChange: (sort: 'count' | 'marketCap' | 'name') => void
   onPageChange: (page: number) => void
+  onCompanyClick?: (ticker: string) => void
   isLoading?: boolean
 }
 
@@ -26,6 +27,7 @@ export function CompanyRankingTable({
   order,
   onSortChange,
   onPageChange,
+  onCompanyClick,
   isLoading,
 }: CompanyRankingTableProps) {
   const handleSort = (newSort: 'count' | 'marketCap' | 'name') => {
@@ -101,7 +103,8 @@ export function CompanyRankingTable({
             {companies.map((company, index) => (
               <tr
                 key={company.ticker}
-                className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
+                onClick={() => onCompanyClick?.(company.ticker)}
+                className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
               >
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-400 dark:text-slate-500">
                   {(page - 1) * 20 + index + 1}

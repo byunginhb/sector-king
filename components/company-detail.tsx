@@ -48,7 +48,19 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
     )
   }
 
-  const { company, snapshot, sectors } = data
+  const { company, snapshot, sectors, history } = data
+
+  // Calculate cumulative change from first recorded date
+  const cumulativeChange = (() => {
+    if (!history || history.length < 2 || !snapshot?.price) return null
+    const firstPrice = history[0].price
+    if (!firstPrice) return null
+    const change = ((snapshot.price - firstPrice) / firstPrice) * 100
+    return {
+      change,
+      startDate: history[0].date,
+    }
+  })()
 
   return (
     <div className="space-y-5">
@@ -67,10 +79,15 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
             <span className="text-3xl font-bold text-foreground">
               {formatPrice(snapshot.price ?? null)}
             </span>
-            {snapshot.priceChange !== null && snapshot.priceChange !== undefined && (
-              <span className={cn('text-lg', getPriceChangeStyle(snapshot.priceChange))}>
-                {formatPriceChange(snapshot.priceChange)}
-              </span>
+            {cumulativeChange && (
+              <div className="flex items-baseline gap-1">
+                <span className={cn('text-lg font-semibold', getPriceChangeStyle(cumulativeChange.change))}>
+                  {formatPriceChange(cumulativeChange.change)}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  (섹터킹 추적 시작일 대비)
+                </span>
+              </div>
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-1">

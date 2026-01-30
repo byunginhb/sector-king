@@ -5,6 +5,7 @@ import {
   categories,
   sectorCompanies,
   dailySnapshots,
+  companies,
 } from '@/drizzle/schema'
 import { eq, sql, desc, gte, and, inArray } from 'drizzle-orm'
 import type {
@@ -348,6 +349,24 @@ async function getCompanyTrends(
     return []
   }
 
+  // Get company names
+  const companyData = await db
+    .select({
+      ticker: companies.ticker,
+      name: companies.name,
+      nameKo: companies.nameKo,
+    })
+    .from(companies)
+    .where(inArray(companies.ticker, tickers))
+
+  const companyNameMap = new Map<string, { name: string; nameKo: string | null }>()
+  for (const company of companyData) {
+    companyNameMap.set(company.ticker, {
+      name: company.name,
+      nameKo: company.nameKo,
+    })
+  }
+
   const snapshots = await db
     .select({
       ticker: dailySnapshots.ticker,
@@ -379,9 +398,11 @@ async function getCompanyTrends(
   for (const ticker of tickers) {
     const data = tickerDataMap.get(ticker) || []
     data.sort((a, b) => a.date.localeCompare(b.date))
+    const companyInfo = companyNameMap.get(ticker)
     items.push({
       id: ticker,
-      name: ticker,
+      name: companyInfo?.name || ticker,
+      nameKo: companyInfo?.nameKo,
       data,
     })
   }

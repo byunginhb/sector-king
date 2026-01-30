@@ -1,8 +1,10 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import type { SectorCompanyWithDetails } from '@/types'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { CompanyDetail } from '@/components/company-detail'
 
 interface CompanyCount {
   ticker: string
@@ -16,6 +18,8 @@ interface CompanyStatisticsProps {
 }
 
 export function CompanyStatistics({ sectorCompanies }: CompanyStatisticsProps) {
+  const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
+
   const companyCounts = useMemo(() => {
     const countMap = new Map<string, CompanyCount>()
 
@@ -62,7 +66,11 @@ export function CompanyStatistics({ sectorCompanies }: CompanyStatisticsProps) {
       </h3>
       <div className="space-y-3">
         {companyCounts.slice(0, 10).map((company, index) => (
-          <div key={company.ticker} className="flex items-center gap-3">
+          <div
+            key={company.ticker}
+            onClick={() => setSelectedTicker(company.ticker)}
+            className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 -mx-2 px-2 py-1 rounded-lg transition-colors"
+          >
             <span className="text-sm font-semibold text-gray-400 dark:text-slate-500 w-5 text-right">
               {index + 1}
             </span>
@@ -111,6 +119,12 @@ export function CompanyStatistics({ sectorCompanies }: CompanyStatisticsProps) {
           </Link>
         </div>
       )}
+
+      <Dialog open={!!selectedTicker} onOpenChange={(open) => !open && setSelectedTicker(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {selectedTicker && <CompanyDetail ticker={selectedTicker} />}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

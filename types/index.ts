@@ -188,3 +188,26 @@ export interface SectorGrowth {
   endMarketCap: number
   growthRate: number
 }
+
+// Price Changes API Types
+export interface PriceChangeItem {
+  ticker: string
+  name: string
+  nameKo: string | null
+  firstPrice: number | null
+  firstDate: string
+  latestPrice: number | null
+  latestDate: string
+  priceChange: number | null
+  percentChange: number | null
+  marketCap: number | null
+}
+
+export interface PriceChangesResponse {
+  companies: PriceChangeItem[]
+  dateRange: {
+    start: string
+    end: string
+  }
+  total: number
+}

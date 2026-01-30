@@ -10,7 +10,6 @@ import {
   Legend,
 } from 'recharts'
 import type { TrendItem } from '@/types'
-import { formatMarketCap } from '@/lib/format'
 
 const CHART_COLORS = [
   { stroke: '#3b82f6', fill: '#3b82f6' },
@@ -42,7 +41,7 @@ export function CompanyTrendChart({ data, isLoading }: CompanyTrendChartProps) {
     )
   }
 
-  // Transform data for recharts
+  // Transform data for recharts - calculate percentage change from first data point
   const dates = data[0]?.data.map((d) => d.date) || []
   const chartData = dates.map((date) => {
     const point: Record<string, string | number> = {
@@ -53,7 +52,12 @@ export function CompanyTrendChart({ data, isLoading }: CompanyTrendChartProps) {
     }
     for (const item of data) {
       const found = item.data.find((d) => d.date === date)
-      point[item.id] = found?.marketCap || 0
+      const firstMarketCap = item.data[0]?.marketCap
+      if (firstMarketCap && found?.marketCap) {
+        point[item.id] = ((found.marketCap - firstMarketCap) / firstMarketCap) * 100
+      } else {
+        point[item.id] = 0
+      }
     }
     return point
   })
@@ -86,17 +90,13 @@ export function CompanyTrendChart({ data, isLoading }: CompanyTrendChartProps) {
           />
           <YAxis
             tick={{ fontSize: 10, fill: '#94a3b8' }}
-            tickFormatter={(value) => {
-              if (value >= 1e12) return `${(value / 1e12).toFixed(1)}T`
-              if (value >= 1e9) return `${(value / 1e9).toFixed(0)}B`
-              return `${(value / 1e6).toFixed(0)}M`
-            }}
+            tickFormatter={(value) => `${value.toFixed(0)}%`}
             tickLine={false}
             axisLine={false}
             width={50}
           />
           <Tooltip
-            formatter={(value, name) => [formatMarketCap(value as number), name as string]}
+            formatter={(value, name) => [`${(value as number).toFixed(2)}%`, name as string]}
             labelStyle={{ color: '#64748b', fontWeight: 500 }}
             contentStyle={{
               fontSize: 12,
@@ -105,6 +105,8 @@ export function CompanyTrendChart({ data, isLoading }: CompanyTrendChartProps) {
               borderRadius: 8,
               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
             }}
+            wrapperStyle={{ zIndex: 1000 }}
+            itemSorter={(item) => -(item.value as number)}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
           {data.map((item, index) => (
@@ -112,7 +114,7 @@ export function CompanyTrendChart({ data, isLoading }: CompanyTrendChartProps) {
               key={item.id}
               type="monotone"
               dataKey={item.id}
-              name={item.name}
+              name={item.nameKo || item.name}
               stroke={CHART_COLORS[index % CHART_COLORS.length].stroke}
               strokeWidth={2}
               fill={`url(#colorGradient${index % CHART_COLORS.length})`}

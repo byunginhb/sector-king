@@ -6,6 +6,7 @@ import { CategoryCard } from './category-card'
 import { DateSelector } from './date-selector'
 import { ThemeToggle } from './theme-toggle'
 import { CompanyStatistics } from './company-statistics'
+import { PriceChangeCard } from './price-change-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -119,9 +120,10 @@ export function HegemonyMap() {
             ))}
           </Tabs>
 
-          {/* Mobile Statistics Card - Below category cards */}
-          <div className="mt-6">
+          {/* Mobile Statistics Cards - Below category cards */}
+          <div className="mt-6 space-y-4">
             <CompanyStatistics sectorCompanies={sectorCompanies} />
+            <PriceChangeCard />
           </div>
         </div>
 
@@ -138,8 +140,9 @@ export function HegemonyMap() {
             ))}
           </div>
           <div className="w-64 shrink-0">
-            <div className="sticky top-24">
+            <div className="sticky top-24 space-y-4">
               <CompanyStatistics sectorCompanies={sectorCompanies} />
+              <PriceChangeCard />
             </div>
           </div>
         </div>
