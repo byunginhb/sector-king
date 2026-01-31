@@ -211,3 +211,38 @@ export interface PriceChangesResponse {
   }
   total: number
 }
+
+// Money Flow API Types
+export interface MoneyFlowTrendPoint {
+  date: string
+  mfi: number | null
+  flowAmount: number
+  marketCap: number
+}
+
+export interface SectorMoneyFlow {
+  id: string
+  name: string
+  nameEn: string | null
+  mfi: number | null // Money Flow Index (0-100)
+  flowDirection: 'in' | 'out' // 유입/유출
+  flowAmount: number // 자금 흐름 금액 (시가총액 변화)
+  flowPercent: number // 변화율 %
+  startMarketCap: number
+  endMarketCap: number
+  companyCount: number
+  trend: MoneyFlowTrendPoint[]
+}
+
+export interface MoneyFlowResponse {
+  period: number
+  date: string
+  flows: SectorMoneyFlow[]
+  totalInflow: number
+  totalOutflow: number
+  netFlow: number
+  dateRange: {
+    start: string
+    end: string
+  }
+}

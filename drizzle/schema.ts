@@ -49,6 +49,8 @@ export const dailySnapshots = sqliteTable(
     priceChange: real('price_change'),
     week52High: real('week_52_high'),
     week52Low: real('week_52_low'),
+    dayHigh: real('day_high'), // 일일 고가 (Money Flow Index 계산용)
+    dayLow: real('day_low'), // 일일 저가 (Money Flow Index 계산용)
     volume: integer('volume'),
     avgVolume: integer('avg_volume'),
     peRatio: real('pe_ratio'),

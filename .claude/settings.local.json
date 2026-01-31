@@ -14,7 +14,8 @@
       "Bash(npx shadcn@latest add:*)",
       "Bash(pnpm db:seed:*)",
       "Bash(sqlite3:*)",
-      "Bash(pnpm tsc:*)"
+      "Bash(pnpm tsc:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

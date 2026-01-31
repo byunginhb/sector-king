@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useMapData } from '@/hooks/use-map-data'
 import { CategoryCard } from './category-card'
 import { DateSelector } from './date-selector'
@@ -59,7 +60,22 @@ export function HegemonyMap() {
                 투자 패권 지도 - 2026년 테크 산업편
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Navigation Links */}
+              <Link
+                href="/money-flow"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors"
+              >
+                <span className="hidden sm:inline">💰</span>
+                <span>자금흐름</span>
+              </Link>
+              <Link
+                href="/price-changes"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors"
+              >
+                <span className="hidden sm:inline">📊</span>
+                <span>등락율</span>
+              </Link>
               <ThemeToggle />
               <DateSelector
                 availableDates={availableDates}

@@ -43,6 +43,8 @@ def fetch_stock_data(ticker: str) -> dict | None:
             "price_change": info.get("regularMarketChangePercent"),
             "week_52_high": info.get("fiftyTwoWeekHigh"),
             "week_52_low": info.get("fiftyTwoWeekLow"),
+            "day_high": info.get("dayHigh") or info.get("regularMarketDayHigh"),
+            "day_low": info.get("dayLow") or info.get("regularMarketDayLow"),
             "volume": info.get("volume"),
             "avg_volume": info.get("averageVolume"),
             "pe_ratio": info.get("trailingPE"),
@@ -59,8 +61,8 @@ def upsert_snapshot(conn: sqlite3.Connection, data: dict):
         """
         INSERT OR REPLACE INTO daily_snapshots
         (ticker, date, market_cap, price, price_change, week_52_high,
-         week_52_low, volume, avg_volume, pe_ratio, peg_ratio, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+         week_52_low, day_high, day_low, volume, avg_volume, pe_ratio, peg_ratio, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     """,
         (
             data["ticker"],
@@ -70,6 +72,8 @@ def upsert_snapshot(conn: sqlite3.Connection, data: dict):
             data["price_change"],
             data["week_52_high"],
             data["week_52_low"],
+            data["day_high"],
+            data["day_low"],
             data["volume"],
             data["avg_volume"],
             data["pe_ratio"],
