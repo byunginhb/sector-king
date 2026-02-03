@@ -25,7 +25,7 @@ def get_tickers_from_db(conn: sqlite3.Connection) -> list[str]:
     return tickers
 
 
-def fetch_stock_data(ticker: str) -> dict | None:
+def fetch_stock_data(ticker: str, target_date: str) -> dict | None:
     """Fetch stock data from yfinance."""
     try:
         stock = yf.Ticker(ticker)
@@ -37,7 +37,7 @@ def fetch_stock_data(ticker: str) -> dict | None:
 
         return {
             "ticker": ticker,
-            "date": datetime.now().date().isoformat(),
+            "date": target_date,
             "market_cap": info.get("marketCap"),
             "price": info.get("currentPrice") or info.get("regularMarketPrice"),
             "price_change": info.get("regularMarketChangePercent"),
@@ -141,6 +141,12 @@ def main():
         print(f"Error: Database not found at {DB_PATH}")
         sys.exit(1)
 
+    # 날짜 인자 처리: python update_data.py [YYYY-MM-DD]
+    if len(sys.argv) > 1 and sys.argv[1]:
+        target_date = sys.argv[1]
+    else:
+        target_date = datetime.now().date().isoformat()
+
     conn = sqlite3.connect(DB_PATH)
 
     # Get tickers from DB (sector_companies table)
@@ -150,6 +156,7 @@ def main():
     failed = []
 
     print(f"Starting data update at {datetime.now().isoformat()}")
+    print(f"Target date: {target_date}")
     print(f"Database: {DB_PATH}")
     print(f"Tickers to update: {len(tickers)} (from sector_companies)")
     if SKIP_TICKERS:
@@ -158,7 +165,7 @@ def main():
 
     for ticker in tickers:
         print(f"Fetching {ticker}...", end=" ")
-        data = fetch_stock_data(ticker)
+        data = fetch_stock_data(ticker, target_date)
         if data:
             upsert_snapshot(conn, data)
             results.append(ticker)

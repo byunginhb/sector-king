@@ -4,7 +4,12 @@ on:
   schedule:
     # KST 00:00 (UTC 15:00) - 매일 자정
     - cron: '0 15 * * *'
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      date:
+        description: '수집할 날짜 (YYYY-MM-DD 형식, 비워두면 오늘)'
+        required: false
+        type: string
 
 jobs:
   update:
@@ -26,7 +31,7 @@ jobs:
           pip install -r scripts/requirements.txt
 
       - name: Run data update
-        run: python scripts/update_data.py
+        run: python scripts/update_data.py ${{ github.event.inputs.date }}
 
       - name: Commit and push if changed
         run: |
