@@ -61,6 +61,7 @@ export function PriceChangeChart({ data, isLoading }: PriceChangeChartProps) {
             dataKey="name"
             width={75}
             tick={{ fontSize: 11 }}
+            interval={0}
             className="text-xs fill-muted-foreground"
           />
           <Tooltip

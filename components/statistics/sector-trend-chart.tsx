@@ -10,7 +10,6 @@ import {
   Legend,
 } from 'recharts'
 import type { TrendItem } from '@/types'
-import { formatMarketCap } from '@/lib/format'
 
 const CHART_COLORS = [
   '#3b82f6', // blue
@@ -45,8 +44,18 @@ export function SectorTrendChart({ data, isLoading }: SectorTrendChartProps) {
     )
   }
 
-  // Transform data for recharts
+  // Transform data for recharts - calculate percent change from first date
   const dates = data[0]?.data.map((d) => d.date) || []
+
+  // Get first date market cap as baseline for each sector
+  const baselines: Record<string, number> = {}
+  for (const item of data) {
+    const firstDataPoint = item.data[0]
+    if (firstDataPoint?.marketCap) {
+      baselines[item.id] = firstDataPoint.marketCap
+    }
+  }
+
   const chartData = dates.map((date) => {
     const point: Record<string, string | number> = {
       date: new Date(date).toLocaleDateString('ko-KR', {
@@ -56,7 +65,13 @@ export function SectorTrendChart({ data, isLoading }: SectorTrendChartProps) {
     }
     for (const item of data) {
       const found = item.data.find((d) => d.date === date)
-      point[item.id] = found?.marketCap || 0
+      const baseline = baselines[item.id]
+      if (found?.marketCap && baseline) {
+        // Calculate percent change from baseline
+        point[item.id] = ((found.marketCap - baseline) / baseline) * 100
+      } else {
+        point[item.id] = 0
+      }
     }
     return point
   })
@@ -74,19 +89,17 @@ export function SectorTrendChart({ data, isLoading }: SectorTrendChartProps) {
           />
           <YAxis
             tick={{ fontSize: 10, fill: '#94a3b8' }}
-            tickFormatter={(value) => {
-              if (value >= 1e12) return `${(value / 1e12).toFixed(1)}T`
-              if (value >= 1e9) return `${(value / 1e9).toFixed(0)}B`
-              return `${(value / 1e6).toFixed(0)}M`
-            }}
+            tickFormatter={(value) => `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`}
             tickLine={false}
             axisLine={false}
-            width={50}
+            width={55}
           />
           <Tooltip
             formatter={(value, name) => {
               const item = data.find((d) => d.id === name)
-              return [formatMarketCap(value as number), item?.name || (name as string)]
+              const numValue = value as number
+              const formatted = `${numValue >= 0 ? '+' : ''}${numValue.toFixed(2)}%`
+              return [formatted, item?.name || (name as string)]
             }}
             labelStyle={{ color: '#64748b', fontWeight: 500 }}
             contentStyle={{

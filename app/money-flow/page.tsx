@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useMoneyFlow } from '@/hooks/use-money-flow'
-import { FlowRiver } from '@/components/money-flow/flow-river'
+import { FlowCard } from '@/components/money-flow/flow-card'
 import { FlowSummary } from '@/components/money-flow/flow-summary'
 import { cn } from '@/lib/utils'
 
@@ -11,7 +11,7 @@ type PeriodType = 1 | 7 | 14 | 30
 
 export default function MoneyFlowPage() {
   const [period, setPeriod] = useState<PeriodType>(14)
-  const { data, isLoading, error } = useMoneyFlow({ period, limit: 6 })
+  const { data, isLoading, error } = useMoneyFlow({ period, limit: 20 })
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-background">
@@ -74,24 +74,24 @@ export default function MoneyFlowPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Onboarding */}
-        <div className="mb-6 bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-          <h2 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
+        <div className="mb-6 bg-linear-to-r from-gray-50 to-slate-100 dark:from-gray-900/50 dark:to-slate-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
             이 페이지는 무엇인가요?
           </h2>
-          <p className="text-sm text-blue-700 dark:text-blue-400 leading-relaxed">
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
             섹터별 <strong>시가총액 변화</strong>를 통해 자금의 흐름을 시각화합니다.
-            <span className="text-emerald-600 dark:text-emerald-400 font-medium"> 초록색 물줄기</span>는 자금 유입(시가총액 증가),
-            <span className="text-red-600 dark:text-red-400 font-medium"> 빨간색 물줄기</span>는 자금 유출(시가총액 감소)을 나타냅니다.
-            물줄기가 <strong>굵을수록</strong> 더 많은 자금이 이동했음을 의미합니다.
+            <span className="text-red-600 dark:text-red-400 font-medium"> 레드 카드</span>는 자금 유입(시가총액 증가),
+            <span className="text-blue-600 dark:text-blue-400 font-medium"> 블루 카드</span>는 자금 유출(시가총액 감소)을 나타냅니다.
+            💵가 카드 안으로 들어오면 유입, 💸가 카드 밖으로 나가면 유출입니다.
           </p>
           <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-600 dark:text-slate-400">
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-emerald-500" />
-              <span>유입 (시총 증가)</span>
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <span>💰 유입 (시총 증가)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
-              <span>유출 (시총 감소)</span>
+              <div className="w-3 h-3 rounded-full bg-blue-500" />
+              <span>💸 유출 (시총 감소)</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="font-medium">MFI</span>
@@ -119,21 +119,62 @@ export default function MoneyFlowPage() {
           </div>
         )}
 
-        {/* Flow Rivers */}
+        {/* Flow Cards */}
         {data && (
           <>
-            <div className="mb-8 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-6 flex items-center gap-2">
-                <span className="text-xl">🌊</span>
-                자금 흐름 TOP {data.flows.length}
-              </h2>
+            {/* Inflows Section */}
+            {data.flows.filter((f) => f.flowDirection === 'in').length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-4 flex items-center gap-2">
+                  <span className="text-xl">💰</span>
+                  자금 유입 섹터
+                  <span className="text-sm font-normal text-red-500 dark:text-red-400 ml-2">
+                    돈이 들어오는 중...
+                  </span>
+                </h2>
 
-              <div className="space-y-6">
-                {data.flows.map((flow, index) => (
-                  <FlowRiver key={flow.id} flow={flow} index={index} maxFlow={data.flows[0]?.flowAmount || 1} />
-                ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {data.flows
+                    .filter((f) => f.flowDirection === 'in')
+                    .slice(0, 6)
+                    .map((flow, index) => (
+                      <FlowCard
+                        key={flow.id}
+                        flow={flow}
+                        index={index}
+                        maxFlow={data.flows[0]?.flowAmount || 1}
+                      />
+                    ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Outflows Section */}
+            {data.flows.filter((f) => f.flowDirection === 'out').length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-4 flex items-center gap-2">
+                  <span className="text-xl">💸</span>
+                  자금 유출 섹터
+                  <span className="text-sm font-normal text-blue-500 dark:text-blue-400 ml-2">
+                    돈이 빠져나가는 중...
+                  </span>
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {data.flows
+                    .filter((f) => f.flowDirection === 'out')
+                    .slice(0, 6)
+                    .map((flow, index) => (
+                      <FlowCard
+                        key={flow.id}
+                        flow={flow}
+                        index={index}
+                        maxFlow={data.flows[0]?.flowAmount || 1}
+                      />
+                    ))}
+                </div>
+              </div>
+            )}
 
             {/* Summary */}
             <FlowSummary

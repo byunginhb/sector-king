@@ -25,7 +25,96 @@ function formatAmount(amount: number): string {
   return `$${absAmount.toLocaleString()}`
 }
 
-// Coin particle component
+// Dollar sign particle component for inflow
+function DollarParticle({
+  flowId,
+  index,
+  flowRatio,
+}: {
+  flowId: string
+  index: number
+  flowRatio: number
+}) {
+  const size = 10 + Math.random() * 6 + flowRatio * 4
+  const speed = 2 + Math.random() * 1.5
+  const delay = index * 0.4 + Math.random() * 0.3
+  const yOffset = (Math.random() - 0.5) * 16
+
+  return (
+    <motion.text
+      fontSize={size}
+      fontWeight="bold"
+      fill="#fbbf24"
+      filter={`url(#coin-glow-${flowId})`}
+      textAnchor="middle"
+      dominantBaseline="middle"
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{
+        opacity: [0, 1, 1, 1, 0],
+        scale: [0.3, 1.2, 1, 1, 0.3],
+        x: [-30, 430],
+        y: [24 + yOffset, 24 + yOffset * 0.3],
+        rotate: [0, 10, -5, 5, 0],
+      }}
+      transition={{
+        duration: speed,
+        delay: delay,
+        repeat: Infinity,
+        ease: 'easeOut',
+        times: [0, 0.15, 0.5, 0.85, 1],
+      }}
+    >
+      $
+    </motion.text>
+  )
+}
+
+// Money flying out particle for outflow
+function FlyingMoneyParticle({
+  flowId,
+  index,
+  flowRatio,
+}: {
+  flowId: string
+  index: number
+  flowRatio: number
+}) {
+  const size = 10 + Math.random() * 6 + flowRatio * 4
+  const speed = 1.8 + Math.random() * 1.2
+  const delay = index * 0.35 + Math.random() * 0.25
+  const yOffset = (Math.random() - 0.5) * 20
+  const yDrift = (Math.random() - 0.5) * 15
+
+  return (
+    <motion.text
+      fontSize={size}
+      fontWeight="bold"
+      fill="#fb923c"
+      filter={`url(#coin-glow-${flowId})`}
+      textAnchor="middle"
+      dominantBaseline="middle"
+      initial={{ opacity: 0, scale: 1 }}
+      animate={{
+        opacity: [0, 1, 1, 0.8, 0],
+        scale: [1, 1.1, 1, 0.8, 0.3],
+        x: [430, -30],
+        y: [24 + yOffset, 24 + yOffset + yDrift],
+        rotate: [0, -15, -30, -45, -60],
+      }}
+      transition={{
+        duration: speed,
+        delay: delay,
+        repeat: Infinity,
+        ease: 'easeIn',
+        times: [0, 0.1, 0.5, 0.85, 1],
+      }}
+    >
+      💸
+    </motion.text>
+  )
+}
+
+// Coin particle component (legacy - keeping for variety)
 function CoinParticle({
   flowId,
   isInflow,
@@ -40,10 +129,10 @@ function CoinParticle({
   colors: { particle: string; particleLight: string }
 }) {
   // Randomize particle properties for variety
-  const size = 3 + Math.random() * 4 + flowRatio * 3
-  const speed = 1.5 + Math.random() * 1.5 + (1 - flowRatio) * 1.5
-  const delay = index * (0.25 + Math.random() * 0.15)
-  const yOffset = (Math.random() - 0.5) * 12
+  const size = 4 + Math.random() * 5 + flowRatio * 4
+  const speed = 1.8 + Math.random() * 1.2
+  const delay = index * (0.3 + Math.random() * 0.2)
+  const yOffset = (Math.random() - 0.5) * 14
 
   return (
     <motion.g key={index}>
@@ -55,7 +144,7 @@ function CoinParticle({
         initial={{ opacity: 0, scale: 0 }}
         animate={{
           opacity: [0, 1, 1, 1, 0],
-          scale: [0.5, 1, 1, 1, 0.5],
+          scale: [0.5, 1.2, 1, 1, 0.5],
           cx: isInflow ? [-20, 420] : [420, -20],
           cy: [24 + yOffset, 24 + yOffset * 0.5],
         }}
@@ -63,8 +152,8 @@ function CoinParticle({
           duration: speed,
           delay: delay,
           repeat: Infinity,
-          ease: 'easeInOut',
-          times: [0, 0.1, 0.5, 0.9, 1],
+          ease: isInflow ? 'easeOut' : 'easeIn',
+          times: [0, 0.15, 0.5, 0.85, 1],
         }}
       />
       {/* Coin shine effect */}
@@ -73,7 +162,7 @@ function CoinParticle({
         fill={colors.particleLight}
         initial={{ opacity: 0 }}
         animate={{
-          opacity: [0, 0.8, 0.8, 0.8, 0],
+          opacity: [0, 0.9, 0.9, 0.9, 0],
           cx: isInflow ? [-20 - size * 0.3, 420 - size * 0.3] : [420 + size * 0.3, -20 + size * 0.3],
           cy: [24 + yOffset - size * 0.3, 24 + yOffset * 0.5 - size * 0.3],
         }}
@@ -81,8 +170,8 @@ function CoinParticle({
           duration: speed,
           delay: delay,
           repeat: Infinity,
-          ease: 'easeInOut',
-          times: [0, 0.1, 0.5, 0.9, 1],
+          ease: isInflow ? 'easeOut' : 'easeIn',
+          times: [0, 0.15, 0.5, 0.85, 1],
         }}
       />
     </motion.g>
@@ -129,7 +218,8 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
   const strokeWidth = Math.max(flowRatio * 20, 10) // Min 10px, max 20px
 
   // Number of particles based on flow amount
-  const particleCount = Math.max(Math.floor(flowRatio * 10), 4)
+  const particleCount = Math.max(Math.floor(flowRatio * 8), 3)
+  const dollarCount = Math.max(Math.floor(flowRatio * 6), 2)
   const sparkleCount = Math.max(Math.floor(flowRatio * 5), 2)
 
   // Colors
@@ -307,17 +397,54 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
             <Sparkle key={`sparkle-${i}`} flowId={flow.id} isInflow={isInflow} index={i} />
           ))}
 
-          {/* Coin Particles */}
-          {Array.from({ length: particleCount }).map((_, i) => (
-            <CoinParticle
-              key={`coin-${i}`}
-              flowId={flow.id}
-              isInflow={isInflow}
-              index={i}
-              flowRatio={flowRatio}
-              colors={colors}
-            />
-          ))}
+          {/* Dollar/Money Particles based on flow direction */}
+          {isInflow ? (
+            <>
+              {/* Incoming dollars */}
+              {Array.from({ length: dollarCount }).map((_, i) => (
+                <DollarParticle
+                  key={`dollar-${i}`}
+                  flowId={flow.id}
+                  index={i}
+                  flowRatio={flowRatio}
+                />
+              ))}
+              {/* Coin Particles */}
+              {Array.from({ length: particleCount }).map((_, i) => (
+                <CoinParticle
+                  key={`coin-${i}`}
+                  flowId={flow.id}
+                  isInflow={true}
+                  index={i}
+                  flowRatio={flowRatio}
+                  colors={colors}
+                />
+              ))}
+            </>
+          ) : (
+            <>
+              {/* Flying away money */}
+              {Array.from({ length: dollarCount }).map((_, i) => (
+                <FlyingMoneyParticle
+                  key={`flying-${i}`}
+                  flowId={flow.id}
+                  index={i}
+                  flowRatio={flowRatio}
+                />
+              ))}
+              {/* Coin Particles */}
+              {Array.from({ length: particleCount }).map((_, i) => (
+                <CoinParticle
+                  key={`coin-${i}`}
+                  flowId={flow.id}
+                  isInflow={false}
+                  index={i}
+                  flowRatio={flowRatio}
+                  colors={colors}
+                />
+              ))}
+            </>
+          )}
 
         </svg>
       </div>
