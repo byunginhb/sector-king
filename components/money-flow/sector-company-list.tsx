@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useSectorCompanies } from '@/hooks/use-sector-companies'
 import { SparklineChart } from './sparkline-chart'
@@ -42,52 +43,97 @@ export function SectorCompanyList({
 
   const isInflow = flowDirection === 'in'
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [])
+
+  // Close on Escape key
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   return (
     <motion.div
       key={sectorId}
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sector-modal-title"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
     >
+      {/* Backdrop */}
       <div
-          className={cn(
-            'rounded-xl border p-4 mt-4',
-            isInflow
-              ? 'bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
-              : 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
-          )}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <h3
-              className={cn(
-                'text-base font-semibold flex items-center gap-2',
-                isInflow
-                  ? 'text-red-700 dark:text-red-300'
-                  : 'text-blue-700 dark:text-blue-300'
-              )}
-            >
-              <span>{isInflow ? '💰' : '💸'}</span>
-              {sectorName} 포함 종목
-              {data?.dateRange && (
-                <span className="text-xs font-normal text-gray-500 dark:text-slate-400">
-                  ({data.dateRange.start} ~ {data.dateRange.end})
-                </span>
-              )}
-            </h3>
-            <button
-              onClick={onClose}
-              aria-label="닫기"
-              className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-gray-500 dark:text-slate-400"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
+      {/* Modal */}
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 100, opacity: 0 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
+        onClick={(e) => e.stopPropagation()}
+        className={cn(
+          'relative w-full overflow-y-auto',
+          'max-h-[90vh] rounded-t-2xl',
+          'sm:max-w-2xl sm:max-h-[85vh] sm:rounded-xl sm:mx-4',
+          isInflow
+            ? 'bg-red-50 dark:bg-slate-900 border-red-200 dark:border-red-800'
+            : 'bg-blue-50 dark:bg-slate-900 border-blue-200 dark:border-blue-800',
+          'border shadow-2xl'
+        )}
+      >
+        {/* Header */}
+        <div className={cn(
+          'sticky top-0 z-10 flex items-center justify-between p-4 border-b',
+          isInflow
+            ? 'bg-red-50 dark:bg-slate-900 border-red-200 dark:border-red-800'
+            : 'bg-blue-50 dark:bg-slate-900 border-blue-200 dark:border-blue-800'
+        )}>
+          <h3
+            id="sector-modal-title"
+            className={cn(
+              'text-base font-semibold flex items-center gap-2',
+              isInflow
+                ? 'text-red-700 dark:text-red-300'
+                : 'text-blue-700 dark:text-blue-300'
+            )}
+          >
+            <span aria-hidden="true">{isInflow ? '💰' : '💸'}</span>
+            {sectorName} 포함 종목
+            {data?.dateRange && (
+              <span className="text-xs font-normal text-gray-500 dark:text-slate-400">
+                ({data.dateRange.start} ~ {data.dateRange.end})
+              </span>
+            )}
+          </h3>
+          <button
+            onClick={onClose}
+            aria-label="닫기"
+            className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-gray-500 dark:text-slate-400"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-4">
           {/* Loading */}
           {isLoading && (
             <div className="space-y-3">
@@ -189,5 +235,6 @@ export function SectorCompanyList({
           )}
         </div>
       </motion.div>
+    </motion.div>
   )
 }

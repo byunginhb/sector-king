@@ -164,18 +164,6 @@ export default function MoneyFlowPage() {
                   ))}
                 </div>
 
-                {/* Expanded Company List for Inflow */}
-                <AnimatePresence>
-                  {expandedFlow && expandedFlow.flowDirection === 'in' && (
-                    <SectorCompanyList
-                      sectorId={expandedFlow.id}
-                      sectorName={expandedFlow.name}
-                      period={period}
-                      flowDirection="in"
-                      onClose={() => setExpandedSectorId(null)}
-                    />
-                  )}
-                </AnimatePresence>
               </div>
             )}
 
@@ -203,18 +191,6 @@ export default function MoneyFlowPage() {
                   ))}
                 </div>
 
-                {/* Expanded Company List for Outflow */}
-                <AnimatePresence>
-                  {expandedFlow && expandedFlow.flowDirection === 'out' && (
-                    <SectorCompanyList
-                      sectorId={expandedFlow.id}
-                      sectorName={expandedFlow.name}
-                      period={period}
-                      flowDirection="out"
-                      onClose={() => setExpandedSectorId(null)}
-                    />
-                  )}
-                </AnimatePresence>
               </div>
             )}
 
@@ -227,6 +203,19 @@ export default function MoneyFlowPage() {
           </>
         )}
       </main>
+
+      {/* Sector Company Modal */}
+      <AnimatePresence>
+        {expandedFlow && (
+          <SectorCompanyList
+            sectorId={expandedFlow.id}
+            sectorName={expandedFlow.name}
+            period={period}
+            flowDirection={expandedFlow.flowDirection}
+            onClose={() => setExpandedSectorId(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
