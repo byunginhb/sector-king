@@ -8,6 +8,17 @@ import {
 import { eq, sql, desc, gte, and, inArray } from 'drizzle-orm'
 import type { ApiResponse, MoneyFlowResponse, SectorMoneyFlow, MoneyFlowTrendPoint } from '@/types'
 
+// KRW → USD exchange rate (configurable via env)
+const KRW_USD_RATE = Number(process.env.KRW_USD_RATE) || 1450
+
+function isKoreanTicker(ticker: string): boolean {
+  return ticker.endsWith('.KS') || ticker.endsWith('.KQ')
+}
+
+function toUsd(value: number, ticker: string): number {
+  return isKoreanTicker(ticker) ? value / KRW_USD_RATE : value
+}
+
 export const revalidate = 3600 // 1 hour cache
 
 export async function GET(
@@ -15,8 +26,10 @@ export async function GET(
 ): Promise<NextResponse<ApiResponse<MoneyFlowResponse>>> {
   try {
     const searchParams = request.nextUrl.searchParams
-    const period = parseInt(searchParams.get('period') || '14', 10)
-    const limit = parseInt(searchParams.get('limit') || '6', 10)
+    const rawPeriod = parseInt(searchParams.get('period') || '14', 10)
+    const rawLimit = parseInt(searchParams.get('limit') || '6', 10)
+    const period = Number.isNaN(rawPeriod) ? 14 : Math.max(1, Math.min(rawPeriod, 365))
+    const limit = Number.isNaN(rawLimit) ? 6 : Math.max(1, Math.min(rawLimit, 50))
 
     const db = getDb()
 
@@ -24,7 +37,7 @@ export async function GET(
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - period)
-    const startDateStr = startDate.toISOString().split('T')[0]
+    let startDateStr = startDate.toISOString().split('T')[0]
 
     // Get available dates in range
     const availableDates = await db
@@ -33,7 +46,23 @@ export async function GET(
       .where(gte(dailySnapshots.date, startDateStr))
       .orderBy(dailySnapshots.date)
 
-    const dates = availableDates.map((d) => d.date).filter((d): d is string => d !== null)
+    let dates = availableDates.map((d) => d.date).filter((d): d is string => d !== null)
+
+    // For short periods (e.g. 1 day) or sparse data, fall back to last 2 available dates
+    if (dates.length < 2) {
+      const recentDates = await db
+        .selectDistinct({ date: dailySnapshots.date })
+        .from(dailySnapshots)
+        .orderBy(desc(dailySnapshots.date))
+        .limit(2)
+      dates = recentDates
+        .map((d) => d.date)
+        .filter((d): d is string => d !== null)
+        .reverse()
+      if (dates.length >= 1) {
+        startDateStr = dates[0]
+      }
+    }
 
     if (dates.length < 2) {
       return NextResponse.json({
@@ -64,6 +93,7 @@ export async function GET(
 
     // Calculate money flow for each sector
     const sectorFlows: SectorMoneyFlow[] = []
+    const allUniqueTickers = new Set<string>()
 
     for (const sector of allSectors) {
       // Get companies in this sector
@@ -77,6 +107,7 @@ export async function GET(
         .filter((t): t is string => t !== null)
 
       if (tickers.length === 0) continue
+      tickers.forEach((t) => allUniqueTickers.add(t))
 
       // Get snapshots for these companies
       const snapshots = await db
@@ -104,7 +135,7 @@ export async function GET(
       for (const date of dates) {
         const daySnapshots = snapshots.filter((s) => s.date === date)
         const totalMarketCap = daySnapshots.reduce(
-          (sum, s) => sum + (s.marketCap || 0),
+          (sum, s) => sum + toUsd(s.marketCap || 0, s.ticker ?? ''),
           0
         )
 
@@ -122,7 +153,7 @@ export async function GET(
 
           for (const s of validSnapshots) {
             const typicalPrice = ((s.dayHigh || 0) + (s.dayLow || 0) + (s.price || 0)) / 3
-            const rawMoneyFlow = typicalPrice * (s.volume || 0)
+            const rawMoneyFlow = toUsd(typicalPrice * (s.volume || 0), s.ticker ?? '')
 
             // Use price position within day range as proxy for direction
             const range = (s.dayHigh || 0) - (s.dayLow || 0)
@@ -174,14 +205,19 @@ export async function GET(
         }
       }
 
-      // Use latest MFI or estimate from flow direction
-      const latestMfi = lastData.mfi ?? (flowDirection === 'in' ? 55 : 45)
+      // Average MFI across all dates for more stable indicator than single-day snapshot
+      const mfiValues = Array.from(dateMap.values())
+        .map((d) => d.mfi)
+        .filter((m): m is number => m !== null)
+      const periodMfi = mfiValues.length > 0
+        ? mfiValues.reduce((sum, m) => sum + m, 0) / mfiValues.length
+        : null
 
       sectorFlows.push({
         id: sector.id,
         name: sector.name,
         nameEn: sector.nameEn,
-        mfi: latestMfi,
+        mfi: periodMfi,
         flowDirection,
         flowAmount: Math.abs(flowAmount),
         flowPercent,
@@ -196,14 +232,59 @@ export async function GET(
     sectorFlows.sort((a, b) => Math.abs(b.flowAmount) - Math.abs(a.flowAmount))
     const topFlows = sectorFlows.slice(0, limit)
 
-    // Calculate totals
-    const totalInflow = sectorFlows
-      .filter((f) => f.flowDirection === 'in')
-      .reduce((sum, f) => sum + f.flowAmount, 0)
+    // Calculate totals from unique companies (avoid double-counting across sectors)
+    const uniqueTickerList = Array.from(allUniqueTickers)
+    let totalInflow = 0
+    let totalOutflow = 0
 
-    const totalOutflow = sectorFlows
-      .filter((f) => f.flowDirection === 'out')
-      .reduce((sum, f) => sum + f.flowAmount, 0)
+    if (uniqueTickerList.length > 0) {
+      const [startSnaps, endSnaps] = await Promise.all([
+        db
+          .select({
+            ticker: dailySnapshots.ticker,
+            marketCap: dailySnapshots.marketCap,
+          })
+          .from(dailySnapshots)
+          .where(
+            and(
+              inArray(dailySnapshots.ticker, uniqueTickerList),
+              eq(dailySnapshots.date, firstDate)
+            )
+          ),
+        db
+          .select({
+            ticker: dailySnapshots.ticker,
+            marketCap: dailySnapshots.marketCap,
+          })
+          .from(dailySnapshots)
+          .where(
+            and(
+              inArray(dailySnapshots.ticker, uniqueTickerList),
+              eq(dailySnapshots.date, lastDate)
+            )
+          ),
+      ])
+
+      const startMap = new Map(
+        startSnaps.map((s) => [s.ticker, toUsd(s.marketCap || 0, s.ticker ?? '')])
+      )
+      const endMap = new Map(
+        endSnaps.map((s) => [s.ticker, toUsd(s.marketCap || 0, s.ticker ?? '')])
+      )
+
+      for (const ticker of uniqueTickerList) {
+        const startCap = startMap.get(ticker)
+        const endCap = endMap.get(ticker)
+        if (startCap === undefined || endCap === undefined) continue
+        if (startCap === 0 && endCap === 0) continue
+        const change = endCap - startCap
+        if (change > 0) {
+          totalInflow += change
+        } else {
+          totalOutflow += Math.abs(change)
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
