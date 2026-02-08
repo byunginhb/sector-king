@@ -76,13 +76,6 @@ export function HegemonyMap() {
                 <span className="hidden sm:inline">📊</span>
                 <span>등락율</span>
               </Link>
-              <Link
-                href="/sector-trend"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors"
-              >
-                <span className="hidden sm:inline">📈</span>
-                <span>섹터추이</span>
-              </Link>
               <ThemeToggle />
               <DateSelector
                 availableDates={availableDates}

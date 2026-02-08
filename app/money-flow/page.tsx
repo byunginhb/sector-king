@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useMoneyFlow } from '@/hooks/use-money-flow'
 import { FlowCard } from '@/components/money-flow/flow-card'
 import { FlowSummary } from '@/components/money-flow/flow-summary'
+import { SectorTrendSection } from '@/components/sector-trend/sector-trend-section'
 import { SectorCompanyList } from '@/components/money-flow/sector-company-list'
 import { AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -70,12 +71,6 @@ export default function MoneyFlowPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Link
-                href="/sector-trend"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors"
-              >
-                📈 섹터추이
-              </Link>
               {/* Period Selector */}
               <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-border">
                 {([1, 3, 7, 14, 30] as PeriodType[]).map((p) => (
@@ -210,6 +205,11 @@ export default function MoneyFlowPage() {
             />
           </>
         )}
+
+        {/* Sector Trend Section */}
+        <div className="mt-8">
+          <SectorTrendSection />
+        </div>
       </main>
 
       {/* Sector Company Modal */}
