@@ -15,7 +15,9 @@
       "Bash(pnpm db:seed:*)",
       "Bash(sqlite3:*)",
       "Bash(pnpm tsc:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "mcp__ide__getDiagnostics",
+      "Skill(code-review)"
     ]
   }
 }
