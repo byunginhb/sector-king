@@ -1,22 +1,40 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useMoneyFlow } from '@/hooks/use-money-flow'
 import { FlowCard } from '@/components/money-flow/flow-card'
 import { FlowSummary } from '@/components/money-flow/flow-summary'
+import { SectorCompanyList } from '@/components/money-flow/sector-company-list'
+import { AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 type PeriodType = 1 | 7 | 14 | 30
 
 export default function MoneyFlowPage() {
   const [period, setPeriod] = useState<PeriodType>(14)
+  const [expandedSectorId, setExpandedSectorId] = useState<string | null>(null)
   const { data, isLoading, error } = useMoneyFlow({ period, limit: 20 })
+
+  const expandedFlow = data?.flows.find((f) => f.id === expandedSectorId)
+
+  const inflowFlows = useMemo(
+    () => data?.flows.filter((f) => f.flowDirection === 'in') ?? [],
+    [data?.flows]
+  )
+  const outflowFlows = useMemo(
+    () => data?.flows.filter((f) => f.flowDirection === 'out') ?? [],
+    [data?.flows]
+  )
+
+  function handleCardClick(sectorId: string) {
+    setExpandedSectorId((prev) => (prev === sectorId ? null : sectorId))
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-background">
       {/* Header */}
-      <header className="bg-white dark:bg-card border-b border-gray-200 dark:border-border sticky top-0 z-10">
+      <header className="bg-white dark:bg-card border-b border-gray-200 dark:border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -123,7 +141,7 @@ export default function MoneyFlowPage() {
         {data && (
           <>
             {/* Inflows Section */}
-            {data.flows.filter((f) => f.flowDirection === 'in').length > 0 && (
+            {inflowFlows.length > 0 && (
               <div className="mb-8">
                 <h2 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-4 flex items-center gap-2">
                   <span className="text-xl">💰</span>
@@ -134,23 +152,35 @@ export default function MoneyFlowPage() {
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {data.flows
-                    .filter((f) => f.flowDirection === 'in')
-                    .slice(0, 6)
-                    .map((flow, index) => (
-                      <FlowCard
-                        key={flow.id}
-                        flow={flow}
-                        index={index}
-                        maxFlow={data.flows[0]?.flowAmount || 1}
-                      />
-                    ))}
+                  {inflowFlows.slice(0, 6).map((flow, index) => (
+                    <FlowCard
+                      key={flow.id}
+                      flow={flow}
+                      index={index}
+                      maxFlow={data.flows[0]?.flowAmount || 1}
+                      onClick={() => handleCardClick(flow.id)}
+                      isExpanded={expandedSectorId === flow.id}
+                    />
+                  ))}
                 </div>
+
+                {/* Expanded Company List for Inflow */}
+                <AnimatePresence>
+                  {expandedFlow && expandedFlow.flowDirection === 'in' && (
+                    <SectorCompanyList
+                      sectorId={expandedFlow.id}
+                      sectorName={expandedFlow.name}
+                      period={period}
+                      flowDirection="in"
+                      onClose={() => setExpandedSectorId(null)}
+                    />
+                  )}
+                </AnimatePresence>
               </div>
             )}
 
             {/* Outflows Section */}
-            {data.flows.filter((f) => f.flowDirection === 'out').length > 0 && (
+            {outflowFlows.length > 0 && (
               <div className="mb-8">
                 <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-4 flex items-center gap-2">
                   <span className="text-xl">💸</span>
@@ -161,18 +191,30 @@ export default function MoneyFlowPage() {
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {data.flows
-                    .filter((f) => f.flowDirection === 'out')
-                    .slice(0, 6)
-                    .map((flow, index) => (
-                      <FlowCard
-                        key={flow.id}
-                        flow={flow}
-                        index={index}
-                        maxFlow={data.flows[0]?.flowAmount || 1}
-                      />
-                    ))}
+                  {outflowFlows.slice(0, 6).map((flow, index) => (
+                    <FlowCard
+                      key={flow.id}
+                      flow={flow}
+                      index={index}
+                      maxFlow={data.flows[0]?.flowAmount || 1}
+                      onClick={() => handleCardClick(flow.id)}
+                      isExpanded={expandedSectorId === flow.id}
+                    />
+                  ))}
                 </div>
+
+                {/* Expanded Company List for Outflow */}
+                <AnimatePresence>
+                  {expandedFlow && expandedFlow.flowDirection === 'out' && (
+                    <SectorCompanyList
+                      sectorId={expandedFlow.id}
+                      sectorName={expandedFlow.name}
+                      period={period}
+                      flowDirection="out"
+                      onClose={() => setExpandedSectorId(null)}
+                    />
+                  )}
+                </AnimatePresence>
               </div>
             )}
 

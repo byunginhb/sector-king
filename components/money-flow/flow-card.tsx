@@ -8,6 +8,8 @@ interface FlowCardProps {
   flow: SectorMoneyFlow
   index: number
   maxFlow: number
+  onClick?: () => void
+  isExpanded?: boolean
 }
 
 function formatAmount(amount: number): string {
@@ -292,7 +294,7 @@ function CoinParticleOutflowRight({ index, delay }: { index: number; delay: numb
   )
 }
 
-export function FlowCard({ flow, index, maxFlow }: FlowCardProps) {
+export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCardProps) {
   const isInflow = flow.flowDirection === 'in'
   const flowRatio = Math.min(flow.flowAmount / maxFlow, 1)
   const particleCount = Math.max(Math.floor(flowRatio * 4), 2)
@@ -302,12 +304,16 @@ export function FlowCard({ flow, index, maxFlow }: FlowCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02 }}
       transition={{ delay: index * 0.1 }}
+      onClick={onClick}
       className={cn(
-        'relative rounded-xl p-4 min-h-[120px]',
+        'relative rounded-xl p-4 min-h-[120px] overflow-hidden cursor-pointer transition-shadow',
         isInflow
           ? 'bg-linear-to-br from-red-50 to-rose-100 dark:from-red-950/40 dark:to-rose-900/30 border border-red-200 dark:border-red-800'
-          : 'bg-linear-to-br from-blue-50 to-indigo-100 dark:from-blue-950/40 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-800'
+          : 'bg-linear-to-br from-blue-50 to-indigo-100 dark:from-blue-950/40 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-800',
+        isExpanded && isInflow && 'ring-2 ring-red-400 dark:ring-red-500',
+        isExpanded && !isInflow && 'ring-2 ring-blue-400 dark:ring-blue-500'
       )}
     >
       {/* Animated background pulse */}

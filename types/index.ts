@@ -234,6 +234,26 @@ export interface SectorMoneyFlow {
   trend: MoneyFlowTrendPoint[]
 }
 
+export interface SectorCompanyPriceData {
+  ticker: string
+  name: string
+  nameKo: string | null
+  rank: number
+  startPrice: number | null
+  endPrice: number | null
+  priceChangePercent: number | null
+  marketCap: number | null
+  priceHistory: PriceHistory[]
+}
+
+export interface SectorCompaniesResponse {
+  sectorId: string
+  sectorName: string
+  period: number
+  dateRange: { start: string; end: string }
+  companies: SectorCompanyPriceData[]
+}
+
 export interface MoneyFlowResponse {
   period: number
   date: string
