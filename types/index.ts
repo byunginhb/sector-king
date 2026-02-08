@@ -212,6 +212,27 @@ export interface PriceChangesResponse {
   total: number
 }
 
+// Sector Trend API Types
+export interface SectorTrendPeriod {
+  period: number
+  flowPercent: number
+  flowAmount: number
+  startMarketCap: number
+  endMarketCap: number
+}
+
+export interface SectorTrendData {
+  id: string
+  name: string
+  nameEn: string | null
+  periods: SectorTrendPeriod[]
+}
+
+export interface SectorTrendResponse {
+  sectors: SectorTrendData[]
+  dateRange: { start: string; end: string }
+}
+
 // Money Flow API Types
 export interface MoneyFlowTrendPoint {
   date: string
