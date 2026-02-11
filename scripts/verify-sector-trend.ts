@@ -4,17 +4,10 @@ import path from 'path'
 import { desc, inArray, and, eq } from 'drizzle-orm'
 import * as schema from '../drizzle/schema'
 
+import { toUsd } from '../lib/currency'
+
 const DB_PATH = path.join(process.cwd(), 'data', 'hegemony.db')
-const KRW_USD_RATE = Number(process.env.KRW_USD_RATE) || 1450
 const TARGET_PERIODS = [1, 3, 7, 14, 30]
-
-function isKoreanTicker(ticker: string): boolean {
-  return ticker.endsWith('.KS') || ticker.endsWith('.KQ')
-}
-
-function toUsd(value: number, ticker: string): number {
-  return isKoreanTicker(ticker) ? value / KRW_USD_RATE : value
-}
 
 async function main() {
   const sqlite = new Database(DB_PATH, { readonly: true })
@@ -141,7 +134,7 @@ async function main() {
   }
 
   // 6. Verify KRW conversion for a Korean ticker
-  const krwTicker = testTickers.find((t) => isKoreanTicker(t))
+  const krwTicker = testTickers.find((t) => t.endsWith('.KS') || t.endsWith('.KQ'))
   if (krwTicker) {
     const krwSnap = await db
       .select({
@@ -162,8 +155,8 @@ async function main() {
       const usdCap = toUsd(rawCap, krwTicker)
       console.log(`\n--- KRW conversion check: ${krwTicker} ---`)
       console.log(`  Raw: ${rawCap.toLocaleString()} KRW`)
-      console.log(`  USD: $${usdCap.toLocaleString()} (rate: ${KRW_USD_RATE})`)
-      console.log(`  Ratio: ${(rawCap / usdCap).toFixed(0)} (should be ~${KRW_USD_RATE})`)
+      console.log(`  USD: $${usdCap.toLocaleString()}`)
+      console.log(`  Ratio: ${(rawCap / usdCap).toFixed(0)}`)
     }
   } else {
     console.log('\nNo Korean tickers in test sector, skipping KRW check')

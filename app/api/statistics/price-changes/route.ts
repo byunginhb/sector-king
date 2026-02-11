@@ -3,6 +3,7 @@ import { getDb } from '@/lib/db'
 import { companies, dailySnapshots } from '@/drizzle/schema'
 import { eq, asc, desc, sql } from 'drizzle-orm'
 import type { ApiResponse, PriceChangesResponse, PriceChangeItem } from '@/types'
+import { toUsd } from '@/lib/currency'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -82,7 +83,7 @@ export async function GET(
         latestDate: latest.date,
         priceChange,
         percentChange,
-        marketCap: latest.marketCap,
+        marketCap: latest.marketCap ? toUsd(latest.marketCap, ticker) : null,
       })
     }
 

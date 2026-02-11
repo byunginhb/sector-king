@@ -7,17 +7,9 @@ import {
 } from '@/drizzle/schema'
 import { desc, inArray } from 'drizzle-orm'
 import type { ApiResponse, SectorTrendResponse, SectorTrendData } from '@/types'
+import { toUsd } from '@/lib/currency'
 
-const KRW_USD_RATE = Number(process.env.KRW_USD_RATE) || 1450
 const TARGET_PERIODS = [1, 3, 7, 14, 30]
-
-function isKoreanTicker(ticker: string): boolean {
-  return ticker.endsWith('.KS') || ticker.endsWith('.KQ')
-}
-
-function toUsd(value: number, ticker: string): number {
-  return isKoreanTicker(ticker) ? value / KRW_USD_RATE : value
-}
 
 export const revalidate = 3600
 

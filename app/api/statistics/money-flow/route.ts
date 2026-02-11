@@ -7,17 +7,7 @@ import {
 } from '@/drizzle/schema'
 import { eq, sql, desc, gte, and, inArray } from 'drizzle-orm'
 import type { ApiResponse, MoneyFlowResponse, SectorMoneyFlow, MoneyFlowTrendPoint } from '@/types'
-
-// KRW → USD exchange rate (configurable via env)
-const KRW_USD_RATE = Number(process.env.KRW_USD_RATE) || 1450
-
-function isKoreanTicker(ticker: string): boolean {
-  return ticker.endsWith('.KS') || ticker.endsWith('.KQ')
-}
-
-function toUsd(value: number, ticker: string): number {
-  return isKoreanTicker(ticker) ? value / KRW_USD_RATE : value
-}
+import { toUsd } from '@/lib/currency'
 
 export const revalidate = 3600 // 1 hour cache
 
