@@ -12,10 +12,14 @@ import { cn } from '@/lib/utils'
 
 type PeriodType = 1 | 3 | 7 | 14 | 30
 
-export default function MoneyFlowPage() {
+interface MoneyFlowPageContentProps {
+  industryId: string
+}
+
+export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) {
   const [period, setPeriod] = useState<PeriodType>(14)
   const [expandedSectorId, setExpandedSectorId] = useState<string | null>(null)
-  const { data, isLoading, error } = useMoneyFlow({ period, limit: 20 })
+  const { data, isLoading, error } = useMoneyFlow({ period, limit: 20, industryId })
 
   const expandedFlow = data?.flows.find((f) => f.id === expandedSectorId)
 
@@ -40,7 +44,7 @@ export default function MoneyFlowPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                href="/"
+                href={`/${industryId}`}
                 className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors"
               >
                 <svg
@@ -208,7 +212,7 @@ export default function MoneyFlowPage() {
 
         {/* Sector Trend Section */}
         <div className="mt-8">
-          <SectorTrendSection />
+          <SectorTrendSection industryId={industryId} />
         </div>
       </main>
 

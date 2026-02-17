@@ -1,70 +1,147 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { companies, dailySnapshots } from '@/drizzle/schema'
-import { eq, asc, desc, sql } from 'drizzle-orm'
+import { and, inArray, sql } from 'drizzle-orm'
 import type { ApiResponse, PriceChangesResponse, PriceChangeItem } from '@/types'
 import { toUsd } from '@/lib/currency'
+import { getIndustryFilter } from '@/lib/industry'
+import { validateIndustryId } from '@/lib/validate'
 
 export const revalidate = 3600 // 1 hour cache
 
+const ALLOWED_SORTS = ['percentChange', 'name', 'marketCap'] as const
+const ALLOWED_ORDERS = ['asc', 'desc'] as const
+
 export async function GET(
-  request: Request
+  request: NextRequest
 ): Promise<NextResponse<ApiResponse<PriceChangesResponse>>> {
   try {
-    const { searchParams } = new URL(request.url)
-    const sort = searchParams.get('sort') || 'percentChange'
-    const order = searchParams.get('order') || 'desc'
+    const searchParams = request.nextUrl.searchParams
+    const rawSort = searchParams.get('sort') || 'percentChange'
+    const rawOrder = searchParams.get('order') || 'desc'
+    const sort = (ALLOWED_SORTS as readonly string[]).includes(rawSort) ? rawSort : 'percentChange'
+    const order = (ALLOWED_ORDERS as readonly string[]).includes(rawOrder) ? rawOrder : 'desc'
+    const industryId = searchParams.get('industry')
+
+    if (industryId && !validateIndustryId(industryId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid industry ID' },
+        { status: 400 }
+      )
+    }
 
     const db = getDb()
+    const industryFilter = industryId ? await getIndustryFilter(industryId) : null
 
-    // Get all unique tickers with their first and latest snapshots
-    const allTickers = await db
+    if (industryId && !industryFilter) {
+      return NextResponse.json(
+        { success: false, error: 'Industry not found' },
+        { status: 404 }
+      )
+    }
+
+    // Get all unique tickers
+    const allTickersRaw = await db
       .selectDistinct({ ticker: dailySnapshots.ticker })
       .from(dailySnapshots)
 
-    const priceChanges: PriceChangeItem[] = []
+    const allTickers = industryFilter
+      ? allTickersRaw.filter((t) => t.ticker && industryFilter.tickers.includes(t.ticker))
+      : allTickersRaw
 
-    for (const { ticker } of allTickers) {
-      if (!ticker) continue
+    const tickerList = allTickers
+      .map((t) => t.ticker)
+      .filter((t): t is string => t !== null)
 
-      // Get first snapshot (oldest date)
-      const firstSnapshot = await db
+    if (tickerList.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: { companies: [], dateRange: { start: '', end: '' }, total: 0 },
+      })
+    }
+
+    // Step 1: Get min/max dates per ticker using GROUP BY (efficient - single scan)
+    const dateRanges = await db
+      .select({
+        ticker: dailySnapshots.ticker,
+        minDate: sql<string>`MIN(${dailySnapshots.date})`,
+        maxDate: sql<string>`MAX(${dailySnapshots.date})`,
+      })
+      .from(dailySnapshots)
+      .where(inArray(dailySnapshots.ticker, tickerList))
+      .groupBy(dailySnapshots.ticker)
+
+    // Build date lookup
+    const tickerDateMap = new Map<string, { minDate: string; maxDate: string }>()
+    const targetDatesSet = new Set<string>()
+    for (const row of dateRanges) {
+      if (!row.ticker || !row.minDate || !row.maxDate) continue
+      tickerDateMap.set(row.ticker, { minDate: row.minDate, maxDate: row.maxDate })
+      targetDatesSet.add(row.minDate)
+      targetDatesSet.add(row.maxDate)
+    }
+
+    const targetDates = Array.from(targetDatesSet)
+    if (targetDates.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: { companies: [], dateRange: { start: '', end: '' }, total: 0 },
+      })
+    }
+
+    // Step 2: Fetch only the snapshots for min/max dates (much smaller result set)
+    const [targetSnapshots, companyInfoList] = await Promise.all([
+      db
         .select({
-          date: dailySnapshots.date,
-          price: dailySnapshots.price,
-        })
-        .from(dailySnapshots)
-        .where(eq(dailySnapshots.ticker, ticker))
-        .orderBy(asc(dailySnapshots.date))
-        .limit(1)
-
-      // Get latest snapshot (newest date)
-      const latestSnapshot = await db
-        .select({
+          ticker: dailySnapshots.ticker,
           date: dailySnapshots.date,
           price: dailySnapshots.price,
           marketCap: dailySnapshots.marketCap,
         })
         .from(dailySnapshots)
-        .where(eq(dailySnapshots.ticker, ticker))
-        .orderBy(desc(dailySnapshots.date))
-        .limit(1)
-
-      // Get company info
-      const companyInfo = await db
+        .where(
+          and(
+            inArray(dailySnapshots.ticker, tickerList),
+            inArray(dailySnapshots.date, targetDates)
+          )
+        ),
+      db
         .select({
+          ticker: companies.ticker,
           name: companies.name,
           nameKo: companies.nameKo,
         })
         .from(companies)
-        .where(eq(companies.ticker, ticker))
-        .limit(1)
+        .where(inArray(companies.ticker, tickerList)),
+    ])
 
-      if (firstSnapshot.length === 0 || latestSnapshot.length === 0) continue
+    // Build snapshot index by (ticker, date)
+    const snapshotIndex = new Map<string, { price: number | null; marketCap: number | null }>()
+    for (const snap of targetSnapshots) {
+      if (!snap.ticker || !snap.date) continue
+      snapshotIndex.set(`${snap.ticker}|${snap.date}`, {
+        price: snap.price,
+        marketCap: snap.marketCap,
+      })
+    }
 
-      const first = firstSnapshot[0]
-      const latest = latestSnapshot[0]
-      const company = companyInfo[0]
+    const companyMap = new Map<string, { name: string; nameKo: string | null }>()
+    for (const c of companyInfoList) {
+      companyMap.set(c.ticker, { name: c.name, nameKo: c.nameKo })
+    }
+
+    // Build price changes in-memory
+    const priceChanges: PriceChangeItem[] = []
+
+    for (const ticker of tickerList) {
+      const dates = tickerDateMap.get(ticker)
+      if (!dates) continue
+
+      const first = snapshotIndex.get(`${ticker}|${dates.minDate}`)
+      const latest = snapshotIndex.get(`${ticker}|${dates.maxDate}`)
+      if (!first || !latest) continue
+
+      const company = companyMap.get(ticker)
 
       const priceChange =
         first.price && latest.price ? latest.price - first.price : null
@@ -78,17 +155,17 @@ export async function GET(
         name: company?.name || ticker,
         nameKo: company?.nameKo || null,
         firstPrice: first.price,
-        firstDate: first.date,
+        firstDate: dates.minDate,
         latestPrice: latest.price,
-        latestDate: latest.date,
+        latestDate: dates.maxDate,
         priceChange,
         percentChange,
         marketCap: latest.marketCap ? toUsd(latest.marketCap, ticker) : null,
       })
     }
 
-    // Sort results
-    priceChanges.sort((a, b) => {
+    // Sort results (immutable)
+    const sortedChanges = [...priceChanges].sort((a, b) => {
       let comparison = 0
       switch (sort) {
         case 'percentChange':
@@ -107,20 +184,20 @@ export async function GET(
     })
 
     // Get date range
-    const dates = priceChanges
+    const allDates = sortedChanges
       .flatMap((c) => [c.firstDate, c.latestDate])
-      .filter(Boolean)
+      .filter((d) => d.length > 0)
       .sort()
 
     return NextResponse.json({
       success: true,
       data: {
-        companies: priceChanges,
+        companies: sortedChanges,
         dateRange: {
-          start: dates[0] || '',
-          end: dates[dates.length - 1] || '',
+          start: allDates[0] || '',
+          end: allDates[allDates.length - 1] || '',
         },
-        total: priceChanges.length,
+        total: sortedChanges.length,
       },
     })
   } catch (error) {

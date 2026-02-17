@@ -5,8 +5,23 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: '/money-flow',
+        destination: '/tech/money-flow',
+        permanent: true,
+      },
+      {
+        source: '/price-changes',
+        destination: '/tech/price-changes',
+        permanent: true,
+      },
+      {
+        source: '/statistics',
+        destination: '/tech/statistics',
+        permanent: true,
+      },
+      {
         source: '/sector-trend',
-        destination: '/money-flow',
+        destination: '/tech/money-flow',
         permanent: true,
       },
     ]

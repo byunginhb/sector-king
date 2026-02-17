@@ -15,9 +15,13 @@ import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-export function HegemonyMap() {
+interface HegemonyMapProps {
+  industryId: string
+}
+
+export function HegemonyMap({ industryId }: HegemonyMapProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const { data, isLoading, error } = useMapData({ date: selectedDate })
+  const { data, isLoading, error } = useMapData({ date: selectedDate, industryId })
 
   if (isLoading) return <MapSkeleton />
   if (error) return <MapError error={error} />
@@ -57,20 +61,26 @@ export function HegemonyMap() {
                 </span>
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">
-                투자 패권 지도 - 2026년 테크 산업편
+                투자 패권 지도
               </p>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Navigation Links */}
               <Link
-                href="/money-flow"
+                href="/"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span>전체</span>
+              </Link>
+              <Link
+                href={`/${industryId}/money-flow`}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors"
               >
                 <span className="hidden sm:inline">💰</span>
                 <span>자금흐름</span>
               </Link>
               <Link
-                href="/price-changes"
+                href={`/${industryId}/price-changes`}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors"
               >
                 <span className="hidden sm:inline">📊</span>
@@ -157,7 +167,7 @@ export function HegemonyMap() {
           </div>
           <div className="w-[520px] shrink-0">
             <div className="sticky top-24 grid grid-cols-2 gap-4">
-              <CompanyStatistics sectorCompanies={sectorCompanies} />
+              <CompanyStatistics sectorCompanies={sectorCompanies} industryId={industryId} />
               <PriceChangeCard />
             </div>
           </div>

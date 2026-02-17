@@ -14,7 +14,11 @@ import { cn } from '@/lib/utils'
 
 type DaysFilter = '7' | '30' | 'all'
 
-export function StatisticsPage() {
+interface StatisticsPageProps {
+  industryId?: string
+}
+
+export function StatisticsPage({ industryId }: StatisticsPageProps = {}) {
   const [days, setDays] = useState<DaysFilter>('30')
   const [sort, setSort] = useState<'count' | 'marketCap' | 'name'>('count')
   const [order, setOrder] = useState<'asc' | 'desc'>('desc')
@@ -25,16 +29,19 @@ export function StatisticsPage() {
   const { data: sectorTrends, isLoading: sectorLoading } = useTrends({
     type: 'sector',
     days,
+    industryId,
   })
 
   const { data: categoryTrends, isLoading: categoryLoading } = useTrends({
     type: 'category',
     days,
+    industryId,
   })
 
   const { data: companyTrends, isLoading: companyLoading } = useTrends({
     type: 'company',
     days,
+    industryId,
   })
 
   const { data: companyStats, isLoading: statsLoading } = useCompanyStatistics({
@@ -42,6 +49,7 @@ export function StatisticsPage() {
     order,
     page,
     limit: 20,
+    industryId,
   })
 
   const handleSortChange = (newSort: 'count' | 'marketCap' | 'name') => {
@@ -72,7 +80,7 @@ export function StatisticsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                href="/"
+                href={industryId ? `/${industryId}` : '/'}
                 className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

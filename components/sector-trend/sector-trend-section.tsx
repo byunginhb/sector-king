@@ -70,8 +70,12 @@ function getCellText(value: number): string {
     : 'text-red-700 dark:text-red-300'
 }
 
-export function SectorTrendSection() {
-  const { data, isLoading, error } = useSectorTrend()
+interface SectorTrendSectionProps {
+  industryId?: string
+}
+
+export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {}) {
+  const { data, isLoading, error } = useSectorTrend({ industryId })
   const [sortPeriod, setSortPeriod] = useState(30)
   const [sortAsc, setSortAsc] = useState(false)
   const [showAll, setShowAll] = useState(false)

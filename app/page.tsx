@@ -1,9 +1,9 @@
-import { HegemonyMap } from '@/components/hegemony-map'
+import { IndustryDashboard } from '@/components/industry-dashboard'
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-background">
-      <HegemonyMap />
+      <IndustryDashboard />
     </main>
   )
 }

@@ -15,9 +15,10 @@ interface CompanyCount {
 
 interface CompanyStatisticsProps {
   sectorCompanies: SectorCompanyWithDetails[]
+  industryId?: string
 }
 
-export function CompanyStatistics({ sectorCompanies }: CompanyStatisticsProps) {
+export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatisticsProps) {
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
 
   const companyCounts = useMemo(() => {
@@ -99,7 +100,7 @@ export function CompanyStatistics({ sectorCompanies }: CompanyStatisticsProps) {
       {companyCounts.length > 10 && (
         <div className="mt-3 pt-3 border-t border-gray-100 dark:border-border">
           <Link
-            href="/statistics"
+            href={industryId ? `/${industryId}/statistics` : '/statistics'}
             className="flex items-center justify-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline transition-colors"
           >
             전체 {companyCounts.length}개 회사 보기

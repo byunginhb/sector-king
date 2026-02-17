@@ -78,6 +78,28 @@ export const companyProfiles = sqliteTable('company_profiles', {
   updatedAt: text('updated_at'),
 })
 
+export const industries = sqliteTable('industries', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  nameEn: text('name_en'),
+  icon: text('icon'),
+  description: text('description'),
+  order: integer('order').notNull(),
+})
+
+export const industryCategories = sqliteTable(
+  'industry_categories',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    industryId: text('industry_id').references(() => industries.id),
+    categoryId: text('category_id').references(() => categories.id),
+  },
+  (table) => [
+    unique().on(table.industryId, table.categoryId),
+    index('idx_ic_industry').on(table.industryId),
+  ]
+)
+
 // Type exports
 export type Category = typeof categories.$inferSelect
 export type NewCategory = typeof categories.$inferInsert
@@ -91,3 +113,7 @@ export type DailySnapshot = typeof dailySnapshots.$inferSelect
 export type NewDailySnapshot = typeof dailySnapshots.$inferInsert
 export type CompanyProfile = typeof companyProfiles.$inferSelect
 export type NewCompanyProfile = typeof companyProfiles.$inferInsert
+export type Industry = typeof industries.$inferSelect
+export type NewIndustry = typeof industries.$inferInsert
+export type IndustryCategory = typeof industryCategories.$inferSelect
+export type NewIndustryCategory = typeof industryCategories.$inferInsert

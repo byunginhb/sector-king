@@ -195,6 +195,26 @@ const COMPANIES = [
   { ticker: 'FSLR', name: 'First Solar Inc.', nameKo: '퍼스트솔라' },
 ]
 
+const INDUSTRIES = [
+  { id: 'tech', name: '테크', nameEn: 'Tech', icon: '💻', description: '기술 산업 전반', order: 1 },
+]
+
+const INDUSTRY_CATEGORIES = [
+  { industryId: 'tech', categoryId: 'computing' },
+  { industryId: 'tech', categoryId: 'internet' },
+  { industryId: 'tech', categoryId: 'mobile' },
+  { industryId: 'tech', categoryId: 'media' },
+  { industryId: 'tech', categoryId: 'ai' },
+  { industryId: 'tech', categoryId: 'future_tech' },
+  { industryId: 'tech', categoryId: 'fintech' },
+  { industryId: 'tech', categoryId: 'healthcare' },
+  { industryId: 'tech', categoryId: 'entertainment' },
+  { industryId: 'tech', categoryId: 'semiconductor' },
+  { industryId: 'tech', categoryId: 'cloud' },
+  { industryId: 'tech', categoryId: 'cybersecurity' },
+  { industryId: 'tech', categoryId: 'ev_energy' },
+]
+
 const SECTOR_COMPANIES = [
   // Computer OS
   { sectorId: 'os', ticker: 'MSFT', rank: 1, notes: null },
@@ -489,14 +509,33 @@ async function seed() {
       updated_at TEXT DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS industries (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      name_en TEXT,
+      icon TEXT,
+      description TEXT,
+      "order" INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS industry_categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      industry_id TEXT REFERENCES industries(id),
+      category_id TEXT REFERENCES categories(id),
+      UNIQUE(industry_id, category_id)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_snapshots_ticker_date ON daily_snapshots(ticker, date DESC);
     CREATE INDEX IF NOT EXISTS idx_sector_companies_sector ON sector_companies(sector_id);
+    CREATE INDEX IF NOT EXISTS idx_ic_industry ON industry_categories(industry_id);
   `)
 
   const db = drizzle(sqlite, { schema })
 
   // Clear existing data
   sqlite.exec(`
+    DELETE FROM industry_categories;
+    DELETE FROM industries;
     DELETE FROM sector_companies;
     DELETE FROM daily_snapshots;
     DELETE FROM company_profiles;
@@ -522,6 +561,18 @@ async function seed() {
     await db.insert(schema.companies).values(company)
   }
   console.log(`Inserted ${COMPANIES.length} companies`)
+
+  // Insert industries
+  for (const industry of INDUSTRIES) {
+    await db.insert(schema.industries).values(industry)
+  }
+  console.log(`Inserted ${INDUSTRIES.length} industries`)
+
+  // Insert industry-category mappings
+  for (const ic of INDUSTRY_CATEGORIES) {
+    await db.insert(schema.industryCategories).values(ic)
+  }
+  console.log(`Inserted ${INDUSTRY_CATEGORIES.length} industry-category mappings`)
 
   // Insert sector-company mappings
   for (const sc of SECTOR_COMPANIES) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { usePriceChanges } from '@/hooks/use-price-changes'
 import { useTrends } from '@/hooks/use-statistics'
@@ -13,21 +13,29 @@ import { cn } from '@/lib/utils'
 
 type SortType = 'percentChange' | 'name' | 'marketCap'
 
-export default function PriceChangesPage() {
+interface PriceChangesPageContentProps {
+  industryId: string
+}
+
+export function PriceChangesPageContent({ industryId }: PriceChangesPageContentProps) {
   const [sort, setSort] = useState<SortType>('percentChange')
   const [order, setOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
 
-  const { data, isLoading } = usePriceChanges({ sort, order })
+  const { data, isLoading } = usePriceChanges({ sort, order, industryId })
 
-  // Get top 20 tickers for trend chart
-  const topTickers = data?.companies?.slice(0, 20).map((c) => c.ticker) || []
+  // Get top 20 tickers for trend chart (memoized to avoid re-fetch loops)
+  const topTickers = useMemo(
+    () => data?.companies?.slice(0, 20).map((c) => c.ticker) || [],
+    [data?.companies]
+  )
 
   // Fetch price history for top 20 companies
   const { data: trendData, isLoading: trendLoading } = useTrends({
     type: 'company',
     ids: topTickers,
     days: 'all',
+    industryId,
   })
 
   const handleSortChange = (newSort: SortType) => {
@@ -47,7 +55,7 @@ export default function PriceChangesPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                href="/"
+                href={`/${industryId}`}
                 className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors"
               >
                 <svg

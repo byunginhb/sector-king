@@ -25,10 +25,14 @@ export function getDb() {
   return db
 }
 
-export function getWritableDb() {
+export function withWritableDb<T>(fn: (db: ReturnType<typeof drizzle<typeof schema>>) => T): T {
   const writableSqlite = new Database(dbPath)
   writableSqlite.pragma('journal_mode = WAL')
-  return drizzle(writableSqlite, { schema })
+  try {
+    return fn(drizzle(writableSqlite, { schema }))
+  } finally {
+    writableSqlite.close()
+  }
 }
 
 export function closeDb() {

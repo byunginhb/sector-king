@@ -6,25 +6,51 @@ import {
   sectors,
   dailySnapshots,
 } from '@/drizzle/schema'
-import { eq, sql, desc, asc } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import type { ApiResponse, CompanyStatisticsResponse, CompanyStatItem } from '@/types'
+import { getIndustryFilter } from '@/lib/industry'
+import { validateIndustryId } from '@/lib/validate'
 
 export const revalidate = 3600 // 1 hour cache
+
+const ALLOWED_SORTS = ['count', 'marketCap', 'name'] as const
+const ALLOWED_ORDERS = ['asc', 'desc'] as const
 
 export async function GET(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<CompanyStatisticsResponse>>> {
   try {
     const searchParams = request.nextUrl.searchParams
-    const sort = searchParams.get('sort') || 'count'
-    const order = searchParams.get('order') || 'desc'
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)))
+    const rawSort = searchParams.get('sort') || 'count'
+    const rawOrder = searchParams.get('order') || 'desc'
+    const sort = (ALLOWED_SORTS as readonly string[]).includes(rawSort) ? rawSort : 'count'
+    const order = (ALLOWED_ORDERS as readonly string[]).includes(rawOrder) ? rawOrder : 'desc'
+    const rawPage = parseInt(searchParams.get('page') || '1', 10)
+    const rawLimit = parseInt(searchParams.get('limit') || '20', 10)
+    const page = Number.isNaN(rawPage) ? 1 : Math.max(1, rawPage)
+    const limit = Number.isNaN(rawLimit) ? 20 : Math.min(100, Math.max(1, rawLimit))
 
     const db = getDb()
+    const industryId = searchParams.get('industry')
+
+    if (industryId && !validateIndustryId(industryId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid industry ID' },
+        { status: 400 }
+      )
+    }
+
+    const industryFilter = industryId ? await getIndustryFilter(industryId) : null
+
+    if (industryId && !industryFilter) {
+      return NextResponse.json(
+        { success: false, error: 'Industry not found' },
+        { status: 404 }
+      )
+    }
 
     // Get all sector-company mappings with company info
-    const allMappings = await db
+    const allMappingsRaw = await db
       .select({
         ticker: sectorCompanies.ticker,
         companyName: companies.name,
@@ -36,6 +62,12 @@ export async function GET(
       .from(sectorCompanies)
       .leftJoin(companies, eq(sectorCompanies.ticker, companies.ticker))
       .leftJoin(sectors, eq(sectorCompanies.sectorId, sectors.id))
+
+    const allMappings = industryFilter
+      ? allMappingsRaw.filter(
+          (m) => m.sectorId && industryFilter.sectorIds.includes(m.sectorId)
+        )
+      : allMappingsRaw
 
     // Aggregate by company
     const companyMap = new Map<string, {
@@ -106,12 +138,12 @@ export async function GET(
       name: company.name,
       nameKo: company.nameKo,
       count: company.sectors.length,
-      sectors: company.sectors.sort((a, b) => a.rank - b.rank),
+      sectors: [...company.sectors].sort((a, b) => a.rank - b.rank),
       latestSnapshot: snapshotMap.get(company.ticker) || null,
     }))
 
-    // Sort
-    companyStats.sort((a, b) => {
+    // Sort (immutable)
+    const sortedStats = [...companyStats].sort((a, b) => {
       let comparison = 0
       switch (sort) {
         case 'count':
@@ -130,10 +162,10 @@ export async function GET(
     })
 
     // Paginate
-    const total = companyStats.length
+    const total = sortedStats.length
     const totalPages = Math.ceil(total / limit)
     const startIndex = (page - 1) * limit
-    const paginatedCompanies = companyStats.slice(startIndex, startIndex + limit)
+    const paginatedCompanies = sortedStats.slice(startIndex, startIndex + limit)
 
     return NextResponse.json({
       success: true,

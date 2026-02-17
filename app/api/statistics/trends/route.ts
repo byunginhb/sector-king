@@ -8,13 +8,17 @@ import {
   companies,
 } from '@/drizzle/schema'
 import { eq, sql, desc, gte, and, inArray } from 'drizzle-orm'
+import { toUsd } from '@/lib/currency'
 import type {
   ApiResponse,
   TrendResponse,
   TrendItem,
   CategoryMarketCap,
   SectorGrowth,
+  IndustryFilterResult,
 } from '@/types'
+import { getIndustryFilter } from '@/lib/industry'
+import { validateIndustryId } from '@/lib/validate'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -28,14 +32,33 @@ export async function GET(
 ): Promise<NextResponse<ApiResponse<TrendsResponseData>>> {
   try {
     const searchParams = request.nextUrl.searchParams
-    const type = searchParams.get('type') || 'sector'
-    const ids = searchParams.get('ids')?.split(',').filter(Boolean) || []
+    const ALLOWED_TYPES = ['sector', 'category', 'company'] as const
+    const rawType = searchParams.get('type') || 'sector'
+    const type = (ALLOWED_TYPES as readonly string[]).includes(rawType) ? rawType : 'sector'
+    const ids = searchParams.get('ids')?.split(',').filter(Boolean).slice(0, 50) || []
     const days = searchParams.get('days') || '30'
+    const industryId = searchParams.get('industry')
+
+    if (industryId && !validateIndustryId(industryId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid industry ID' },
+        { status: 400 }
+      )
+    }
 
     const db = getDb()
+    const industryFilter = industryId ? await getIndustryFilter(industryId) : null
+
+    if (industryId && !industryFilter) {
+      return NextResponse.json(
+        { success: false, error: 'Industry not found' },
+        { status: 404 }
+      )
+    }
 
     // Calculate date range
-    const daysNum = days === 'all' ? 365 : parseInt(days, 10)
+    const parsed = parseInt(days, 10)
+    const daysNum = days === 'all' ? 365 : (Number.isNaN(parsed) ? 30 : Math.max(1, Math.min(parsed, 365)))
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - daysNum)
     const startDateStr = startDate.toISOString().split('T')[0]
@@ -66,8 +89,8 @@ export async function GET(
 
     if (type === 'sector') {
       // Get sector trend data
-      const items = await getSectorTrends(db, ids, dates)
-      const sectorGrowth = await getSectorGrowth(db, dates)
+      const items = await getSectorTrends(db, ids, dates, industryFilter)
+      const sectorGrowth = await getSectorGrowth(db, dates, industryFilter)
 
       return NextResponse.json({
         success: true,
@@ -79,8 +102,8 @@ export async function GET(
       })
     } else if (type === 'category') {
       // Get category trend data
-      const items = await getCategoryTrends(db, ids, dates)
-      const categoryMarketCaps = await getCategoryMarketCaps(db, dates[dates.length - 1])
+      const items = await getCategoryTrends(db, ids, dates, industryFilter)
+      const categoryMarketCaps = await getCategoryMarketCaps(db, dates[dates.length - 1], industryFilter)
 
       return NextResponse.json({
         success: true,
@@ -92,7 +115,7 @@ export async function GET(
       })
     } else if (type === 'company') {
       // Get company trend data
-      const items = await getCompanyTrends(db, ids, dates)
+      const items = await getCompanyTrends(db, ids, dates, industryFilter)
 
       return NextResponse.json({
         success: true,
@@ -122,10 +145,11 @@ export async function GET(
 async function getSectorTrends(
   db: ReturnType<typeof getDb>,
   sectorIds: string[],
-  dates: string[]
+  dates: string[],
+  industryFilter: IndustryFilterResult | null
 ): Promise<TrendItem[]> {
   // Get all sectors with their companies
-  const sectorData = await db
+  const sectorDataRaw = await db
     .select({
       sectorId: sectors.id,
       sectorName: sectors.name,
@@ -133,6 +157,10 @@ async function getSectorTrends(
     })
     .from(sectors)
     .leftJoin(sectorCompanies, eq(sectors.id, sectorCompanies.sectorId))
+
+  const sectorData = industryFilter
+    ? sectorDataRaw.filter((r) => r.sectorId && industryFilter.sectorIds.includes(r.sectorId))
+    : sectorDataRaw
 
   // Filter by sectorIds if provided, otherwise get top 5 by company count
   const sectorCompanyMap = new Map<string, { name: string; tickers: string[] }>()
@@ -185,14 +213,17 @@ async function getSectorTrends(
       )
     )
 
-  // Build snapshot lookup
+  // Build snapshot lookup (with currency conversion)
   const snapshotLookup = new Map<string, Map<string, number>>()
   for (const snapshot of snapshots) {
     if (!snapshot.ticker || !snapshot.date) continue
     if (!snapshotLookup.has(snapshot.ticker)) {
       snapshotLookup.set(snapshot.ticker, new Map())
     }
-    snapshotLookup.get(snapshot.ticker)!.set(snapshot.date, snapshot.marketCap || 0)
+    snapshotLookup.get(snapshot.ticker)!.set(
+      snapshot.date,
+      toUsd(snapshot.marketCap || 0, snapshot.ticker)
+    )
   }
 
   // Build trend items
@@ -225,10 +256,11 @@ async function getSectorTrends(
 async function getCategoryTrends(
   db: ReturnType<typeof getDb>,
   categoryIds: string[],
-  dates: string[]
+  dates: string[],
+  industryFilter: IndustryFilterResult | null
 ): Promise<TrendItem[]> {
   // Get all categories with their sectors and companies
-  const categoryData = await db
+  const categoryDataRaw = await db
     .select({
       categoryId: categories.id,
       categoryName: categories.name,
@@ -238,6 +270,12 @@ async function getCategoryTrends(
     .from(categories)
     .leftJoin(sectors, eq(categories.id, sectors.categoryId))
     .leftJoin(sectorCompanies, eq(sectors.id, sectorCompanies.sectorId))
+
+  const categoryData = industryFilter
+    ? categoryDataRaw.filter(
+        (r) => r.categoryId && industryFilter.categoryIds.includes(r.categoryId)
+      )
+    : categoryDataRaw
 
   // Build category -> tickers map
   const categoryTickerMap = new Map<string, { name: string; tickers: Set<string> }>()
@@ -286,14 +324,17 @@ async function getCategoryTrends(
       )
     )
 
-  // Build snapshot lookup
+  // Build snapshot lookup (with currency conversion)
   const snapshotLookup = new Map<string, Map<string, number>>()
   for (const snapshot of snapshots) {
     if (!snapshot.ticker || !snapshot.date) continue
     if (!snapshotLookup.has(snapshot.ticker)) {
       snapshotLookup.set(snapshot.ticker, new Map())
     }
-    snapshotLookup.get(snapshot.ticker)!.set(snapshot.date, snapshot.marketCap || 0)
+    snapshotLookup.get(snapshot.ticker)!.set(
+      snapshot.date,
+      toUsd(snapshot.marketCap || 0, snapshot.ticker)
+    )
   }
 
   // Build trend items
@@ -326,7 +367,8 @@ async function getCategoryTrends(
 async function getCompanyTrends(
   db: ReturnType<typeof getDb>,
   tickers: string[],
-  dates: string[]
+  dates: string[],
+  industryFilter: IndustryFilterResult | null
 ): Promise<TrendItem[]> {
   if (tickers.length === 0) {
     // Get top 5 companies by market cap
@@ -340,9 +382,12 @@ async function getCompanyTrends(
         sql`${dailySnapshots.date} = (SELECT MAX(date) FROM daily_snapshots)`
       )
       .orderBy(desc(dailySnapshots.marketCap))
-      .limit(5)
+      .limit(industryFilter ? 100 : 5)
 
-    tickers = topCompanies.map((c) => c.ticker).filter((t): t is string => t !== null)
+    const allTop = topCompanies.map((c) => c.ticker).filter((t): t is string => t !== null)
+    tickers = industryFilter
+      ? allTop.filter((t) => industryFilter.tickers.includes(t)).slice(0, 5)
+      : allTop
   }
 
   if (tickers.length === 0) {
@@ -381,7 +426,7 @@ async function getCompanyTrends(
       )
     )
 
-  // Group by ticker
+  // Group by ticker (with currency conversion)
   const tickerDataMap = new Map<string, { date: string; marketCap: number }[]>()
   for (const snapshot of snapshots) {
     if (!snapshot.ticker || !snapshot.date) continue
@@ -390,20 +435,20 @@ async function getCompanyTrends(
     }
     tickerDataMap.get(snapshot.ticker)!.push({
       date: snapshot.date,
-      marketCap: snapshot.marketCap || 0,
+      marketCap: toUsd(snapshot.marketCap || 0, snapshot.ticker),
     })
   }
 
   const items: TrendItem[] = []
   for (const ticker of tickers) {
-    const data = tickerDataMap.get(ticker) || []
-    data.sort((a, b) => a.date.localeCompare(b.date))
+    const rawData = tickerDataMap.get(ticker) || []
+    const sortedData = [...rawData].sort((a, b) => a.date.localeCompare(b.date))
     const companyInfo = companyNameMap.get(ticker)
     items.push({
       id: ticker,
       name: companyInfo?.name || ticker,
       nameKo: companyInfo?.nameKo,
-      data,
+      data: sortedData,
     })
   }
 
@@ -412,9 +457,10 @@ async function getCompanyTrends(
 
 async function getCategoryMarketCaps(
   db: ReturnType<typeof getDb>,
-  latestDate: string
+  latestDate: string,
+  industryFilter: IndustryFilterResult | null
 ): Promise<CategoryMarketCap[]> {
-  const categoryData = await db
+  const categoryDataRaw = await db
     .select({
       categoryId: categories.id,
       categoryName: categories.name,
@@ -425,6 +471,12 @@ async function getCategoryMarketCaps(
     .from(categories)
     .leftJoin(sectors, eq(categories.id, sectors.categoryId))
     .leftJoin(sectorCompanies, eq(sectors.id, sectorCompanies.sectorId))
+
+  const categoryData = industryFilter
+    ? categoryDataRaw.filter(
+        (r) => r.categoryId && industryFilter.categoryIds.includes(r.categoryId)
+      )
+    : categoryDataRaw
 
   // Build category -> tickers and sectors map
   const categoryMap = new Map<string, {
@@ -472,7 +524,7 @@ async function getCategoryMarketCaps(
   const snapshotMap = new Map<string, number>()
   for (const snapshot of snapshots) {
     if (snapshot.ticker) {
-      snapshotMap.set(snapshot.ticker, snapshot.marketCap || 0)
+      snapshotMap.set(snapshot.ticker, toUsd(snapshot.marketCap || 0, snapshot.ticker))
     }
   }
 
@@ -491,12 +543,13 @@ async function getCategoryMarketCaps(
     })
   }
 
-  return result.sort((a, b) => b.marketCap - a.marketCap)
+  return [...result].sort((a, b) => b.marketCap - a.marketCap)
 }
 
 async function getSectorGrowth(
   db: ReturnType<typeof getDb>,
-  dates: string[]
+  dates: string[],
+  industryFilter: IndustryFilterResult | null
 ): Promise<SectorGrowth[]> {
   if (dates.length < 2) return []
 
@@ -504,7 +557,7 @@ async function getSectorGrowth(
   const endDate = dates[dates.length - 1]
 
   // Get sector data
-  const sectorData = await db
+  const sectorDataRaw = await db
     .select({
       sectorId: sectors.id,
       sectorName: sectors.name,
@@ -514,6 +567,12 @@ async function getSectorGrowth(
     })
     .from(sectors)
     .leftJoin(sectorCompanies, eq(sectors.id, sectorCompanies.sectorId))
+
+  const sectorData = industryFilter
+    ? sectorDataRaw.filter(
+        (r) => r.sectorId && industryFilter.sectorIds.includes(r.sectorId)
+      )
+    : sectorDataRaw
 
   const sectorTickerMap = new Map<string, {
     name: string
@@ -562,10 +621,11 @@ async function getSectorGrowth(
 
   for (const snapshot of snapshots) {
     if (!snapshot.ticker || !snapshot.date) continue
+    const converted = toUsd(snapshot.marketCap || 0, snapshot.ticker)
     if (snapshot.date === startDate) {
-      startSnapshotMap.set(snapshot.ticker, snapshot.marketCap || 0)
+      startSnapshotMap.set(snapshot.ticker, converted)
     } else if (snapshot.date === endDate) {
-      endSnapshotMap.set(snapshot.ticker, snapshot.marketCap || 0)
+      endSnapshotMap.set(snapshot.ticker, converted)
     }
   }
 
@@ -593,5 +653,5 @@ async function getSectorGrowth(
     })
   }
 
-  return result.sort((a, b) => b.growthRate - a.growthRate)
+  return [...result].sort((a, b) => b.growthRate - a.growthRate)
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import {
   sectors,
@@ -8,14 +8,35 @@ import {
 import { desc, inArray } from 'drizzle-orm'
 import type { ApiResponse, SectorTrendResponse, SectorTrendData } from '@/types'
 import { toUsd } from '@/lib/currency'
+import { getIndustryFilter } from '@/lib/industry'
+import { validateIndustryId } from '@/lib/validate'
 
 const TARGET_PERIODS = [1, 3, 7, 14, 30]
 
 export const revalidate = 3600
 
-export async function GET(): Promise<NextResponse<ApiResponse<SectorTrendResponse>>> {
+export async function GET(
+  request: NextRequest
+): Promise<NextResponse<ApiResponse<SectorTrendResponse>>> {
   try {
     const db = getDb()
+    const industryId = request.nextUrl.searchParams.get('industry')
+
+    if (industryId && !validateIndustryId(industryId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid industry ID' },
+        { status: 400 }
+      )
+    }
+
+    const industryFilter = industryId ? await getIndustryFilter(industryId) : null
+
+    if (industryId && !industryFilter) {
+      return NextResponse.json(
+        { success: false, error: 'Industry not found' },
+        { status: 404 }
+      )
+    }
 
     // 1. Get all available dates (last 35 days buffer for 30-day period)
     const recentDates = await db
@@ -55,8 +76,8 @@ export async function GET(): Promise<NextResponse<ApiResponse<SectorTrendRespons
     }
     const targetDates = Array.from(targetDatesSet)
 
-    // 4. Get all sectors with their companies
-    const allSectors = await db
+    // 4. Get all sectors with their companies (filtered by industry if specified)
+    const allSectorsRaw = await db
       .select({
         id: sectors.id,
         name: sectors.name,
@@ -64,12 +85,22 @@ export async function GET(): Promise<NextResponse<ApiResponse<SectorTrendRespons
       })
       .from(sectors)
 
-    const allSectorCompanies = await db
+    const allSectors = industryFilter
+      ? allSectorsRaw.filter((s) => industryFilter.sectorIds.includes(s.id))
+      : allSectorsRaw
+
+    const allSectorCompaniesRaw = await db
       .select({
         sectorId: sectorCompanies.sectorId,
         ticker: sectorCompanies.ticker,
       })
       .from(sectorCompanies)
+
+    const allSectorCompanies = industryFilter
+      ? allSectorCompaniesRaw.filter(
+          (sc) => sc.sectorId && industryFilter.sectorIds.includes(sc.sectorId)
+        )
+      : allSectorCompaniesRaw
 
     // Group companies by sector
     const sectorTickerMap = new Map<string, string[]>()

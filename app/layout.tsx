@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Sector King - 투자 패권 지도',
-  description: '테크 산업 섹터별 시장 지배력 순위 시각화',
+  description: '산업별 섹터 시장 지배력 순위 시각화',
 }
 
 export default function RootLayout({

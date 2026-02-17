@@ -5,15 +5,21 @@ import type { MapResponse, ApiResponse } from '@/types'
 
 interface UseMapDataOptions {
   date?: string | null
+  industryId?: string
 }
 
 export function useMapData(options: UseMapDataOptions = {}) {
-  const { date } = options
+  const { date, industryId } = options
 
   return useQuery<MapResponse>({
-    queryKey: ['map', date],
+    queryKey: ['map', date, industryId],
+    staleTime: 1000 * 60 * 5,
     queryFn: async () => {
-      const url = date ? `/api/map?date=${date}` : '/api/map'
+      const params = new URLSearchParams()
+      if (date) params.set('date', date)
+      if (industryId) params.set('industry', industryId)
+      const qs = params.toString()
+      const url = qs ? `/api/map?${qs}` : '/api/map'
       const res = await fetch(url)
       if (!res.ok) throw new Error('Failed to fetch map data')
       const json: ApiResponse<MapResponse> = await res.json()

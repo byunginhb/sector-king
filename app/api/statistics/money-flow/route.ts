@@ -8,6 +8,8 @@ import {
 import { eq, sql, desc, gte, and, inArray } from 'drizzle-orm'
 import type { ApiResponse, MoneyFlowResponse, SectorMoneyFlow, MoneyFlowTrendPoint } from '@/types'
 import { toUsd } from '@/lib/currency'
+import { getIndustryFilter } from '@/lib/industry'
+import { validateIndustryId } from '@/lib/validate'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -22,6 +24,23 @@ export async function GET(
     const limit = Number.isNaN(rawLimit) ? 6 : Math.max(1, Math.min(rawLimit, 50))
 
     const db = getDb()
+    const industryId = searchParams.get('industry')
+
+    if (industryId && !validateIndustryId(industryId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid industry ID' },
+        { status: 400 }
+      )
+    }
+
+    const industryFilter = industryId ? await getIndustryFilter(industryId) : null
+
+    if (industryId && !industryFilter) {
+      return NextResponse.json(
+        { success: false, error: 'Industry not found' },
+        { status: 404 }
+      )
+    }
 
     // Calculate date range
     const endDate = new Date()
@@ -72,8 +91,8 @@ export async function GET(
     const firstDate = dates[0]
     const lastDate = dates[dates.length - 1]
 
-    // Get all sectors
-    const allSectors = await db
+    // Get all sectors (filtered by industry if specified)
+    const allSectorsRaw = await db
       .select({
         id: sectors.id,
         name: sectors.name,
@@ -81,74 +100,122 @@ export async function GET(
       })
       .from(sectors)
 
-    // Calculate money flow for each sector
-    const sectorFlows: SectorMoneyFlow[] = []
+    const allSectors = industryFilter
+      ? allSectorsRaw.filter((s) => industryFilter.sectorIds.includes(s.id))
+      : allSectorsRaw
+
+    // Batch query: Get ALL sector-company mappings at once
+    const allSectorCompanies = await db
+      .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
+      .from(sectorCompanies)
+
+    // Group companies by sector in-memory
+    const sectorTickerMap = new Map<string, string[]>()
+    for (const sc of allSectorCompanies) {
+      if (!sc.sectorId || !sc.ticker) continue
+      const existing = sectorTickerMap.get(sc.sectorId)
+      if (existing) {
+        existing.push(sc.ticker)
+      } else {
+        sectorTickerMap.set(sc.sectorId, [sc.ticker])
+      }
+    }
+
+    // Collect all unique tickers across relevant sectors
     const allUniqueTickers = new Set<string>()
+    for (const sector of allSectors) {
+      const tickers = sectorTickerMap.get(sector.id) || []
+      tickers.forEach((t) => allUniqueTickers.add(t))
+    }
+
+    const uniqueTickerList = Array.from(allUniqueTickers)
+
+    if (uniqueTickerList.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          period,
+          date: lastDate,
+          flows: [],
+          totalInflow: 0,
+          totalOutflow: 0,
+          netFlow: 0,
+          dateRange: { start: firstDate, end: lastDate },
+        },
+      })
+    }
+
+    // Batch query: Get ALL snapshots for all relevant tickers in the date range
+    const allSnapshots = await db
+      .select({
+        ticker: dailySnapshots.ticker,
+        date: dailySnapshots.date,
+        marketCap: dailySnapshots.marketCap,
+        price: dailySnapshots.price,
+        dayHigh: dailySnapshots.dayHigh,
+        dayLow: dailySnapshots.dayLow,
+        volume: dailySnapshots.volume,
+      })
+      .from(dailySnapshots)
+      .where(
+        and(
+          inArray(dailySnapshots.ticker, uniqueTickerList),
+          gte(dailySnapshots.date, startDateStr)
+        )
+      )
+      .orderBy(dailySnapshots.date)
+
+    // Index snapshots by (ticker, date) for O(1) lookup
+    type SnapshotData = {
+      marketCap: number | null
+      price: number | null
+      dayHigh: number | null
+      dayLow: number | null
+      volume: number | null
+    }
+    const snapshotIndex = new Map<string, SnapshotData>()
+    for (const snap of allSnapshots) {
+      if (!snap.ticker || !snap.date) continue
+      snapshotIndex.set(`${snap.ticker}|${snap.date}`, {
+        marketCap: snap.marketCap,
+        price: snap.price,
+        dayHigh: snap.dayHigh,
+        dayLow: snap.dayLow,
+        volume: snap.volume,
+      })
+    }
+
+    // Calculate money flow for each sector using in-memory data
+    const sectorFlows: SectorMoneyFlow[] = []
 
     for (const sector of allSectors) {
-      // Get companies in this sector
-      const companiesInSector = await db
-        .select({ ticker: sectorCompanies.ticker })
-        .from(sectorCompanies)
-        .where(eq(sectorCompanies.sectorId, sector.id))
-
-      const tickers = companiesInSector
-        .map((c) => c.ticker)
-        .filter((t): t is string => t !== null)
-
+      const tickers = sectorTickerMap.get(sector.id) || []
       if (tickers.length === 0) continue
-      tickers.forEach((t) => allUniqueTickers.add(t))
 
-      // Get snapshots for these companies
-      const snapshots = await db
-        .select({
-          ticker: dailySnapshots.ticker,
-          date: dailySnapshots.date,
-          marketCap: dailySnapshots.marketCap,
-          price: dailySnapshots.price,
-          dayHigh: dailySnapshots.dayHigh,
-          dayLow: dailySnapshots.dayLow,
-          volume: dailySnapshots.volume,
-        })
-        .from(dailySnapshots)
-        .where(
-          and(
-            inArray(dailySnapshots.ticker, tickers),
-            gte(dailySnapshots.date, startDateStr)
-          )
-        )
-        .orderBy(dailySnapshots.date)
-
-      // Group by date and calculate sector totals
+      // Build date map from indexed snapshots
       const dateMap = new Map<string, { marketCap: number; mfi: number | null }>()
 
       for (const date of dates) {
-        const daySnapshots = snapshots.filter((s) => s.date === date)
-        const totalMarketCap = daySnapshots.reduce(
-          (sum, s) => sum + toUsd(s.marketCap || 0, s.ticker ?? ''),
-          0
-        )
+        let totalMarketCap = 0
+        let positiveFlow = 0
+        let negativeFlow = 0
+        let hasValidMfi = false
 
-        // Calculate MFI if we have high/low data
-        let mfi: number | null = null
-        const validSnapshots = daySnapshots.filter(
-          (s) => s.dayHigh && s.dayLow && s.price && s.volume
-        )
+        for (const ticker of tickers) {
+          const snap = snapshotIndex.get(`${ticker}|${date}`)
+          if (!snap) continue
 
-        if (validSnapshots.length > 0) {
-          // Simplified MFI calculation using current day data
-          // Full MFI requires 14-day rolling calculation
-          let positiveFlow = 0
-          let negativeFlow = 0
+          totalMarketCap += toUsd(snap.marketCap || 0, ticker)
 
-          for (const s of validSnapshots) {
-            const typicalPrice = ((s.dayHigh || 0) + (s.dayLow || 0) + (s.price || 0)) / 3
-            const rawMoneyFlow = toUsd(typicalPrice * (s.volume || 0), s.ticker ?? '')
+          // Calculate MFI if we have high/low data
+          if (snap.dayHigh && snap.dayLow && snap.price && snap.volume) {
+            const typicalPrice = (snap.dayHigh + snap.dayLow + snap.price) / 3
+            const rawMoneyFlow = toUsd(typicalPrice * snap.volume, ticker)
+            const range = snap.dayHigh - snap.dayLow
 
-            // Use price position within day range as proxy for direction
-            const range = (s.dayHigh || 0) - (s.dayLow || 0)
             if (range > 0) {
-              const position = ((s.price || 0) - (s.dayLow || 0)) / range
+              hasValidMfi = true
+              const position = (snap.price - snap.dayLow) / range
               if (position > 0.5) {
                 positiveFlow += rawMoneyFlow
               } else {
@@ -156,11 +223,12 @@ export async function GET(
               }
             }
           }
+        }
 
-          if (positiveFlow + negativeFlow > 0) {
-            const moneyFlowRatio = negativeFlow > 0 ? positiveFlow / negativeFlow : 100
-            mfi = 100 - 100 / (1 + moneyFlowRatio)
-          }
+        let mfi: number | null = null
+        if (hasValidMfi && positiveFlow + negativeFlow > 0) {
+          const moneyFlowRatio = negativeFlow > 0 ? positiveFlow / negativeFlow : 100
+          mfi = 100 - 100 / (1 + moneyFlowRatio)
         }
 
         dateMap.set(date, { marketCap: totalMarketCap, mfi })
@@ -195,7 +263,7 @@ export async function GET(
         }
       }
 
-      // Average MFI across all dates for more stable indicator than single-day snapshot
+      // Average MFI across all dates for more stable indicator
       const mfiValues = Array.from(dateMap.values())
         .map((d) => d.mfi)
         .filter((m): m is number => m !== null)
@@ -218,55 +286,24 @@ export async function GET(
       })
     }
 
-    // Sort by absolute flow amount and take top N
-    sectorFlows.sort((a, b) => Math.abs(b.flowAmount) - Math.abs(a.flowAmount))
-    const topFlows = sectorFlows.slice(0, limit)
+    // Sort by absolute flow amount and take top N (immutable)
+    const sortedFlows = [...sectorFlows].sort((a, b) => Math.abs(b.flowAmount) - Math.abs(a.flowAmount))
+    const topFlows = sortedFlows.slice(0, limit)
 
     // Calculate totals from unique companies (avoid double-counting across sectors)
-    const uniqueTickerList = Array.from(allUniqueTickers)
     let totalInflow = 0
     let totalOutflow = 0
 
     if (uniqueTickerList.length > 0) {
-      const [startSnaps, endSnaps] = await Promise.all([
-        db
-          .select({
-            ticker: dailySnapshots.ticker,
-            marketCap: dailySnapshots.marketCap,
-          })
-          .from(dailySnapshots)
-          .where(
-            and(
-              inArray(dailySnapshots.ticker, uniqueTickerList),
-              eq(dailySnapshots.date, firstDate)
-            )
-          ),
-        db
-          .select({
-            ticker: dailySnapshots.ticker,
-            marketCap: dailySnapshots.marketCap,
-          })
-          .from(dailySnapshots)
-          .where(
-            and(
-              inArray(dailySnapshots.ticker, uniqueTickerList),
-              eq(dailySnapshots.date, lastDate)
-            )
-          ),
-      ])
-
-      const startMap = new Map(
-        startSnaps.map((s) => [s.ticker, toUsd(s.marketCap || 0, s.ticker ?? '')])
-      )
-      const endMap = new Map(
-        endSnaps.map((s) => [s.ticker, toUsd(s.marketCap || 0, s.ticker ?? '')])
-      )
-
       for (const ticker of uniqueTickerList) {
-        const startCap = startMap.get(ticker)
-        const endCap = endMap.get(ticker)
-        if (startCap === undefined || endCap === undefined) continue
+        const startSnap = snapshotIndex.get(`${ticker}|${firstDate}`)
+        const endSnap = snapshotIndex.get(`${ticker}|${lastDate}`)
+        if (!startSnap || !endSnap) continue
+
+        const startCap = toUsd(startSnap.marketCap || 0, ticker)
+        const endCap = toUsd(endSnap.marketCap || 0, ticker)
         if (startCap === 0 && endCap === 0) continue
+
         const change = endCap - startCap
         if (change > 0) {
           totalInflow += change
@@ -296,7 +333,7 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch money flow data',
+        error: 'Failed to fetch money flow data',
       },
       { status: 500 }
     )

@@ -7,8 +7,10 @@ import {
   companies,
   dailySnapshots,
 } from '@/drizzle/schema'
-import { eq, desc, sql, asc } from 'drizzle-orm'
+import { eq, desc, sql, inArray } from 'drizzle-orm'
 import type { ApiResponse, MapResponse } from '@/types'
+import { getIndustryFilter } from '@/lib/industry'
+import { validateIndustryId } from '@/lib/validate'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -19,14 +21,35 @@ export async function GET(
     const db = getDb()
     const searchParams = request.nextUrl.searchParams
     const requestedDate = searchParams.get('date')
+    const industryId = searchParams.get('industry')
 
-    // Get all available dates
+    if (industryId && !validateIndustryId(industryId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid industry ID' },
+        { status: 400 }
+      )
+    }
+
+    // Get industry filter if specified
+    const industryFilter = industryId ? await getIndustryFilter(industryId) : null
+
+    if (industryId && !industryFilter) {
+      return NextResponse.json(
+        { success: false, error: 'Industry not found' },
+        { status: 404 }
+      )
+    }
+
+    // Get available dates (last 365 days max)
     const availableDatesResult = await db
       .selectDistinct({ date: dailySnapshots.date })
       .from(dailySnapshots)
       .orderBy(desc(dailySnapshots.date))
+      .limit(365)
 
-    const availableDates = availableDatesResult.map((d) => d.date)
+    const availableDates = availableDatesResult
+      .map((d) => d.date)
+      .filter((d): d is string => d !== null)
 
     // Determine which date to use
     const latestDate = availableDates[0] || null
@@ -35,12 +58,22 @@ export async function GET(
       : latestDate
     const isHistorical = selectedDate !== latestDate
 
-    const allCategories = await db
+    // Get categories (filtered by industry if specified)
+    const allCategoriesRaw = await db
       .select()
       .from(categories)
       .orderBy(categories.order)
 
-    const allSectors = await db.select().from(sectors).orderBy(sectors.order)
+    const allCategories = industryFilter
+      ? allCategoriesRaw.filter((c) => industryFilter.categoryIds.includes(c.id))
+      : allCategoriesRaw
+
+    // Get sectors (filtered by industry if specified)
+    const allSectorsRaw = await db.select().from(sectors).orderBy(sectors.order)
+
+    const allSectors = industryFilter
+      ? allSectorsRaw.filter((s) => industryFilter.sectorIds.includes(s.id))
+      : allSectorsRaw
 
     // Get sector companies with company info and snapshot for the selected date
     const sectorCompaniesWithDetails = await db
@@ -66,7 +99,7 @@ export async function GET(
       .orderBy(sectorCompanies.sectorId, sectorCompanies.rank)
 
     // If viewing historical data, also get current prices for comparison
-    let currentPricesMap: Map<string, { price: number | null; priceChange: number | null }> = new Map()
+    const currentPricesMap = new Map<string, { price: number | null; priceChange: number | null }>()
 
     if (isHistorical && latestDate) {
       const currentPrices = await db
@@ -78,18 +111,25 @@ export async function GET(
         .from(dailySnapshots)
         .where(eq(dailySnapshots.date, latestDate))
 
-      currentPrices.forEach((cp) => {
+      for (const cp of currentPrices) {
         if (cp.ticker) {
           currentPricesMap.set(cp.ticker, {
             price: cp.price,
             priceChange: cp.priceChange,
           })
         }
-      })
+      }
     }
 
+    // Filter sectorCompanies by industry if specified
+    const filteredSCWithDetails = industryFilter
+      ? sectorCompaniesWithDetails.filter((sc) =>
+          industryFilter.sectorIds.includes(sc.sectorId ?? '')
+        )
+      : sectorCompaniesWithDetails
+
     // Transform data
-    const transformedSectorCompanies = sectorCompaniesWithDetails.map((sc) => {
+    const transformedSectorCompanies = filteredSCWithDetails.map((sc) => {
       const currentSnapshot = isHistorical
         ? currentPricesMap.get(sc.ticker ?? '') || null
         : null

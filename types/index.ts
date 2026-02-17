@@ -6,6 +6,8 @@ export type {
   SectorCompany,
   DailySnapshot,
   CompanyProfile,
+  Industry,
+  IndustryCategory,
 } from '@/drizzle/schema'
 
 // API Response types
@@ -286,4 +288,28 @@ export interface MoneyFlowResponse {
     start: string
     end: string
   }
+}
+
+// Industry types
+export interface IndustryOverview {
+  id: string
+  name: string
+  nameEn: string | null
+  icon: string | null
+  categoryCount: number
+  sectorCount: number
+  companyCount: number
+  totalMarketCap: number
+  marketCapChange: number
+}
+
+export interface IndustriesResponse {
+  industries: IndustryOverview[]
+  lastUpdated: string | null
+}
+
+export interface IndustryFilterResult {
+  categoryIds: string[]
+  sectorIds: string[]
+  tickers: string[]
 }
