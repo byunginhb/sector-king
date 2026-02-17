@@ -166,6 +166,8 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
                 {PERIODS.map((p) => (
                   <th
                     key={p}
+                    role="columnheader"
+                    aria-sort={sortPeriod === p ? (sortAsc ? 'ascending' : 'descending') : 'none'}
                     onClick={() => handleHeaderClick(p)}
                     className={cn(
                       'px-4 py-3 text-right font-semibold cursor-pointer select-none whitespace-nowrap transition-colors hover:bg-gray-200 dark:hover:bg-slate-700 min-w-[80px]',

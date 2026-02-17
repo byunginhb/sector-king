@@ -4,8 +4,7 @@ import { companies, dailySnapshots } from '@/drizzle/schema'
 import { and, inArray, sql } from 'drizzle-orm'
 import type { ApiResponse, PriceChangesResponse, PriceChangeItem } from '@/types'
 import { toUsd } from '@/lib/currency'
-import { getIndustryFilter } from '@/lib/industry'
-import { validateIndustryId } from '@/lib/validate'
+import { resolveIndustryFilter } from '@/lib/api-helpers'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -21,24 +20,9 @@ export async function GET(
     const rawOrder = searchParams.get('order') || 'desc'
     const sort = (ALLOWED_SORTS as readonly string[]).includes(rawSort) ? rawSort : 'percentChange'
     const order = (ALLOWED_ORDERS as readonly string[]).includes(rawOrder) ? rawOrder : 'desc'
-    const industryId = searchParams.get('industry')
-
-    if (industryId && !validateIndustryId(industryId)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid industry ID' },
-        { status: 400 }
-      )
-    }
-
     const db = getDb()
-    const industryFilter = industryId ? await getIndustryFilter(industryId) : null
-
-    if (industryId && !industryFilter) {
-      return NextResponse.json(
-        { success: false, error: 'Industry not found' },
-        { status: 404 }
-      )
-    }
+    const { filter: industryFilter, errorResponse } = await resolveIndustryFilter(searchParams)
+    if (errorResponse) return errorResponse
 
     // Get all unique tickers
     const allTickersRaw = await db
@@ -183,11 +167,11 @@ export async function GET(
       return order === 'asc' ? -comparison : comparison
     })
 
-    // Get date range
-    const allDates = sortedChanges
+    // Get date range (immutable sort)
+    const allDates = [...sortedChanges
       .flatMap((c) => [c.firstDate, c.latestDate])
       .filter((d) => d.length > 0)
-      .sort()
+    ].sort()
 
     return NextResponse.json({
       success: true,

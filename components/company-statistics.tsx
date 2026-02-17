@@ -51,6 +51,7 @@ export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatis
     <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-card dark:border-border dark:shadow-none">
       <h3 className="text-base font-semibold text-slate-900 dark:text-slate-200 mb-4 flex items-center gap-2">
         <svg
+          aria-hidden="true"
           className="w-5 h-5 text-amber-500 dark:text-slate-400"
           fill="none"
           viewBox="0 0 24 24"
@@ -67,10 +68,12 @@ export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatis
       </h3>
       <div className="space-y-3">
         {companyCounts.slice(0, 10).map((company, index) => (
-          <div
+          <button
+            type="button"
             key={company.ticker}
             onClick={() => setSelectedTicker(company.ticker)}
-            className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 -mx-2 px-2 py-1 rounded-lg transition-colors"
+            aria-label={`${company.nameKo || company.name} 상세 보기`}
+            className="flex items-center gap-3 w-full text-left cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 -mx-2 px-2 py-1 rounded-lg transition-colors"
           >
             <span className="text-sm font-semibold text-gray-400 dark:text-slate-500 w-5 text-right">
               {index + 1}
@@ -94,7 +97,7 @@ export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatis
                 {company.count}
               </span>
             </div>
-          </div>
+          </button>
         ))}
       </div>
       {companyCounts.length > 10 && (

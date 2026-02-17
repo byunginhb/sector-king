@@ -9,8 +9,7 @@ import {
 } from '@/drizzle/schema'
 import { eq, desc, sql, inArray } from 'drizzle-orm'
 import type { ApiResponse, MapResponse } from '@/types'
-import { getIndustryFilter } from '@/lib/industry'
-import { validateIndustryId } from '@/lib/validate'
+import { resolveIndustryFilter } from '@/lib/api-helpers'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -21,24 +20,10 @@ export async function GET(
     const db = getDb()
     const searchParams = request.nextUrl.searchParams
     const requestedDate = searchParams.get('date')
-    const industryId = searchParams.get('industry')
 
-    if (industryId && !validateIndustryId(industryId)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid industry ID' },
-        { status: 400 }
-      )
-    }
-
-    // Get industry filter if specified
-    const industryFilter = industryId ? await getIndustryFilter(industryId) : null
-
-    if (industryId && !industryFilter) {
-      return NextResponse.json(
-        { success: false, error: 'Industry not found' },
-        { status: 404 }
-      )
-    }
+    // Resolve industry filter (validates + looks up)
+    const { filter: industryFilter, errorResponse } = await resolveIndustryFilter(searchParams)
+    if (errorResponse) return errorResponse
 
     // Get available dates (last 365 days max)
     const availableDatesResult = await db

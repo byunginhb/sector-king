@@ -8,8 +8,7 @@ import {
 import { desc, inArray } from 'drizzle-orm'
 import type { ApiResponse, SectorTrendResponse, SectorTrendData } from '@/types'
 import { toUsd } from '@/lib/currency'
-import { getIndustryFilter } from '@/lib/industry'
-import { validateIndustryId } from '@/lib/validate'
+import { resolveIndustryFilter } from '@/lib/api-helpers'
 
 const TARGET_PERIODS = [1, 3, 7, 14, 30]
 
@@ -20,23 +19,10 @@ export async function GET(
 ): Promise<NextResponse<ApiResponse<SectorTrendResponse>>> {
   try {
     const db = getDb()
-    const industryId = request.nextUrl.searchParams.get('industry')
-
-    if (industryId && !validateIndustryId(industryId)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid industry ID' },
-        { status: 400 }
-      )
-    }
-
-    const industryFilter = industryId ? await getIndustryFilter(industryId) : null
-
-    if (industryId && !industryFilter) {
-      return NextResponse.json(
-        { success: false, error: 'Industry not found' },
-        { status: 404 }
-      )
-    }
+    const { filter: industryFilter, errorResponse } = await resolveIndustryFilter(
+      request.nextUrl.searchParams
+    )
+    if (errorResponse) return errorResponse
 
     // 1. Get all available dates (last 35 days buffer for 30-day period)
     const recentDates = await db

@@ -8,8 +8,7 @@ import {
 } from '@/drizzle/schema'
 import { eq, sql } from 'drizzle-orm'
 import type { ApiResponse, CompanyStatisticsResponse, CompanyStatItem } from '@/types'
-import { getIndustryFilter } from '@/lib/industry'
-import { validateIndustryId } from '@/lib/validate'
+import { resolveIndustryFilter } from '@/lib/api-helpers'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -31,23 +30,8 @@ export async function GET(
     const limit = Number.isNaN(rawLimit) ? 20 : Math.min(100, Math.max(1, rawLimit))
 
     const db = getDb()
-    const industryId = searchParams.get('industry')
-
-    if (industryId && !validateIndustryId(industryId)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid industry ID' },
-        { status: 400 }
-      )
-    }
-
-    const industryFilter = industryId ? await getIndustryFilter(industryId) : null
-
-    if (industryId && !industryFilter) {
-      return NextResponse.json(
-        { success: false, error: 'Industry not found' },
-        { status: 404 }
-      )
-    }
+    const { filter: industryFilter, errorResponse } = await resolveIndustryFilter(searchParams)
+    if (errorResponse) return errorResponse
 
     // Get all sector-company mappings with company info
     const allMappingsRaw = await db

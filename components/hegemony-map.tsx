@@ -11,9 +11,7 @@ import { PriceChangeCard } from './price-change-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/format'
-import { cn } from '@/lib/utils'
 
 interface HegemonyMapProps {
   industryId: string
@@ -45,7 +43,7 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
         ...sector,
         companies: sectorCompanies.filter((sc) => sc.sectorId === sector.id),
       }))
-      .sort((a, b) => a.order - b.order),
+      .sort((a, b) => a.order - b.order),  // safe: filter+map creates new array
   }))
 
   return (
@@ -148,7 +146,7 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
 
           {/* Mobile Statistics Cards - Below category cards */}
           <div className="mt-6 space-y-4">
-            <CompanyStatistics sectorCompanies={sectorCompanies} />
+            <CompanyStatistics sectorCompanies={sectorCompanies} industryId={industryId} />
             <PriceChangeCard />
           </div>
         </div>
