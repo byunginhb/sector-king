@@ -10,16 +10,6 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: '/price-changes',
-        destination: '/tech/price-changes',
-        permanent: true,
-      },
-      {
-        source: '/statistics',
-        destination: '/tech/statistics',
-        permanent: true,
-      },
-      {
         source: '/sector-trend',
         destination: '/tech/money-flow',
         permanent: true,

@@ -9,6 +9,7 @@ import {
 import { eq, sql } from 'drizzle-orm'
 import type { ApiResponse, CompanyStatisticsResponse, CompanyStatItem } from '@/types'
 import { resolveIndustryFilter } from '@/lib/api-helpers'
+import { toUsd } from '@/lib/currency'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -109,8 +110,8 @@ export async function GET(
     for (const snapshot of latestSnapshots) {
       if (snapshot.ticker) {
         snapshotMap.set(snapshot.ticker, {
-          marketCap: snapshot.marketCap,
-          price: snapshot.price,
+          marketCap: snapshot.marketCap != null ? toUsd(snapshot.marketCap, snapshot.ticker) : null,
+          price: snapshot.price != null ? toUsd(snapshot.price, snapshot.ticker) : null,
           priceChange: snapshot.priceChange,
         })
       }

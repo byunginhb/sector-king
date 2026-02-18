@@ -6,6 +6,8 @@ import { ThemeToggle } from './theme-toggle'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatMarketCap } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { CompanyStatsCard } from '@/components/dashboard/company-stats-card'
+import { PriceChangesCard } from '@/components/dashboard/price-changes-card'
 
 export function IndustryDashboard() {
   const { data, isLoading, error } = useIndustries()
@@ -60,6 +62,12 @@ export function IndustryDashboard() {
               <ComingSoonCard name="금융" icon="🏦" />
             </>
           )}
+        </div>
+
+        {/* Summary Stats Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+          <CompanyStatsCard />
+          <PriceChangesCard />
         </div>
       </main>
     </div>

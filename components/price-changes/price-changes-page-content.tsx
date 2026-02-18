@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils'
 type SortType = 'percentChange' | 'name' | 'marketCap'
 
 interface PriceChangesPageContentProps {
-  industryId: string
+  industryId?: string
 }
 
 export function PriceChangesPageContent({ industryId }: PriceChangesPageContentProps) {
@@ -55,7 +55,7 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                href={`/${industryId}`}
+                href={industryId ? `/${industryId}` : '/'}
                 className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors"
               >
                 <svg
