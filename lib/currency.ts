@@ -3,6 +3,7 @@ const CURRENCY_RATES: Record<string, number> = {
   JPY: Number(process.env.JPY_USD_RATE) || 150,
   TWD: Number(process.env.TWD_USD_RATE) || 32,
   HKD: Number(process.env.HKD_USD_RATE) || 7.8,
+  EUR: Number(process.env.EUR_USD_RATE) || 0.92,
 }
 
 const TICKER_SUFFIX_CURRENCY: Record<string, string> = {
@@ -11,6 +12,7 @@ const TICKER_SUFFIX_CURRENCY: Record<string, string> = {
   '.T': 'JPY',
   '.TW': 'TWD',
   '.HK': 'HKD',
+  '.PA': 'EUR',
 }
 
 function getCurrencyRate(ticker: string): number {
