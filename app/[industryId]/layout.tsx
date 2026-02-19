@@ -40,8 +40,6 @@ export async function generateMetadata({
       title: `${title} | Sector King`,
       description,
       url,
-      // TODO: OG 이미지 생성 후 활성화
-      // images: [{ url: '/og-image.png', width: 1200, height: 630, alt: `${industry.name} 패권 지도` }],
     },
     twitter: {
       card: 'summary_large_image',

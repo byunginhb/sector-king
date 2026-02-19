@@ -55,8 +55,6 @@ export const metadata: Metadata = {
     title: 'Sector King - 투자 패권 지도',
     description:
       '산업별 섹터 시장 지배력 순위 시각화 - 주식 투자, 섹터 자금 흐름, 시가총액 분석, 가격 변화율 추적',
-    // TODO: OG 이미지 생성 후 활성화
-    // images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Sector King' }],
   },
   twitter: {
     card: 'summary_large_image',
