@@ -5,11 +5,16 @@ export const alt = 'Sector King - 산업별 투자 패권 지도'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
-const FONT_URL =
-  'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/woff2/Pretendard-Bold.woff2'
-
 async function loadFont(): Promise<ArrayBuffer> {
-  const res = await fetch(FONT_URL)
+  const css = await (
+    await fetch('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700&display=swap', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
+    })
+  ).text()
+  const match = css.match(/src:\s*url\(([^)]+)\)\s*format\('(opentype|truetype|woff)'\)/)
+  const url = match?.[1]
+  if (!url) throw new Error('Font URL not found')
+  const res = await fetch(url)
   return res.arrayBuffer()
 }
 
@@ -27,7 +32,7 @@ export default async function OgImage() {
           alignItems: 'center',
           justifyContent: 'center',
           background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-          fontFamily: 'Pretendard',
+          fontFamily: 'Noto Sans KR',
         }}
       >
         {/* Top gradient accent */}
@@ -118,7 +123,7 @@ export default async function OgImage() {
       ...size,
       fonts: [
         {
-          name: 'Pretendard',
+          name: 'Noto Sans KR',
           data: fontData,
           weight: 700,
           style: 'normal',
