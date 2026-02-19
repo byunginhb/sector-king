@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useIndustries } from '@/hooks/use-industries'
 import { ThemeToggle } from './theme-toggle'
+import { SearchTrigger } from './search-trigger'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatMarketCap } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -40,6 +41,7 @@ export function IndustryDashboard() {
                   {lastUpdated} 기준
                 </span>
               )}
+              <SearchTrigger />
               <ThemeToggle />
             </div>
           </div>

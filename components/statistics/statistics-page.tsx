@@ -10,6 +10,8 @@ import { CompanyTrendChart } from './company-trend-chart'
 import { CompanyRankingTable } from './company-ranking-table'
 import { CompanyDetail } from '@/components/company-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { IndustryTitle } from '@/components/industry-title'
+import { SearchTrigger } from '@/components/search-trigger'
 import { cn } from '@/lib/utils'
 
 type DaysFilter = '7' | '30' | 'all'
@@ -93,14 +95,15 @@ export function StatisticsPage({ industryId }: StatisticsPageProps = {}) {
                 </svg>
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">
-                  회사 등장 통계
+                <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
+                  {industryId && <IndustryTitle industryId={industryId} />} 회사 등장 통계
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-slate-400">
                   섹터별 기업 분포 및 시가총액 추이 분석
                 </p>
               </div>
             </div>
+            <SearchTrigger />
           </div>
         </div>
       </header>

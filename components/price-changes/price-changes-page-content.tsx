@@ -9,6 +9,8 @@ import { PriceChangeTable } from '@/components/price-changes/price-change-table'
 import { CompanyTrendChart } from '@/components/statistics/company-trend-chart'
 import { CompanyDetail } from '@/components/company-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { IndustryTitle } from '@/components/industry-title'
+import { SearchTrigger } from '@/components/search-trigger'
 import { cn } from '@/lib/utils'
 
 type SortType = 'percentChange' | 'name' | 'marketCap'
@@ -73,8 +75,8 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
                 </svg>
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">
-                  가격 변화율
+                <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
+                  {industryId && <IndustryTitle industryId={industryId} />} 가격 변화율
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-slate-400">
                   {data?.dateRange
@@ -83,6 +85,7 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
                 </p>
               </div>
             </div>
+            <SearchTrigger />
           </div>
         </div>
       </header>

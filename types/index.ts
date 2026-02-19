@@ -290,6 +290,22 @@ export interface MoneyFlowResponse {
   }
 }
 
+// Search types
+export interface SearchResultItem {
+  ticker: string
+  name: string
+  nameKo: string | null
+  price: number | null
+  priceChange: number | null
+  marketCap: number | null
+}
+
+export interface SearchResponse {
+  results: SearchResultItem[]
+  query: string
+  total: number
+}
+
 // Industry types
 export interface IndustryOverview {
   id: string

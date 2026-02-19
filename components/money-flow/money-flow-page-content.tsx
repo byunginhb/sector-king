@@ -8,6 +8,8 @@ import { FlowSummary } from '@/components/money-flow/flow-summary'
 import { SectorTrendSection } from '@/components/sector-trend/sector-trend-section'
 import { SectorCompanyList } from '@/components/money-flow/sector-company-list'
 import { AnimatePresence } from 'framer-motion'
+import { IndustryTitle } from '@/components/industry-title'
+import { SearchTrigger } from '@/components/search-trigger'
 import { cn } from '@/lib/utils'
 
 type PeriodType = 1 | 3 | 7 | 14 | 30
@@ -64,7 +66,7 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
                   <span className="text-2xl">💰</span>
-                  섹터 자금 흐름
+                  <IndustryTitle industryId={industryId} /> 섹터 자금 흐름
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-slate-400">
                   {data?.dateRange
@@ -75,6 +77,7 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
             </div>
 
             <div className="flex items-center gap-3">
+              <SearchTrigger />
               {/* Period Selector */}
               <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-border">
                 {([1, 3, 7, 14, 30] as PeriodType[]).map((p) => (

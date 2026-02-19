@@ -6,6 +6,8 @@ import { useMapData } from '@/hooks/use-map-data'
 import { CategoryCard } from './category-card'
 import { DateSelector } from './date-selector'
 import { ThemeToggle } from './theme-toggle'
+import { SearchTrigger } from './search-trigger'
+import { IndustryTitle } from './industry-title'
 import { CompanyStatistics } from './company-statistics'
 import { PriceChangeCard } from './price-change-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -59,7 +61,7 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
                 </span>
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">
-                투자 패권 지도
+                <IndustryTitle industryId={industryId} className="font-medium" /> 투자 패권 지도
               </p>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
@@ -84,6 +86,7 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
                 <span className="hidden sm:inline">📊</span>
                 <span>등락율</span>
               </Link>
+              <SearchTrigger />
               <ThemeToggle />
               <DateSelector
                 availableDates={availableDates}
