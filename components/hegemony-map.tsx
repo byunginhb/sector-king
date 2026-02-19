@@ -147,7 +147,7 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
           {/* Mobile Statistics Cards - Below category cards */}
           <div className="mt-6 space-y-4">
             <CompanyStatistics sectorCompanies={sectorCompanies} industryId={industryId} />
-            <PriceChangeCard />
+            <PriceChangeCard industryId={industryId} />
           </div>
         </div>
 
@@ -166,7 +166,7 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
           <div className="w-[520px] shrink-0">
             <div className="sticky top-24 grid grid-cols-2 gap-4">
               <CompanyStatistics sectorCompanies={sectorCompanies} industryId={industryId} />
-              <PriceChangeCard />
+              <PriceChangeCard industryId={industryId} />
             </div>
           </div>
         </div>

@@ -9,11 +9,16 @@ import { cn } from '@/lib/utils'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { CompanyDetail } from '@/components/company-detail'
 
-export function PriceChangeCard() {
+interface PriceChangeCardProps {
+  industryId?: string
+}
+
+export function PriceChangeCard({ industryId }: PriceChangeCardProps) {
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
   const { data, isLoading } = usePriceChanges({
     sort: 'percentChange',
     order: 'desc',
+    industryId,
   })
 
   if (isLoading) {
@@ -108,7 +113,7 @@ export function PriceChangeCard() {
       {data.total > 10 && (
         <div className="mt-3 pt-3 border-t border-gray-100 dark:border-border">
           <Link
-            href="/price-changes"
+            href={industryId ? `/${industryId}/price-changes` : '/price-changes'}
             className="flex items-center justify-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline transition-colors"
           >
             전체 {data.total}개 회사 보기
