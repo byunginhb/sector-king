@@ -30,6 +30,7 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
+      data-tour="flow-summary"
       className="grid grid-cols-1 md:grid-cols-3 gap-4"
     >
       {/* Total Inflow */}

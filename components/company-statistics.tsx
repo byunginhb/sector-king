@@ -27,7 +27,7 @@ export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatis
     for (const sc of sectorCompanies) {
       const existing = countMap.get(sc.company.ticker)
       if (existing) {
-        existing.count++
+        countMap.set(sc.company.ticker, { ...existing, count: existing.count + 1 })
       } else {
         countMap.set(sc.company.ticker, {
           ticker: sc.company.ticker,
@@ -48,7 +48,7 @@ export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatis
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-card dark:border-border dark:shadow-none">
+    <div data-tour="company-stats" className="bg-white border border-gray-200 rounded-xl p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-card dark:border-border dark:shadow-none">
       <h3 className="text-base font-semibold text-slate-900 dark:text-slate-200 mb-4 flex items-center gap-2">
         <svg
           aria-hidden="true"

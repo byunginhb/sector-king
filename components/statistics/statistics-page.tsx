@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useCompanyStatistics, useTrends } from '@/hooks/use-statistics'
+import { usePageTour } from '@/hooks/use-page-tour'
 import { SectorTrendChart } from './sector-trend-chart'
 import { CategoryComparisonChart } from './category-comparison-chart'
 import { TopSectorsGrowthChart } from './top-sectors-growth-chart'
@@ -12,6 +13,7 @@ import { CompanyDetail } from '@/components/company-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { IndustryTitle } from '@/components/industry-title'
 import { SearchTrigger } from '@/components/search-trigger'
+import { HelpButton } from '@/components/onboarding/help-button'
 import { cn } from '@/lib/utils'
 
 type DaysFilter = '7' | '30' | 'all'
@@ -53,6 +55,7 @@ export function StatisticsPage({ industryId }: StatisticsPageProps = {}) {
     limit: 20,
     industryId,
   })
+  usePageTour('statistics')
 
   const handleSortChange = (newSort: 'count' | 'marketCap' | 'name') => {
     if (newSort === sort) {
@@ -103,14 +106,17 @@ export function StatisticsPage({ industryId }: StatisticsPageProps = {}) {
                 </p>
               </div>
             </div>
-            <SearchTrigger />
+            <div className="flex items-center gap-3">
+              <SearchTrigger />
+              <HelpButton pageId="statistics" />
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Filters */}
-        <div className="mb-6 flex items-center gap-4">
+        <div data-tour="days-filter" className="mb-6 flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500 dark:text-slate-400">기간:</span>
             <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-border">
@@ -138,7 +144,7 @@ export function StatisticsPage({ industryId }: StatisticsPageProps = {}) {
         </div>
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div data-tour="charts-grid" className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Sector Trend Chart */}
           <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl p-4">
             <h2 className="text-base font-semibold text-gray-900 dark:text-slate-200 mb-4 flex items-center gap-2">
@@ -197,7 +203,7 @@ export function StatisticsPage({ industryId }: StatisticsPageProps = {}) {
         </div>
 
         {/* Company Ranking Table */}
-        <div className="mb-8">
+        <div data-tour="ranking-table" className="mb-8">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-200 mb-4 flex items-center gap-2">
             <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />

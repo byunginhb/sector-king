@@ -27,13 +27,14 @@ interface CategoryCardProps {
   category: Category
   sectors: SectorWithCompanies[]
   isHistorical?: boolean
+  isFirst?: boolean
 }
 
-export function CategoryCard({ category, sectors, isHistorical = false }: CategoryCardProps) {
+export function CategoryCard({ category, sectors, isHistorical = false, isFirst = false }: CategoryCardProps) {
   const style = getCategoryStyle(category.id)
 
   return (
-    <Card className={cn('overflow-hidden border shadow-sm', style.card)}>
+    <Card className={cn('overflow-hidden border shadow-sm', style.card)} {...(isFirst ? { 'data-tour': 'category-card' } : {})}>
       {/* Category Header with accent bar */}
       <div className={cn('px-4 py-3 border-b', style.header)}>
         <div className="flex items-center gap-2">
@@ -47,8 +48,8 @@ export function CategoryCard({ category, sectors, isHistorical = false }: Catego
 
       {/* Sectors */}
       <CardContent className="p-3 space-y-2">
-        {sectors.map((sector) => (
-          <SectorCard key={sector.id} sector={sector} companies={sector.companies} isHistorical={isHistorical} />
+        {sectors.map((sector, i) => (
+          <SectorCard key={sector.id} sector={sector} companies={sector.companies} isHistorical={isHistorical} isFirstSector={isFirst && i === 0} />
         ))}
       </CardContent>
     </Card>

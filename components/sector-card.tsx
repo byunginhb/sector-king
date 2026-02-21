@@ -13,9 +13,10 @@ interface SectorCardProps {
   sector: Sector
   companies: SectorCompanyWithDetails[]
   isHistorical?: boolean
+  isFirstSector?: boolean
 }
 
-export function SectorCard({ sector, companies, isHistorical = false }: SectorCardProps) {
+export function SectorCard({ sector, companies, isHistorical = false, isFirstSector = false }: SectorCardProps) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-md transition-all dark:bg-card/80 dark:border-border dark:shadow-none dark:hover:bg-card">
       {/* Sector Header */}
@@ -28,8 +29,8 @@ export function SectorCard({ sector, companies, isHistorical = false }: SectorCa
 
       {/* Company Badges */}
       <div className="flex flex-wrap gap-2">
-        {companies.map((sc) => (
-          <CompanyBadge key={`${sc.sectorId}-${sc.ticker}`} sectorCompany={sc} isHistorical={isHistorical} />
+        {companies.map((sc, i) => (
+          <CompanyBadge key={`${sc.sectorId}-${sc.ticker}`} sectorCompany={sc} isHistorical={isHistorical} isFirst={isFirstSector && i === 0} />
         ))}
       </div>
     </div>

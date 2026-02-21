@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useMapData } from '@/hooks/use-map-data'
+import { usePageTour } from '@/hooks/use-page-tour'
 import { CategoryCard } from './category-card'
 import { DateSelector } from './date-selector'
 import { ThemeToggle } from './theme-toggle'
 import { SearchTrigger } from './search-trigger'
+import { HelpButton } from './onboarding/help-button'
 import { IndustryTitle } from './industry-title'
 import { CompanyStatistics } from './company-statistics'
 import { PriceChangeCard } from './price-change-card'
@@ -22,6 +24,7 @@ interface HegemonyMapProps {
 export function HegemonyMap({ industryId }: HegemonyMapProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const { data, isLoading, error } = useMapData({ date: selectedDate, industryId })
+  usePageTour('hegemony-map')
 
   if (isLoading) return <MapSkeleton />
   if (error) return <MapError error={error} />
@@ -66,27 +69,30 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Navigation Links */}
-              <Link
-                href="/"
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm sm:px-3 font-medium rounded-lg whitespace-nowrap bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              >
-                <span>전체</span>
-              </Link>
-              <Link
-                href={`/${industryId}/money-flow`}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm sm:px-3 font-medium rounded-lg whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors"
-              >
-                <span className="hidden sm:inline">💰</span>
-                <span>자금흐름</span>
-              </Link>
-              <Link
-                href={`/${industryId}/price-changes`}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm sm:px-3 font-medium rounded-lg whitespace-nowrap bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors"
-              >
-                <span className="hidden sm:inline">📊</span>
-                <span>등락율</span>
-              </Link>
+              <div data-tour="nav-links" className="flex items-center gap-2 sm:gap-3">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm sm:px-3 font-medium rounded-lg whitespace-nowrap bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <span>전체</span>
+                </Link>
+                <Link
+                  href={`/${industryId}/money-flow`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm sm:px-3 font-medium rounded-lg whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors"
+                >
+                  <span className="hidden sm:inline">💰</span>
+                  <span>자금흐름</span>
+                </Link>
+                <Link
+                  href={`/${industryId}/price-changes`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm sm:px-3 font-medium rounded-lg whitespace-nowrap bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors"
+                >
+                  <span className="hidden sm:inline">📊</span>
+                  <span>등락율</span>
+                </Link>
+              </div>
               <SearchTrigger />
+              <HelpButton pageId="hegemony-map" />
               <ThemeToggle />
               <DateSelector
                 availableDates={availableDates}
@@ -136,12 +142,13 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
 
-            {sectorsByCategory.map((cat) => (
+            {sectorsByCategory.map((cat, i) => (
               <TabsContent key={cat.id} value={cat.id} className="mt-4">
                 <CategoryCard
                   category={cat}
                   sectors={cat.sectors}
                   isHistorical={isHistorical}
+                  isFirst={i === 0}
                 />
               </TabsContent>
             ))}
@@ -157,12 +164,13 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
         {/* Desktop: Grid Layout with Statistics Sidebar */}
         <div className="hidden lg:flex gap-6">
           <div className="flex-1 min-w-0 grid grid-cols-3 gap-5">
-            {sectorsByCategory.map((cat) => (
+            {sectorsByCategory.map((cat, i) => (
               <CategoryCard
                 key={cat.id}
                 category={cat}
                 sectors={cat.sectors}
                 isHistorical={isHistorical}
+                isFirst={i === 0}
               />
             ))}
           </div>

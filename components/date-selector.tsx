@@ -61,6 +61,7 @@ export function DateSelector({
         <Button
           variant="outline"
           size="sm"
+          data-tour="date-selector"
           className={cn(
             'gap-2 text-xs font-medium',
             isHistorical &&

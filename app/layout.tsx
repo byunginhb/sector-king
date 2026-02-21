@@ -4,7 +4,9 @@ import { Providers } from '@/components/providers'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { WebSiteJsonLd } from '@/components/json-ld'
 import { Footer } from '@/components/footer'
+import 'driver.js/dist/driver.css'
 import './globals.css'
+import './onboarding.css'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

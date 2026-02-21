@@ -138,7 +138,7 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
   if (!data) return null
 
   return (
-    <div className="space-y-8">
+    <div data-tour="sector-trend" className="space-y-8">
       {/* Section Header */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center gap-2">

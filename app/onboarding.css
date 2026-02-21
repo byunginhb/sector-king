@@ -1,0 +1,124 @@
+/* driver.js custom styles for Sector King */
+
+.driver-active .driver-overlay {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.driver-popover {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  max-width: 340px;
+}
+
+.driver-popover .driver-popover-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  line-height: 1.4;
+}
+
+.driver-popover .driver-popover-description {
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.6;
+  margin-top: 0.375rem;
+}
+
+.driver-popover .driver-popover-progress-text {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.driver-popover .driver-popover-footer {
+  margin-top: 0.75rem;
+}
+
+.driver-popover .driver-popover-footer button {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  transition: all 150ms;
+  text-shadow: none;
+}
+
+.driver-popover .driver-popover-prev-btn {
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+.driver-popover .driver-popover-prev-btn:hover {
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.driver-popover .driver-popover-next-btn,
+.driver-popover .driver-popover-close-btn-text {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: none;
+}
+
+.driver-popover .driver-popover-next-btn:hover,
+.driver-popover .driver-popover-close-btn-text:hover {
+  opacity: 0.9;
+}
+
+.driver-popover .driver-popover-arrow {
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+}
+
+.driver-popover .driver-popover-arrow-side-left {
+  border-right: none;
+  border-bottom: none;
+}
+
+.driver-popover .driver-popover-arrow-side-right {
+  border-left: none;
+  border-top: none;
+}
+
+.driver-popover .driver-popover-arrow-side-top {
+  border-bottom: none;
+  border-left: none;
+}
+
+.driver-popover .driver-popover-arrow-side-bottom {
+  border-top: none;
+  border-right: none;
+}
+
+/* Dark mode overrides */
+.dark .driver-popover {
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+}
+
+.dark .driver-popover .driver-popover-arrow {
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+
+.dark .driver-active .driver-overlay {
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+/* Close button (X) */
+.driver-popover .driver-popover-close-btn {
+  color: hsl(var(--muted-foreground));
+  font-size: 1.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  top: 0.75rem;
+  right: 0.75rem;
+}
+
+.driver-popover .driver-popover-close-btn:hover {
+  color: hsl(var(--foreground));
+}

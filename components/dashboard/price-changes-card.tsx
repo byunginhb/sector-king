@@ -34,7 +34,7 @@ export function PriceChangesCard() {
 
   return (
     <>
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div data-tour="price-changes-card" className="rounded-xl border border-border bg-card overflow-hidden">
         {/* Header */}
         <div className="px-5 py-4 border-b border-border bg-muted/30">
           <div className="flex items-center justify-between">

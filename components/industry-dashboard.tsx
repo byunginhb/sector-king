@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { useIndustries } from '@/hooks/use-industries'
+import { usePageTour } from '@/hooks/use-page-tour'
 import { ThemeToggle } from './theme-toggle'
 import { SearchTrigger } from './search-trigger'
+import { HelpButton } from './onboarding/help-button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatMarketCap } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -12,6 +14,7 @@ import { PriceChangesCard } from '@/components/dashboard/price-changes-card'
 
 export function IndustryDashboard() {
   const { data, isLoading, error } = useIndustries()
+  usePageTour('dashboard')
 
   if (isLoading) return <DashboardSkeleton />
   if (error) return <DashboardError error={error} />
@@ -42,6 +45,7 @@ export function IndustryDashboard() {
                 </span>
               )}
               <SearchTrigger />
+              <HelpButton pageId="dashboard" />
               <ThemeToggle />
             </div>
           </div>
@@ -51,8 +55,8 @@ export function IndustryDashboard() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {industries.map((industry) => (
-            <IndustryCard key={industry.id} industry={industry} />
+          {industries.map((industry, index) => (
+            <IndustryCard key={industry.id} industry={industry} isFirst={index === 0} />
           ))}
 
           {/* Coming Soon Cards */}
@@ -78,7 +82,9 @@ export function IndustryDashboard() {
 
 function IndustryCard({
   industry,
+  isFirst = false,
 }: {
+  isFirst?: boolean
   industry: {
     id: string
     name: string
@@ -102,6 +108,7 @@ function IndustryCard({
     <Link
       href={`/${industry.id}`}
       className="group block rounded-xl border border-border bg-card hover:bg-accent/50 transition-all hover:shadow-lg hover:border-primary/20"
+      {...(isFirst ? { 'data-tour': 'industry-card' } : {})}
     >
       <div className="p-6">
         {/* Header */}

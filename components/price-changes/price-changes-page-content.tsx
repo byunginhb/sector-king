@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { usePriceChanges } from '@/hooks/use-price-changes'
 import { useTrends } from '@/hooks/use-statistics'
+import { usePageTour } from '@/hooks/use-page-tour'
 import { PriceChangeChart } from '@/components/price-changes/price-change-chart'
 import { PriceChangeTable } from '@/components/price-changes/price-change-table'
 import { CompanyTrendChart } from '@/components/statistics/company-trend-chart'
@@ -11,6 +12,7 @@ import { CompanyDetail } from '@/components/company-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { IndustryTitle } from '@/components/industry-title'
 import { SearchTrigger } from '@/components/search-trigger'
+import { HelpButton } from '@/components/onboarding/help-button'
 import { cn } from '@/lib/utils'
 
 type SortType = 'percentChange' | 'name' | 'marketCap'
@@ -25,6 +27,7 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
 
   const { data, isLoading } = usePriceChanges({ sort, order, industryId })
+  usePageTour('price-changes')
 
   // Get top 20 tickers for trend chart (memoized to avoid re-fetch loops)
   const topTickers = useMemo(
@@ -85,14 +88,17 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
                 </p>
               </div>
             </div>
-            <SearchTrigger />
+            <div className="flex items-center gap-3">
+              <SearchTrigger />
+              <HelpButton pageId="price-changes" />
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Sort Buttons */}
-        <div className="mb-6 flex items-center gap-4">
+        <div data-tour="sort-buttons" className="mb-6 flex items-center gap-4">
           <span className="text-sm text-gray-500 dark:text-slate-400">
             정렬:
           </span>
@@ -136,7 +142,7 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
         </div>
 
         {/* Chart */}
-        <div className="mb-8 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl p-4">
+        <div data-tour="price-chart" className="mb-8 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl p-4">
           <h2 className="text-base font-semibold text-gray-900 dark:text-slate-200 mb-4 flex items-center gap-2">
             <svg
               className="w-5 h-5 text-emerald-500"
@@ -160,7 +166,7 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
         </div>
 
         {/* Price Trend Line Chart */}
-        <div className="mb-8 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl p-4">
+        <div data-tour="price-trend" className="mb-8 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl p-4">
           <h2 className="text-base font-semibold text-gray-900 dark:text-slate-200 mb-4 flex items-center gap-2">
             <svg
               className="w-5 h-5 text-violet-500"

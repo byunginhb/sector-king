@@ -13,6 +13,7 @@ import type { SectorCompanyWithDetails } from '@/types'
 interface CompanyBadgeProps {
   sectorCompany: SectorCompanyWithDetails
   isHistorical?: boolean
+  isFirst?: boolean
 }
 
 function ScoreBar({ value, max, color }: { value: number; max: number; color: string }) {
@@ -24,7 +25,7 @@ function ScoreBar({ value, max, color }: { value: number; max: number; color: st
   )
 }
 
-export function CompanyBadge({ sectorCompany, isHistorical = false }: CompanyBadgeProps) {
+export function CompanyBadge({ sectorCompany, isHistorical = false, isFirst = false }: CompanyBadgeProps) {
   const { company, rank, snapshot, notes, score, priceChangeFromSnapshot } = sectorCompany
   const style = getRankStyle(rank)
 
@@ -63,6 +64,7 @@ export function CompanyBadge({ sectorCompany, isHistorical = false }: CompanyBad
                 style.badge,
                 style.hover
               )}
+              {...(isFirst ? { 'data-tour': 'company-badge' } : {})}
             >
               <span className="flex items-center gap-1.5">
                 {rank === 1 && <span className="text-amber-500">★</span>}
