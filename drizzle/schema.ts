@@ -100,6 +100,52 @@ export const industryCategories = sqliteTable(
   ]
 )
 
+export const companyScores = sqliteTable('company_scores', {
+  ticker: text('ticker')
+    .primaryKey()
+    .references(() => companies.ticker),
+  revenueGrowth: real('revenue_growth'),
+  earningsGrowth: real('earnings_growth'),
+  operatingMargin: real('operating_margin'),
+  returnOnEquity: real('return_on_equity'),
+  recommendationKey: text('recommendation_key'),
+  analystCount: integer('analyst_count'),
+  targetMeanPrice: real('target_mean_price'),
+  freeCashflow: integer('free_cashflow'),
+  beta: real('beta'),
+  debtToEquity: real('debt_to_equity'),
+  scaleScore: real('scale_score').default(0),
+  growthScore: real('growth_score').default(0),
+  profitabilityScore: real('profitability_score').default(0),
+  sentimentScore: real('sentiment_score').default(0),
+  rawTotalScore: real('raw_total_score').default(0),
+  smoothedScore: real('smoothed_score').default(0),
+  dataQuality: real('data_quality').default(0),
+  metricsUpdatedAt: text('metrics_updated_at'),
+  scoreUpdatedAt: text('score_updated_at'),
+})
+
+export const scoreHistory = sqliteTable(
+  'score_history',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    ticker: text('ticker')
+      .notNull()
+      .references(() => companies.ticker),
+    date: text('date').notNull(),
+    rawTotalScore: real('raw_total_score'),
+    smoothedScore: real('smoothed_score'),
+    scaleScore: real('scale_score'),
+    growthScore: real('growth_score'),
+    profitabilityScore: real('profitability_score'),
+    sentimentScore: real('sentiment_score'),
+  },
+  (table) => [
+    unique().on(table.ticker, table.date),
+    index('idx_score_history_ticker').on(table.ticker),
+  ]
+)
+
 // Type exports
 export type Category = typeof categories.$inferSelect
 export type NewCategory = typeof categories.$inferInsert
@@ -117,3 +163,7 @@ export type Industry = typeof industries.$inferSelect
 export type NewIndustry = typeof industries.$inferInsert
 export type IndustryCategory = typeof industryCategories.$inferSelect
 export type NewIndustryCategory = typeof industryCategories.$inferInsert
+export type CompanyScore = typeof companyScores.$inferSelect
+export type NewCompanyScore = typeof companyScores.$inferInsert
+export type ScoreHistory = typeof scoreHistory.$inferSelect
+export type NewScoreHistory = typeof scoreHistory.$inferInsert

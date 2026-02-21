@@ -6,7 +6,12 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+# Ensure sibling modules (scoring.py) are importable regardless of CWD
+sys.path.insert(0, str(Path(__file__).parent))
+
 import yfinance as yf
+
+from scoring import calculate_hegemony_scores, update_sector_rankings
 
 DB_PATH = Path(__file__).parent.parent / "data" / "hegemony.db"
 
@@ -26,7 +31,11 @@ def get_tickers_from_db(conn: sqlite3.Connection) -> list[str]:
 
 
 def fetch_stock_data(ticker: str, target_date: str) -> dict | None:
-    """Fetch stock data from yfinance."""
+    """Fetch stock data and fundamental metrics from yfinance.
+
+    Returns snapshot data and fundamental metrics from the same .info call.
+    No additional API calls needed for fundamental data.
+    """
     try:
         stock = yf.Ticker(ticker)
         info = stock.info
@@ -38,6 +47,7 @@ def fetch_stock_data(ticker: str, target_date: str) -> dict | None:
         return {
             "ticker": ticker,
             "date": target_date,
+            # Daily snapshot fields
             "market_cap": info.get("marketCap"),
             "price": info.get("currentPrice") or info.get("regularMarketPrice"),
             "price_change": info.get("regularMarketChangePercent"),
@@ -49,6 +59,17 @@ def fetch_stock_data(ticker: str, target_date: str) -> dict | None:
             "avg_volume": info.get("averageVolume"),
             "pe_ratio": info.get("trailingPE"),
             "peg_ratio": info.get("pegRatio"),
+            # Fundamental metrics (from same .info dict, no extra API call)
+            "revenue_growth": info.get("revenueGrowth"),
+            "earnings_growth": info.get("earningsGrowth"),
+            "operating_margin": info.get("operatingMargins"),
+            "return_on_equity": info.get("returnOnEquity"),
+            "recommendation_key": info.get("recommendationKey"),
+            "analyst_count": info.get("numberOfAnalystOpinions"),
+            "target_mean_price": info.get("targetMeanPrice"),
+            "free_cashflow": info.get("freeCashflow"),
+            "beta": info.get("beta"),
+            "debt_to_equity": info.get("debtToEquity"),
         }
     except Exception as e:
         print(f"  Error fetching {ticker}: {e}")
@@ -56,7 +77,7 @@ def fetch_stock_data(ticker: str, target_date: str) -> dict | None:
 
 
 def upsert_snapshot(conn: sqlite3.Connection, data: dict):
-    """SQLite UPSERT (INSERT OR REPLACE)."""
+    """SQLite UPSERT (INSERT OR REPLACE) for daily_snapshots."""
     conn.execute(
         """
         INSERT OR REPLACE INTO daily_snapshots
@@ -82,57 +103,43 @@ def upsert_snapshot(conn: sqlite3.Connection, data: dict):
     )
 
 
-def update_sector_rankings(conn: sqlite3.Connection):
-    """Update sector company rankings based on latest market cap."""
-    print("\n" + "=" * 50)
-    print("Updating sector rankings...")
-
-    # Get all sectors
-    sectors = conn.execute("SELECT id, name FROM sectors").fetchall()
-
-    updated_sectors = 0
-
-    for sector_id, sector_name in sectors:
-        # Get companies in this sector with their latest market cap
-        companies = conn.execute(
-            """
-            SELECT sc.ticker, ds.market_cap
-            FROM sector_companies sc
-            LEFT JOIN (
-                SELECT ticker, market_cap
-                FROM daily_snapshots
-                WHERE date = (SELECT MAX(date) FROM daily_snapshots)
-            ) ds ON sc.ticker = ds.ticker
-            WHERE sc.sector_id = ?
-            ORDER BY COALESCE(ds.market_cap, 0) DESC
-        """,
-            (sector_id,),
-        ).fetchall()
-
-        if not companies:
-            continue
-
-        # Update ranks based on market cap order
-        rank_changed = False
-        for new_rank, (ticker, market_cap) in enumerate(companies, start=1):
-            # Get current rank
-            current = conn.execute(
-                "SELECT rank FROM sector_companies WHERE sector_id = ? AND ticker = ?",
-                (sector_id, ticker),
-            ).fetchone()
-
-            if current and current[0] != new_rank:
-                rank_changed = True
-                conn.execute(
-                    "UPDATE sector_companies SET rank = ? WHERE sector_id = ? AND ticker = ?",
-                    (new_rank, sector_id, ticker),
-                )
-
-        if rank_changed:
-            updated_sectors += 1
-            print(f"  {sector_name}: rankings updated")
-
-    print(f"Updated rankings in {updated_sectors} sectors")
+def upsert_company_scores(conn: sqlite3.Connection, data: dict):
+    """UPSERT fundamental metrics into company_scores table."""
+    conn.execute(
+        """
+        INSERT INTO company_scores (
+            ticker, revenue_growth, earnings_growth, operating_margin,
+            return_on_equity, recommendation_key, analyst_count,
+            target_mean_price, free_cashflow, beta, debt_to_equity,
+            metrics_updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        ON CONFLICT(ticker) DO UPDATE SET
+            revenue_growth = excluded.revenue_growth,
+            earnings_growth = excluded.earnings_growth,
+            operating_margin = excluded.operating_margin,
+            return_on_equity = excluded.return_on_equity,
+            recommendation_key = excluded.recommendation_key,
+            analyst_count = excluded.analyst_count,
+            target_mean_price = excluded.target_mean_price,
+            free_cashflow = excluded.free_cashflow,
+            beta = excluded.beta,
+            debt_to_equity = excluded.debt_to_equity,
+            metrics_updated_at = datetime('now')
+    """,
+        (
+            data["ticker"],
+            data["revenue_growth"],
+            data["earnings_growth"],
+            data["operating_margin"],
+            data["return_on_equity"],
+            data["recommendation_key"],
+            data["analyst_count"],
+            data["target_mean_price"],
+            data["free_cashflow"],
+            data["beta"],
+            data["debt_to_equity"],
+        ),
+    )
 
 
 def main():
@@ -141,7 +148,6 @@ def main():
         print(f"Error: Database not found at {DB_PATH}")
         sys.exit(1)
 
-    # 날짜 인자 처리: python update_data.py [YYYY-MM-DD]
     if len(sys.argv) > 1 and sys.argv[1]:
         target_date = sys.argv[1]
     else:
@@ -149,7 +155,6 @@ def main():
 
     conn = sqlite3.connect(DB_PATH)
 
-    # Get tickers from DB (sector_companies table)
     tickers = get_tickers_from_db(conn)
 
     results = []
@@ -168,6 +173,7 @@ def main():
         data = fetch_stock_data(ticker, target_date)
         if data:
             upsert_snapshot(conn, data)
+            upsert_company_scores(conn, data)
             results.append(ticker)
             print("OK")
         else:
@@ -181,15 +187,22 @@ def main():
     if failed:
         print(f"Failed: {failed}")
 
-    # Exit with error if more than 50% of tickers failed
     if len(failed) > len(tickers) * 0.5:
         conn.close()
         print("Error: More than 50% of tickers failed")
         sys.exit(1)
 
-    # Update sector rankings based on latest market cap
-    update_sector_rankings(conn)
-    conn.commit()
+    # Calculate hegemony scores and update rankings
+    try:
+        calculate_hegemony_scores(conn, target_date)
+        conn.commit()
+
+        update_sector_rankings(conn)
+        conn.commit()
+    except Exception as e:
+        print(f"Score calculation failed (snapshots already saved): {e}")
+        conn.rollback()
+
     conn.close()
 
     print("\nData update completed successfully!")

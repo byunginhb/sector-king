@@ -8,6 +8,8 @@ export type {
   CompanyProfile,
   Industry,
   IndustryCategory,
+  CompanyScore,
+  ScoreHistory,
 } from '@/drizzle/schema'
 
 // API Response types
