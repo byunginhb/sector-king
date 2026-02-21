@@ -35,7 +35,6 @@ FUNDAMENTAL_FIELDS = [
 
 # IMPORTANT: These constants must stay in sync with lib/scoring-methodology.ts
 EMA_ALPHA = 0.3
-RANK_CHANGE_THRESHOLD = 2.0
 SCORE_HISTORY_RETENTION_DAYS = 90
 
 
@@ -303,9 +302,9 @@ def calculate_hegemony_scores(conn: sqlite3.Connection, target_date: str):
 def update_sector_rankings(conn: sqlite3.Connection):
     """Update sector company rankings based on smoothed hegemony score.
 
+    Ranks are assigned strictly by score order (descending).
     Falls back to market cap if no scores exist yet.
-    All-or-nothing approach: either update all ranks in a sector or none.
-    Only updates if any adjacent pair has a score difference >= threshold.
+    EMA smoothing on scores already prevents volatile rank changes.
     """
     print("\n" + "=" * 50)
     print("Updating sector rankings...")
@@ -347,18 +346,7 @@ def update_sector_rankings(conn: sqlite3.Connection):
         if not any_change:
             continue
 
-        # Check threshold: at least one swapped pair must have significant score diff
-        scores = [row[2] for row in companies]  # scores in new order
-        significant_change = False
-        for i in range(len(scores) - 1):
-            if abs(scores[i] - scores[i + 1]) >= RANK_CHANGE_THRESHOLD:
-                significant_change = True
-                break
-
-        if not significant_change:
-            continue
-
-        # Apply all rank changes atomically
+        # Apply all rank changes
         for ticker, new_rank, old_rank in new_ranking:
             if new_rank != old_rank:
                 conn.execute(

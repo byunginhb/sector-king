@@ -45,7 +45,6 @@ export const SCORING = {
   },
   ema: {
     alpha: 0.3,
-    rankChangeThreshold: 2,
   },
   totalMaxScore: 100,
 } as const

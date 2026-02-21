@@ -4,7 +4,8 @@ import { useCompany } from '@/hooks/use-company'
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatMarketCap, formatPrice, formatPriceChange } from '@/lib/format'
+import { formatMarketCap, formatPrice, formatPriceChange, formatPercent, formatScore, formatRecommendation } from '@/lib/format'
+import { SCORING } from '@/lib/scoring-methodology'
 import { getPriceChangeStyle, getRankStyle } from '@/lib/styles'
 import { cn } from '@/lib/utils'
 
@@ -48,7 +49,7 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
     )
   }
 
-  const { company, snapshot, sectors, history } = data
+  const { company, snapshot, score, sectors, history } = data
 
   // Calculate cumulative change from first recorded date
   const cumulativeChange = (() => {
@@ -135,6 +136,164 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
             )
           })}
         </div>
+      </div>
+
+      {/* Score Analysis */}
+      {score && <ScoreAnalysis score={score} snapshot={snapshot} />}
+    </div>
+  )
+}
+
+interface ScoreDimension {
+  label: string
+  value: number
+  max: number
+  color: string
+  description: string
+  metrics?: { label: string; value: string }[]
+}
+
+function ScoreAnalysis({
+  score,
+  snapshot,
+}: {
+  score: NonNullable<import('@/types').CompanyDetailResponse['score']>
+  snapshot: import('@/types').CompanyDetailResponse['snapshot']
+}) {
+  const totalPercent = Math.min((score.total / SCORING.totalMaxScore) * 100, 100)
+
+  const dimensions: ScoreDimension[] = [
+    {
+      label: '규모',
+      value: score.scale,
+      max: SCORING.scale.maxScore,
+      color: 'bg-blue-500',
+      description: '섹터 내 시가총액 비중과 거래 활성도',
+    },
+    {
+      label: '성장성',
+      value: score.growth,
+      max: SCORING.growth.maxScore,
+      color: 'bg-emerald-500',
+      description: '분기별 매출/수익 성장률',
+      metrics: [
+        ...(score.revenueGrowth !== null
+          ? [{ label: '매출 성장률', value: formatPercent(score.revenueGrowth) }]
+          : []),
+        ...(score.earningsGrowth !== null
+          ? [{ label: '수익 성장률', value: formatPercent(score.earningsGrowth) }]
+          : []),
+      ],
+    },
+    {
+      label: '수익성',
+      value: score.profitability,
+      max: SCORING.profitability.maxScore,
+      color: 'bg-amber-500',
+      description: '영업이익률과 자기자본이익률',
+      metrics: [
+        ...(score.operatingMargin !== null
+          ? [{ label: '영업이익률', value: formatPercent(score.operatingMargin) }]
+          : []),
+        ...(score.returnOnEquity !== null
+          ? [{ label: 'ROE', value: formatPercent(score.returnOnEquity) }]
+          : []),
+      ],
+    },
+    {
+      label: '시장 평가',
+      value: score.sentiment,
+      max: SCORING.sentiment.maxScore,
+      color: 'bg-purple-500',
+      description: '애널리스트 투자의견과 목표주가 괴리율',
+      metrics: [
+        ...(score.recommendationKey
+          ? [{
+              label: '애널리스트 의견',
+              value: `${formatRecommendation(score.recommendationKey)}${score.analystCount ? ` (${score.analystCount}명)` : ''}`,
+            }]
+          : []),
+        ...(score.targetMeanPrice !== null && snapshot?.price
+          ? [{
+              label: '목표주가 대비',
+              value: formatPercent((score.targetMeanPrice - snapshot.price) / snapshot.price),
+            }]
+          : []),
+      ],
+    },
+  ]
+
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        패권 점수 분석
+      </h3>
+
+      <div className="rounded-xl border border-border p-4 space-y-4">
+        {/* Total Score */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold text-foreground">{score.total.toFixed(1)}</span>
+            <span className="text-sm text-muted-foreground">/ {SCORING.totalMaxScore}</span>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            데이터 커버리지 {Math.round(score.dataQuality * 100)}%
+          </span>
+        </div>
+        <div className="bg-muted rounded-full h-2.5">
+          <div
+            className="bg-linear-to-r from-indigo-500 to-purple-500 rounded-full h-2.5 transition-all"
+            style={{ width: `${totalPercent}%` }}
+          />
+        </div>
+
+        {/* Dimension Breakdown */}
+        <div className="space-y-3 pt-1">
+          {dimensions.map((dim) => {
+            const percent = Math.min((dim.value / dim.max) * 100, 100)
+            return (
+              <div key={dim.label} className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-foreground">{dim.label}</span>
+                  <span className="text-muted-foreground">{formatScore(dim.value, dim.max)}</span>
+                </div>
+                <div className="bg-muted rounded-full h-1.5">
+                  <div
+                    className={cn('rounded-full h-1.5 transition-all', dim.color)}
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground">{dim.description}</p>
+                {dim.metrics && dim.metrics.length > 0 && (
+                  <div className="pl-2 space-y-0.5">
+                    {dim.metrics.map((m) => (
+                      <div key={m.label} className="flex justify-between text-[11px]">
+                        <span className="text-muted-foreground">{m.label}</span>
+                        <span className="font-medium text-foreground">{m.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Methodology Note */}
+        <details className="pt-2 border-t border-border">
+          <summary className="text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+            점수 산정 방식 알아보기
+          </summary>
+          <div className="mt-2 space-y-1.5 text-[11px] text-muted-foreground">
+            <p>4개 차원(규모·성장성·수익성·시장 평가)의 합산으로 100점 만점 기준 산출됩니다.</p>
+            <p>점수는 급격한 변동을 완화하기 위해 지수이동평균(EMA)으로 스무딩 처리됩니다.</p>
+            <p>순위는 스무딩된 점수 순서대로 결정됩니다. 동점일 경우 시가총액이 큰 종목이 우선합니다.</p>
+            <p>시총·거래량은 매일, 재무·애널리스트 지표는 주간 업데이트됩니다.</p>
+          </div>
+        </details>
       </div>
     </div>
   )

@@ -5,7 +5,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { getRankStyle } from '@/lib/styles'
-import { formatMarketCap, formatPriceChange } from '@/lib/format'
+import { formatMarketCap, formatPriceChange, formatScore } from '@/lib/format'
+import { SCORING } from '@/lib/scoring-methodology'
 import { CompanyDetail } from './company-detail'
 import type { SectorCompanyWithDetails } from '@/types'
 
@@ -14,8 +15,17 @@ interface CompanyBadgeProps {
   isHistorical?: boolean
 }
 
+function ScoreBar({ value, max, color }: { value: number; max: number; color: string }) {
+  const percent = Math.min((value / max) * 100, 100)
+  return (
+    <div className="bg-muted rounded-full h-1.5 flex-1">
+      <div className={cn('rounded-full h-1.5', color)} style={{ width: `${percent}%` }} />
+    </div>
+  )
+}
+
 export function CompanyBadge({ sectorCompany, isHistorical = false }: CompanyBadgeProps) {
-  const { company, rank, snapshot, notes, priceChangeFromSnapshot } = sectorCompany
+  const { company, rank, snapshot, notes, score, priceChangeFromSnapshot } = sectorCompany
   const style = getRankStyle(rank)
 
   const priceChangeColor =
@@ -98,6 +108,42 @@ export function CompanyBadge({ sectorCompany, isHistorical = false }: CompanyBad
                     </span>
                   </div>
                 )}
+              </div>
+            )}
+            {score && (
+              <div className="pt-1.5 border-t border-border space-y-1.5">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">패권 점수</span>
+                  <span className="font-semibold">{formatScore(score.total, SCORING.totalMaxScore)}</span>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-[10px]">
+                    <span className="text-muted-foreground w-7 shrink-0">규모</span>
+                    <ScoreBar value={score.scale} max={SCORING.scale.maxScore} color="bg-blue-500" />
+                    <span className="text-muted-foreground w-9 text-right">{formatScore(score.scale, SCORING.scale.maxScore)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px]">
+                    <span className="text-muted-foreground w-7 shrink-0">성장</span>
+                    <ScoreBar value={score.growth} max={SCORING.growth.maxScore} color="bg-emerald-500" />
+                    <span className="text-muted-foreground w-9 text-right">{formatScore(score.growth, SCORING.growth.maxScore)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px]">
+                    <span className="text-muted-foreground w-7 shrink-0">수익</span>
+                    <ScoreBar value={score.profitability} max={SCORING.profitability.maxScore} color="bg-amber-500" />
+                    <span className="text-muted-foreground w-9 text-right">{formatScore(score.profitability, SCORING.profitability.maxScore)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px]">
+                    <span className="text-muted-foreground w-7 shrink-0">평가</span>
+                    <ScoreBar value={score.sentiment} max={SCORING.sentiment.maxScore} color="bg-purple-500" />
+                    <span className="text-muted-foreground w-9 text-right">{formatScore(score.sentiment, SCORING.sentiment.maxScore)}</span>
+                  </div>
+                </div>
+                {score.dataQuality < 0.7 && (
+                  <p className="text-[10px] text-amber-600 dark:text-amber-400">데이터 제한적</p>
+                )}
+                <p className="text-[10px] text-muted-foreground">
+                  순위는 EMA 스무딩된 점수 기준으로 결정됩니다
+                </p>
               </div>
             )}
             {notes && (

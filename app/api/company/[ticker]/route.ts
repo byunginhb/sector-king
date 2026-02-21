@@ -3,6 +3,7 @@ import { getDb } from '@/lib/db'
 import {
   companies,
   companyProfiles,
+  companyScores,
   dailySnapshots,
   sectorCompanies,
   sectors,
@@ -61,6 +62,15 @@ export async function GET(
       .orderBy(desc(dailySnapshots.date))
       .limit(30)
 
+    // Get company scores
+    const scoreResult = await db
+      .select()
+      .from(companyScores)
+      .where(eq(companyScores.ticker, ticker))
+      .limit(1)
+
+    const scoreRow = scoreResult[0] ?? null
+
     // Get sectors this company belongs to
     const companySectors = await db
       .select({
@@ -98,6 +108,23 @@ export async function GET(
             volume: h.volume || 0,
           }))
           .reverse(),
+        score: scoreRow
+          ? {
+              total: scoreRow.smoothedScore ?? 0,
+              scale: scoreRow.scaleScore ?? 0,
+              growth: scoreRow.growthScore ?? 0,
+              profitability: scoreRow.profitabilityScore ?? 0,
+              sentiment: scoreRow.sentimentScore ?? 0,
+              dataQuality: scoreRow.dataQuality ?? 0,
+              revenueGrowth: scoreRow.revenueGrowth,
+              earningsGrowth: scoreRow.earningsGrowth,
+              operatingMargin: scoreRow.operatingMargin,
+              returnOnEquity: scoreRow.returnOnEquity,
+              recommendationKey: scoreRow.recommendationKey,
+              analystCount: scoreRow.analystCount,
+              targetMeanPrice: scoreRow.targetMeanPrice,
+            }
+          : null,
         sectors: companySectors.map((s) => ({
           sector: {
             id: s.sectorId ?? '',

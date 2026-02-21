@@ -6,10 +6,12 @@ import {
   sectorCompanies,
   companies,
   dailySnapshots,
+  companyScores,
 } from '@/drizzle/schema'
 import { eq, desc, sql, inArray } from 'drizzle-orm'
 import type { ApiResponse, MapResponse } from '@/types'
 import { resolveIndustryFilter } from '@/lib/api-helpers'
+import { toScoreSummary } from '@/lib/format'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -60,7 +62,7 @@ export async function GET(
       ? allSectorsRaw.filter((s) => industryFilter.sectorIds.includes(s.id))
       : allSectorsRaw
 
-    // Get sector companies with company info and snapshot for the selected date
+    // Get sector companies with company info, snapshot, and scores
     const sectorCompaniesWithDetails = await db
       .select({
         sectorId: sectorCompanies.sectorId,
@@ -74,6 +76,12 @@ export async function GET(
         price: dailySnapshots.price,
         priceChange: dailySnapshots.priceChange,
         snapshotDate: dailySnapshots.date,
+        smoothedScore: companyScores.smoothedScore,
+        scaleScore: companyScores.scaleScore,
+        growthScore: companyScores.growthScore,
+        profitabilityScore: companyScores.profitabilityScore,
+        sentimentScore: companyScores.sentimentScore,
+        dataQuality: companyScores.dataQuality,
       })
       .from(sectorCompanies)
       .leftJoin(companies, eq(sectorCompanies.ticker, companies.ticker))
@@ -81,6 +89,7 @@ export async function GET(
         dailySnapshots,
         sql`${sectorCompanies.ticker} = ${dailySnapshots.ticker} AND ${dailySnapshots.date} = ${selectedDate}`
       )
+      .leftJoin(companyScores, eq(sectorCompanies.ticker, companyScores.ticker))
       .orderBy(sectorCompanies.sectorId, sectorCompanies.rank)
 
     // If viewing historical data, also get current prices for comparison
@@ -144,6 +153,7 @@ export async function GET(
               priceChange: sc.priceChange,
             }
           : null,
+        score: toScoreSummary(sc),
         ...(isHistorical && {
           currentSnapshot,
           priceChangeFromSnapshot,

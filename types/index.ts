@@ -19,6 +19,26 @@ export interface ApiResponse<T> {
   error?: string
 }
 
+// Score types
+export interface ScoreSummary {
+  total: number
+  scale: number
+  growth: number
+  profitability: number
+  sentiment: number
+  dataQuality: number
+}
+
+export interface ScoreDetail extends ScoreSummary {
+  revenueGrowth: number | null
+  earningsGrowth: number | null
+  operatingMargin: number | null
+  returnOnEquity: number | null
+  recommendationKey: string | null
+  analystCount: number | null
+  targetMeanPrice: number | null
+}
+
 export interface SectorCompanyWithDetails {
   sectorId: string
   ticker: string
@@ -36,6 +56,7 @@ export interface SectorCompanyWithDetails {
     price: number | null
     priceChange: number | null
   } | null
+  score: ScoreSummary | null
   // For historical comparison
   currentSnapshot?: {
     price: number | null
@@ -100,6 +121,7 @@ export interface CompanyDetailResponse {
     pegRatio: number | null
   } | null
   history: PriceHistory[]
+  score: ScoreDetail | null
   sectors: {
     sector: {
       id: string

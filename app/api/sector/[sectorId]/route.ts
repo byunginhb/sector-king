@@ -5,10 +5,12 @@ import {
   categories,
   sectorCompanies,
   companies,
+  companyScores,
   dailySnapshots,
 } from '@/drizzle/schema'
 import { eq, sql } from 'drizzle-orm'
 import type { ApiResponse, SectorDetailResponse } from '@/types'
+import { toScoreSummary } from '@/lib/format'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -43,7 +45,7 @@ export async function GET(
           .limit(1)
       : []
 
-    // Get companies in this sector with snapshot data
+    // Get companies in this sector with snapshot data and scores
     const sectorCompaniesWithDetails = await db
       .select({
         sectorId: sectorCompanies.sectorId,
@@ -57,6 +59,12 @@ export async function GET(
         marketCap: dailySnapshots.marketCap,
         price: dailySnapshots.price,
         priceChange: dailySnapshots.priceChange,
+        smoothedScore: companyScores.smoothedScore,
+        scaleScore: companyScores.scaleScore,
+        growthScore: companyScores.growthScore,
+        profitabilityScore: companyScores.profitabilityScore,
+        sentimentScore: companyScores.sentimentScore,
+        dataQuality: companyScores.dataQuality,
       })
       .from(sectorCompanies)
       .leftJoin(companies, eq(sectorCompanies.ticker, companies.ticker))
@@ -66,6 +74,7 @@ export async function GET(
           SELECT MAX(date) FROM daily_snapshots WHERE ticker = ${sectorCompanies.ticker}
         )`
       )
+      .leftJoin(companyScores, eq(sectorCompanies.ticker, companyScores.ticker))
       .where(eq(sectorCompanies.sectorId, sectorId))
       .orderBy(sectorCompanies.rank)
 
@@ -95,6 +104,7 @@ export async function GET(
             priceChange: sc.priceChange,
           }
         : null,
+      score: toScoreSummary(sc),
     }))
 
     return NextResponse.json({
