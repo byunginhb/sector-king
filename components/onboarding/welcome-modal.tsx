@@ -48,7 +48,7 @@ function WelcomeVisual({ visual }: { visual: string }) {
     return (
       <div className="flex flex-col items-center gap-3">
         <div className="text-5xl font-bold bg-linear-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">
-          섹터킹
+          섹터 킹
         </div>
         <div className="flex gap-2">
           {['🖥️', '📊', '💰', '📈'].map((icon) => (
