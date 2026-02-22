@@ -142,6 +142,54 @@ def upsert_company_scores(conn: sqlite3.Connection, data: dict):
     )
 
 
+def ensure_score_tables(conn: sqlite3.Connection):
+    """Create company_scores and score_history tables if they don't exist."""
+    try:
+        conn.executescript("""
+        CREATE TABLE IF NOT EXISTS company_scores (
+            ticker TEXT PRIMARY KEY REFERENCES companies(ticker),
+            revenue_growth REAL,
+            earnings_growth REAL,
+            operating_margin REAL,
+            return_on_equity REAL,
+            recommendation_key TEXT,
+            analyst_count INTEGER,
+            target_mean_price REAL,
+            free_cashflow INTEGER,
+            beta REAL,
+            debt_to_equity REAL,
+            scale_score REAL DEFAULT 0,
+            growth_score REAL DEFAULT 0,
+            profitability_score REAL DEFAULT 0,
+            sentiment_score REAL DEFAULT 0,
+            raw_total_score REAL DEFAULT 0,
+            smoothed_score REAL DEFAULT 0,
+            data_quality REAL DEFAULT 0,
+            metrics_updated_at TEXT,
+            score_updated_at TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS score_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ticker TEXT NOT NULL REFERENCES companies(ticker),
+            date TEXT NOT NULL,
+            raw_total_score REAL,
+            smoothed_score REAL,
+            scale_score REAL,
+            growth_score REAL,
+            profitability_score REAL,
+            sentiment_score REAL,
+            UNIQUE(ticker, date)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_score_history_ticker ON score_history(ticker);
+        CREATE INDEX IF NOT EXISTS idx_score_history_date ON score_history(date);
+    """)
+    except sqlite3.Error as e:
+        print(f"Error: Failed to ensure score tables: {e}")
+        sys.exit(1)
+
+
 def main():
     """Main function to update all stock data."""
     if not DB_PATH.exists():
@@ -154,6 +202,7 @@ def main():
         target_date = datetime.now().date().isoformat()
 
     conn = sqlite3.connect(DB_PATH)
+    ensure_score_tables(conn)
 
     tickers = get_tickers_from_db(conn)
 
