@@ -237,10 +237,10 @@ def calculate_hegemony_scores(conn: sqlite3.Connection, target_date: str):
     updated = 0
     for ticker, scores in all_scores.items():
         prev = conn.execute(
-            "SELECT smoothed_score FROM company_scores WHERE ticker = ?", (ticker,)
+            "SELECT smoothed_score, score_updated_at FROM company_scores WHERE ticker = ?", (ticker,)
         ).fetchone()
 
-        prev_smoothed = prev[0] if prev and prev[0] is not None else scores["raw_total"]
+        prev_smoothed = prev[0] if prev and prev[1] is not None else scores["raw_total"]
         smoothed = EMA_ALPHA * scores["raw_total"] + (1 - EMA_ALPHA) * prev_smoothed
 
         conn.execute(
