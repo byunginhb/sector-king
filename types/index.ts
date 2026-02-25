@@ -353,3 +353,22 @@ export interface IndustryFilterResult {
   sectorIds: string[]
   tickers: string[]
 }
+
+// Industry Money Flow Summary types
+export interface IndustryMoneyFlowSummary {
+  industryId: string
+  industryName: string
+  industryNameEn: string | null
+  industryIcon: string | null
+  totalInflow: number
+  totalOutflow: number
+  netFlow: number
+  netFlowPercent: number
+  flowDirection: 'in' | 'out'
+}
+
+export interface IndustryMoneyFlowResponse {
+  industries: IndustryMoneyFlowSummary[]
+  period: number
+  dateRange: { start: string; end: string }
+}

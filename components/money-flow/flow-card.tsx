@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import type { SectorMoneyFlow } from '@/types'
 import { cn } from '@/lib/utils'
+import { formatFlowAmount } from '@/lib/format'
 
 interface FlowCardProps {
   flow: SectorMoneyFlow
@@ -10,20 +11,6 @@ interface FlowCardProps {
   maxFlow: number
   onClick?: () => void
   isExpanded?: boolean
-}
-
-function formatAmount(amount: number): string {
-  const absAmount = Math.abs(amount)
-  if (absAmount >= 1e12) {
-    return `$${(absAmount / 1e12).toFixed(1)}T`
-  }
-  if (absAmount >= 1e9) {
-    return `$${(absAmount / 1e9).toFixed(1)}B`
-  }
-  if (absAmount >= 1e6) {
-    return `$${(absAmount / 1e6).toFixed(1)}M`
-  }
-  return `$${absAmount.toLocaleString()}`
 }
 
 // Money particle for inflow - from LEFT side
@@ -410,7 +397,7 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
               }}
             >
               {isInflow ? '+' : '-'}
-              {formatAmount(flow.flowAmount)}
+              {formatFlowAmount(flow.flowAmount)}
             </motion.div>
             <div
               className={cn(

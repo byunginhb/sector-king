@@ -94,3 +94,17 @@ export function formatRecommendation(key: string | null): string {
   if (!key) return 'N/A'
   return RECOMMENDATION_LABELS[key] ?? key
 }
+
+export function formatFlowAmount(amount: number): string {
+  const absAmount = Math.abs(amount)
+  if (absAmount >= 1e12) {
+    return `$${(absAmount / 1e12).toFixed(1)}T`
+  }
+  if (absAmount >= 1e9) {
+    return `$${(absAmount / 1e9).toFixed(1)}B`
+  }
+  if (absAmount >= 1e6) {
+    return `$${(absAmount / 1e6).toFixed(1)}M`
+  }
+  return `$${absAmount.toLocaleString()}`
+}

@@ -11,6 +11,7 @@ import { formatMarketCap } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { CompanyStatsCard } from '@/components/dashboard/company-stats-card'
 import { PriceChangesCard } from '@/components/dashboard/price-changes-card'
+import { IndustryMoneyFlowCard } from '@/components/dashboard/industry-money-flow-card'
 
 export function IndustryDashboard() {
   const { data, isLoading, error } = useIndustries()
@@ -68,6 +69,11 @@ export function IndustryDashboard() {
               <ComingSoonCard name="금융" icon="🏦" />
             </>
           )}
+        </div>
+
+        {/* Industry Money Flow */}
+        <div className="mt-8">
+          <IndustryMoneyFlowCard />
         </div>
 
         {/* Summary Stats Cards */}
