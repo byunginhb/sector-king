@@ -58,8 +58,8 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
       {/* Header */}
       <header className="bg-white dark:bg-card border-b border-gray-200 dark:border-border sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-4 min-w-0">
               <Link
                 href={industryId ? `/${industryId}` : '/'}
                 className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors"
@@ -89,7 +89,7 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <ShareButton
                 title="가격 변화율 | Sector King"
                 description="추적 기업 가격 변화율 분석"

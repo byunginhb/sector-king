@@ -29,7 +29,7 @@ export function IndustryDashboard() {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">
                 <span className="bg-linear-to-r from-blue-600 to-sky-600 dark:from-blue-400 dark:to-sky-400 bg-clip-text text-transparent">
@@ -40,7 +40,7 @@ export function IndustryDashboard() {
                 산업별 투자 패권 지도
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               {lastUpdated && (
                 <span className="text-xs text-muted-foreground">
                   {lastUpdated} 기준
