@@ -13,6 +13,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { IndustryTitle } from '@/components/industry-title'
 import { SearchTrigger } from '@/components/search-trigger'
 import { HelpButton } from '@/components/onboarding/help-button'
+import { ShareButton } from '@/components/share-button'
 import { cn } from '@/lib/utils'
 
 type SortType = 'percentChange' | 'name' | 'marketCap'
@@ -89,6 +90,10 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <ShareButton
+                title="가격 변화율 | Sector King"
+                description="추적 기업 가격 변화율 분석"
+              />
               <SearchTrigger />
               <HelpButton pageId="price-changes" />
             </div>

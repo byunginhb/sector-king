@@ -12,6 +12,7 @@ import { AnimatePresence } from 'framer-motion'
 import { IndustryTitle } from '@/components/industry-title'
 import { SearchTrigger } from '@/components/search-trigger'
 import { HelpButton } from '@/components/onboarding/help-button'
+import { ShareButton } from '@/components/share-button'
 import { cn } from '@/lib/utils'
 
 type PeriodType = 1 | 3 | 7 | 14 | 30
@@ -80,6 +81,10 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
             </div>
 
             <div className="flex items-center gap-3">
+              <ShareButton
+                title="섹터 자금 흐름 | Sector King"
+                description="섹터별 자금 유입/유출 현황 분석"
+              />
               <SearchTrigger />
               <HelpButton pageId="money-flow" />
               {/* Period Selector */}

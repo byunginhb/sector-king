@@ -6,6 +6,7 @@ import { usePageTour } from '@/hooks/use-page-tour'
 import { ThemeToggle } from './theme-toggle'
 import { SearchTrigger } from './search-trigger'
 import { HelpButton } from './onboarding/help-button'
+import { ShareButton } from './share-button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatMarketCap } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -45,6 +46,10 @@ export function IndustryDashboard() {
                   {lastUpdated} 기준
                 </span>
               )}
+              <ShareButton
+                title="Sector King - 투자 패권 지도"
+                description="산업별 섹터 시장 지배력 순위 시각화"
+              />
               <SearchTrigger />
               <HelpButton pageId="dashboard" />
               <ThemeToggle />

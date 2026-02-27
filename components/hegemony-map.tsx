@@ -9,6 +9,7 @@ import { DateSelector } from './date-selector'
 import { ThemeToggle } from './theme-toggle'
 import { SearchTrigger } from './search-trigger'
 import { HelpButton } from './onboarding/help-button'
+import { ShareButton } from './share-button'
 import { IndustryTitle } from './industry-title'
 import { CompanyStatistics } from './company-statistics'
 import { PriceChangeCard } from './price-change-card'
@@ -91,6 +92,10 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
                   <span>등락율</span>
                 </Link>
               </div>
+              <ShareButton
+                title="투자 패권 지도 | Sector King"
+                description="산업 섹터별 시장 지배력 순위 시각화"
+              />
               <SearchTrigger />
               <HelpButton pageId="hegemony-map" />
               <ThemeToggle />

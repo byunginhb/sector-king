@@ -8,6 +8,7 @@ import { formatFlowAmount } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SearchTrigger } from '@/components/search-trigger'
+import { ShareButton } from '@/components/share-button'
 import { ThemeToggle } from '@/components/theme-toggle'
 import type { IndustryMoneyFlowSummary } from '@/types'
 
@@ -65,6 +66,10 @@ export function IndustryMoneyFlowPageContent() {
             </div>
 
             <div className="flex items-center gap-3">
+              <ShareButton
+                title="산업별 자금 흐름 | Sector King"
+                description="산업별 자금 유입/유출 비교 분석"
+              />
               <SearchTrigger />
               <ThemeToggle />
               {/* Period Selector */}
