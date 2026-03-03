@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
 
 const GOOGLE_FORM_URL = 'https://forms.gle/vtZzRNsEe8cirqkB9'
@@ -11,23 +12,37 @@ export function Footer() {
             <p className="text-sm font-semibold text-foreground">Sector King</p>
             <p className="text-sm text-muted-foreground">산업별 투자 패권 지도</p>
           </div>
-          <a
-            href={GOOGLE_FORM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            문의하기
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          <nav className="flex items-center gap-4 flex-wrap">
+            <Link
+              href="/methodology"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              방법론
+            </Link>
+            <Link
+              href="/methodology#scoring"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              점수 산출 공식
+            </Link>
+            <a
+              href={GOOGLE_FORM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              문의하기
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </nav>
         </div>
 
-        <div className="mt-6 border-t border-border pt-4">
+        <div className="mt-6 border-t border-border pt-4 space-y-2">
           <p className="text-xs text-muted-foreground">
-            &copy; 2025 Sector King. All rights reserved.
+            데이터 출처: Yahoo Finance · 업데이트: 매일 00:00 KST · 추적: 120+ 기업 / 9개 산업
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            본 사이트의 정보는 투자 권유가 아니며, 투자 결정의 책임은 이용자에게 있습니다.
+          <p className="text-xs text-muted-foreground">
+            &copy; 2025 Sector King. 본 사이트의 정보는 투자 권유가 아니며, 투자 결정의 책임은 이용자에게 있습니다.
           </p>
         </div>
       </div>

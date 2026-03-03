@@ -95,6 +95,25 @@ export function formatRecommendation(key: string | null): string {
   return RECOMMENDATION_LABELS[key] ?? key
 }
 
+export function formatRelativeTime(dateStr: string): string {
+  const now = new Date()
+  const date = new Date(dateStr)
+
+  if (isNaN(date.getTime())) return dateStr
+
+  const diffMs = now.getTime() - date.getTime()
+
+  if (diffMs < 0) return formatDate(dateStr)
+
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  if (diffHours < 1) return '방금 업데이트'
+  if (diffHours < 24) return `${diffHours}시간 전`
+  if (diffDays < 7) return `${diffDays}일 전`
+  return formatDate(dateStr)
+}
+
 export function formatFlowAmount(amount: number): string {
   const absAmount = Math.abs(amount)
   if (absAmount >= 1e12) {

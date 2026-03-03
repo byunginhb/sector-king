@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useCompany } from '@/hooks/use-company'
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
@@ -107,7 +108,7 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
-                {stockLink.label}
+                이 데이터 직접 확인
               </a>
             )
           })()}
@@ -282,18 +283,18 @@ function ScoreAnalysis({
           })}
         </div>
 
-        {/* Methodology Note */}
-        <details className="pt-2 border-t border-border">
-          <summary className="text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
-            점수 산정 방식 알아보기
-          </summary>
-          <div className="mt-2 space-y-1.5 text-[11px] text-muted-foreground">
-            <p>4개 차원(규모·성장성·수익성·시장 평가)의 합산으로 100점 만점 기준 산출됩니다.</p>
-            <p>점수는 급격한 변동을 완화하기 위해 지수이동평균(EMA)으로 스무딩 처리됩니다.</p>
-            <p>순위는 스무딩된 점수 순서대로 결정됩니다. 동점일 경우 시가총액이 큰 종목이 우선합니다.</p>
-            <p>시총·거래량은 매일, 재무·애널리스트 지표는 주간 업데이트됩니다.</p>
-          </div>
-        </details>
+        {/* Methodology Link + Data Source */}
+        <div className="pt-2 border-t border-border flex items-center justify-between">
+          <Link
+            href="/methodology"
+            className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            방법론 상세 보기 →
+          </Link>
+          <span className="text-[11px] text-muted-foreground">
+            데이터 출처: Yahoo Finance
+          </span>
+        </div>
       </div>
     </div>
   )

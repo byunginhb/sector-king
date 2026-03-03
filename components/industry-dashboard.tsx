@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useIndustries } from '@/hooks/use-industries'
 import { usePageTour } from '@/hooks/use-page-tour'
@@ -8,7 +9,7 @@ import { SearchTrigger } from './search-trigger'
 import { HelpButton } from './onboarding/help-button'
 import { ShareButton } from './share-button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatMarketCap } from '@/lib/format'
+import { formatMarketCap, formatRelativeTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { CompanyStatsCard } from '@/components/dashboard/company-stats-card'
 import { PriceChangesCard } from '@/components/dashboard/price-changes-card'
@@ -42,9 +43,7 @@ export function IndustryDashboard() {
             </div>
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               {lastUpdated && (
-                <span className="text-xs text-muted-foreground">
-                  {lastUpdated} 기준
-                </span>
+                <UpdateTimestamp dateStr={lastUpdated} />
               )}
               <ShareButton
                 title="Sector King - 투자 패권 지도"
@@ -227,6 +226,35 @@ function DashboardSkeleton() {
         </div>
       </main>
     </div>
+  )
+}
+
+function UpdateTimestamp({ dateStr }: { dateStr: string }) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return <span className="text-xs text-muted-foreground">{dateStr} 기준</span>
+  }
+
+  const relative = formatRelativeTime(dateStr)
+  const diffDays = Math.floor(
+    (Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24)
+  )
+  const isStale = diffDays >= 1
+
+  return (
+    <span
+      className={cn(
+        'text-xs',
+        isStale ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+      )}
+    >
+      {dateStr} · {relative}
+    </span>
   )
 }
 
