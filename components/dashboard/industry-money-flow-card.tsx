@@ -194,9 +194,9 @@ export function IndustryMoneyFlowCard() {
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       {/* Header */}
       <div className="px-5 py-4 border-b border-border bg-muted/30">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-lg font-bold text-card-foreground flex items-center gap-2 shrink-0">
-            <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <h3 className="text-lg font-bold text-card-foreground flex items-center gap-2 min-w-0">
+            <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
             산업별 자금 흐름
