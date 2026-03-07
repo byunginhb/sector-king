@@ -217,221 +217,221 @@ const INDUSTRY_CATEGORIES = [
 
 const SECTOR_COMPANIES = [
   // Computer OS
-  { sectorId: 'os', ticker: 'MSFT', rank: 1, notes: null },
-  { sectorId: 'os', ticker: 'AAPL', rank: 2, notes: null },
+  { sectorId: 'os', ticker: 'MSFT', rank: 1, revenueWeight: 0.22, notes: null },
+  { sectorId: 'os', ticker: 'AAPL', rank: 2, revenueWeight: 0.10, notes: null },
 
   // CPU
-  { sectorId: 'cpu', ticker: 'INTC', rank: 1, notes: null },
-  { sectorId: 'cpu', ticker: 'AMD', rank: 2, notes: null },
-  { sectorId: 'cpu', ticker: 'AAPL', rank: 3, notes: '애플 등 ARM 기반' },
+  { sectorId: 'cpu', ticker: 'INTC', rank: 1, revenueWeight: 0.80, notes: null },
+  { sectorId: 'cpu', ticker: 'AMD', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'cpu', ticker: 'AAPL', rank: 3, revenueWeight: 0.05, notes: '애플 등 ARM 기반' },
 
   // DDR
-  { sectorId: 'ddr', ticker: '005930.KS', rank: 1, notes: null },
-  { sectorId: 'ddr', ticker: '000660.KS', rank: 2, notes: null },
-  { sectorId: 'ddr', ticker: 'MU', rank: 3, notes: null },
+  { sectorId: 'ddr', ticker: '005930.KS', rank: 1, revenueWeight: 0.20, notes: null },
+  { sectorId: 'ddr', ticker: '000660.KS', rank: 2, revenueWeight: 0.30, notes: null },
+  { sectorId: 'ddr', ticker: 'MU', rank: 3, revenueWeight: 0.30, notes: null },
 
   // Search
-  { sectorId: 'search', ticker: 'GOOGL', rank: 1, notes: null },
+  { sectorId: 'search', ticker: 'GOOGL', rank: 1, revenueWeight: 0.57, notes: null },
 
   // Online Ads
-  { sectorId: 'online_ads', ticker: 'GOOGL', rank: 1, notes: null },
-  { sectorId: 'online_ads', ticker: 'META', rank: 2, notes: null },
-  { sectorId: 'online_ads', ticker: 'AMZN', rank: 3, notes: null },
+  { sectorId: 'online_ads', ticker: 'GOOGL', rank: 1, revenueWeight: 0.80, notes: null },
+  { sectorId: 'online_ads', ticker: 'META', rank: 2, revenueWeight: 0.97, notes: null },
+  { sectorId: 'online_ads', ticker: 'AMZN', rank: 3, revenueWeight: 0.08, notes: null },
 
   // E-commerce
-  { sectorId: 'ecommerce', ticker: 'AMZN', rank: 1, notes: null },
-  { sectorId: 'ecommerce', ticker: 'WMT', rank: 2, notes: null },
-  { sectorId: 'ecommerce', ticker: 'BABA', rank: 3, notes: '알리바바, 테무 등' },
+  { sectorId: 'ecommerce', ticker: 'AMZN', rank: 1, revenueWeight: 0.40, notes: null },
+  { sectorId: 'ecommerce', ticker: 'WMT', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'ecommerce', ticker: 'BABA', rank: 3, revenueWeight: 1.0, notes: '알리바바, 테무 등' },
 
   // Mobile OS
-  { sectorId: 'mobile_os', ticker: 'AAPL', rank: 1, notes: null },
-  { sectorId: 'mobile_os', ticker: 'GOOGL', rank: 2, notes: null },
+  { sectorId: 'mobile_os', ticker: 'AAPL', rank: 1, revenueWeight: 0.35, notes: null },
+  { sectorId: 'mobile_os', ticker: 'GOOGL', rank: 2, revenueWeight: 0.12, notes: null },
 
   // Mobile Device
-  { sectorId: 'mobile_device', ticker: 'AAPL', rank: 1, notes: null },
-  { sectorId: 'mobile_device', ticker: '005930.KS', rank: 2, notes: null },
-  { sectorId: 'mobile_device', ticker: '1810.HK', rank: 3, notes: null },
+  { sectorId: 'mobile_device', ticker: 'AAPL', rank: 1, revenueWeight: 0.50, notes: null },
+  { sectorId: 'mobile_device', ticker: '005930.KS', rank: 2, revenueWeight: 0.25, notes: null },
+  { sectorId: 'mobile_device', ticker: '1810.HK', rank: 3, revenueWeight: 1.0, notes: null },
 
   // AP
-  { sectorId: 'ap', ticker: '2454.TW', rank: 1, notes: null },
-  { sectorId: 'ap', ticker: 'QCOM', rank: 2, notes: null },
-  { sectorId: 'ap', ticker: 'AAPL', rank: 3, notes: null },
+  { sectorId: 'ap', ticker: '2454.TW', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'ap', ticker: 'QCOM', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'ap', ticker: 'AAPL', rank: 3, revenueWeight: 0.05, notes: null },
 
   // Social Media
-  { sectorId: 'social_media', ticker: 'META', rank: 1, notes: null },
-  { sectorId: 'social_media', ticker: 'SNAP', rank: 2, notes: '틱톡 (비상장)' },
+  { sectorId: 'social_media', ticker: 'META', rank: 1, revenueWeight: 0.97, notes: null },
+  { sectorId: 'social_media', ticker: 'SNAP', rank: 2, revenueWeight: 1.0, notes: '틱톡 (비상장)' },
 
   // Online Video
-  { sectorId: 'online_video', ticker: 'GOOGL', rank: 1, notes: null },
-  { sectorId: 'online_video', ticker: 'NFLX', rank: 2, notes: null },
-  { sectorId: 'online_video', ticker: 'DIS', rank: 3, notes: null },
+  { sectorId: 'online_video', ticker: 'GOOGL', rank: 1, revenueWeight: 0.10, notes: null },
+  { sectorId: 'online_video', ticker: 'NFLX', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'online_video', ticker: 'DIS', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Data Center
-  { sectorId: 'data_center', ticker: 'AMZN', rank: 1, notes: null },
-  { sectorId: 'data_center', ticker: 'MSFT', rank: 2, notes: null },
-  { sectorId: 'data_center', ticker: 'GOOGL', rank: 3, notes: null },
+  { sectorId: 'data_center', ticker: 'AMZN', rank: 1, revenueWeight: 0.17, notes: null },
+  { sectorId: 'data_center', ticker: 'MSFT', rank: 2, revenueWeight: 0.25, notes: null },
+  { sectorId: 'data_center', ticker: 'GOOGL', rank: 3, revenueWeight: 0.11, notes: null },
 
   // AI Model
-  { sectorId: 'ai_model', ticker: 'MSFT', rank: 1, notes: '오픈AI (비상장)' },
-  { sectorId: 'ai_model', ticker: 'GOOGL', rank: 2, notes: null },
-  { sectorId: 'ai_model', ticker: 'META', rank: 3, notes: '그 외 다수' },
+  { sectorId: 'ai_model', ticker: 'MSFT', rank: 1, revenueWeight: 0.10, notes: '오픈AI (비상장)' },
+  { sectorId: 'ai_model', ticker: 'GOOGL', rank: 2, revenueWeight: 0.05, notes: null },
+  { sectorId: 'ai_model', ticker: 'META', rank: 3, revenueWeight: 0.02, notes: '그 외 다수' },
 
   // GPU
-  { sectorId: 'gpu', ticker: 'NVDA', rank: 1, notes: null },
-  { sectorId: 'gpu', ticker: 'AMD', rank: 2, notes: null },
-  { sectorId: 'gpu', ticker: 'TSM', rank: 3, notes: null },
+  { sectorId: 'gpu', ticker: 'NVDA', rank: 1, revenueWeight: 0.85, notes: null },
+  { sectorId: 'gpu', ticker: 'AMD', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'gpu', ticker: 'TSM', rank: 3, revenueWeight: 0.15, notes: null },
 
   // ASIC
-  { sectorId: 'asic', ticker: 'GOOGL', rank: 1, notes: '구글 등' },
-  { sectorId: 'asic', ticker: 'AVGO', rank: 2, notes: '브로드컴 등' },
-  { sectorId: 'asic', ticker: 'TSM', rank: 3, notes: null },
+  { sectorId: 'asic', ticker: 'GOOGL', rank: 1, revenueWeight: 0.02, notes: '구글 등' },
+  { sectorId: 'asic', ticker: 'AVGO', rank: 2, revenueWeight: 1.0, notes: '브로드컴 등' },
+  { sectorId: 'asic', ticker: 'TSM', rank: 3, revenueWeight: 0.15, notes: null },
 
   // HBM
-  { sectorId: 'hbm', ticker: '000660.KS', rank: 1, notes: null },
-  { sectorId: 'hbm', ticker: '005930.KS', rank: 2, notes: null },
-  { sectorId: 'hbm', ticker: 'MU', rank: 3, notes: null },
+  { sectorId: 'hbm', ticker: '000660.KS', rank: 1, revenueWeight: 0.20, notes: null },
+  { sectorId: 'hbm', ticker: '005930.KS', rank: 2, revenueWeight: 0.08, notes: null },
+  { sectorId: 'hbm', ticker: 'MU', rank: 3, revenueWeight: 0.20, notes: null },
 
   // Blockchain
-  { sectorId: 'blockchain', ticker: 'COIN', rank: 1, notes: null },
+  { sectorId: 'blockchain', ticker: 'COIN', rank: 1, revenueWeight: 1.0, notes: null },
 
   // Robot
-  { sectorId: 'robot', ticker: 'TSLA', rank: 1, notes: null },
-  { sectorId: 'robot', ticker: 'NVDA', rank: 2, notes: null },
-  { sectorId: 'robot', ticker: '005380.KS', rank: 3, notes: '현대차 등 보스톤 다이나믹스' },
+  { sectorId: 'robot', ticker: 'TSLA', rank: 1, revenueWeight: 0.05, notes: null },
+  { sectorId: 'robot', ticker: 'NVDA', rank: 2, revenueWeight: 0.05, notes: null },
+  { sectorId: 'robot', ticker: '005380.KS', rank: 3, revenueWeight: 1.0, notes: '현대차 등 보스톤 다이나믹스' },
 
   // Autonomous
-  { sectorId: 'autonomous', ticker: 'TSLA', rank: 1, notes: null },
-  { sectorId: 'autonomous', ticker: 'GOOGL', rank: 2, notes: null },
-  { sectorId: 'autonomous', ticker: 'NVDA', rank: 3, notes: '엔비디아, BYD' },
+  { sectorId: 'autonomous', ticker: 'TSLA', rank: 1, revenueWeight: 0.10, notes: null },
+  { sectorId: 'autonomous', ticker: 'GOOGL', rank: 2, revenueWeight: 0.01, notes: null },
+  { sectorId: 'autonomous', ticker: 'NVDA', rank: 3, revenueWeight: 0.10, notes: '엔비디아, BYD' },
 
   // Quantum
-  { sectorId: 'quantum', ticker: 'IONQ', rank: 1, notes: '아이온큐, IBM 등' },
-  { sectorId: 'quantum', ticker: 'MSFT', rank: 2, notes: null },
-  { sectorId: 'quantum', ticker: 'GOOGL', rank: 3, notes: null },
+  { sectorId: 'quantum', ticker: 'IONQ', rank: 1, revenueWeight: 1.0, notes: '아이온큐, IBM 등' },
+  { sectorId: 'quantum', ticker: 'MSFT', rank: 2, revenueWeight: 0.01, notes: null },
+  { sectorId: 'quantum', ticker: 'GOOGL', rank: 3, revenueWeight: 0.01, notes: null },
 
   // Space
-  { sectorId: 'space', ticker: 'RKLB', rank: 1, notes: '스페이스X (비상장)' },
-  { sectorId: 'space', ticker: 'AMZN', rank: 2, notes: '블루 오리진 등' },
+  { sectorId: 'space', ticker: 'RKLB', rank: 1, revenueWeight: 1.0, notes: '스페이스X (비상장)' },
+  { sectorId: 'space', ticker: 'AMZN', rank: 2, revenueWeight: 0.01, notes: '블루 오리진 등' },
 
   // Payments
-  { sectorId: 'payments', ticker: 'V', rank: 1, notes: null },
-  { sectorId: 'payments', ticker: 'MA', rank: 2, notes: null },
-  { sectorId: 'payments', ticker: 'PYPL', rank: 3, notes: null },
+  { sectorId: 'payments', ticker: 'V', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'payments', ticker: 'MA', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'payments', ticker: 'PYPL', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Digital Banking
-  { sectorId: 'digital_banking', ticker: 'JPM', rank: 1, notes: null },
-  { sectorId: 'digital_banking', ticker: 'SQ', rank: 2, notes: null },
-  { sectorId: 'digital_banking', ticker: 'SOFI', rank: 3, notes: null },
+  { sectorId: 'digital_banking', ticker: 'JPM', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'digital_banking', ticker: 'SQ', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'digital_banking', ticker: 'SOFI', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Crypto Exchange
-  { sectorId: 'crypto_exchange', ticker: 'COIN', rank: 1, notes: null },
+  { sectorId: 'crypto_exchange', ticker: 'COIN', rank: 1, revenueWeight: 1.0, notes: null },
 
   // InsurTech
-  { sectorId: 'insurance_tech', ticker: 'LMND', rank: 1, notes: null },
-  { sectorId: 'insurance_tech', ticker: 'ROOT', rank: 2, notes: null },
+  { sectorId: 'insurance_tech', ticker: 'LMND', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'insurance_tech', ticker: 'ROOT', rank: 2, revenueWeight: 1.0, notes: null },
 
   // Pharma
-  { sectorId: 'pharma', ticker: 'LLY', rank: 1, notes: null },
-  { sectorId: 'pharma', ticker: 'JNJ', rank: 2, notes: null },
-  { sectorId: 'pharma', ticker: 'PFE', rank: 3, notes: null },
+  { sectorId: 'pharma', ticker: 'LLY', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'pharma', ticker: 'JNJ', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'pharma', ticker: 'PFE', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Biotech
-  { sectorId: 'biotech', ticker: 'MRNA', rank: 1, notes: null },
-  { sectorId: 'biotech', ticker: 'REGN', rank: 2, notes: null },
-  { sectorId: 'biotech', ticker: 'VRTX', rank: 3, notes: null },
+  { sectorId: 'biotech', ticker: 'MRNA', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'biotech', ticker: 'REGN', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'biotech', ticker: 'VRTX', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Medical Devices
-  { sectorId: 'medical_devices', ticker: 'ABT', rank: 1, notes: null },
-  { sectorId: 'medical_devices', ticker: 'MDT', rank: 2, notes: null },
-  { sectorId: 'medical_devices', ticker: 'ISRG', rank: 3, notes: null },
+  { sectorId: 'medical_devices', ticker: 'ABT', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'medical_devices', ticker: 'MDT', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'medical_devices', ticker: 'ISRG', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Digital Health
-  { sectorId: 'digital_health', ticker: 'VEEV', rank: 1, notes: null },
-  { sectorId: 'digital_health', ticker: 'TDOC', rank: 2, notes: null },
+  { sectorId: 'digital_health', ticker: 'VEEV', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'digital_health', ticker: 'TDOC', rank: 2, revenueWeight: 1.0, notes: null },
 
   // Gaming
-  { sectorId: 'gaming', ticker: 'MSFT', rank: 1, notes: 'Xbox, Activision Blizzard' },
-  { sectorId: 'gaming', ticker: 'EA', rank: 2, notes: null },
-  { sectorId: 'gaming', ticker: 'RBLX', rank: 3, notes: null },
+  { sectorId: 'gaming', ticker: 'MSFT', rank: 1, revenueWeight: 0.10, notes: 'Xbox, Activision Blizzard' },
+  { sectorId: 'gaming', ticker: 'EA', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'gaming', ticker: 'RBLX', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Streaming
-  { sectorId: 'streaming', ticker: 'NFLX', rank: 1, notes: null },
-  { sectorId: 'streaming', ticker: 'DIS', rank: 2, notes: 'Disney+' },
-  { sectorId: 'streaming', ticker: 'SPOT', rank: 3, notes: null },
+  { sectorId: 'streaming', ticker: 'NFLX', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'streaming', ticker: 'DIS', rank: 2, revenueWeight: 1.0, notes: 'Disney+' },
+  { sectorId: 'streaming', ticker: 'SPOT', rank: 3, revenueWeight: 1.0, notes: null },
 
   // VR/AR
-  { sectorId: 'vr_ar', ticker: 'META', rank: 1, notes: 'Quest' },
-  { sectorId: 'vr_ar', ticker: 'AAPL', rank: 2, notes: 'Vision Pro' },
-  { sectorId: 'vr_ar', ticker: 'U', rank: 3, notes: null },
+  { sectorId: 'vr_ar', ticker: 'META', rank: 1, revenueWeight: 0.03, notes: 'Quest' },
+  { sectorId: 'vr_ar', ticker: 'AAPL', rank: 2, revenueWeight: 0.01, notes: 'Vision Pro' },
+  { sectorId: 'vr_ar', ticker: 'U', rank: 3, revenueWeight: 1.0, notes: null },
 
   // eSports
-  { sectorId: 'esports', ticker: 'RBLX', rank: 1, notes: null },
+  { sectorId: 'esports', ticker: 'RBLX', rank: 1, revenueWeight: 1.0, notes: null },
 
   // Foundry (반도체 파운드리)
-  { sectorId: 'foundry', ticker: 'TSM', rank: 1, notes: null },
-  { sectorId: 'foundry', ticker: '005930.KS', rank: 2, notes: null },
-  { sectorId: 'foundry', ticker: 'INTC', rank: 3, notes: null },
+  { sectorId: 'foundry', ticker: 'TSM', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'foundry', ticker: '005930.KS', rank: 2, revenueWeight: 0.12, notes: null },
+  { sectorId: 'foundry', ticker: 'INTC', rank: 3, revenueWeight: 0.10, notes: null },
 
   // Memory (반도체 메모리)
-  { sectorId: 'memory', ticker: '005930.KS', rank: 1, notes: null },
-  { sectorId: 'memory', ticker: '000660.KS', rank: 2, notes: null },
-  { sectorId: 'memory', ticker: 'MU', rank: 3, notes: null },
+  { sectorId: 'memory', ticker: '005930.KS', rank: 1, revenueWeight: 0.30, notes: null },
+  { sectorId: 'memory', ticker: '000660.KS', rank: 2, revenueWeight: 0.50, notes: null },
+  { sectorId: 'memory', ticker: 'MU', rank: 3, revenueWeight: 0.50, notes: null },
 
   // Equipment (반도체 장비)
-  { sectorId: 'equipment', ticker: 'ASML', rank: 1, notes: null },
-  { sectorId: 'equipment', ticker: 'AMAT', rank: 2, notes: null },
-  { sectorId: 'equipment', ticker: 'LRCX', rank: 3, notes: null },
+  { sectorId: 'equipment', ticker: 'ASML', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'equipment', ticker: 'AMAT', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'equipment', ticker: 'LRCX', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Materials (반도체 소재)
-  { sectorId: 'materials', ticker: '4063.T', rank: 1, notes: null },
+  { sectorId: 'materials', ticker: '4063.T', rank: 1, revenueWeight: 1.0, notes: null },
 
   // IaaS (클라우드)
-  { sectorId: 'iaas', ticker: 'AMZN', rank: 1, notes: 'AWS' },
-  { sectorId: 'iaas', ticker: 'MSFT', rank: 2, notes: 'Azure' },
-  { sectorId: 'iaas', ticker: 'GOOGL', rank: 3, notes: 'GCP' },
+  { sectorId: 'iaas', ticker: 'AMZN', rank: 1, revenueWeight: 0.17, notes: 'AWS' },
+  { sectorId: 'iaas', ticker: 'MSFT', rank: 2, revenueWeight: 0.25, notes: 'Azure' },
+  { sectorId: 'iaas', ticker: 'GOOGL', rank: 3, revenueWeight: 0.11, notes: 'GCP' },
 
   // SaaS (클라우드)
-  { sectorId: 'saas', ticker: 'CRM', rank: 1, notes: null },
-  { sectorId: 'saas', ticker: 'NOW', rank: 2, notes: null },
-  { sectorId: 'saas', ticker: 'WDAY', rank: 3, notes: null },
+  { sectorId: 'saas', ticker: 'CRM', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'saas', ticker: 'NOW', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'saas', ticker: 'WDAY', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Data Platform (클라우드)
-  { sectorId: 'data_platform', ticker: 'SNOW', rank: 1, notes: null },
-  { sectorId: 'data_platform', ticker: 'MDB', rank: 2, notes: null },
+  { sectorId: 'data_platform', ticker: 'SNOW', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'data_platform', ticker: 'MDB', rank: 2, revenueWeight: 1.0, notes: null },
 
   // Endpoint (사이버보안)
-  { sectorId: 'endpoint', ticker: 'CRWD', rank: 1, notes: null },
-  { sectorId: 'endpoint', ticker: 'S', rank: 2, notes: null },
-  { sectorId: 'endpoint', ticker: 'MSFT', rank: 3, notes: 'Defender' },
+  { sectorId: 'endpoint', ticker: 'CRWD', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'endpoint', ticker: 'S', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'endpoint', ticker: 'MSFT', rank: 3, revenueWeight: 0.05, notes: 'Defender' },
 
   // Network Security (사이버보안)
-  { sectorId: 'network_security', ticker: 'PANW', rank: 1, notes: null },
-  { sectorId: 'network_security', ticker: 'FTNT', rank: 2, notes: null },
-  { sectorId: 'network_security', ticker: 'CSCO', rank: 3, notes: null },
+  { sectorId: 'network_security', ticker: 'PANW', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'network_security', ticker: 'FTNT', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'network_security', ticker: 'CSCO', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Identity (사이버보안)
-  { sectorId: 'identity', ticker: 'OKTA', rank: 1, notes: null },
-  { sectorId: 'identity', ticker: 'MSFT', rank: 2, notes: 'Entra ID' },
+  { sectorId: 'identity', ticker: 'OKTA', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'identity', ticker: 'MSFT', rank: 2, revenueWeight: 0.03, notes: 'Entra ID' },
 
   // EV (전기차)
-  { sectorId: 'ev', ticker: 'TSLA', rank: 1, notes: null },
-  { sectorId: 'ev', ticker: 'BYDDY', rank: 2, notes: null },
-  { sectorId: 'ev', ticker: 'RIVN', rank: 3, notes: null },
+  { sectorId: 'ev', ticker: 'TSLA', rank: 1, revenueWeight: 0.80, notes: null },
+  { sectorId: 'ev', ticker: 'BYDDY', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'ev', ticker: 'RIVN', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Battery (배터리)
-  { sectorId: 'battery', ticker: 'CATL', rank: 1, notes: null },
-  { sectorId: 'battery', ticker: '373220.KS', rank: 2, notes: null },
-  { sectorId: 'battery', ticker: '006400.KS', rank: 3, notes: null },
+  { sectorId: 'battery', ticker: 'CATL', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'battery', ticker: '373220.KS', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'battery', ticker: '006400.KS', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Charging (충전 인프라)
-  { sectorId: 'charging', ticker: 'CHPT', rank: 1, notes: null },
-  { sectorId: 'charging', ticker: 'EVGO', rank: 2, notes: null },
-  { sectorId: 'charging', ticker: 'BLNK', rank: 3, notes: null },
+  { sectorId: 'charging', ticker: 'CHPT', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'charging', ticker: 'EVGO', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'charging', ticker: 'BLNK', rank: 3, revenueWeight: 1.0, notes: null },
 
   // Renewable (재생에너지)
-  { sectorId: 'renewable', ticker: 'NEE', rank: 1, notes: null },
-  { sectorId: 'renewable', ticker: 'ENPH', rank: 2, notes: null },
-  { sectorId: 'renewable', ticker: 'FSLR', rank: 3, notes: null },
+  { sectorId: 'renewable', ticker: 'NEE', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'renewable', ticker: 'ENPH', rank: 2, revenueWeight: 1.0, notes: null },
+  { sectorId: 'renewable', ticker: 'FSLR', rank: 3, revenueWeight: 1.0, notes: null },
 ]
 
 async function seed() {
@@ -475,6 +475,7 @@ async function seed() {
       sector_id TEXT REFERENCES sectors(id),
       ticker TEXT REFERENCES companies(ticker),
       rank INTEGER NOT NULL CHECK (rank >= 1 AND rank <= 5),
+      revenue_weight REAL NOT NULL DEFAULT 1.0,
       notes TEXT,
       UNIQUE(sector_id, ticker)
     );

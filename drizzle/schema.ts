@@ -30,6 +30,7 @@ export const sectorCompanies = sqliteTable(
     sectorId: text('sector_id').references(() => sectors.id),
     ticker: text('ticker').references(() => companies.ticker),
     rank: integer('rank').notNull(),
+    revenueWeight: real('revenue_weight').default(1.0).notNull(),
     notes: text('notes'),
   },
   (table) => [

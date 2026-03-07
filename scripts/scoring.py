@@ -150,7 +150,8 @@ def calculate_hegemony_scores(conn: sqlite3.Connection, target_date: str):
             SELECT sc.ticker, ds.market_cap, ds.volume, ds.avg_volume, ds.price,
                    cs.revenue_growth, cs.earnings_growth, cs.operating_margin,
                    cs.return_on_equity, cs.recommendation_key, cs.analyst_count,
-                   cs.target_mean_price, cs.free_cashflow, cs.beta, cs.debt_to_equity
+                   cs.target_mean_price, cs.free_cashflow, cs.beta, cs.debt_to_equity,
+                   sc.revenue_weight
             FROM sector_companies sc
             LEFT JOIN (
                 SELECT ticker, market_cap, volume, avg_volume, price
@@ -182,18 +183,21 @@ def calculate_hegemony_scores(conn: sqlite3.Connection, target_date: str):
             "free_cashflow",
             "beta",
             "debt_to_equity",
+            "revenue_weight",
         ]
 
         sector_total_mc = sum(
-            (row[1] or 0) for row in companies
+            (row[1] or 0) * (row[15] or 1.0) for row in companies
         )
 
         for row in companies:
             data = dict(zip(col_names, row))
             ticker = data["ticker"]
+            rw = data["revenue_weight"] or 1.0
+            weighted_mc = (data["market_cap"] or 0) * rw if data["market_cap"] else None
 
             mc_score, vol_score = calculate_scale_score(
-                data["market_cap"],
+                weighted_mc,
                 data["volume"],
                 data["avg_volume"],
                 sector_total_mc,
@@ -318,7 +322,7 @@ def update_sector_rankings(conn: sqlite3.Connection):
             """
             SELECT sc.ticker, sc.rank as old_rank,
                    COALESCE(cs.smoothed_score, 0) as score,
-                   COALESCE(ds.market_cap, 0) as mc
+                   COALESCE(ds.market_cap, 0) * sc.revenue_weight as weighted_mc
             FROM sector_companies sc
             LEFT JOIN company_scores cs ON sc.ticker = cs.ticker
             LEFT JOIN (
@@ -327,7 +331,7 @@ def update_sector_rankings(conn: sqlite3.Connection):
                 WHERE date = (SELECT MAX(date) FROM daily_snapshots)
             ) ds ON sc.ticker = ds.ticker
             WHERE sc.sector_id = ?
-            ORDER BY score DESC, mc DESC
+            ORDER BY score DESC, weighted_mc DESC
         """,
             (sector_id,),
         ).fetchall()
