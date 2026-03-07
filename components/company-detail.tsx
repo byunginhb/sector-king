@@ -5,7 +5,7 @@ import { useCompany } from '@/hooks/use-company'
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatMarketCap, formatPrice, formatPriceChange, formatPercent, formatScore, formatRecommendation } from '@/lib/format'
+import { formatMarketCap, formatPrice, formatPriceChange, formatPercent, formatScore, formatRecommendation, formatKrw } from '@/lib/format'
 import { SCORING } from '@/lib/scoring-methodology'
 import { getPriceChangeStyle, getRankStyle } from '@/lib/styles'
 import { cn } from '@/lib/utils'
@@ -78,9 +78,16 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
       {snapshot && (
         <div className="bg-linear-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50 rounded-xl p-4 border border-indigo-100 dark:border-indigo-800">
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-foreground">
-              {formatPrice(snapshot.price ?? null)}
-            </span>
+            <div>
+              <span className="text-3xl font-bold text-foreground">
+                {formatPrice(snapshot.price ?? null)}
+              </span>
+              {snapshot.price != null && (
+                <span className="text-sm text-muted-foreground ml-2">
+                  ({formatKrw(snapshot.price)})
+                </span>
+              )}
+            </div>
             {cumulativeChange && (
               <div className="flex items-baseline gap-1">
                 <span className={cn('text-lg font-semibold', getPriceChangeStyle(cumulativeChange.change))}>
@@ -93,7 +100,7 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            시가총액: {formatMarketCap(snapshot.marketCap ?? null)}
+            시가총액: {formatMarketCap(snapshot.marketCap ?? null)}{snapshot.marketCap != null && ` (${formatKrw(snapshot.marketCap)})`}
           </p>
           {/* Stock Link */}
           {(() => {

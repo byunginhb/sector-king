@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useIndustryMoneyFlow } from '@/hooks/use-industry-money-flow'
-import { formatFlowAmount } from '@/lib/format'
+import { formatFlowAmount, formatKrw } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CardError } from './card-error'
@@ -379,7 +379,7 @@ function IndustryFlowItem({
           <div className="mb-3">
             <motion.div
               className={cn(
-                'text-xl font-bold',
+                'text-base sm:text-xl font-bold',
                 isInflow
                   ? 'text-red-600 dark:text-red-400'
                   : 'text-blue-600 dark:text-blue-400'
@@ -393,6 +393,16 @@ function IndustryFlowItem({
             >
               {isInflow ? '+' : '-'}{formatFlowAmount(Math.abs(industry.netFlow))}
             </motion.div>
+            <div
+              className={cn(
+                'text-xs opacity-70',
+                isInflow
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-blue-600 dark:text-blue-400'
+              )}
+            >
+              ({formatKrw(industry.netFlow)})
+            </div>
             <div
               className={cn(
                 'text-sm',

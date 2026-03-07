@@ -11,7 +11,7 @@ import {
   ReferenceLine,
 } from 'recharts'
 import type { SectorGrowth } from '@/types'
-import { formatMarketCap } from '@/lib/format'
+import { formatMarketCap, formatKrw } from '@/lib/format'
 
 interface TopSectorsGrowthChartProps {
   data: SectorGrowth[]
@@ -75,7 +75,7 @@ export function TopSectorsGrowthChart({ data, isLoading }: TopSectorsGrowthChart
                 <div key="growth" className="space-y-1">
                   <div className="font-medium">{numValue.toFixed(2)}%</div>
                   <div className="text-xs text-gray-500">
-                    {formatMarketCap(item.startMarketCap)} → {formatMarketCap(item.endMarketCap)}
+                    {formatMarketCap(item.startMarketCap)} ({formatKrw(item.startMarketCap)}) → {formatMarketCap(item.endMarketCap)} ({formatKrw(item.endMarketCap)})
                   </div>
                 </div>,
                 '성장률',

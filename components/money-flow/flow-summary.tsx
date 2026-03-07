@@ -1,25 +1,12 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { formatFlowAmount, formatKrw } from '@/lib/format'
 
 interface FlowSummaryProps {
   totalInflow: number
   totalOutflow: number
   netFlow: number
-}
-
-function formatAmount(amount: number): string {
-  const absAmount = Math.abs(amount)
-  if (absAmount >= 1e12) {
-    return `$${(absAmount / 1e12).toFixed(2)}T`
-  }
-  if (absAmount >= 1e9) {
-    return `$${(absAmount / 1e9).toFixed(2)}B`
-  }
-  if (absAmount >= 1e6) {
-    return `$${(absAmount / 1e6).toFixed(2)}M`
-  }
-  return `$${absAmount.toLocaleString()}`
 }
 
 export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryProps) {
@@ -41,8 +28,11 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
             총 유입
           </span>
         </div>
-        <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
-          +{formatAmount(totalInflow)}
+        <div className="text-xl sm:text-2xl font-bold text-emerald-700 dark:text-emerald-300">
+          +{formatFlowAmount(totalInflow)}
+        </div>
+        <div className="text-sm text-emerald-600/70 dark:text-emerald-400/70">
+          ({formatKrw(totalInflow)})
         </div>
       </div>
 
@@ -54,8 +44,11 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
             총 유출
           </span>
         </div>
-        <div className="text-2xl font-bold text-red-700 dark:text-red-300">
-          -{formatAmount(totalOutflow)}
+        <div className="text-xl sm:text-2xl font-bold text-red-700 dark:text-red-300">
+          -{formatFlowAmount(totalOutflow)}
+        </div>
+        <div className="text-sm text-red-600/70 dark:text-red-400/70">
+          ({formatKrw(totalOutflow)})
         </div>
       </div>
 
@@ -82,11 +75,20 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
         <div
           className={
             isNetPositive
-              ? 'text-2xl font-bold text-blue-700 dark:text-blue-300'
-              : 'text-2xl font-bold text-orange-700 dark:text-orange-300'
+              ? 'text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-300'
+              : 'text-xl sm:text-2xl font-bold text-orange-700 dark:text-orange-300'
           }
         >
-          {isNetPositive ? '+' : '-'}{formatAmount(Math.abs(netFlow))}
+          {isNetPositive ? '+' : '-'}{formatFlowAmount(Math.abs(netFlow))}
+        </div>
+        <div
+          className={
+            isNetPositive
+              ? 'text-sm text-blue-600/70 dark:text-blue-400/70'
+              : 'text-sm text-orange-600/70 dark:text-orange-400/70'
+          }
+        >
+          ({formatKrw(netFlow)})
         </div>
       </div>
     </motion.div>

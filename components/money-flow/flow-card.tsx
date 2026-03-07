@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import type { SectorMoneyFlow } from '@/types'
 import { cn } from '@/lib/utils'
-import { formatFlowAmount } from '@/lib/format'
+import { formatFlowAmount, formatKrw } from '@/lib/format'
 
 interface FlowCardProps {
   flow: SectorMoneyFlow
@@ -382,7 +382,7 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
           <div>
             <motion.div
               className={cn(
-                'text-2xl font-bold',
+                'text-lg sm:text-2xl font-bold',
                 isInflow
                   ? 'text-red-600 dark:text-red-400'
                   : 'text-blue-600 dark:text-blue-400'
@@ -399,6 +399,16 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
               {isInflow ? '+' : '-'}
               {formatFlowAmount(flow.flowAmount)}
             </motion.div>
+            <div
+              className={cn(
+                'text-xs sm:text-sm opacity-70',
+                isInflow
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-blue-600 dark:text-blue-400'
+              )}
+            >
+              ({formatKrw(flow.flowAmount)})
+            </div>
             <div
               className={cn(
                 'text-sm',

@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useIndustryMoneyFlow } from '@/hooks/use-industry-money-flow'
-import { formatFlowAmount } from '@/lib/format'
+import { formatFlowAmount, formatKrw } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SearchTrigger } from '@/components/search-trigger'
@@ -217,8 +217,11 @@ function SummaryCard({
         <span className="text-lg">{icon}</span>
         <span className={cn('text-sm font-medium', s.label)}>{label}</span>
       </div>
-      <div className={cn('text-2xl font-bold', s.value)}>
+      <div className={cn('text-xl sm:text-2xl font-bold', s.value)}>
         {prefix}{formatFlowAmount(Math.abs(amount))}
+      </div>
+      <div className={cn('text-sm opacity-70', s.value)}>
+        ({formatKrw(amount)})
       </div>
     </div>
   )
@@ -448,7 +451,7 @@ function IndustryFlowCard({
             <div>
               <motion.div
                 className={cn(
-                  'text-2xl font-bold',
+                  'text-lg sm:text-2xl font-bold',
                   isInflow
                     ? 'text-emerald-600 dark:text-emerald-400'
                     : 'text-rose-600 dark:text-rose-400'
@@ -459,6 +462,16 @@ function IndustryFlowCard({
                 {isInflow ? '+' : '-'}
                 {formatFlowAmount(Math.abs(industry.netFlow))}
               </motion.div>
+              <div
+                className={cn(
+                  'text-xs sm:text-sm opacity-70',
+                  isInflow
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-rose-600 dark:text-rose-400'
+                )}
+              >
+                ({formatKrw(industry.netFlow)})
+              </div>
               <div
                 className={cn(
                   'text-sm',

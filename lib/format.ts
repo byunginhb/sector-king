@@ -114,6 +114,16 @@ export function formatRelativeTime(dateStr: string): string {
   return formatDate(dateStr)
 }
 
+const KRW_RATE = 1450
+
+export function formatKrw(usdAmount: number): string {
+  const krw = Math.abs(usdAmount) * KRW_RATE
+  if (krw >= 1e12) return `${(krw / 1e12).toFixed(1)}조원`
+  if (krw >= 1e8) return `${Math.round(krw / 1e8).toLocaleString()}억원`
+  if (krw >= 1e4) return `${Math.round(krw / 1e4).toLocaleString()}만원`
+  return `${Math.round(krw).toLocaleString()}원`
+}
+
 export function formatFlowAmount(amount: number): string {
   const absAmount = Math.abs(amount)
   if (absAmount >= 1e12) {

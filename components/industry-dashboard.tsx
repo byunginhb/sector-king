@@ -9,7 +9,7 @@ import { SearchTrigger } from './search-trigger'
 import { HelpButton } from './onboarding/help-button'
 import { ShareButton } from './share-button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatMarketCap, formatRelativeTime } from '@/lib/format'
+import { formatMarketCap, formatRelativeTime, formatKrw } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { CompanyStatsCard } from '@/components/dashboard/company-stats-card'
 import { PriceChangesCard } from '@/components/dashboard/price-changes-card'
@@ -138,8 +138,11 @@ function IndustryCard({
         <div className="mb-4">
           <p className="text-sm text-muted-foreground mb-1">총 시가총액</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-card-foreground">
+            <span className="text-xl sm:text-2xl font-bold text-card-foreground">
               {formatMarketCap(industry.totalMarketCap)}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              ({formatKrw(industry.totalMarketCap)})
             </span>
             <span className={cn('text-sm font-medium', changeColor)}>
               {industry.marketCapChange > 0 ? '+' : ''}

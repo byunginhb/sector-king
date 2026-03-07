@@ -10,7 +10,7 @@ import {
   Cell,
 } from 'recharts'
 import type { CategoryMarketCap } from '@/types'
-import { formatMarketCap } from '@/lib/format'
+import { formatMarketCap, formatKrw } from '@/lib/format'
 
 const CATEGORY_COLORS = [
   '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
@@ -74,7 +74,7 @@ export function CategoryComparisonChart({ data, isLoading }: CategoryComparisonC
             width={70}
           />
           <Tooltip
-            formatter={(value) => [formatMarketCap(value as number), '시가총액']}
+            formatter={(value) => [`${formatMarketCap(value as number)} (${formatKrw(value as number)})`, '시가총액']}
             labelFormatter={(label, payload) => {
               const item = payload?.[0]?.payload as CategoryMarketCap | undefined
               return item ? `${item.name} (${item.sectorCount}개 섹터)` : label
