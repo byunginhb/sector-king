@@ -18,8 +18,10 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams
     const rawSort = searchParams.get('sort') || 'percentChange'
     const rawOrder = searchParams.get('order') || 'desc'
+    const rawDays = searchParams.get('days')
     const sort = (ALLOWED_SORTS as readonly string[]).includes(rawSort) ? rawSort : 'percentChange'
     const order = (ALLOWED_ORDERS as readonly string[]).includes(rawOrder) ? rawOrder : 'desc'
+    const days = rawDays ? Math.min(Math.max(parseInt(rawDays, 10) || 0, 1), 365) : null
     const db = getDb()
     const { filter: industryFilter, errorResponse } = await resolveIndustryFilter(searchParams)
     if (errorResponse) return errorResponse
@@ -45,15 +47,32 @@ export async function GET(
     }
 
     // Step 1: Get min/max dates per ticker using GROUP BY (efficient - single scan)
-    const dateRanges = await db
-      .select({
-        ticker: dailySnapshots.ticker,
-        minDate: sql<string>`MIN(${dailySnapshots.date})`,
-        maxDate: sql<string>`MAX(${dailySnapshots.date})`,
-      })
-      .from(dailySnapshots)
-      .where(inArray(dailySnapshots.ticker, tickerList))
-      .groupBy(dailySnapshots.ticker)
+    const dateRangesQuery = days
+      ? db
+          .select({
+            ticker: dailySnapshots.ticker,
+            minDate: sql<string>`MIN(${dailySnapshots.date})`,
+            maxDate: sql<string>`MAX(${dailySnapshots.date})`,
+          })
+          .from(dailySnapshots)
+          .where(
+            and(
+              inArray(dailySnapshots.ticker, tickerList),
+              sql`${dailySnapshots.date} >= date('now', ${`-${days} days`})`
+            )
+          )
+          .groupBy(dailySnapshots.ticker)
+      : db
+          .select({
+            ticker: dailySnapshots.ticker,
+            minDate: sql<string>`MIN(${dailySnapshots.date})`,
+            maxDate: sql<string>`MAX(${dailySnapshots.date})`,
+          })
+          .from(dailySnapshots)
+          .where(inArray(dailySnapshots.ticker, tickerList))
+          .groupBy(dailySnapshots.ticker)
+
+    const dateRanges = await dateRangesQuery
 
     // Build date lookup
     const tickerDateMap = new Map<string, { minDate: string; maxDate: string }>()

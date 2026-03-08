@@ -7,18 +7,20 @@ interface UsePriceChangesOptions {
   sort?: 'percentChange' | 'name' | 'marketCap'
   order?: 'asc' | 'desc'
   industryId?: string
+  days?: number | null
 }
 
 export function usePriceChanges(options: UsePriceChangesOptions = {}) {
-  const { sort = 'percentChange', order = 'desc', industryId } = options
+  const { sort = 'percentChange', order = 'desc', industryId, days } = options
 
   return useQuery<PriceChangesResponse>({
-    queryKey: ['price-changes', sort, order, industryId],
+    queryKey: ['price-changes', sort, order, industryId, days],
     queryFn: async () => {
       const params = new URLSearchParams()
       params.set('sort', sort)
       params.set('order', order)
       if (industryId) params.set('industry', industryId)
+      if (days) params.set('days', String(days))
 
       const res = await fetch(`/api/statistics/price-changes?${params}`)
       if (!res.ok) {

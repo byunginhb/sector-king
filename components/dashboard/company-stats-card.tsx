@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useCompanyStatistics } from '@/hooks/use-statistics'
-import { formatMarketCap, formatPriceChange } from '@/lib/format'
+import { formatMarketCap, formatPriceChange, formatKrw } from '@/lib/format'
 import { getPriceChangeStyle } from '@/lib/styles'
 import { cn } from '@/lib/utils'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
@@ -87,8 +87,15 @@ export function CompanyStatsCard() {
                       {company.count}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 text-right text-sm text-card-foreground">
-                    {formatMarketCap(company.latestSnapshot?.marketCap ?? null)}
+                  <td className="px-4 py-2.5 text-right">
+                    <div className="text-sm text-card-foreground">
+                      {formatMarketCap(company.latestSnapshot?.marketCap ?? null)}
+                    </div>
+                    {company.latestSnapshot?.marketCap != null && (
+                      <div className="text-xs text-muted-foreground">
+                        ({formatKrw(company.latestSnapshot.marketCap)})
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <span
