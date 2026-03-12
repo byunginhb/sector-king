@@ -157,7 +157,7 @@ export function SectorCompanyList({
           {data && data.companies.length > 0 && (
             <div className="space-y-1">
               {/* Table Header */}
-              <div className="grid grid-cols-[2rem_1fr_6rem_5rem_6rem] sm:grid-cols-[2rem_1fr_7rem_6rem_6rem_6rem] gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-slate-400">
+              <div className="grid grid-cols-[1.5rem_1fr_4.5rem_4rem_4.5rem] sm:grid-cols-[2rem_1fr_7rem_6rem_6rem_6rem] gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-slate-400">
                 <span>#</span>
                 <span>종목</span>
                 <span className="text-right">현재가</span>
@@ -172,7 +172,7 @@ export function SectorCompanyList({
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.03 }}
-                  className="grid grid-cols-[2rem_1fr_6rem_5rem_6rem] sm:grid-cols-[2rem_1fr_7rem_6rem_6rem_6rem] gap-2 px-3 py-2.5 rounded-lg hover:bg-white/60 dark:hover:bg-slate-800/40 transition-colors items-center"
+                  className="grid grid-cols-[1.5rem_1fr_4.5rem_4rem_4.5rem] sm:grid-cols-[2rem_1fr_7rem_6rem_6rem_6rem] gap-2 px-3 py-2.5 rounded-lg hover:bg-white/60 dark:hover:bg-slate-800/40 transition-colors items-center"
                 >
                   {/* Rank */}
                   <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">
