@@ -11,6 +11,10 @@ on:
         required: false
         type: string
 
+concurrency:
+  group: daily-data-update
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -37,10 +41,9 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          # Remove WAL/SHM files - all data is in the main DB after journal mode conversion
+          rm -f data/hegemony.db-wal data/hegemony.db-shm
           git add data/hegemony.db .gitattributes
           git diff --staged --quiet || git commit -m "chore: daily data update $(date +'%Y-%m-%d')"
-          # Stash any unstaged changes (e.g., SQLite WAL files) before rebase
-          git stash --include-untracked || true
           git pull --rebase origin main
-          git stash pop || true
           git push

@@ -202,6 +202,21 @@ def main():
         target_date = datetime.now().date().isoformat()
 
     conn = sqlite3.connect(DB_PATH)
+
+    # Switch from WAL to DELETE journal mode for CI compatibility.
+    # WAL mode stores writes in a separate .db-wal file, but git only tracks
+    # the main .db file. This causes data loss when CI commits without the WAL.
+    journal_mode = conn.execute("PRAGMA journal_mode").fetchone()[0]
+    if journal_mode.lower() == "wal":
+        print("Converting journal mode from WAL to DELETE for git compatibility...")
+        conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        try:
+            conn.execute("PRAGMA journal_mode=DELETE")
+            print(f"Journal mode: {conn.execute('PRAGMA journal_mode').fetchone()[0]}")
+        except sqlite3.OperationalError as e:
+            print(f"Warning: Could not change journal mode (other readers?): {e}")
+            print("Continuing with WAL mode - ensure WAL is checkpointed before git commit")
+
     ensure_score_tables(conn)
 
     tickers = get_tickers_from_db(conn)
@@ -252,7 +267,17 @@ def main():
         print(f"Score calculation failed (snapshots already saved): {e}")
         conn.rollback()
 
+    # Ensure all data is written to the main DB file before git commit.
+    # Without this, data may remain only in the WAL file and be lost.
+    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     conn.close()
+
+    # Remove WAL/SHM files to ensure clean state for git
+    wal_path = DB_PATH.with_suffix(".db-wal")
+    shm_path = DB_PATH.with_suffix(".db-shm")
+    for f in (wal_path, shm_path):
+        if f.exists():
+            f.unlink()
 
     print("\nData update completed successfully!")
 
