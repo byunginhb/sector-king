@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
+import { SectorKingLogo } from './logo'
 
 const GOOGLE_FORM_URL = 'https://forms.gle/vtZzRNsEe8cirqkB9'
 
@@ -8,9 +9,12 @@ export function Footer() {
     <footer className="border-t border-border bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-foreground">Sector King</p>
-            <p className="text-sm text-muted-foreground">산업별 투자 패권 지도</p>
+          <div className="flex items-center gap-2">
+            <SectorKingLogo size={24} className="shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Sector King</p>
+              <p className="text-sm text-muted-foreground">산업별 투자 패권 지도</p>
+            </div>
           </div>
           <nav className="flex items-center gap-4 flex-wrap">
             <Link

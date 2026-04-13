@@ -227,133 +227,59 @@ function SummaryCard({
   )
 }
 
-function InflowParticle({ index, delay }: { index: number; delay: number }) {
-  const startX = -60 - Math.random() * 40
-  const startY = 30 + Math.random() * 60
-  const endX = 80 + Math.random() * 60
-  const endY = 40 + Math.random() * 40
+/* ─── Rising / Falling Arrow Animations ─── */
+
+function RisingArrow({ index, delay, total }: { index: number; delay: number; total: number }) {
+  const x = 5 + (index / total) * 80 + Math.random() * 10
+  const size = 20 + Math.random() * 12
 
   return (
     <motion.div
-      className="absolute text-2xl pointer-events-none select-none z-20"
-      style={{ left: 0, top: 0 }}
-      initial={{ x: startX, y: startY, opacity: 0, scale: 0.3 }}
+      className="absolute pointer-events-none z-10"
+      style={{ left: `${x}%`, bottom: -10 }}
+      initial={{ y: 30, opacity: 0 }}
       animate={{
-        x: [startX, endX],
-        y: [startY, endY],
-        opacity: [0, 1, 1, 0.5, 0],
-        scale: [0.3, 1.3, 1.1, 0.8, 0],
-        rotate: [0, 15, 5, -5, 0],
+        y: -120,
+        opacity: [0, 0.85, 0.85, 0],
       }}
       transition={{
-        duration: 2.5,
-        delay: delay + index * 0.5,
+        duration: 1.1 + Math.random() * 0.4,
+        delay: delay + index * 0.3,
         repeat: Infinity,
-        ease: 'easeOut',
-        times: [0, 0.2, 0.5, 0.8, 1],
+        ease: 'linear',
       }}
     >
-      💵
+      <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
+        <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="rgba(239, 68, 68, 0.7)" />
+      </svg>
     </motion.div>
   )
 }
 
-function OutflowParticle({ index, delay }: { index: number; delay: number }) {
-  const startX = 100 + Math.random() * 60
-  const startY = 40 + Math.random() * 40
-  const endX = 280 + Math.random() * 40
-  const endY = 20 + Math.random() * 80
+function FallingArrow({ index, delay, total }: { index: number; delay: number; total: number }) {
+  const x = 5 + (index / total) * 80 + Math.random() * 10
+  const size = 20 + Math.random() * 12
 
   return (
     <motion.div
-      className="absolute text-2xl pointer-events-none select-none z-20"
-      style={{ left: 0, top: 0 }}
-      initial={{ x: startX, y: startY, opacity: 0, scale: 1 }}
+      className="absolute pointer-events-none z-10"
+      style={{ left: `${x}%`, top: -10 }}
+      initial={{ y: -30, opacity: 0 }}
       animate={{
-        x: [startX, endX],
-        y: [startY, endY],
-        opacity: [0, 1, 1, 0.5, 0],
-        scale: [0.8, 1.2, 1, 0.6, 0.2],
-        rotate: [0, 20, 45, 70, 90],
+        y: 120,
+        opacity: [0, 0.85, 0.85, 0],
       }}
       transition={{
-        duration: 2,
-        delay: delay + index * 0.4 + 0.2,
+        duration: 1.1 + Math.random() * 0.4,
+        delay: delay + index * 0.3,
         repeat: Infinity,
-        ease: 'easeIn',
-        times: [0, 0.15, 0.5, 0.8, 1],
+        ease: 'linear',
       }}
     >
-      💸
+      <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
+        <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="rgba(59, 130, 246, 0.7)" />
+      </svg>
     </motion.div>
-  )
-}
-
-function CoinInflowParticle({ index, delay }: { index: number; delay: number }) {
-  const size = 10 + Math.random() * 6
-  const startX = -40 - Math.random() * 30
-  const startY = 40 + Math.random() * 50
-  const endX = 70 + Math.random() * 50
-  const endY = 50 + Math.random() * 30
-
-  return (
-    <motion.div
-      className="absolute rounded-full pointer-events-none z-10"
-      style={{
-        width: size,
-        height: size,
-        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-        boxShadow: '0 2px 10px rgba(251, 191, 36, 0.6)',
-      }}
-      initial={{ x: startX, y: startY, opacity: 0, scale: 0 }}
-      animate={{
-        x: [startX, endX],
-        y: [startY, endY],
-        opacity: [0, 1, 1, 0],
-        scale: [0.2, 1.2, 1, 0.3],
-      }}
-      transition={{
-        duration: 2,
-        delay: delay + index * 0.35,
-        repeat: Infinity,
-        ease: 'easeOut',
-        times: [0, 0.25, 0.7, 1],
-      }}
-    />
-  )
-}
-
-function CoinOutflowParticle({ index, delay }: { index: number; delay: number }) {
-  const size = 10 + Math.random() * 6
-  const startX = 100 + Math.random() * 40
-  const startY = 50 + Math.random() * 30
-  const endX = 270 + Math.random() * 30
-  const endY = 30 + Math.random() * 60
-
-  return (
-    <motion.div
-      className="absolute rounded-full pointer-events-none z-10"
-      style={{
-        width: size,
-        height: size,
-        background: 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
-        boxShadow: '0 2px 10px rgba(148, 163, 184, 0.6)',
-      }}
-      initial={{ x: startX, y: startY, opacity: 0, scale: 1 }}
-      animate={{
-        x: [startX, endX],
-        y: [startY, endY],
-        opacity: [0, 1, 0.8, 0],
-        scale: [0.8, 1.1, 0.7, 0.2],
-      }}
-      transition={{
-        duration: 1.8,
-        delay: delay + index * 0.3 + 0.15,
-        repeat: Infinity,
-        ease: 'easeIn',
-        times: [0, 0.2, 0.6, 1],
-      }}
-    />
   )
 }
 
@@ -365,8 +291,7 @@ function IndustryFlowCard({
   index: number
 }) {
   const isInflow = industry.flowDirection === 'in'
-  const particleCount = 2
-  const coinCount = 2
+  const arrowCount = 5 + (index % 3)
 
   return (
     <Link href={`/${industry.industryId}/money-flow`} className="block">
@@ -392,41 +317,22 @@ function IndustryFlowCard({
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         />
 
-        {/* Particles */}
-        {isInflow ? (
-          <>
-            {Array.from({ length: particleCount }).map((_, i) => (
-              <InflowParticle key={`p-${i}`} index={i} delay={index * 0.15} />
+        {/* Rising / Falling arrows */}
+        {isInflow
+          ? Array.from({ length: arrowCount }).map((_, i) => (
+              <RisingArrow key={`a-${i}`} index={i} delay={index * 0.1} total={arrowCount} />
+            ))
+          : Array.from({ length: arrowCount }).map((_, i) => (
+              <FallingArrow key={`a-${i}`} index={i} delay={index * 0.1} total={arrowCount} />
             ))}
-            {Array.from({ length: coinCount }).map((_, i) => (
-              <CoinInflowParticle key={`c-${i}`} index={i} delay={index * 0.1} />
-            ))}
-          </>
-        ) : (
-          <>
-            {Array.from({ length: particleCount }).map((_, i) => (
-              <OutflowParticle key={`p-${i}`} index={i} delay={index * 0.15} />
-            ))}
-            {Array.from({ length: coinCount }).map((_, i) => (
-              <CoinOutflowParticle key={`c-${i}`} index={i} delay={index * 0.1} />
-            ))}
-          </>
-        )}
 
         {/* Content */}
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <motion.span
-                className="text-2xl"
-                animate={{
-                  scale: [1, 1.2, 1],
-                  rotate: isInflow ? [0, 10, 0] : [0, -10, 0],
-                }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                {industry.industryIcon || (isInflow ? '💰' : '💸')}
-              </motion.span>
+              <span className="text-2xl">
+                {industry.industryIcon || (isInflow ? '📈' : '📉')}
+              </span>
               <div className="min-w-0">
                 <span
                   className={cn(
@@ -449,19 +355,17 @@ function IndustryFlowCard({
 
           <div className="flex items-end justify-between">
             <div>
-              <motion.div
+              <div
                 className={cn(
                   'text-lg sm:text-2xl font-bold',
                   isInflow
                     ? 'text-emerald-600 dark:text-emerald-400'
                     : 'text-rose-600 dark:text-rose-400'
                 )}
-                animate={{ scale: [1, 1.02, 1] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               >
                 {isInflow ? '+' : '-'}
                 {formatFlowAmount(Math.abs(industry.netFlow))}
-              </motion.div>
+              </div>
               <div
                 className={cn(
                   'text-xs sm:text-sm opacity-70',
@@ -485,38 +389,16 @@ function IndustryFlowCard({
             </div>
 
             {/* Direction indicator */}
-            <motion.div
+            <span
               className={cn(
                 'flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium',
                 isInflow
                   ? 'bg-emerald-200 dark:bg-emerald-800/50 text-emerald-700 dark:text-emerald-300'
                   : 'bg-rose-200 dark:bg-rose-800/50 text-rose-700 dark:text-rose-300'
               )}
-              animate={{ x: isInflow ? [5, 0, 5] : [-5, 0, -5] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
             >
-              {isInflow ? (
-                <>
-                  <span>유입</span>
-                  <motion.span
-                    animate={{ x: [0, 3, 0] }}
-                    transition={{ duration: 0.8, repeat: Infinity }}
-                  >
-                    →
-                  </motion.span>
-                </>
-              ) : (
-                <>
-                  <motion.span
-                    animate={{ x: [0, -3, 0] }}
-                    transition={{ duration: 0.8, repeat: Infinity }}
-                  >
-                    ←
-                  </motion.span>
-                  <span>유출</span>
-                </>
-              )}
-            </motion.div>
+              {isInflow ? '유입 ↑' : '유출 ↓'}
+            </span>
           </div>
 
           {/* Inflow / Outflow breakdown */}

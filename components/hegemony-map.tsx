@@ -10,6 +10,7 @@ import { ThemeToggle } from './theme-toggle'
 import { SearchTrigger } from './search-trigger'
 import { HelpButton } from './onboarding/help-button'
 import { ShareButton } from './share-button'
+import { SectorKingLogo } from './logo'
 import { IndustryTitle } from './industry-title'
 import { CompanyStatistics } from './company-statistics'
 import { PriceChangeCard } from './price-change-card'
@@ -58,15 +59,18 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
-                <span className="bg-linear-to-r from-blue-600 to-sky-600 dark:from-blue-400 dark:to-sky-400 bg-clip-text text-transparent">
-                  Sector King
-                </span>
-              </h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                <IndustryTitle industryId={industryId} className="font-medium" /> 투자 패권 지도
-              </p>
+            <div className="flex items-center gap-3">
+              <SectorKingLogo size={40} className="shrink-0" />
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
+                  <span className="bg-linear-to-r from-blue-600 to-sky-600 dark:from-blue-400 dark:to-sky-400 bg-clip-text text-transparent">
+                    Sector King
+                  </span>
+                </h1>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  <IndustryTitle industryId={industryId} className="font-medium" /> 투자 패권 지도
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Navigation Links */}
