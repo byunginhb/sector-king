@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { IndustryMoneyFlowPageContent } from '@/components/industry-money-flow/industry-money-flow-page-content'
 
@@ -25,5 +26,9 @@ export const metadata: Metadata = {
 }
 
 export default function IndustryMoneyFlowPage() {
-  return <IndustryMoneyFlowPageContent />
+  return (
+    <Suspense fallback={null}>
+      <IndustryMoneyFlowPageContent />
+    </Suspense>
+  )
 }

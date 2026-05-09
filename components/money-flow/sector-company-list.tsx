@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { Wallet, TrendingDown } from 'lucide-react'
 import { useSectorCompanies } from '@/hooks/use-sector-companies'
 import { SparklineChart } from './sparkline-chart'
 import { cn } from '@/lib/utils'
@@ -113,7 +114,11 @@ export function SectorCompanyList({
                 : 'text-blue-700 dark:text-blue-300'
             )}
           >
-            <span aria-hidden="true">{isInflow ? '💰' : '💸'}</span>
+            {isInflow ? (
+              <Wallet className="h-4 w-4" aria-hidden />
+            ) : (
+              <TrendingDown className="h-4 w-4" aria-hidden />
+            )}
             {sectorName} 포함 종목
             {data?.dateRange && (
               <span className="text-xs font-normal text-gray-500 dark:text-slate-400">

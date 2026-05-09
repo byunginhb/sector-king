@@ -7,8 +7,9 @@ import { useIndustryMoneyFlow } from '@/hooks/use-industry-money-flow'
 import { formatFlowAmount, formatKrw } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
+import { IndustryIcon } from '@/components/ui/industry-icon'
 import { CardError } from './card-error'
-import type { IndustryMoneyFlowSummary } from '@/types'
+import type { IndustryMoneyFlowSummary, RegionFilter } from '@/types'
 
 type PeriodType = 1 | 3 | 7 | 14 | 30
 
@@ -70,9 +71,13 @@ function FallingArrow({ index, delay, total }: { index: number; delay: number; t
 
 /* ─── Main Card Component ─── */
 
-export function IndustryMoneyFlowCard() {
+interface IndustryMoneyFlowCardProps {
+  region?: RegionFilter
+}
+
+export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardProps = {}) {
   const [period, setPeriod] = useState<PeriodType>(14)
-  const { data, isLoading, error } = useIndustryMoneyFlow({ period })
+  const { data, isLoading, error } = useIndustryMoneyFlow({ period, region })
 
   if (isLoading) return <IndustryMoneyFlowCardSkeleton />
   if (error || !data) return <CardError message="산업별 자금 흐름을 불러올 수 없습니다" />
@@ -196,11 +201,15 @@ function IndustryFlowItem({
         <div className="relative z-10">
           {/* Industry header */}
           <div className="flex items-center gap-2 mb-3">
-            {industry.industryIcon && (
-              <span className="text-xl">
-                {industry.industryIcon}
-              </span>
-            )}
+            <IndustryIcon
+              iconKey={industry.industryId}
+              className={cn(
+                'h-5 w-5 shrink-0',
+                isInflow
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-blue-600 dark:text-blue-400'
+              )}
+            />
             <span className="font-semibold text-card-foreground truncate">
               {industry.industryName}
             </span>

@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 import type { SectorMoneyFlow } from '@/types'
 import { cn } from '@/lib/utils'
 import { formatFlowAmount, formatKrw } from '@/lib/format'
@@ -119,9 +120,11 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">
-              {isInflow ? '📈' : '📉'}
-            </span>
+            {isInflow ? (
+              <TrendingUp className="h-6 w-6 text-red-600 dark:text-red-400" aria-hidden />
+            ) : (
+              <TrendingDown className="h-6 w-6 text-blue-600 dark:text-blue-400" aria-hidden />
+            )}
             <span
               className={cn(
                 'text-lg font-bold',

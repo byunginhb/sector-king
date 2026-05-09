@@ -1,5 +1,6 @@
 'use client'
 
+import { Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
@@ -67,7 +68,7 @@ export function CompanyBadge({ sectorCompany, isHistorical = false, isFirst = fa
               {...(isFirst ? { 'data-tour': 'company-badge' } : {})}
             >
               <span className="flex items-center gap-1.5">
-                {rank === 1 && <span className="text-amber-500">★</span>}
+                {rank === 1 && <Star className="h-3 w-3 fill-amber-500 text-amber-500" aria-hidden />}
                 <span className="text-[10px] opacity-70">{rank}위</span>
                 {company.nameKo || company.ticker}
                 {isHistorical && historicalChangeArrow && (

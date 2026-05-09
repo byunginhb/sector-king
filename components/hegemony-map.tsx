@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useMapData } from '@/hooks/use-map-data'
+import { useRegion } from '@/hooks/use-region'
 import { usePageTour } from '@/hooks/use-page-tour'
 import { CategoryCard } from './category-card'
 import { DateSelector } from './date-selector'
@@ -14,10 +15,15 @@ import { SectorKingLogo } from './logo'
 import { IndustryTitle } from './industry-title'
 import { CompanyStatistics } from './company-statistics'
 import { PriceChangeCard } from './price-change-card'
+import { RegionToggle } from './region-toggle'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDate } from '@/lib/format'
+import { Wallet, BarChart3 } from 'lucide-react'
+
+// regionScope='KR' 카테고리 화이트리스트 (S1 백필 기준)
+const KR_ONLY_CATEGORY_IDS = new Set(['korea_bio', 'korea_banks'])
 
 interface HegemonyMapProps {
   industryId: string
@@ -25,7 +31,8 @@ interface HegemonyMapProps {
 
 export function HegemonyMap({ industryId }: HegemonyMapProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const { data, isLoading, error } = useMapData({ date: selectedDate, industryId })
+  const { region, setRegion } = useRegion()
+  const { data, isLoading, error } = useMapData({ date: selectedDate, industryId, region })
   usePageTour('hegemony-map')
 
   if (isLoading) return <MapSkeleton />
@@ -41,8 +48,13 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
     isHistorical,
   } = data
 
+  // 토글 '해외' 시 KR 전용 카테고리 (korea_bio, korea_banks) 숨김
+  const visibleCategories = region === 'global'
+    ? categories.filter((cat) => !KR_ONLY_CATEGORY_IDS.has(cat.id))
+    : categories
+
   // Group sectors by category, and companies by sector
-  const sectorsByCategory = categories.map((cat) => ({
+  const sectorsByCategory = visibleCategories.map((cat) => ({
     ...cat,
     sectors: sectors
       .filter((s) => s.categoryId === cat.id)
@@ -85,17 +97,18 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
                   href={`/${industryId}/money-flow`}
                   className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm sm:px-3 font-medium rounded-lg whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors"
                 >
-                  <span className="hidden sm:inline">💰</span>
+                  <Wallet className="hidden sm:inline-block h-4 w-4" aria-hidden />
                   <span>자금흐름</span>
                 </Link>
                 <Link
                   href={`/${industryId}/price-changes`}
                   className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm sm:px-3 font-medium rounded-lg whitespace-nowrap bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors"
                 >
-                  <span className="hidden sm:inline">📊</span>
+                  <BarChart3 className="hidden sm:inline-block h-4 w-4" aria-hidden />
                   <span>등락율</span>
                 </Link>
               </div>
+              <RegionToggle value={region} onChange={setRegion} />
               <ShareButton
                 title="투자 패권 지도 | Sector King"
                 description="산업 섹터별 시장 지배력 순위 시각화"

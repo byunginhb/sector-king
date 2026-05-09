@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { TrendingUp, TrendingDown, Wallet, type LucideIcon } from 'lucide-react'
 import { useIndustryMoneyFlow } from '@/hooks/use-industry-money-flow'
 import { formatFlowAmount, formatKrw } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -10,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SearchTrigger } from '@/components/search-trigger'
 import { ShareButton } from '@/components/share-button'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { IndustryIcon } from '@/components/ui/industry-icon'
 import type { IndustryMoneyFlowSummary } from '@/types'
 
 type PeriodType = 1 | 3 | 7 | 14 | 30
@@ -54,7 +56,7 @@ export function IndustryMoneyFlowPageContent() {
               </Link>
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
-                  <span className="text-2xl">💰</span>
+                  <Wallet className="h-6 w-6 text-foreground" aria-hidden />
                   산업별 자금 흐름
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-slate-400">
@@ -111,19 +113,19 @@ export function IndustryMoneyFlowPageContent() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <SummaryCard
                 label="총 유입"
-                icon="📈"
+                Icon={TrendingUp}
                 amount={totalInflow}
                 variant="inflow"
               />
               <SummaryCard
                 label="총 유출"
-                icon="📉"
+                Icon={TrendingDown}
                 amount={totalOutflow}
                 variant="outflow"
               />
               <SummaryCard
                 label="순 유입"
-                icon="💰"
+                Icon={Wallet}
                 amount={netFlow}
                 variant={netFlow >= 0 ? 'net-positive' : 'net-negative'}
                 showSign
@@ -134,7 +136,7 @@ export function IndustryMoneyFlowPageContent() {
             {inflowIndustries.length > 0 && (
               <section className="mb-8">
                 <h2 className="text-lg font-semibold text-emerald-700 dark:text-emerald-300 mb-4 flex items-center gap-2">
-                  <span className="text-xl">📈</span>
+                  <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" aria-hidden />
                   자금 유입 산업
                   <span className="text-sm font-normal text-emerald-500 dark:text-emerald-400 ml-2">
                     {inflowIndustries.length}개 산업
@@ -152,7 +154,7 @@ export function IndustryMoneyFlowPageContent() {
             {outflowIndustries.length > 0 && (
               <section className="mb-8">
                 <h2 className="text-lg font-semibold text-rose-700 dark:text-rose-300 mb-4 flex items-center gap-2">
-                  <span className="text-xl">📉</span>
+                  <TrendingDown className="h-5 w-5 text-rose-600 dark:text-rose-400" aria-hidden />
                   자금 유출 산업
                   <span className="text-sm font-normal text-rose-500 dark:text-rose-400 ml-2">
                     {outflowIndustries.length}개 산업
@@ -174,13 +176,13 @@ export function IndustryMoneyFlowPageContent() {
 
 function SummaryCard({
   label,
-  icon,
+  Icon,
   amount,
   variant,
   showSign = false,
 }: {
   label: string
-  icon: string
+  Icon: LucideIcon
   amount: number
   variant: 'inflow' | 'outflow' | 'net-positive' | 'net-negative'
   showSign?: boolean
@@ -214,7 +216,7 @@ function SummaryCard({
   return (
     <div className={cn('rounded-xl border p-4', s.bg)}>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg">{icon}</span>
+        <Icon className={cn('h-5 w-5', s.label)} aria-hidden />
         <span className={cn('text-sm font-medium', s.label)}>{label}</span>
       </div>
       <div className={cn('text-xl sm:text-2xl font-bold', s.value)}>
@@ -330,9 +332,15 @@ function IndustryFlowCard({
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">
-                {industry.industryIcon || (isInflow ? '📈' : '📉')}
-              </span>
+              <IndustryIcon
+                iconKey={industry.industryId}
+                className={cn(
+                  'h-7 w-7',
+                  isInflow
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-rose-600 dark:text-rose-400'
+                )}
+              />
               <div className="min-w-0">
                 <span
                   className={cn(

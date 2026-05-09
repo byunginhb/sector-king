@@ -1,4 +1,4 @@
-import { cache } from 'react'
+import { Suspense, cache } from 'react'
 import type { Metadata } from 'next'
 import { getAllIndustries } from '@/lib/industry'
 import { StatisticsPage } from '@/components/statistics/statistics-page'
@@ -47,5 +47,9 @@ export default async function StatisticsPageRoute({
   params: Promise<{ industryId: string }>
 }) {
   const { industryId } = await params
-  return <StatisticsPage industryId={industryId} />
+  return (
+    <Suspense fallback={null}>
+      <StatisticsPage industryId={industryId} />
+    </Suspense>
+  )
 }

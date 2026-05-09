@@ -1,20 +1,22 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import type { ApiResponse, SectorTrendResponse } from '@/types'
+import type { ApiResponse, SectorTrendResponse, RegionFilter } from '@/types'
 
 interface UseSectorTrendOptions {
   industryId?: string
+  region?: RegionFilter
 }
 
 export function useSectorTrend(options: UseSectorTrendOptions = {}) {
-  const { industryId } = options
+  const { industryId, region = 'all' } = options
 
   return useQuery({
-    queryKey: ['sector-trend', industryId],
+    queryKey: ['sector-trend', industryId, region],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (industryId) params.set('industry', industryId)
+      if (region !== 'all') params.set('region', region)
       const qs = params.toString()
       const url = qs
         ? `/api/statistics/sector-trend?${qs}`

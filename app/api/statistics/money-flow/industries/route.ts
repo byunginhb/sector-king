@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
-import { industries, industryCategories, sectors, sectorCompanies } from '@/drizzle/schema'
+import { industries, industryCategories, sectors, sectorCompanies, companies } from '@/drizzle/schema'
+import { eq } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
 import { getAvailableDates, buildSnapshotIndex } from '@/lib/money-flow-helpers'
+import { resolveRegion, regionFilterToValue } from '@/lib/region'
 import type { ApiResponse, IndustryMoneyFlowResponse, IndustryMoneyFlowSummary } from '@/types'
 
 export const revalidate = 3600
@@ -14,6 +16,8 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams
     const rawPeriod = parseInt(searchParams.get('period') || '14', 10)
     const period = Number.isNaN(rawPeriod) ? 14 : Math.max(1, Math.min(rawPeriod, 365))
+    const region = resolveRegion(searchParams)
+    const regionValue = regionFilterToValue(region)
 
     const db = getDb()
 
@@ -26,7 +30,7 @@ export async function GET(
     if (allIndustries.length === 0) {
       return NextResponse.json({
         success: true,
-        data: { industries: [], period, dateRange: { start: '', end: '' } },
+        data: { industries: [], period, dateRange: { start: '', end: '' }, appliedRegion: region },
       })
     }
 
@@ -65,10 +69,16 @@ export async function GET(
       }
     }
 
-    // 4. Load all sector-company mappings at once
-    const allScRows = await db
-      .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
-      .from(sectorCompanies)
+    // 4. Load all sector-company mappings at once (region 적용 시 SQL join 으로 좁힘)
+    const allScRows = regionValue
+      ? await db
+          .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
+          .from(sectorCompanies)
+          .innerJoin(companies, eq(sectorCompanies.ticker, companies.ticker))
+          .where(eq(companies.region, regionValue))
+      : await db
+          .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
+          .from(sectorCompanies)
 
     const sectorTickerMap = new Map<string, string[]>()
     for (const row of allScRows) {
@@ -115,6 +125,7 @@ export async function GET(
           industries: [],
           period,
           dateRange: { start: effectiveStartDate, end: effectiveStartDate },
+          appliedRegion: region,
         },
       })
     }
@@ -130,6 +141,7 @@ export async function GET(
           industries: [],
           period,
           dateRange: { start: firstDate, end: lastDate },
+          appliedRegion: region,
         },
       })
     }
@@ -186,6 +198,7 @@ export async function GET(
         industries: results,
         period,
         dateRange: { start: firstDate, end: lastDate },
+        appliedRegion: region,
       },
     })
   } catch (error) {

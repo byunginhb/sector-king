@@ -24,8 +24,19 @@
 .DS_Store
 *.pem
 
-# claude code local settings
+# Claude Code 개인 설정/로그/세션은 무시, 프로젝트 하네스(sk-*)만 공유
 .claude/settings.local.json
+.claude/logs/
+.claude/sessions/
+.claude/state/
+.claude/memory/
+.claude/projects/
+
+# 작업 메모리 + DB 백업/WAL
+_workspace/
+data/*.bak*
+data/*.db-wal
+data/*.db-shm
 
 # debug
 npm-debug.log*
@@ -47,4 +58,4 @@ next-env.d.ts
 __pycache__/
 *.pyc
 
-.claude
+.omc

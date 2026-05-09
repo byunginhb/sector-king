@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { PriceChangesPageContent } from '@/components/price-changes/price-changes-page-content'
 
@@ -6,5 +7,9 @@ export const metadata: Metadata = {
 }
 
 export default function PriceChangesPage() {
-  return <PriceChangesPageContent />
+  return (
+    <Suspense fallback={null}>
+      <PriceChangesPageContent />
+    </Suspense>
+  )
 }

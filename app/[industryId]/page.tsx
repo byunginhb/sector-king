@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { HegemonyMap } from '@/components/hegemony-map'
 
 export default async function IndustryPage({
@@ -9,7 +10,9 @@ export default async function IndustryPage({
 
   return (
     <main className="min-h-screen bg-background">
-      <HegemonyMap industryId={industryId} />
+      <Suspense fallback={null}>
+        <HegemonyMap industryId={industryId} />
+      </Suspense>
     </main>
   )
 }

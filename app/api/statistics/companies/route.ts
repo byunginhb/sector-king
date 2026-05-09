@@ -9,6 +9,7 @@ import {
 import { eq, sql } from 'drizzle-orm'
 import type { ApiResponse, CompanyStatisticsResponse, CompanyStatItem } from '@/types'
 import { resolveIndustryFilter } from '@/lib/api-helpers'
+import { matchesRegion } from '@/lib/region'
 import { toUsd } from '@/lib/currency'
 
 export const revalidate = 3600 // 1 hour cache
@@ -31,8 +32,10 @@ export async function GET(
     const limit = Number.isNaN(rawLimit) ? 20 : Math.min(100, Math.max(1, rawLimit))
 
     const db = getDb()
-    const { filter: industryFilter, errorResponse } = await resolveIndustryFilter(searchParams)
+    const { filter: industryFilter, region, errorResponse } = await resolveIndustryFilter(searchParams)
     if (errorResponse) return errorResponse
+
+    const tickerWhitelist = industryFilter ? new Set(industryFilter.tickers) : null
 
     // Get all sector-company mappings with company info
     const allMappingsRaw = await db
@@ -48,11 +51,20 @@ export async function GET(
       .leftJoin(companies, eq(sectorCompanies.ticker, companies.ticker))
       .leftJoin(sectors, eq(sectorCompanies.sectorId, sectors.id))
 
-    const allMappings = industryFilter
-      ? allMappingsRaw.filter(
-          (m) => m.sectorId && industryFilter.sectorIds.includes(m.sectorId)
-        )
-      : allMappingsRaw
+    const allMappings = allMappingsRaw.filter((m) => {
+      if (industryFilter && !(m.sectorId && industryFilter.sectorIds.includes(m.sectorId))) {
+        return false
+      }
+      if (region !== 'all') {
+        if (!m.ticker) return false
+        if (!matchesRegion(m.ticker, region)) return false
+      }
+      // industry 가 지정된 경우 ticker 화이트리스트 (region 외 추가 안전망)
+      if (tickerWhitelist && m.ticker && !tickerWhitelist.has(m.ticker)) {
+        return false
+      }
+      return true
+    })
 
     // Aggregate by company
     const companyMap = new Map<string, {
@@ -159,6 +171,7 @@ export async function GET(
         total,
         page,
         totalPages,
+        appliedRegion: region,
       },
     })
   } catch (error) {

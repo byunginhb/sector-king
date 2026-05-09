@@ -1,6 +1,7 @@
 'use client'
 
 import { useIndustries } from '@/hooks/use-industries'
+import { IndustryIcon } from '@/components/ui/industry-icon'
 import { cn } from '@/lib/utils'
 
 interface IndustryTitleProps {
@@ -17,7 +18,10 @@ export function IndustryTitle({ industryId, className }: IndustryTitleProps) {
 
   return (
     <span className={cn('inline-flex items-center gap-1.5', className)}>
-      {industry.icon && <span>{industry.icon}</span>}
+      <IndustryIcon
+        iconKey={industry.id}
+        className="h-4 w-4 text-muted-foreground"
+      />
       <span>{industry.name}</span>
     </span>
   )

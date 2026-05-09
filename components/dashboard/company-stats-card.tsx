@@ -10,9 +10,15 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { CompanyDetail } from '@/components/company-detail'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CardError } from './card-error'
+import { EmptyRegionState } from '@/components/ui/empty-region-state'
+import type { RegionFilter } from '@/types'
 
-export function CompanyStatsCard() {
-  const { data, isLoading, error } = useCompanyStatistics({ limit: 10 })
+interface CompanyStatsCardProps {
+  region?: RegionFilter
+}
+
+export function CompanyStatsCard({ region = 'all' }: CompanyStatsCardProps = {}) {
+  const { data, isLoading, error } = useCompanyStatistics({ limit: 10, region })
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
 
   if (isLoading) return <CompanyStatsCardSkeleton />
@@ -44,7 +50,13 @@ export function CompanyStatsCard() {
           </p>
         </div>
 
+        {/* Empty state */}
+        {companies.length === 0 && (
+          <EmptyRegionState region={region} className="py-8" />
+        )}
+
         {/* Table */}
+        {companies.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -112,6 +124,7 @@ export function CompanyStatsCard() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Company Detail Dialog */}

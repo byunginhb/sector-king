@@ -31,7 +31,7 @@ export async function GET(
     const days = searchParams.get('days') || '30'
 
     const db = getDb()
-    const { filter: industryFilter, errorResponse } = await resolveIndustryFilter(searchParams)
+    const { filter: industryFilter, region, errorResponse } = await resolveIndustryFilter(searchParams)
     if (errorResponse) return errorResponse
 
     // Calculate date range
@@ -61,26 +61,26 @@ export async function GET(
 
     if (type === 'sector') {
       const [items, sectorGrowth] = await Promise.all([
-        getSectorTrends(db, ids, dates, industryFilter),
-        getSectorGrowth(db, dates, industryFilter),
+        getSectorTrends(db, ids, dates, industryFilter, { region }),
+        getSectorGrowth(db, dates, industryFilter, { region }),
       ])
-      return NextResponse.json({ success: true, data: { items, dateRange, sectorGrowth } })
+      return NextResponse.json({ success: true, data: { items, dateRange, sectorGrowth, appliedRegion: region } })
     }
 
     if (type === 'category') {
       const [items, categoryMarketCaps] = await Promise.all([
-        getCategoryTrends(db, ids, dates, industryFilter),
-        getCategoryMarketCaps(db, dates[dates.length - 1], industryFilter),
+        getCategoryTrends(db, ids, dates, industryFilter, { region }),
+        getCategoryMarketCaps(db, dates[dates.length - 1], industryFilter, { region }),
       ])
-      return NextResponse.json({ success: true, data: { items, dateRange, categories: categoryMarketCaps } })
+      return NextResponse.json({ success: true, data: { items, dateRange, categories: categoryMarketCaps, appliedRegion: region } })
     }
 
     if (type === 'company') {
-      const items = await getCompanyTrends(db, ids, dates, industryFilter)
-      return NextResponse.json({ success: true, data: { items, dateRange } })
+      const items = await getCompanyTrends(db, ids, dates, industryFilter, { region })
+      return NextResponse.json({ success: true, data: { items, dateRange, appliedRegion: region } })
     }
 
-    return NextResponse.json({ success: true, data: { items: [], dateRange } })
+    return NextResponse.json({ success: true, data: { items: [], dateRange, appliedRegion: region } })
   } catch (error) {
     console.error('Statistics Trends API Error:', error)
     return NextResponse.json(

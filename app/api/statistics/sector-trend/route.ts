@@ -5,10 +5,12 @@ import {
   sectorCompanies,
   dailySnapshots,
 } from '@/drizzle/schema'
-import { desc, inArray } from 'drizzle-orm'
+import { desc, eq, inArray } from 'drizzle-orm'
+import { companies } from '@/drizzle/schema'
 import type { ApiResponse, SectorTrendResponse, SectorTrendData } from '@/types'
 import { toUsd } from '@/lib/currency'
 import { resolveIndustryFilter } from '@/lib/api-helpers'
+import { regionFilterToValue } from '@/lib/region'
 
 const TARGET_PERIODS = [1, 3, 7, 14, 30]
 
@@ -19,10 +21,12 @@ export async function GET(
 ): Promise<NextResponse<ApiResponse<SectorTrendResponse>>> {
   try {
     const db = getDb()
-    const { filter: industryFilter, errorResponse } = await resolveIndustryFilter(
+    const { filter: industryFilter, region, errorResponse } = await resolveIndustryFilter(
       request.nextUrl.searchParams
     )
     if (errorResponse) return errorResponse
+
+    const regionValue = regionFilterToValue(region)
 
     // 1. Get all available dates (last 35 days buffer for 30-day period)
     const recentDates = await db
@@ -75,12 +79,21 @@ export async function GET(
       ? allSectorsRaw.filter((s) => industryFilter.sectorIds.includes(s.id))
       : allSectorsRaw
 
-    const allSectorCompaniesRaw = await db
-      .select({
-        sectorId: sectorCompanies.sectorId,
-        ticker: sectorCompanies.ticker,
-      })
-      .from(sectorCompanies)
+    const allSectorCompaniesRaw = regionValue
+      ? await db
+          .select({
+            sectorId: sectorCompanies.sectorId,
+            ticker: sectorCompanies.ticker,
+          })
+          .from(sectorCompanies)
+          .innerJoin(companies, eq(sectorCompanies.ticker, companies.ticker))
+          .where(eq(companies.region, regionValue))
+      : await db
+          .select({
+            sectorId: sectorCompanies.sectorId,
+            ticker: sectorCompanies.ticker,
+          })
+          .from(sectorCompanies)
 
     const allSectorCompanies = industryFilter
       ? allSectorCompaniesRaw.filter(
@@ -172,6 +185,7 @@ export async function GET(
       data: {
         sectors: sortedTrends,
         dateRange: { start: dates[0], end: lastDate },
+        appliedRegion: region,
       },
     })
   } catch (error) {

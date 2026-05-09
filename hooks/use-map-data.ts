@@ -1,23 +1,25 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import type { MapResponse, ApiResponse } from '@/types'
+import type { MapResponse, ApiResponse, RegionFilter } from '@/types'
 
 interface UseMapDataOptions {
   date?: string | null
   industryId?: string
+  region?: RegionFilter
 }
 
 export function useMapData(options: UseMapDataOptions = {}) {
-  const { date, industryId } = options
+  const { date, industryId, region = 'all' } = options
 
   return useQuery<MapResponse>({
-    queryKey: ['map', date, industryId],
+    queryKey: ['map', date, industryId, region],
     staleTime: 1000 * 60 * 5,
     queryFn: async () => {
       const params = new URLSearchParams()
       if (date) params.set('date', date)
       if (industryId) params.set('industry', industryId)
+      if (region !== 'all') params.set('region', region)
       const qs = params.toString()
       const url = qs ? `/api/map?${qs}` : '/api/map'
       const res = await fetch(url)

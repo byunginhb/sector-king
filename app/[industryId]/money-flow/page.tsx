@@ -1,4 +1,4 @@
-import { cache } from 'react'
+import { Suspense, cache } from 'react'
 import type { Metadata } from 'next'
 import { getAllIndustries } from '@/lib/industry'
 import { MoneyFlowPageContent } from '@/components/money-flow/money-flow-page-content'
@@ -47,5 +47,9 @@ export default async function MoneyFlowPage({
   params: Promise<{ industryId: string }>
 }) {
   const { industryId } = await params
-  return <MoneyFlowPageContent industryId={industryId} />
+  return (
+    <Suspense fallback={null}>
+      <MoneyFlowPageContent industryId={industryId} />
+    </Suspense>
+  )
 }

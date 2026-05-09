@@ -5,6 +5,9 @@ export const categories = sqliteTable('categories', {
   name: text('name').notNull(),
   nameEn: text('name_en'),
   order: integer('order').notNull(),
+  // region 충돌 처리용 — 'ANY' | 'KR' | 'INTL'
+  // 'KR' 카테고리(korea_bio, korea_banks)는 해외 토글 시 UI에서 숨김
+  regionScope: text('region_scope').notNull().default('ANY'),
 })
 
 export const sectors = sqliteTable('sectors', {
@@ -16,12 +19,18 @@ export const sectors = sqliteTable('sectors', {
   description: text('description'),
 })
 
-export const companies = sqliteTable('companies', {
-  ticker: text('ticker').primaryKey(),
-  name: text('name').notNull(),
-  nameKo: text('name_ko'),
-  logoUrl: text('logo_url'),
-})
+export const companies = sqliteTable(
+  'companies',
+  {
+    ticker: text('ticker').primaryKey(),
+    name: text('name').notNull(),
+    nameKo: text('name_ko'),
+    logoUrl: text('logo_url'),
+    // 'KR' | 'INTL' — 단일 SoT는 lib/region.ts
+    region: text('region').notNull().default('INTL'),
+  },
+  (table) => [index('idx_companies_region').on(table.region)]
+)
 
 export const sectorCompanies = sqliteTable(
   'sector_companies',

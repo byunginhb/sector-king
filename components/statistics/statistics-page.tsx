@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useCompanyStatistics, useTrends } from '@/hooks/use-statistics'
+import { useRegion } from '@/hooks/use-region'
 import { usePageTour } from '@/hooks/use-page-tour'
 import { SectorTrendChart } from './sector-trend-chart'
 import { CategoryComparisonChart } from './category-comparison-chart'
@@ -15,6 +16,7 @@ import { IndustryTitle } from '@/components/industry-title'
 import { SearchTrigger } from '@/components/search-trigger'
 import { HelpButton } from '@/components/onboarding/help-button'
 import { ShareButton } from '@/components/share-button'
+import { RegionToggle } from '@/components/region-toggle'
 import { cn } from '@/lib/utils'
 
 type DaysFilter = '7' | '30' | 'all'
@@ -29,24 +31,28 @@ export function StatisticsPage({ industryId }: StatisticsPageProps = {}) {
   const [order, setOrder] = useState<'asc' | 'desc'>('desc')
   const [page, setPage] = useState(1)
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
+  const { region, setRegion } = useRegion()
 
   // Fetch data
   const { data: sectorTrends, isLoading: sectorLoading } = useTrends({
     type: 'sector',
     days,
     industryId,
+    region,
   })
 
   const { data: categoryTrends, isLoading: categoryLoading } = useTrends({
     type: 'category',
     days,
     industryId,
+    region,
   })
 
   const { data: companyTrends, isLoading: companyLoading } = useTrends({
     type: 'company',
     days,
     industryId,
+    region,
   })
 
   const { data: companyStats, isLoading: statsLoading } = useCompanyStatistics({
@@ -55,6 +61,7 @@ export function StatisticsPage({ industryId }: StatisticsPageProps = {}) {
     page,
     limit: 20,
     industryId,
+    region,
   })
   usePageTour('statistics')
 
@@ -107,7 +114,8 @@ export function StatisticsPage({ industryId }: StatisticsPageProps = {}) {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <RegionToggle value={region} onChange={setRegion} />
               <ShareButton
                 title="회사 등장 통계 | Sector King"
                 description="섹터별 기업 분포 및 시가총액 분석"

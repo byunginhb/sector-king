@@ -10,7 +10,8 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { CompanyDetail } from '@/components/company-detail'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CardError } from './card-error'
-import type { PriceChangeItem } from '@/types'
+import { EmptyRegionState } from '@/components/ui/empty-region-state'
+import type { PriceChangeItem, RegionFilter } from '@/types'
 
 type PeriodType = 7 | 14 | 30 | null
 
@@ -21,9 +22,13 @@ const PERIOD_OPTIONS: { value: PeriodType; label: string }[] = [
   { value: null, label: '전체' },
 ]
 
-export function PriceChangesCard() {
+interface PriceChangesCardProps {
+  region?: RegionFilter
+}
+
+export function PriceChangesCard({ region = 'all' }: PriceChangesCardProps = {}) {
   const [period, setPeriod] = useState<PeriodType>(null)
-  const { data, isLoading, error } = usePriceChanges({ sort: 'percentChange', order: 'desc', days: period })
+  const { data, isLoading, error } = usePriceChanges({ sort: 'percentChange', order: 'desc', days: period, region })
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
 
   const { gainers, losers } = useMemo(() => {
@@ -86,7 +91,13 @@ export function PriceChangesCard() {
           </div>
         </div>
 
+        {/* Empty state */}
+        {gainers.length === 0 && losers.length === 0 && (
+          <EmptyRegionState region={region} className="py-8" />
+        )}
+
         {/* Content */}
+        {(gainers.length > 0 || losers.length > 0) && (
         <div className="grid grid-cols-2 divide-x divide-border">
           {/* Gainers */}
           <div>
@@ -116,6 +127,7 @@ export function PriceChangesCard() {
             />
           </div>
         </div>
+        )}
       </div>
 
       {/* Company Detail Dialog */}

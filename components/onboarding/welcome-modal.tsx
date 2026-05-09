@@ -3,6 +3,16 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
+  Map as MapIcon,
+  Wallet,
+  BarChart3,
+  TrendingUp,
+  TrendingDown,
+  Monitor,
+  ArrowLeftRight,
+  type LucideIcon,
+} from 'lucide-react'
+import {
   Dialog,
   DialogContent,
   DialogTitle,
@@ -51,12 +61,12 @@ function WelcomeVisual({ visual }: { visual: string }) {
           섹터 킹
         </div>
         <div className="flex gap-2">
-          {['🖥️', '📊', '💰', '📈'].map((icon) => (
+          {([Monitor, BarChart3, Wallet, TrendingUp] as LucideIcon[]).map((Icon, i) => (
             <div
-              key={icon}
-              className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-lg"
+              key={i}
+              className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center"
             >
-              {icon}
+              <Icon className="h-5 w-5 text-foreground" aria-hidden />
             </div>
           ))}
         </div>
@@ -92,14 +102,14 @@ function WelcomeVisual({ visual }: { visual: string }) {
     return (
       <div className="flex items-center gap-4 justify-center">
         <div className="rounded-lg border-2 border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30 px-4 py-3 text-center">
-          <div className="text-lg">💰</div>
-          <div className="text-xs font-medium text-red-700 dark:text-red-300">유입</div>
+          <TrendingUp className="h-5 w-5 mx-auto text-red-600 dark:text-red-400" aria-hidden />
+          <div className="text-xs font-medium text-red-700 dark:text-red-300 mt-1">유입</div>
           <div className="text-xs text-red-500">시총 증가</div>
         </div>
-        <div className="text-muted-foreground text-lg">⇄</div>
+        <ArrowLeftRight className="h-5 w-5 text-muted-foreground" aria-hidden />
         <div className="rounded-lg border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30 px-4 py-3 text-center">
-          <div className="text-lg">💸</div>
-          <div className="text-xs font-medium text-blue-700 dark:text-blue-300">유출</div>
+          <TrendingDown className="h-5 w-5 mx-auto text-blue-600 dark:text-blue-400" aria-hidden />
+          <div className="text-xs font-medium text-blue-700 dark:text-blue-300 mt-1">유출</div>
           <div className="text-xs text-blue-500">시총 감소</div>
         </div>
       </div>
@@ -107,19 +117,22 @@ function WelcomeVisual({ visual }: { visual: string }) {
   }
 
   // ready
+  const pages: { Icon: LucideIcon; label: string }[] = [
+    { Icon: MapIcon, label: '패권 지도' },
+    { Icon: Wallet, label: '자금 흐름' },
+    { Icon: BarChart3, label: '가격 변화율' },
+    { Icon: TrendingUp, label: '통계' },
+  ]
   return (
     <div className="grid grid-cols-2 gap-2 w-full max-w-[240px] mx-auto">
-      {[
-        { icon: '🗺️', label: '패권 지도' },
-        { icon: '💰', label: '자금 흐름' },
-        { icon: '📊', label: '가격 변화율' },
-        { icon: '📈', label: '통계' },
-      ].map((page) => (
+      {pages.map((page) => (
         <div
           key={page.label}
           className="rounded-lg bg-muted p-3 text-center"
         >
-          <div className="text-xl mb-1">{page.icon}</div>
+          <div className="flex justify-center mb-1">
+            <page.Icon className="h-5 w-5 text-foreground" aria-hidden />
+          </div>
           <div className="text-xs font-medium text-foreground">{page.label}</div>
         </div>
       ))}

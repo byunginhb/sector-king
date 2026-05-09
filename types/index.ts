@@ -12,6 +12,25 @@ export type {
   ScoreHistory,
 } from '@/drizzle/schema'
 
+// Re-export region types (SoT: lib/region.ts)
+export type { RegionValue, RegionFilter } from '@/lib/region'
+
+import type { RegionFilter as _RegionFilter } from '@/lib/region'
+
+/**
+ * 산업 + region 합성 결과. API 라우트가 필터 체인 종료 시점에 보유하는 통합 컨텍스트.
+ *
+ * - `industryId === null` 이면 전 산업 대상.
+ * - `tickers === null` 이면 ticker 단위 사전 좁힘이 없다는 뜻 (SQL 단계에서 region 분기).
+ */
+export interface ResolvedFilter {
+  industryId: string | null
+  region: _RegionFilter
+  categoryIds: string[] | null
+  sectorIds: string[] | null
+  tickers: string[] | null
+}
+
 // API Response types
 export interface ApiResponse<T> {
   success: boolean
@@ -85,6 +104,7 @@ export interface MapResponse {
   selectedDate: string | null
   availableDates: string[]
   isHistorical: boolean
+  appliedRegion?: _RegionFilter
 }
 
 export interface PriceHistory {
@@ -169,6 +189,7 @@ export interface TrendResponse {
     start: string
     end: string
   }
+  appliedRegion?: _RegionFilter
 }
 
 export interface CompanySectorInfo {
@@ -195,6 +216,7 @@ export interface CompanyStatisticsResponse {
   total: number
   page: number
   totalPages: number
+  appliedRegion?: _RegionFilter
 }
 
 export interface CategoryMarketCap {
@@ -236,6 +258,7 @@ export interface PriceChangesResponse {
     end: string
   }
   total: number
+  appliedRegion?: _RegionFilter
 }
 
 // Sector Trend API Types
@@ -257,6 +280,7 @@ export interface SectorTrendData {
 export interface SectorTrendResponse {
   sectors: SectorTrendData[]
   dateRange: { start: string; end: string }
+  appliedRegion?: _RegionFilter
 }
 
 // Money Flow API Types
@@ -312,6 +336,7 @@ export interface MoneyFlowResponse {
     start: string
     end: string
   }
+  appliedRegion?: _RegionFilter
 }
 
 // Search types
@@ -346,6 +371,7 @@ export interface IndustryOverview {
 export interface IndustriesResponse {
   industries: IndustryOverview[]
   lastUpdated: string | null
+  appliedRegion?: _RegionFilter
 }
 
 export interface IndustryFilterResult {
@@ -371,4 +397,5 @@ export interface IndustryMoneyFlowResponse {
   industries: IndustryMoneyFlowSummary[]
   period: number
   dateRange: { start: string; end: string }
+  appliedRegion?: _RegionFilter
 }

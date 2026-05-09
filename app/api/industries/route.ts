@@ -1,21 +1,27 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import {
   industries,
   industryCategories,
   sectors,
   sectorCompanies,
+  companies,
   dailySnapshots,
 } from '@/drizzle/schema'
 import { eq, inArray, desc } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
+import { resolveRegion, regionFilterToValue } from '@/lib/region'
 import type { ApiResponse, IndustriesResponse, IndustryOverview } from '@/types'
 
 export const revalidate = 3600
 
-export async function GET(): Promise<NextResponse<ApiResponse<IndustriesResponse>>> {
+export async function GET(
+  request: NextRequest
+): Promise<NextResponse<ApiResponse<IndustriesResponse>>> {
   try {
     const db = getDb()
+    const region = resolveRegion(request.nextUrl.searchParams)
+    const regionValue = regionFilterToValue(region)
 
     // Get all industries
     const allIndustries = await db
@@ -47,10 +53,16 @@ export async function GET(): Promise<NextResponse<ApiResponse<IndustriesResponse
       .select({ id: sectors.id, categoryId: sectors.categoryId })
       .from(sectors)
 
-    // Get all sector-companies
-    const allSC = await db
-      .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
-      .from(sectorCompanies)
+    // Get all sector-companies (region 적용 시 SQL 단계에서 join 으로 좁힘)
+    const allSC = regionValue
+      ? await db
+          .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
+          .from(sectorCompanies)
+          .innerJoin(companies, eq(sectorCompanies.ticker, companies.ticker))
+          .where(eq(companies.region, regionValue))
+      : await db
+          .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
+          .from(sectorCompanies)
 
     // Get snapshots for latest and previous dates
     const targetDates = [latestDate, prevDate].filter((d): d is string => d !== null)
@@ -85,7 +97,7 @@ export async function GET(): Promise<NextResponse<ApiResponse<IndustriesResponse
         .filter((s) => s.categoryId && categoryIds.includes(s.categoryId))
         .map((s) => s.id)
 
-      // Get unique tickers
+      // Get unique tickers (region 이 적용된 allSC 사용)
       const tickerSet = new Set<string>()
       for (const sc of allSC) {
         if (sc.sectorId && sectorIds.includes(sc.sectorId) && sc.ticker) {
@@ -127,6 +139,7 @@ export async function GET(): Promise<NextResponse<ApiResponse<IndustriesResponse
       data: {
         industries: industryOverviews,
         lastUpdated: latestDate,
+        appliedRegion: region,
       },
     })
   } catch (error) {

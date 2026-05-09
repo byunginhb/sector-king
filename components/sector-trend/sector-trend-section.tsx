@@ -12,6 +12,7 @@ import {
   ReferenceLine,
 } from 'recharts'
 import { useSectorTrend } from '@/hooks/use-sector-trend'
+import { useRegion } from '@/hooks/use-region'
 import { cn } from '@/lib/utils'
 import type { SectorTrendData } from '@/types'
 
@@ -75,7 +76,8 @@ interface SectorTrendSectionProps {
 }
 
 export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {}) {
-  const { data, isLoading, error } = useSectorTrend({ industryId })
+  const { region } = useRegion()
+  const { data, isLoading, error } = useSectorTrend({ industryId, region })
   const [sortPeriod, setSortPeriod] = useState(30)
   const [sortAsc, setSortAsc] = useState(false)
   const [showAll, setShowAll] = useState(false)

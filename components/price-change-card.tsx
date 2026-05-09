@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePriceChanges } from '@/hooks/use-price-changes'
+import { useRegion } from '@/hooks/use-region'
 import { formatPriceChange } from '@/lib/format'
 import { getPriceChangeStyle } from '@/lib/styles'
 import { cn } from '@/lib/utils'
@@ -15,10 +16,12 @@ interface PriceChangeCardProps {
 
 export function PriceChangeCard({ industryId }: PriceChangeCardProps) {
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
+  const { region } = useRegion()
   const { data, isLoading } = usePriceChanges({
     sort: 'percentChange',
     order: 'desc',
     industryId,
+    region,
   })
 
   if (isLoading) {

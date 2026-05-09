@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { StatisticsPage } from '@/components/statistics/statistics-page'
 
@@ -6,5 +7,9 @@ export const metadata: Metadata = {
 }
 
 export default function StatisticsPageRoute() {
-  return <StatisticsPage />
+  return (
+    <Suspense fallback={null}>
+      <StatisticsPage />
+    </Suspense>
+  )
 }

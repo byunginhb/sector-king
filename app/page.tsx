@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { IndustryDashboard } from '@/components/industry-dashboard'
 
@@ -37,7 +38,9 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <main className="min-h-screen bg-background">
-      <IndustryDashboard />
+      <Suspense fallback={null}>
+        <IndustryDashboard />
+      </Suspense>
     </main>
   )
 }

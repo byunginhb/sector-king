@@ -8,12 +8,22 @@ import {
 } from '@/drizzle/schema'
 import { eq, sql, desc, and, inArray } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
+import { applyRegionFilter, type RegionFilter } from '@/lib/region'
 import type {
   TrendItem,
   CategoryMarketCap,
   SectorGrowth,
   IndustryFilterResult,
 } from '@/types'
+
+/** 헬퍼들이 region 인자를 옵션으로 받기 위한 공통 시그니처. */
+type HelperOpts = { region?: RegionFilter }
+
+/** 티커 배열에 region 마스크. region='all' 이면 입력 그대로. */
+function regionMask(tickers: string[], region: RegionFilter | undefined): string[] {
+  if (!region || region === 'all') return tickers
+  return applyRegionFilter(tickers, region)
+}
 
 type DbInstance = ReturnType<typeof getDb>
 
@@ -58,8 +68,10 @@ export async function getSectorTrends(
   db: DbInstance,
   sectorIds: string[],
   dates: string[],
-  industryFilter: IndustryFilterResult | null
+  industryFilter: IndustryFilterResult | null,
+  opts: HelperOpts = {}
 ): Promise<TrendItem[]> {
+  const { region } = opts
   const sectorDataRaw = await db
     .select({
       sectorId: sectors.id,
@@ -83,6 +95,16 @@ export async function getSectorTrends(
       sectorCompanyMap.set(row.sectorId, {
         name: row.sectorName || '',
         tickers: row.ticker ? [row.ticker] : [],
+      })
+    }
+  }
+
+  // region 마스크: 각 sector 의 tickers 를 좁힌다 (불변, 새 Map)
+  if (region && region !== 'all') {
+    for (const [id, sector] of sectorCompanyMap) {
+      sectorCompanyMap.set(id, {
+        name: sector.name,
+        tickers: regionMask(sector.tickers, region),
       })
     }
   }
@@ -131,8 +153,10 @@ export async function getCategoryTrends(
   db: DbInstance,
   categoryIds: string[],
   dates: string[],
-  industryFilter: IndustryFilterResult | null
+  industryFilter: IndustryFilterResult | null,
+  opts: HelperOpts = {}
 ): Promise<TrendItem[]> {
+  const { region } = opts
   const categoryDataRaw = await db
     .select({
       categoryId: categories.id,
@@ -158,6 +182,16 @@ export async function getCategoryTrends(
       categoryTickerMap.set(row.categoryId, {
         name: row.categoryName || '',
         tickers: row.ticker ? new Set([row.ticker]) : new Set(),
+      })
+    }
+  }
+
+  // region 마스크
+  if (region && region !== 'all') {
+    for (const [id, cat] of categoryTickerMap) {
+      categoryTickerMap.set(id, {
+        name: cat.name,
+        tickers: new Set(regionMask(Array.from(cat.tickers), region)),
       })
     }
   }
@@ -203,8 +237,10 @@ export async function getCompanyTrends(
   db: DbInstance,
   tickers: string[],
   dates: string[],
-  industryFilter: IndustryFilterResult | null
+  industryFilter: IndustryFilterResult | null,
+  opts: HelperOpts = {}
 ): Promise<TrendItem[]> {
+  const { region } = opts
   let targetTickers = tickers
 
   if (targetTickers.length === 0) {
@@ -213,12 +249,16 @@ export async function getCompanyTrends(
       .from(dailySnapshots)
       .where(sql`${dailySnapshots.date} = (SELECT MAX(date) FROM daily_snapshots)`)
       .orderBy(desc(dailySnapshots.marketCap))
-      .limit(industryFilter ? 100 : 5)
+      .limit(industryFilter ? 200 : 50)
 
     const allTop = topCompanies.map((c) => c.ticker).filter((t): t is string => t !== null)
-    targetTickers = industryFilter
-      ? allTop.filter((t) => industryFilter.tickers.includes(t)).slice(0, 5)
+    const industryFiltered = industryFilter
+      ? allTop.filter((t) => industryFilter.tickers.includes(t))
       : allTop
+    const regionFiltered = regionMask(industryFiltered, region)
+    targetTickers = regionFiltered.slice(0, 5)
+  } else {
+    targetTickers = regionMask(targetTickers, region)
   }
 
   if (targetTickers.length === 0) return []
@@ -266,8 +306,10 @@ export async function getCompanyTrends(
 export async function getCategoryMarketCaps(
   db: DbInstance,
   latestDate: string,
-  industryFilter: IndustryFilterResult | null
+  industryFilter: IndustryFilterResult | null,
+  opts: HelperOpts = {}
 ): Promise<CategoryMarketCap[]> {
+  const { region } = opts
   const categoryDataRaw = await db
     .select({
       categoryId: categories.id,
@@ -297,6 +339,18 @@ export async function getCategoryMarketCaps(
         nameEn: row.categoryNameEn,
         tickers: row.ticker ? new Set([row.ticker]) : new Set(),
         sectors: row.sectorId ? new Set([row.sectorId]) : new Set(),
+      })
+    }
+  }
+
+  // region 마스크 (tickers 만 좁힘 — sectors 집합은 보존)
+  if (region && region !== 'all') {
+    for (const [id, cat] of categoryMap) {
+      categoryMap.set(id, {
+        name: cat.name,
+        nameEn: cat.nameEn,
+        tickers: new Set(regionMask(Array.from(cat.tickers), region)),
+        sectors: cat.sectors,
       })
     }
   }
@@ -335,8 +389,10 @@ export async function getCategoryMarketCaps(
 export async function getSectorGrowth(
   db: DbInstance,
   dates: string[],
-  industryFilter: IndustryFilterResult | null
+  industryFilter: IndustryFilterResult | null,
+  opts: HelperOpts = {}
 ): Promise<SectorGrowth[]> {
+  const { region } = opts
   if (dates.length < 2) return []
 
   const startDate = dates[0]
@@ -369,6 +425,16 @@ export async function getSectorGrowth(
         nameEn: row.sectorNameEn,
         categoryId: row.categoryId,
         tickers: row.ticker ? [row.ticker] : [],
+      })
+    }
+  }
+
+  // region 마스크
+  if (region && region !== 'all') {
+    for (const [id, sector] of sectorTickerMap) {
+      sectorTickerMap.set(id, {
+        ...sector,
+        tickers: regionMask(sector.tickers, region),
       })
     }
   }

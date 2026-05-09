@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useMoneyFlow } from '@/hooks/use-money-flow'
+import { useRegion } from '@/hooks/use-region'
 import { usePageTour } from '@/hooks/use-page-tour'
 import { FlowCard } from '@/components/money-flow/flow-card'
 import { FlowSummary } from '@/components/money-flow/flow-summary'
@@ -13,7 +14,10 @@ import { IndustryTitle } from '@/components/industry-title'
 import { SearchTrigger } from '@/components/search-trigger'
 import { HelpButton } from '@/components/onboarding/help-button'
 import { ShareButton } from '@/components/share-button'
+import { RegionToggle } from '@/components/region-toggle'
+import { EmptyRegionState } from '@/components/ui/empty-region-state'
 import { cn } from '@/lib/utils'
+import { Wallet, TrendingUp, TrendingDown } from 'lucide-react'
 
 type PeriodType = 1 | 3 | 7 | 14 | 30
 
@@ -24,7 +28,8 @@ interface MoneyFlowPageContentProps {
 export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) {
   const [period, setPeriod] = useState<PeriodType>(14)
   const [expandedSectorId, setExpandedSectorId] = useState<string | null>(null)
-  const { data, isLoading, error } = useMoneyFlow({ period, limit: 20, industryId })
+  const { region, setRegion } = useRegion()
+  const { data, isLoading, error } = useMoneyFlow({ period, limit: 20, industryId, region })
   usePageTour('money-flow')
 
   const expandedFlow = data?.flows.find((f) => f.id === expandedSectorId)
@@ -69,7 +74,7 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
               </Link>
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
-                  <span className="text-2xl">💰</span>
+                  <Wallet className="h-6 w-6 text-foreground" aria-hidden />
                   <IndustryTitle industryId={industryId} /> 섹터 자금 흐름
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-slate-400">
@@ -81,6 +86,7 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <RegionToggle value={region} onChange={setRegion} />
               <ShareButton
                 title="섹터 자금 흐름 | Sector King"
                 description="섹터별 자금 유입/유출 현황 분석"
@@ -129,14 +135,19 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
           </div>
         )}
 
+        {/* Empty state (region 필터로 모두 사라진 경우) */}
+        {data && data.flows.length === 0 && !isLoading && (
+          <EmptyRegionState region={region} />
+        )}
+
         {/* Flow Cards */}
-        {data && (
+        {data && data.flows.length > 0 && (
           <>
             {/* Inflows Section */}
             {inflowFlows.length > 0 && (
               <div data-tour="inflow-section" className="mb-8">
                 <h2 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-4 flex items-center gap-2">
-                  <span className="text-xl">💰</span>
+                  <TrendingUp className="h-5 w-5 text-red-600 dark:text-red-400" aria-hidden />
                   자금 유입 섹터
                   <span className="text-sm font-normal text-red-500 dark:text-red-400 ml-2">
                     돈이 들어오는 중...
@@ -163,7 +174,7 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
             {outflowFlows.length > 0 && (
               <div data-tour="outflow-section" className="mb-8">
                 <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-4 flex items-center gap-2">
-                  <span className="text-xl">💸</span>
+                  <TrendingDown className="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden />
                   자금 유출 섹터
                   <span className="text-sm font-normal text-blue-500 dark:text-blue-400 ml-2">
                     돈이 빠져나가는 중...

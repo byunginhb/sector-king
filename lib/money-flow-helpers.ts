@@ -1,7 +1,8 @@
 import { getDb } from '@/lib/db'
-import { sectors, sectorCompanies, dailySnapshots } from '@/drizzle/schema'
-import { desc, gte, and, inArray } from 'drizzle-orm'
+import { sectors, sectorCompanies, companies, dailySnapshots } from '@/drizzle/schema'
+import { desc, gte, and, eq, inArray } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
+import { regionFilterToValue, type RegionFilter } from '@/lib/region'
 import type { SectorMoneyFlow, MoneyFlowTrendPoint, IndustryFilterResult } from '@/types'
 
 export type SnapshotData = {
@@ -49,11 +50,19 @@ export async function getAvailableDates(
 }
 
 /**
- * Get sectors and their tickers, optionally filtered by industry.
+ * Get sectors and their tickers, optionally filtered by industry & region.
+ *
+ * region 처리 (단일 SQL 경로 — SoT 일관성):
+ * - `'all'` → JOIN 미적용, 모든 ticker 반환
+ * - `'kr' | 'global'` → `companies.region` INNER JOIN 으로 SQL 단계에서만 좁힘
+ *
+ * 메모리 단계 중복 마스크는 제거 (M1) — `companies.region` 컬럼이 SoT 함수
+ * `getRegionFromTicker` 로 백필되므로 SQL 결과만으로 정합.
  */
 export async function getSectorsWithTickers(
   db: ReturnType<typeof getDb>,
-  industryFilter: IndustryFilterResult | null
+  industryFilter: IndustryFilterResult | null,
+  region: RegionFilter = 'all'
 ): Promise<{ allSectors: SectorInfo[]; sectorTickerMap: Map<string, string[]>; uniqueTickerList: string[] }> {
   const allSectorsRaw = await db
     .select({ id: sectors.id, name: sectors.name, nameEn: sectors.nameEn })
@@ -63,12 +72,19 @@ export async function getSectorsWithTickers(
     ? allSectorsRaw.filter((s) => industryFilter.sectorIds.includes(s.id))
     : allSectorsRaw
 
-  const allSectorCompanies = await db
-    .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
-    .from(sectorCompanies)
+  const regionValue = regionFilterToValue(region)
+  const allSectorCompaniesRaw = regionValue
+    ? await db
+        .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
+        .from(sectorCompanies)
+        .innerJoin(companies, eq(sectorCompanies.ticker, companies.ticker))
+        .where(eq(companies.region, regionValue))
+    : await db
+        .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
+        .from(sectorCompanies)
 
   const sectorTickerMap = new Map<string, string[]>()
-  for (const sc of allSectorCompanies) {
+  for (const sc of allSectorCompaniesRaw) {
     if (!sc.sectorId || !sc.ticker) continue
     const existing = sectorTickerMap.get(sc.sectorId)
     if (existing) {
@@ -84,7 +100,11 @@ export async function getSectorsWithTickers(
     for (const t of tickers) allUniqueTickers.add(t)
   }
 
-  return { allSectors, sectorTickerMap, uniqueTickerList: Array.from(allUniqueTickers) }
+  return {
+    allSectors,
+    sectorTickerMap,
+    uniqueTickerList: Array.from(allUniqueTickers),
+  }
 }
 
 /**

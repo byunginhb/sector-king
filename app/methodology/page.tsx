@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { AlertTriangle } from 'lucide-react'
 import { SCORING } from '@/lib/scoring-methodology'
 import { ScoringDiagram } from '@/components/methodology/scoring-diagram'
 import { DataPipeline } from '@/components/methodology/data-pipeline'
@@ -232,7 +233,7 @@ export default function MethodologyPage() {
                   7개 재무 필드(매출 성장률, 수익 성장률, 영업이익률, ROE, 애널리스트 의견, 애널리스트 수, 목표주가) 중 실제 수집된 비율입니다.
                 </p>
                 <div className="flex items-center gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3">
-                  <span className="text-amber-600 dark:text-amber-400 shrink-0">⚠️</span>
+                  <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" aria-hidden />
                   <p className="text-xs text-amber-700 dark:text-amber-300">
                     커버리지 0.7 미만인 기업은 &quot;데이터 제한적&quot; 경고가 표시됩니다.
                     데이터가 부족한 지표는 중간값으로 대체되므로 점수 정확도가 낮을 수 있습니다.

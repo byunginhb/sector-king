@@ -23,7 +23,7 @@ export async function GET(
     const limit = Number.isNaN(rawLimit) ? 6 : Math.max(1, Math.min(rawLimit, 50))
 
     const db = getDb()
-    const { filter: industryFilter, errorResponse } = await resolveIndustryFilter(searchParams)
+    const { filter: industryFilter, region, errorResponse } = await resolveIndustryFilter(searchParams)
     if (errorResponse) return errorResponse
 
     // Calculate date range
@@ -44,6 +44,7 @@ export async function GET(
           totalOutflow: 0,
           netFlow: 0,
           dateRange: { start: effectiveStartDate, end: effectiveStartDate },
+          appliedRegion: region,
         },
       })
     }
@@ -52,7 +53,7 @@ export async function GET(
     const lastDate = dates[dates.length - 1]
 
     const { allSectors, sectorTickerMap, uniqueTickerList } =
-      await getSectorsWithTickers(db, industryFilter)
+      await getSectorsWithTickers(db, industryFilter, region)
 
     if (uniqueTickerList.length === 0) {
       return NextResponse.json({
@@ -65,6 +66,7 @@ export async function GET(
           totalOutflow: 0,
           netFlow: 0,
           dateRange: { start: firstDate, end: lastDate },
+          appliedRegion: region,
         },
       })
     }
@@ -102,6 +104,7 @@ export async function GET(
         totalOutflow,
         netFlow: totalInflow - totalOutflow,
         dateRange: { start: firstDate, end: lastDate },
+        appliedRegion: region,
       },
     })
   } catch (error) {

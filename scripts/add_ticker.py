@@ -29,6 +29,14 @@ from scoring import calculate_hegemony_scores, update_sector_rankings
 
 DB_PATH = Path(__file__).parent.parent / "data" / "hegemony.db"
 
+# region 분류 — lib/region.ts의 getRegionFromTicker와 동일 로직
+KR_TICKER_SUFFIXES = (".KS", ".KQ")
+
+
+def get_region_from_ticker(ticker: str) -> str:
+    """Return 'KR' for KOSPI/KOSDAQ tickers, 'INTL' otherwise."""
+    return "KR" if ticker.endswith(KR_TICKER_SUFFIXES) else "INTL"
+
 
 def list_sectors(conn: sqlite3.Connection):
     """Print all available sectors grouped by category."""
@@ -99,17 +107,19 @@ def add_ticker(
 
     # 4. UPSERT company
     company_name = info.get("shortName") or info.get("longName") or ticker
+    region = get_region_from_ticker(ticker)
     conn.execute(
         """
-        INSERT INTO companies (ticker, name, name_ko)
-        VALUES (?, ?, ?)
+        INSERT INTO companies (ticker, name, name_ko, region)
+        VALUES (?, ?, ?, ?)
         ON CONFLICT(ticker) DO UPDATE SET
             name = CASE WHEN excluded.name != '' THEN excluded.name ELSE companies.name END,
-            name_ko = CASE WHEN excluded.name_ko IS NOT NULL THEN excluded.name_ko ELSE companies.name_ko END
+            name_ko = CASE WHEN excluded.name_ko IS NOT NULL THEN excluded.name_ko ELSE companies.name_ko END,
+            region = excluded.region
     """,
-        (ticker, company_name, name_ko),
+        (ticker, company_name, name_ko, region),
     )
-    print(f"  Company: {company_name} ({name_ko or 'no Korean name'})")
+    print(f"  Company: {company_name} ({name_ko or 'no Korean name'}) [region={region}]")
 
     # 5. Get next rank for sector
     max_rank = conn.execute(

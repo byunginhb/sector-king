@@ -5,6 +5,7 @@ import { and, inArray, sql } from 'drizzle-orm'
 import type { ApiResponse, PriceChangesResponse, PriceChangeItem } from '@/types'
 import { toUsd } from '@/lib/currency'
 import { resolveIndustryFilter } from '@/lib/api-helpers'
+import { matchesRegion } from '@/lib/region'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -23,7 +24,7 @@ export async function GET(
     const order = (ALLOWED_ORDERS as readonly string[]).includes(rawOrder) ? rawOrder : 'desc'
     const days = rawDays ? Math.min(Math.max(parseInt(rawDays, 10) || 0, 1), 365) : null
     const db = getDb()
-    const { filter: industryFilter, errorResponse } = await resolveIndustryFilter(searchParams)
+    const { filter: industryFilter, region, errorResponse } = await resolveIndustryFilter(searchParams)
     if (errorResponse) return errorResponse
 
     // Get all unique tickers
@@ -31,9 +32,12 @@ export async function GET(
       .selectDistinct({ ticker: dailySnapshots.ticker })
       .from(dailySnapshots)
 
-    const allTickers = industryFilter
-      ? allTickersRaw.filter((t) => t.ticker && industryFilter.tickers.includes(t.ticker))
-      : allTickersRaw
+    const allTickers = allTickersRaw.filter((t) => {
+      if (!t.ticker) return false
+      if (industryFilter && !industryFilter.tickers.includes(t.ticker)) return false
+      if (!matchesRegion(t.ticker, region)) return false
+      return true
+    })
 
     const tickerList = allTickers
       .map((t) => t.ticker)
@@ -42,7 +46,7 @@ export async function GET(
     if (tickerList.length === 0) {
       return NextResponse.json({
         success: true,
-        data: { companies: [], dateRange: { start: '', end: '' }, total: 0 },
+        data: { companies: [], dateRange: { start: '', end: '' }, total: 0, appliedRegion: region },
       })
     }
 
@@ -88,7 +92,7 @@ export async function GET(
     if (targetDates.length === 0) {
       return NextResponse.json({
         success: true,
-        data: { companies: [], dateRange: { start: '', end: '' }, total: 0 },
+        data: { companies: [], dateRange: { start: '', end: '' }, total: 0, appliedRegion: region },
       })
     }
 
@@ -201,6 +205,7 @@ export async function GET(
           end: allDates[allDates.length - 1] || '',
         },
         total: sortedChanges.length,
+        appliedRegion: region,
       },
     })
   } catch (error) {

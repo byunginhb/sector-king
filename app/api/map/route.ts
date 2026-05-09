@@ -8,9 +8,10 @@ import {
   dailySnapshots,
   companyScores,
 } from '@/drizzle/schema'
-import { eq, desc, sql, inArray } from 'drizzle-orm'
+import { eq, desc, sql } from 'drizzle-orm'
 import type { ApiResponse, MapResponse } from '@/types'
 import { resolveIndustryFilter } from '@/lib/api-helpers'
+import { applyRegionFilter, matchesRegion } from '@/lib/region'
 import { toScoreSummary } from '@/lib/format'
 
 export const revalidate = 3600 // 1 hour cache
@@ -23,9 +24,15 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams
     const requestedDate = searchParams.get('date')
 
-    // Resolve industry filter (validates + looks up)
-    const { filter: industryFilter, errorResponse } = await resolveIndustryFilter(searchParams)
+    // Resolve industry & region filters (validates + looks up)
+    const { filter: industryFilter, region, errorResponse } = await resolveIndustryFilter(searchParams)
     if (errorResponse) return errorResponse
+
+    // industry 미지정 + region 지정 케이스를 위해 사전 ticker 풀 계산
+    // (industry 지정 케이스는 industryFilter.tickers 에서 합성)
+    const tickerWhitelist = industryFilter
+      ? new Set(applyRegionFilter(industryFilter.tickers, region))
+      : null
 
     // Get available dates (last 365 days max)
     const availableDatesResult = await db
@@ -115,12 +122,20 @@ export async function GET(
       }
     }
 
-    // Filter sectorCompanies by industry if specified
-    const filteredSCWithDetails = industryFilter
-      ? sectorCompaniesWithDetails.filter((sc) =>
-          industryFilter.sectorIds.includes(sc.sectorId ?? '')
-        )
-      : sectorCompaniesWithDetails
+    // Filter sectorCompanies by industry & region
+    const filteredSCWithDetails = sectorCompaniesWithDetails.filter((sc) => {
+      if (industryFilter && !industryFilter.sectorIds.includes(sc.sectorId ?? '')) {
+        return false
+      }
+      if (tickerWhitelist && !tickerWhitelist.has(sc.ticker ?? '')) {
+        return false
+      }
+      // industry 미지정 케이스: ticker 단위 region 필터 (접미사 기반 — SoT lib/region.ts)
+      if (!industryFilter && region !== 'all') {
+        if (!matchesRegion(sc.ticker ?? '', region)) return false
+      }
+      return true
+    })
 
     // Transform data
     const transformedSectorCompanies = filteredSCWithDetails.map((sc) => {
@@ -171,6 +186,7 @@ export async function GET(
         selectedDate,
         availableDates,
         isHistorical,
+        appliedRegion: region,
       },
     })
   } catch (error) {

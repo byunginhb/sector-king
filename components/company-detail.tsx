@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Star } from 'lucide-react'
 import { useCompany } from '@/hooks/use-company'
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
@@ -138,7 +139,7 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
                 key={sector.id}
                 className={cn('border font-medium', style.badge)}
               >
-                {rank === 1 && <span className="text-amber-500 mr-1">★</span>}
+                {rank === 1 && <Star className="inline h-3 w-3 mr-1 fill-amber-500 text-amber-500" aria-hidden />}
                 {sector.name}: {style.label}
               </Badge>
             )

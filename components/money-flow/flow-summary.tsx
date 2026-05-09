@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { TrendingUp, TrendingDown, Wallet } from 'lucide-react'
 import { formatFlowAmount, formatKrw } from '@/lib/format'
 
 interface FlowSummaryProps {
@@ -23,7 +24,7 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
       {/* Total Inflow */}
       <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-lg">📈</span>
+          <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" aria-hidden />
           <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
             총 유입
           </span>
@@ -39,7 +40,7 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
       {/* Total Outflow */}
       <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-lg">📉</span>
+          <TrendingDown className="h-5 w-5 text-red-600 dark:text-red-400" aria-hidden />
           <span className="text-sm text-red-600 dark:text-red-400 font-medium">
             총 유출
           </span>
@@ -61,7 +62,14 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
         }
       >
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-lg">💰</span>
+          <Wallet
+            className={
+              isNetPositive
+                ? 'h-5 w-5 text-blue-600 dark:text-blue-400'
+                : 'h-5 w-5 text-orange-600 dark:text-orange-400'
+            }
+            aria-hidden
+          />
           <span
             className={
               isNetPositive

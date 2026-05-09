@@ -22,6 +22,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx scripts/seed.ts",
+    "db:migrate:region": "tsx scripts/migrate-add-region.ts",
+    "db:migrate:relax-rank": "tsx scripts/migrate-relax-rank-check.ts",
+    "db:fill-gaps": "tsx scripts/migrate-fill-ticker-gaps.ts",
     "format": "prettier --write ."
   },
   "dependencies": {

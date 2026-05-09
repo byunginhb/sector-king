@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { usePriceChanges } from '@/hooks/use-price-changes'
 import { useTrends } from '@/hooks/use-statistics'
+import { useRegion } from '@/hooks/use-region'
 import { usePageTour } from '@/hooks/use-page-tour'
 import { PriceChangeChart } from '@/components/price-changes/price-change-chart'
 import { PriceChangeTable } from '@/components/price-changes/price-change-table'
@@ -14,6 +15,8 @@ import { IndustryTitle } from '@/components/industry-title'
 import { SearchTrigger } from '@/components/search-trigger'
 import { HelpButton } from '@/components/onboarding/help-button'
 import { ShareButton } from '@/components/share-button'
+import { RegionToggle } from '@/components/region-toggle'
+import { EmptyRegionState } from '@/components/ui/empty-region-state'
 import { cn } from '@/lib/utils'
 
 type SortType = 'percentChange' | 'name' | 'marketCap'
@@ -26,8 +29,9 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
   const [sort, setSort] = useState<SortType>('percentChange')
   const [order, setOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
+  const { region, setRegion } = useRegion()
 
-  const { data, isLoading } = usePriceChanges({ sort, order, industryId })
+  const { data, isLoading } = usePriceChanges({ sort, order, industryId, region })
   usePageTour('price-changes')
 
   // Get top 20 tickers for trend chart (memoized to avoid re-fetch loops)
@@ -42,6 +46,7 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
     ids: topTickers,
     days: 'all',
     industryId,
+    region,
   })
 
   const handleSortChange = (newSort: SortType) => {
@@ -89,7 +94,8 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <RegionToggle value={region} onChange={setRegion} />
               <ShareButton
                 title="가격 변화율 | Sector King"
                 description="추적 기업 가격 변화율 분석"
@@ -193,6 +199,11 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
             isLoading={trendLoading || isLoading}
           />
         </div>
+
+        {/* Empty state */}
+        {!isLoading && data && data.companies.length === 0 && (
+          <EmptyRegionState region={region} />
+        )}
 
         {/* Table */}
         <div className="mb-8">
