@@ -366,6 +366,21 @@ export interface IndustryOverview {
   companyCount: number
   totalMarketCap: number
   marketCapChange: number
+  /** 최근 14일 시가총액 시계열 (오래된 → 최신). 데이터 부족 시 짧을 수 있음. */
+  marketCapHistory?: number[]
+  /** 14일 자금 유입(시총 변화)이 가장 큰 섹터 */
+  topSectorByFlow?: {
+    id: string
+    name: string
+    flowAmount: number
+  } | null
+  /** 14일 시총 변화율이 가장 큰 회사 */
+  topCompanyByChange?: {
+    ticker: string
+    name: string
+    nameKo: string | null
+    changePercent: number
+  } | null
 }
 
 export interface IndustriesResponse {

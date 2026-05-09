@@ -5,56 +5,103 @@
 
 @layer base {
   :root {
-    /* Light mode - Readability focused design */
-    --background: 220 14% 97%;         /* #F6F7F9 연한 회색 배경 */
-    --foreground: 218 20% 27%;         /* #374151 Primary Text */
-    --card: 0 0% 100%;                 /* #FFFFFF 순백 카드 */
-    --card-foreground: 221 39% 11%;    /* #111827 Card Title */
+    /* Light mode — Bloomberg + Linear: warm off-white + amber 단일 강조 */
+    --background: 36 20% 98%;          /* #FAF9F6 stone-50 톤 */
+    --surface-1:  0 0% 100%;           /* 카드 베이스 */
+    --surface-2: 36 14% 96%;           /* hover */
+    --surface-3: 36 12% 93%;           /* nested / elevated */
+    --foreground: 222 30% 16%;         /* 본문 */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%; /* #0F172A Section Title */
-    --primary: 43 96% 50%;             /* #F59E0B Star/Accent */
+    --popover-foreground: 222 47% 11%;
+    --primary: 38 92% 50%;             /* amber 정통 (단일 강조) */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 96%;          /* #F3F4F6 Pill Default bg */
-    --secondary-foreground: 217 33% 17%; /* #1F2937 Pill text */
-    --muted: 210 40% 96.5%;            /* #F1F5F9 Card Header bg */
-    --muted-foreground: 220 9% 46%;    /* #6B7280 Secondary Text */
-    --accent: 30 100% 96%;             /* #FFF7ED Highlight bg */
-    --accent-foreground: 17 89% 40%;   /* #C2410C Highlight text */
-    --destructive: 0 70% 50%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 217 33% 17%;
+    --muted: 36 14% 95%;
+    --muted-foreground: 220 9% 42%;
+    --accent: 38 95% 96%;              /* amber tint highlight bg */
+    --accent-foreground: 38 92% 38%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 14% 91%;             /* #E5E7EB */
+    --border: 220 14% 88%;
+    --border-subtle: 220 14% 93%;      /* 1px hairline */
     --input: 220 14% 91%;
-    --ring: 43 96% 50%;
-    --radius: 0.75rem;                 /* 12px */
+    --ring: 38 92% 50%;
+    --radius: 0.75rem;
+
+    /* Status — 채도 한 단계 다운 */
+    --success: 160 70% 35%;            /* teal-700 상승 */
+    --success-bg: 160 50% 94%;
+    --danger: 0 72% 50%;               /* rose-600 하락 */
+    --danger-bg: 0 75% 96%;
+    --warning: 30 90% 45%;
+    --info: 210 85% 50%;
+
+    /* Chart palette — recharts 일관 */
+    --chart-1: 38 92% 50%;             /* gold */
+    --chart-2: 160 60% 40%;            /* teal */
+    --chart-3: 210 85% 50%;            /* sky */
+    --chart-4: 280 55% 55%;            /* violet */
+    --chart-5: 0 72% 55%;              /* rose */
+    --chart-6: 30 90% 50%;             /* orange */
+    --chart-7: 190 60% 45%;            /* cyan */
+    --chart-8: 145 45% 45%;            /* lime-green */
   }
 
   .dark {
-    /* Dark mode with warm undertones */
-    --background: 20 10% 8%;
-    --foreground: 30 10% 95%;
-    --card: 20 10% 10%;
-    --card-foreground: 30 10% 95%;
-    --popover: 20 10% 10%;
-    --popover-foreground: 30 10% 95%;
-    --primary: 30 15% 70%;
-    --primary-foreground: 20 10% 8%;
-    --secondary: 20 10% 15%;
-    --secondary-foreground: 30 10% 95%;
-    --muted: 20 10% 15%;
-    --muted-foreground: 30 5% 55%;
-    --accent: 20 10% 18%;
-    --accent-foreground: 30 15% 80%;
+    /* Dark mode — Bloomberg/Koyfin 톤 slate-950 + amber */
+    --background: 222 24% 6%;          /* #0A0E14 거의 검정 슬레이트 */
+    --surface-1: 222 20% 9%;           /* #0F141C 카드 베이스 */
+    --surface-2: 220 18% 12%;          /* #161C26 hover / nested */
+    --surface-3: 220 16% 16%;          /* #1F2733 elevated */
+    --foreground: 220 14% 96%;
+    --card: 222 20% 9%;
+    --card-foreground: 220 14% 96%;
+    --popover: 222 20% 9%;
+    --popover-foreground: 220 14% 96%;
+    --primary: 43 92% 58%;             /* #F2C24A 골드 */
+    --primary-foreground: 222 24% 6%;
+    --secondary: 220 16% 14%;
+    --secondary-foreground: 220 14% 92%;
+    --muted: 220 16% 14%;
+    --muted-foreground: 220 10% 62%;
+    --accent: 220 16% 14%;
+    --accent-foreground: 43 92% 70%;
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 20 10% 18%;
-    --input: 20 10% 18%;
-    --ring: 30 15% 70%;
+    --border: 220 14% 20%;
+    --border-subtle: 220 14% 16%;
+    --input: 220 14% 20%;
+    --ring: 43 92% 58%;
+
+    /* Status — 다크 모드 */
+    --success: 160 60% 45%;            /* teal-400 */
+    --success-bg: 160 60% 12%;
+    --danger: 0 75% 62%;               /* rose-400 */
+    --danger-bg: 0 60% 14%;
+    --warning: 38 92% 60%;
+    --info: 210 90% 62%;
+
+    /* Chart palette — 다크 */
+    --chart-1: 43 92% 58%;
+    --chart-2: 160 60% 50%;
+    --chart-3: 210 90% 62%;
+    --chart-4: 280 65% 65%;
+    --chart-5: 0 75% 62%;
+    --chart-6: 30 90% 58%;
+    --chart-7: 190 70% 55%;
+    --chart-8: 145 50% 55%;
   }
 }
 
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
+  --color-surface-1: hsl(var(--surface-1));
+  --color-surface-2: hsl(var(--surface-2));
+  --color-surface-3: hsl(var(--surface-3));
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
   --color-popover: hsl(var(--popover));
@@ -70,14 +117,30 @@
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
   --color-border: hsl(var(--border));
+  --color-border-subtle: hsl(var(--border-subtle));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+  --color-success: hsl(var(--success));
+  --color-success-bg: hsl(var(--success-bg));
+  --color-danger: hsl(var(--danger));
+  --color-danger-bg: hsl(var(--danger-bg));
+  --color-warning: hsl(var(--warning));
+  --color-info: hsl(var(--info));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-chart-6: hsl(var(--chart-6));
+  --color-chart-7: hsl(var(--chart-7));
+  --color-chart-8: hsl(var(--chart-8));
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
 }
 
 /* Unified neutral pastel design */
@@ -99,6 +162,26 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* 숫자 정렬 일관성 — Bloomberg 패턴 (tabular-nums) */
+  .tabular-nums,
+  .num,
+  [data-num] {
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.01em;
+  }
+
+  /* prefers-reduced-motion 존중 */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 /* Custom scrollbar */
@@ -117,5 +200,13 @@
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  /* 표준 카드 토큰 — Bloomberg + Linear */
+  .sk-card {
+    @apply rounded-2xl border border-border-subtle bg-surface-1 p-5 transition-[border-color,background-color,transform] duration-200 ease-out;
+  }
+  .sk-card-hover {
+    @apply hover:-translate-y-px hover:border-primary/30 hover:bg-surface-2;
   }
 }

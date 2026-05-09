@@ -8,12 +8,14 @@ import {
   companies,
   dailySnapshots,
 } from '@/drizzle/schema'
-import { eq, inArray, desc } from 'drizzle-orm'
+import { eq, inArray, desc, gte } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
 import { resolveRegion, regionFilterToValue } from '@/lib/region'
 import type { ApiResponse, IndustriesResponse, IndustryOverview } from '@/types'
 
 export const revalidate = 3600
+
+const HISTORY_DAYS = 14
 
 export async function GET(
   request: NextRequest
@@ -29,16 +31,19 @@ export async function GET(
       .from(industries)
       .orderBy(industries.order)
 
-    // Get latest date
-    const latestDateResult = await db
+    // Get distinct dates (descending) — 최대 HISTORY_DAYS+여유
+    const distinctDateRows = await db
       .selectDistinct({ date: dailySnapshots.date })
       .from(dailySnapshots)
       .orderBy(desc(dailySnapshots.date))
-      .limit(2)
+      .limit(HISTORY_DAYS + 2)
 
-    const dates = latestDateResult.map((d) => d.date).filter((d): d is string => d !== null)
-    const latestDate = dates[0] ?? null
-    const prevDate = dates[1] ?? null
+    const allDates = distinctDateRows.map((d) => d.date).filter((d): d is string => d !== null)
+    const latestDate = allDates[0] ?? null
+    const prevDate = allDates[1] ?? null
+    // history: 오래된 순으로 정렬
+    const historyDates = [...allDates].slice(0, HISTORY_DAYS).sort()
+    const oldestHistoryDate = historyDates[0] ?? null
 
     // Get all industry-category mappings
     const allIC = await db
@@ -48,12 +53,16 @@ export async function GET(
       })
       .from(industryCategories)
 
-    // Get all sectors
+    // Get all sectors (id, categoryId, name)
     const allSectors = await db
-      .select({ id: sectors.id, categoryId: sectors.categoryId })
+      .select({
+        id: sectors.id,
+        categoryId: sectors.categoryId,
+        name: sectors.name,
+      })
       .from(sectors)
 
-    // Get all sector-companies (region 적용 시 SQL 단계에서 join 으로 좁힘)
+    // Get all sector-companies (region 적용 시 SQL 단계 join)
     const allSC = regionValue
       ? await db
           .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
@@ -64,9 +73,8 @@ export async function GET(
           .select({ sectorId: sectorCompanies.sectorId, ticker: sectorCompanies.ticker })
           .from(sectorCompanies)
 
-    // Get snapshots for latest and previous dates
-    const targetDates = [latestDate, prevDate].filter((d): d is string => d !== null)
-    const allSnapshots = targetDates.length > 0
+    // Get snapshots for the history window
+    const allSnapshots = oldestHistoryDate
       ? await db
           .select({
             ticker: dailySnapshots.ticker,
@@ -74,15 +82,40 @@ export async function GET(
             marketCap: dailySnapshots.marketCap,
           })
           .from(dailySnapshots)
-          .where(inArray(dailySnapshots.date, targetDates))
+          .where(gte(dailySnapshots.date, oldestHistoryDate))
       : []
 
-    // Build snapshot index
-    const snapshotIndex = new Map<string, number>()
+    // ticker → date → mcap (USD) index
+    const snapshotIndex = new Map<string, Map<string, number>>()
     for (const snap of allSnapshots) {
       if (!snap.ticker || !snap.date) continue
-      snapshotIndex.set(`${snap.ticker}|${snap.date}`, toUsd(snap.marketCap || 0, snap.ticker))
+      const v = toUsd(snap.marketCap || 0, snap.ticker)
+      let inner = snapshotIndex.get(snap.ticker)
+      if (!inner) {
+        inner = new Map<string, number>()
+        snapshotIndex.set(snap.ticker, inner)
+      }
+      inner.set(snap.date, v)
     }
+
+    // companies (ticker → name/nameKo) — 후순위 필요 컬럼만
+    const allCompanies = regionValue
+      ? await db
+          .select({
+            ticker: companies.ticker,
+            name: companies.name,
+            nameKo: companies.nameKo,
+          })
+          .from(companies)
+          .where(eq(companies.region, regionValue))
+      : await db
+          .select({
+            ticker: companies.ticker,
+            name: companies.name,
+            nameKo: companies.nameKo,
+          })
+          .from(companies)
+    const companyByTicker = new Map(allCompanies.map((c) => [c.ticker, c]))
 
     // Build industry overviews
     const industryOverviews: IndustryOverview[] = allIndustries.map((ind) => {
@@ -93,33 +126,96 @@ export async function GET(
         .filter((id): id is string => id !== null)
 
       // Get sectors for those categories
-      const sectorIds = allSectors
-        .filter((s) => s.categoryId && categoryIds.includes(s.categoryId))
-        .map((s) => s.id)
+      const indSectors = allSectors.filter(
+        (s) => s.categoryId && categoryIds.includes(s.categoryId)
+      )
+      const sectorIds = indSectors.map((s) => s.id)
 
-      // Get unique tickers (region 이 적용된 allSC 사용)
+      // sectorId → tickers
+      const sectorToTickers = new Map<string, string[]>()
       const tickerSet = new Set<string>()
       for (const sc of allSC) {
         if (sc.sectorId && sectorIds.includes(sc.sectorId) && sc.ticker) {
           tickerSet.add(sc.ticker)
+          const arr = sectorToTickers.get(sc.sectorId) ?? []
+          arr.push(sc.ticker)
+          sectorToTickers.set(sc.sectorId, arr)
         }
       }
 
-      // Calculate market cap
+      // Calculate market cap for latest / prev
       let totalMarketCap = 0
       let prevTotalMarketCap = 0
       for (const ticker of tickerSet) {
-        if (latestDate) {
-          totalMarketCap += snapshotIndex.get(`${ticker}|${latestDate}`) ?? 0
+        const inner = snapshotIndex.get(ticker)
+        if (!inner) continue
+        if (latestDate) totalMarketCap += inner.get(latestDate) ?? 0
+        if (prevDate) prevTotalMarketCap += inner.get(prevDate) ?? 0
+      }
+
+      const marketCapChange =
+        prevTotalMarketCap > 0
+          ? ((totalMarketCap - prevTotalMarketCap) / prevTotalMarketCap) * 100
+          : 0
+
+      // 14일 시계열 (산업 시총 = 해당일 산업 보유 ticker들의 USD mcap 합계)
+      const marketCapHistory = historyDates.map((d) => {
+        let sum = 0
+        for (const ticker of tickerSet) {
+          const inner = snapshotIndex.get(ticker)
+          if (!inner) continue
+          sum += inner.get(d) ?? 0
         }
-        if (prevDate) {
-          prevTotalMarketCap += snapshotIndex.get(`${ticker}|${prevDate}`) ?? 0
+        return sum
+      })
+
+      // 핫 섹터: 14일 자금 유입(첫 → 마지막 시총 변화)이 가장 큰 섹터
+      let topSectorByFlow: IndustryOverview['topSectorByFlow'] = null
+      const firstDate = historyDates[0] ?? null
+      const lastDate = historyDates[historyDates.length - 1] ?? null
+      if (firstDate && lastDate && firstDate !== lastDate) {
+        let bestFlow = -Infinity
+        for (const sec of indSectors) {
+          const tickers = sectorToTickers.get(sec.id) ?? []
+          let firstSum = 0
+          let lastSum = 0
+          for (const t of tickers) {
+            const inner = snapshotIndex.get(t)
+            if (!inner) continue
+            firstSum += inner.get(firstDate) ?? 0
+            lastSum += inner.get(lastDate) ?? 0
+          }
+          const flow = lastSum - firstSum
+          if (flow > bestFlow) {
+            bestFlow = flow
+            topSectorByFlow = { id: sec.id, name: sec.name, flowAmount: flow }
+          }
         }
       }
 
-      const marketCapChange = prevTotalMarketCap > 0
-        ? ((totalMarketCap - prevTotalMarketCap) / prevTotalMarketCap) * 100
-        : 0
+      // 등락 1위 회사: 14일 시총 변화율이 가장 큰 ticker
+      let topCompanyByChange: IndustryOverview['topCompanyByChange'] = null
+      if (firstDate && lastDate && firstDate !== lastDate) {
+        let bestChange = -Infinity
+        for (const ticker of tickerSet) {
+          const inner = snapshotIndex.get(ticker)
+          if (!inner) continue
+          const a = inner.get(firstDate) ?? 0
+          const b = inner.get(lastDate) ?? 0
+          if (a <= 0) continue
+          const ch = ((b - a) / a) * 100
+          if (ch > bestChange) {
+            bestChange = ch
+            const c = companyByTicker.get(ticker)
+            topCompanyByChange = {
+              ticker,
+              name: c?.name ?? ticker,
+              nameKo: c?.nameKo ?? null,
+              changePercent: Math.round(ch * 100) / 100,
+            }
+          }
+        }
+      }
 
       return {
         id: ind.id,
@@ -131,6 +227,9 @@ export async function GET(
         companyCount: tickerSet.size,
         totalMarketCap,
         marketCapChange: Math.round(marketCapChange * 100) / 100,
+        marketCapHistory,
+        topSectorByFlow,
+        topCompanyByChange,
       }
     })
 

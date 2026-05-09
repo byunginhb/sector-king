@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Stethoscope, Zap, ShoppingCart, Landmark } from 'lucide-react'
+import { Stethoscope, Zap, ShoppingCart, Landmark, Flame, TrendingUp } from 'lucide-react'
 import { useIndustries } from '@/hooks/use-industries'
 import { useRegion } from '@/hooks/use-region'
 import { usePageTour } from '@/hooks/use-page-tour'
@@ -15,11 +15,14 @@ import { RegionToggle } from './region-toggle'
 import { SectionHeader } from '@/components/ui/section-header'
 import { IndustryIcon } from '@/components/ui/industry-icon'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatMarketCap, formatRelativeTime, formatKrw } from '@/lib/format'
+import { MiniSparkline } from '@/components/ui/mini-sparkline'
+import { formatMarketCap, formatRelativeTime, formatKrw, formatFlowAmount } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { CompanyStatsCard } from '@/components/dashboard/company-stats-card'
 import { PriceChangesCard } from '@/components/dashboard/price-changes-card'
 import { IndustryMoneyFlowCard } from '@/components/dashboard/industry-money-flow-card'
+import { MarketPulseStrip } from '@/components/dashboard/market-pulse-strip'
+import type { IndustryOverview } from '@/types'
 
 export function IndustryDashboard() {
   const { region, setRegion } = useRegion()
@@ -35,16 +38,14 @@ export function IndustryDashboard() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border-subtle">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
               <SectorKingLogo size={40} className="shrink-0" />
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                  <span className="bg-linear-to-r from-blue-600 to-sky-600 dark:from-blue-400 dark:to-sky-400 bg-clip-text text-transparent">
-                    Sector King
-                  </span>
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+                  Sector King
                 </h1>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   산업별 투자 패권 지도
@@ -70,8 +71,13 @@ export function IndustryDashboard() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Industry Money Flow — 최상단 */}
+        {/* Market Pulse Strip — 최상단 KPI 헤로 */}
         <section>
+          <MarketPulseStrip region={region} />
+        </section>
+
+        {/* Industry Money Flow */}
+        <section className="mt-10">
           <SectionHeader
             title="산업별 자금 흐름"
             description="시가총액 변화로 본 산업 단위 유입·유출"
@@ -121,32 +127,28 @@ function IndustryCard({
   isFirst = false,
 }: {
   isFirst?: boolean
-  industry: {
-    id: string
-    name: string
-    nameEn: string | null
-    icon: string | null
-    categoryCount: number
-    sectorCount: number
-    companyCount: number
-    totalMarketCap: number
-    marketCapChange: number
-  }
+  industry: IndustryOverview
 }) {
   const changeColor =
     industry.marketCapChange > 0
-      ? 'text-emerald-600 dark:text-emerald-400'
+      ? 'text-success'
       : industry.marketCapChange < 0
-        ? 'text-rose-600 dark:text-rose-400'
+        ? 'text-danger'
         : 'text-muted-foreground'
+
+  // 미니 인사이트 한 줄 — topCompany / topSector 우선
+  const insight = buildInsight(industry)
+
+  const trend: 'up' | 'down' | 'flat' =
+    industry.marketCapChange > 0 ? 'up' : industry.marketCapChange < 0 ? 'down' : 'flat'
 
   return (
     <Link
       href={`/${industry.id}`}
-      className="group block rounded-xl border border-border bg-card hover:bg-accent/50 transition-all hover:shadow-lg hover:border-primary/20"
+      className="group block rounded-2xl border border-border-subtle bg-surface-1 transition-[border-color,background-color,transform] duration-200 ease-out hover:-translate-y-px hover:border-primary/30 hover:bg-surface-2"
       {...(isFirst ? { 'data-tour': 'industry-card' } : {})}
     >
-      <div className="p-4">
+      <div className="p-5">
         {/* Header */}
         <div className="flex items-center gap-2.5 mb-3">
           <IndustryIcon
@@ -163,39 +165,62 @@ function IndustryCard({
           </div>
         </div>
 
-        {/* Market Cap */}
+        {/* Market Cap + Sparkline */}
         <div className="mb-3">
           <p className="text-xs text-muted-foreground mb-0.5">총 시가총액</p>
-          <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-lg sm:text-xl font-bold text-card-foreground">
-              {formatMarketCap(industry.totalMarketCap)}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              ({formatKrw(industry.totalMarketCap)})
-            </span>
-            <span className={cn('text-xs font-medium', changeColor)}>
-              {industry.marketCapChange > 0 ? '+' : ''}
-              {industry.marketCapChange.toFixed(2)}%
-            </span>
+          <div className="flex items-end justify-between gap-2">
+            <div className="min-w-0">
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-lg sm:text-xl font-bold tabular-nums text-card-foreground tracking-tight">
+                  {formatMarketCap(industry.totalMarketCap)}
+                </span>
+                <span className={cn('text-xs font-medium tabular-nums', changeColor)}>
+                  {industry.marketCapChange > 0 ? '+' : ''}
+                  {industry.marketCapChange.toFixed(2)}%
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground tabular-nums">
+                ({formatKrw(industry.totalMarketCap)})
+              </p>
+            </div>
+            {industry.marketCapHistory && industry.marketCapHistory.length >= 2 && (
+              <MiniSparkline
+                data={industry.marketCapHistory}
+                trend={trend}
+                width={72}
+                height={28}
+                fill
+                className="shrink-0"
+                ariaLabel={`${industry.name} 14일 시총 추세`}
+              />
+            )}
           </div>
         </div>
 
+        {/* Insight one-liner */}
+        {insight && (
+          <p className="text-xs text-muted-foreground line-clamp-1 mb-3 flex items-center gap-1.5">
+            {insight.icon}
+            <span>{insight.text}</span>
+          </p>
+        )}
+
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2">
-          <div className="text-center py-1.5 px-1 rounded-md bg-muted/50">
-            <p className="text-sm font-semibold text-card-foreground leading-tight">
+        <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border-subtle">
+          <div className="text-center">
+            <p className="text-sm font-semibold text-card-foreground leading-tight tabular-nums">
               {industry.categoryCount}
             </p>
             <p className="text-[10px] text-muted-foreground leading-tight">카테고리</p>
           </div>
-          <div className="text-center py-1.5 px-1 rounded-md bg-muted/50">
-            <p className="text-sm font-semibold text-card-foreground leading-tight">
+          <div className="text-center">
+            <p className="text-sm font-semibold text-card-foreground leading-tight tabular-nums">
               {industry.sectorCount}
             </p>
             <p className="text-[10px] text-muted-foreground leading-tight">섹터</p>
           </div>
-          <div className="text-center py-1.5 px-1 rounded-md bg-muted/50">
-            <p className="text-sm font-semibold text-card-foreground leading-tight">
+          <div className="text-center">
+            <p className="text-sm font-semibold text-card-foreground leading-tight tabular-nums">
               {industry.companyCount}
             </p>
             <p className="text-[10px] text-muted-foreground leading-tight">기업</p>
@@ -204,6 +229,35 @@ function IndustryCard({
       </div>
     </Link>
   )
+}
+
+function buildInsight(
+  industry: IndustryOverview
+): { icon: React.ReactNode; text: string } | null {
+  const top = industry.topCompanyByChange
+  const sec = industry.topSectorByFlow
+
+  if (top && top.changePercent > 0) {
+    const name = top.nameKo || top.name
+    return {
+      icon: <TrendingUp className="h-3 w-3 text-success shrink-0" aria-hidden />,
+      text: `등락 1위 ${name} +${top.changePercent.toFixed(1)}%`,
+    }
+  }
+  if (sec && sec.flowAmount > 0) {
+    return {
+      icon: <Flame className="h-3 w-3 text-primary shrink-0" aria-hidden />,
+      text: `자금 1위 ${sec.name} +${formatFlowAmount(sec.flowAmount)}`,
+    }
+  }
+  if (top) {
+    const name = top.nameKo || top.name
+    return {
+      icon: <TrendingUp className="h-3 w-3 text-muted-foreground shrink-0" aria-hidden />,
+      text: `등락 1위 ${name} ${top.changePercent.toFixed(1)}%`,
+    }
+  }
+  return null
 }
 
 function ComingSoonCard({
@@ -222,8 +276,8 @@ function ComingSoonCard({
           ? ShoppingCart
           : Landmark
   return (
-    <div className="rounded-xl border border-dashed border-border bg-card/50 opacity-60">
-      <div className="p-4">
+    <div className="rounded-2xl border border-dashed border-border bg-surface-1/50 opacity-60">
+      <div className="p-5">
         <div className="flex items-center gap-2.5 mb-2">
           <Icon className="h-6 w-6 text-muted-foreground" aria-hidden />
           <div className="min-w-0">
@@ -240,16 +294,25 @@ function ComingSoonCard({
 function DashboardSkeleton() {
   return (
     <div className="min-h-screen">
-      <header className="border-b border-border bg-background">
+      <header className="border-b border-border-subtle bg-background">
         <div className="container mx-auto px-4 py-4">
           <Skeleton className="h-8 w-48 mb-2" />
           <Skeleton className="h-4 w-64" />
         </div>
       </header>
       <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-2xl border border-border-subtle bg-surface-1 p-5">
+              <Skeleton className="h-4 w-24 mb-3" />
+              <Skeleton className="h-8 w-32 mb-2" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          ))}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-border bg-card p-4">
+            <div key={i} className="rounded-2xl border border-border-subtle bg-surface-1 p-5">
               <Skeleton className="h-6 w-32 mb-3" />
               <Skeleton className="h-7 w-40 mb-3" />
               <div className="grid grid-cols-3 gap-2">
@@ -285,8 +348,8 @@ function UpdateTimestamp({ dateStr }: { dateStr: string }) {
   return (
     <span
       className={cn(
-        'text-xs',
-        isStale ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+        'text-xs tabular-nums',
+        isStale ? 'text-warning' : 'text-muted-foreground'
       )}
     >
       {dateStr} · {relative}
