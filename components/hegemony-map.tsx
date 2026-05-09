@@ -21,6 +21,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDate } from '@/lib/format'
 import { Wallet, BarChart3 } from 'lucide-react'
+import { AuthButtonClient } from './auth/auth-button-client'
 
 // regionScope='KR' 카테고리 화이트리스트 (S1 백필 기준)
 const KR_ONLY_CATEGORY_IDS = new Set(['korea_bio', 'korea_banks'])
@@ -116,6 +117,7 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
               <SearchTrigger />
               <HelpButton pageId="hegemony-map" />
               <ThemeToggle />
+              <AuthButtonClient />
               <DateSelector
                 availableDates={availableDates}
                 selectedDate={data.selectedDate}

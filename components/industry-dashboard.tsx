@@ -12,6 +12,7 @@ import { HelpButton } from './onboarding/help-button'
 import { ShareButton } from './share-button'
 import { SectorKingLogo } from './logo'
 import { RegionToggle } from './region-toggle'
+import { AuthButtonClient } from './auth/auth-button-client'
 import { SectionHeader } from '@/components/ui/section-header'
 import { IndustryIcon } from '@/components/ui/industry-icon'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -22,6 +23,8 @@ import { CompanyStatsCard } from '@/components/dashboard/company-stats-card'
 import { PriceChangesCard } from '@/components/dashboard/price-changes-card'
 import { IndustryMoneyFlowCard } from '@/components/dashboard/industry-money-flow-card'
 import { MarketPulseStrip } from '@/components/dashboard/market-pulse-strip'
+import { NewsHomeCardSlot } from '@/components/news/news-home-card-slot'
+import { MyHomeSlot } from '@/components/me/my-home-slot'
 import type { IndustryOverview } from '@/types'
 
 export function IndustryDashboard() {
@@ -64,6 +67,7 @@ export function IndustryDashboard() {
               <SearchTrigger />
               <HelpButton pageId="dashboard" />
               <ThemeToggle />
+              <AuthButtonClient />
             </div>
           </div>
         </div>
@@ -74,6 +78,16 @@ export function IndustryDashboard() {
         {/* Market Pulse Strip — 최상단 KPI 헤로 */}
         <section>
           <MarketPulseStrip region={region} />
+        </section>
+
+        {/* 오늘의 마켓 리포트 — MarketPulseStrip 바로 아래, 발행본 있으면 노출 */}
+        <section className="mt-6">
+          <NewsHomeCardSlot />
+        </section>
+
+        {/* 내 영역 (로그인: MyWatchlistCard, 비로그인: LoginValuePromptCard) */}
+        <section className="mt-6">
+          <MyHomeSlot />
         </section>
 
         {/* Industry Money Flow */}
