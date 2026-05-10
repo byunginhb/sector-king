@@ -24,7 +24,6 @@ import { PriceChangesCard } from '@/components/dashboard/price-changes-card'
 import { IndustryMoneyFlowCard } from '@/components/dashboard/industry-money-flow-card'
 import { MarketPulseStrip } from '@/components/dashboard/market-pulse-strip'
 import { NewsHomeCardSlot } from '@/components/news/news-home-card-slot'
-import { MyHomeSlot } from '@/components/me/my-home-slot'
 import type { IndustryOverview } from '@/types'
 
 export function IndustryDashboard() {
@@ -83,11 +82,6 @@ export function IndustryDashboard() {
         {/* 오늘의 마켓 리포트 — MarketPulseStrip 바로 아래, 발행본 있으면 노출 */}
         <section className="mt-6">
           <NewsHomeCardSlot />
-        </section>
-
-        {/* 내 영역 (로그인: MyWatchlistCard, 비로그인: LoginValuePromptCard) */}
-        <section className="mt-6">
-          <MyHomeSlot />
         </section>
 
         {/* Industry Money Flow */}
