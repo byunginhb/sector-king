@@ -1,0 +1,62 @@
+name: Daily News Email
+
+# 매시 0분(UTC)에 호출 → endpoint 가 현재 KST hour 와 매칭되는 구독자에게만 발송.
+# 사용자별 hour_kst 컬럼을 그대로 활용하기 위해 hourly 호출.
+# Resend rate limit 보호는 endpoint 내부에서 직렬 발송 + delay 로 처리.
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      hour_kst:
+        description: '디버그/수동 호출용 KST hour (0~23). 비우면 endpoint 가 현재 KST hour 사용'
+        required: false
+        type: string
+
+concurrency:
+  group: daily-news-email
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate required secrets
+        run: |
+          if [ -z "${{ secrets.CRON_SECRET }}" ]; then
+            echo "::error::CRON_SECRET secret 이 등록되지 않았습니다"
+            exit 1
+          fi
+          if [ -z "${{ secrets.CRON_TARGET_URL }}" ]; then
+            echo "::error::CRON_TARGET_URL secret 이 등록되지 않았습니다 (예: https://sector-king.com)"
+            exit 1
+          fi
+
+      - name: Call cron endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          CRON_TARGET_URL: ${{ secrets.CRON_TARGET_URL }}
+          HOUR_KST_INPUT: ${{ github.event.inputs.hour_kst }}
+        run: |
+          set -euo pipefail
+          if [ -n "${HOUR_KST_INPUT:-}" ]; then
+            BODY=$(printf '{"hour_kst":"%s"}' "$HOUR_KST_INPUT")
+          else
+            BODY='{}'
+          fi
+          echo "POST ${CRON_TARGET_URL}/api/cron/daily-news-email body=${BODY}"
+          HTTP_CODE=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            "${CRON_TARGET_URL}/api/cron/daily-news-email" \
+            -d "${BODY}")
+          echo "HTTP ${HTTP_CODE}"
+          cat /tmp/resp.json || true
+          echo
+          if [ "${HTTP_CODE}" -ge 400 ]; then
+            echo "::error::cron endpoint 호출 실패 (HTTP ${HTTP_CODE})"
+            exit 1
+          fi
