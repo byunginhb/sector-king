@@ -298,6 +298,8 @@ export const emailSubscriptions = pgTable('email_subscriptions', {
   dailyReport: boolean('daily_report').notNull().default(false),
   hourKst: integer('hour_kst').notNull().default(8),
   lastSentAt: timestamp('last_sent_at', { withTimezone: true }),
+  /** 1-click unsubscribe 토큰 (RFC 8058 List-Unsubscribe-Post 용) */
+  unsubscribeToken: uuid('unsubscribe_token').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })
@@ -341,6 +343,39 @@ export const activityLog = pgTable(
 )
 
 export type ActivityLogRow = typeof activityLog.$inferSelect
+
+/** contact_submissions — 문의/제보 (anon + auth INSERT 가능) */
+export type ContactCategory = 'inquiry' | 'report' | 'bug' | 'feature' | 'other'
+export type ContactStatus = 'open' | 'replied' | 'closed'
+
+export const contactSubmissions = pgTable(
+  'contact_submissions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id'),
+    email: text('email').notNull(),
+    category: text('category').notNull(),
+    subject: text('subject').notNull(),
+    body: text('body').notNull(),
+    status: text('status').notNull().default('open'),
+    adminNote: text('admin_note'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('idx_contact_submissions_status_created').on(
+      table.status,
+      table.createdAt
+    ),
+    index('idx_contact_submissions_user_created').on(
+      table.userId,
+      table.createdAt
+    ),
+  ]
+)
+
+export type ContactSubmissionRow = typeof contactSubmissions.$inferSelect
+export type NewContactSubmissionRow = typeof contactSubmissions.$inferInsert
 
 // API 응답 DTO ----------------------------------------------------------------
 export interface WatchlistItemDTO {

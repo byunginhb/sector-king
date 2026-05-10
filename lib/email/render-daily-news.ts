@@ -13,6 +13,9 @@ export interface RenderDailyNewsInput {
   report: NewsReportDTO
   recipientName?: string
   siteUrl?: string
+  /** 1-click unsubscribe 토큰 — 푸터 링크 + 헤더용 URL 생성에 사용 */
+  unsubscribeToken?: string
+  /** 명시적 unsubscribe URL (token 우선) — 후방호환 */
   unsubscribeUrl?: string
 }
 
@@ -36,11 +39,17 @@ export async function renderDailyNewsEmail(
     ''
   const normalizedSiteUrl = normalizeSiteUrl(siteUrl)
 
+  // unsubscribeToken 우선 — 1-click unsubscribe URL 생성
+  const tokenUrl = input.unsubscribeToken
+    ? `${normalizedSiteUrl || ''}/api/email/unsubscribe?token=${input.unsubscribeToken}`
+    : undefined
+  const finalUnsubscribeUrl = tokenUrl ?? input.unsubscribeUrl
+
   const element = DailyNewsEmail({
     report: input.report,
     siteUrl: normalizedSiteUrl,
     recipientName: input.recipientName,
-    unsubscribeUrl: input.unsubscribeUrl,
+    unsubscribeUrl: finalUnsubscribeUrl,
   })
 
   const html = await render(element, { pretty: false })

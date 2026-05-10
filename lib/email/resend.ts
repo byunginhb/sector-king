@@ -20,6 +20,8 @@ export interface SendEmailInput {
   subject: string
   html: string
   text?: string
+  /** 추가 메일 헤더 (예: List-Unsubscribe, List-Unsubscribe-Post) */
+  headers?: Record<string, string>
 }
 
 export type EmailSendResult =
@@ -65,6 +67,7 @@ export async function sendEmail(
         subject: input.subject,
         html: input.html,
         text: input.text,
+        ...(input.headers ? { headers: input.headers } : {}),
       }),
     })
     if (!res.ok) {

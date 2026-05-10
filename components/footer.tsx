@@ -1,8 +1,5 @@
 import Link from 'next/link'
-import { ExternalLink } from 'lucide-react'
 import { SectorKingLogo } from './logo'
-
-const GOOGLE_FORM_URL = 'https://forms.gle/vtZzRNsEe8cirqkB9'
 
 export function Footer() {
   return (
@@ -29,15 +26,12 @@ export function Footer() {
             >
               점수 산출 공식
             </Link>
-            <a
-              href={GOOGLE_FORM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/contact"
               className="inline-flex items-center gap-1.5 text-sm text-info hover:underline"
             >
-              문의하기
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+              문의 / 제보
+            </Link>
           </nav>
         </div>
 

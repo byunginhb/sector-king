@@ -72,6 +72,7 @@ interface SubscriptionTarget {
   user_id: string
   hour_kst: number
   last_sent_at: string | null
+  unsubscribe_token: string | null
   email: string
   name: string | null
 }
@@ -165,7 +166,7 @@ export async function POST(req: Request) {
   const { data: subRows, error: subErr } = await admin
     .from('email_subscriptions')
     .select(
-      'user_id, hour_kst, last_sent_at, profiles!inner(email, name)'
+      'user_id, hour_kst, last_sent_at, unsubscribe_token, profiles!inner(email, name)'
     )
     .eq('daily_report', true)
     .eq('hour_kst', targetHour)
@@ -185,6 +186,7 @@ export async function POST(req: Request) {
     user_id: string
     hour_kst: number
     last_sent_at: string | null
+    unsubscribe_token: string | null
     profiles:
       | { email: string; name: string | null }
       | { email: string; name: string | null }[]
@@ -206,6 +208,7 @@ export async function POST(req: Request) {
       user_id: r.user_id,
       hour_kst: r.hour_kst,
       last_sent_at: r.last_sent_at,
+      unsubscribe_token: r.unsubscribe_token,
       email: profile.email,
       name: profile.name,
     })
@@ -218,13 +221,28 @@ export async function POST(req: Request) {
       const rendered = await renderDailyNewsEmail({
         report,
         recipientName: t.name ?? undefined,
+        unsubscribeToken: t.unsubscribe_token ?? undefined,
       })
+
+      // RFC 8058 List-Unsubscribe + One-Click — Gmail/Outlook 1-click 버튼
+      const siteUrl = (
+        process.env.NEXT_PUBLIC_SITE_URL ??
+        process.env.NEXT_PUBLIC_VERCEL_URL ??
+        ''
+      ).replace(/^(?!https?:\/\/)/, 'https://')
+      const headers: Record<string, string> = {}
+      if (t.unsubscribe_token && siteUrl) {
+        const unsubUrl = `${siteUrl}/api/email/unsubscribe?token=${t.unsubscribe_token}`
+        headers['List-Unsubscribe'] = `<${unsubUrl}>, <mailto:unsubscribe@sector-king.com>`
+        headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click'
+      }
 
       const sendResult = await sendEmail({
         to: t.email,
         subject: rendered.subject,
         html: rendered.html,
         text: rendered.text,
+        headers: Object.keys(headers).length > 0 ? headers : undefined,
       })
 
       const logStatus = sendResult.status

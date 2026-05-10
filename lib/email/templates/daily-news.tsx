@@ -98,8 +98,8 @@ export function DailyNewsEmail({
   const expertUrl = siteUrl
     ? `${siteUrl}/news/${report.id}?view=expert`
     : `/news/${report.id}?view=expert`
-  const settingsUrl =
-    unsubscribeUrl ?? (siteUrl ? `${siteUrl}/me/settings` : '/me/settings')
+  const settingsUrl = siteUrl ? `${siteUrl}/me/settings` : '/me/settings'
+  const unsubLinkUrl = unsubscribeUrl ?? settingsUrl
 
   const previewText =
     novice.oneLineSummary?.slice(0, 120) ||
@@ -487,12 +487,18 @@ export function DailyNewsEmail({
                 color: COLOR.muted,
               }}
             >
-              구독 해지 또는 시간 변경:{' '}
+              <Link
+                href={unsubLinkUrl}
+                style={{ color: COLOR.accent, textDecoration: 'underline' }}
+              >
+                메일 수신 해지
+              </Link>
+              {' · '}
               <Link
                 href={settingsUrl}
                 style={{ color: COLOR.accent, textDecoration: 'underline' }}
               >
-                {settingsUrl}
+                수신 시간 변경
               </Link>
             </Text>
           </Section>

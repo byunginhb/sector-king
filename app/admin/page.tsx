@@ -1,5 +1,12 @@
 import Link from 'next/link'
-import { Newspaper, FileCheck2, FilePen, ArrowRight } from 'lucide-react'
+import {
+  Newspaper,
+  FileCheck2,
+  FilePen,
+  ArrowRight,
+  Mail,
+  MessageSquare,
+} from 'lucide-react'
 import { format } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
 
@@ -41,6 +48,21 @@ export default async function AdminPage() {
           icon={<FilePen className="h-5 w-5 text-muted-foreground" aria-hidden />}
           label="초안 (최근 5건 중)"
           value={draftCount}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <AdminLinkCard
+          href="/admin/email-log"
+          icon={<Mail className="h-4 w-4 text-primary" aria-hidden />}
+          title="메일 발송 로그"
+          description="일별 마켓 리포트 발송 이력과 통계를 확인합니다."
+        />
+        <AdminLinkCard
+          href="/admin/contact"
+          icon={<MessageSquare className="h-4 w-4 text-primary" aria-hidden />}
+          title="문의/제보 관리"
+          description="사용자 문의·제보 목록을 확인하고 답변합니다."
         />
       </div>
 
@@ -113,5 +135,33 @@ function StatCard({
       </div>
       <p className="text-2xl font-bold text-foreground tabular-nums">{value}</p>
     </div>
+  )
+}
+
+function AdminLinkCard({
+  href,
+  icon,
+  title,
+  description,
+}: {
+  href: string
+  icon: React.ReactNode
+  title: string
+  description: string
+}) {
+  return (
+    <Link
+      href={href}
+      className="rounded-2xl border border-border-subtle bg-surface-1 p-5 hover:bg-surface-2 transition-colors flex items-start gap-3"
+    >
+      <span className="mt-0.5">{icon}</span>
+      <span className="flex-1 min-w-0">
+        <span className="block text-base font-bold text-foreground">{title}</span>
+        <span className="mt-1 block text-sm text-muted-foreground">
+          {description}
+        </span>
+      </span>
+      <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden />
+    </Link>
   )
 }
