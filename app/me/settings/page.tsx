@@ -3,8 +3,11 @@
  */
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { requireUser } from '@/lib/auth/require-admin'
-import { EmailSubscriptionToggle } from '@/components/me/email-subscription-toggle'
+import { EmailSubscriptionSection } from '@/components/me/email-subscription-section'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: '설정',
@@ -63,7 +66,9 @@ export default async function SettingsPage() {
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
             이메일 구독
           </h2>
-          <EmailSubscriptionToggle />
+          <Suspense fallback={<div className="h-24 rounded-xl bg-surface-1 animate-pulse" />}>
+            <EmailSubscriptionSection />
+          </Suspense>
         </section>
       </main>
     </div>

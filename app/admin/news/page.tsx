@@ -2,7 +2,7 @@
  * /admin/news — 관리자용 마켓 리포트 목록.
  */
 import Link from 'next/link'
-import { Plus, FileText, FilePen, Archive, FileCheck2 } from 'lucide-react'
+import { Plus, FileText, FilePen, Archive, FileCheck2, Mail } from 'lucide-react'
 import { format } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
 import { NEWS_LIST_COLUMNS, rowToListItem } from '@/lib/news/dto'
@@ -86,12 +86,12 @@ export default async function AdminNewsListPage() {
             const Icon = meta.Icon
             return (
               <li key={it.id}>
-                <Link
-                  href={`/admin/news/${it.id}/edit`}
-                  className="block rounded-2xl border border-border-subtle bg-surface-1 p-4 hover:border-primary/30 hover:bg-surface-2 transition-colors"
-                >
+                <div className="rounded-2xl border border-border-subtle bg-surface-1 p-4 hover:border-primary/30 hover:bg-surface-2 transition-colors">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
+                    <Link
+                      href={`/admin/news/${it.id}/edit`}
+                      className="min-w-0 flex-1 group"
+                    >
                       <div className="flex items-center gap-2 flex-wrap">
                         <span
                           className={cn(
@@ -106,7 +106,7 @@ export default async function AdminNewsListPage() {
                           {it.reportDate}
                         </span>
                       </div>
-                      <h3 className="text-base font-bold text-card-foreground mt-1.5 leading-tight">
+                      <h3 className="text-base font-bold text-card-foreground mt-1.5 leading-tight group-hover:text-primary transition-colors">
                         {it.title}
                       </h3>
                       {it.oneLineConclusion && (
@@ -114,14 +114,22 @@ export default async function AdminNewsListPage() {
                           {it.oneLineConclusion}
                         </p>
                       )}
-                    </div>
-                    <div className="text-right shrink-0">
+                    </Link>
+                    <div className="text-right shrink-0 flex flex-col items-end gap-2">
                       <p className="text-[11px] text-muted-foreground tabular-nums">
                         수정: {format(new Date(it.updatedAt), 'yyyy-MM-dd HH:mm')}
                       </p>
+                      <Link
+                        href={`/admin/news/${it.id}/preview-email`}
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 hover:text-amber-700 underline-offset-4 hover:underline"
+                        aria-label="이메일 미리보기"
+                      >
+                        <Mail className="h-3 w-3" aria-hidden />
+                        메일 미리보기
+                      </Link>
                     </div>
                   </div>
-                </Link>
+                </div>
               </li>
             )
           })}

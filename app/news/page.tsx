@@ -6,6 +6,7 @@ import { ArrowLeft, Newspaper } from 'lucide-react'
 import { format } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
 import { NEWS_LIST_COLUMNS, rowToListItem } from '@/lib/news/dto'
+import { NewsSubscribeCta } from '@/components/news/news-subscribe-cta'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,7 +50,9 @@ export default async function NewsListPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 space-y-6">
+        <NewsSubscribeCta variant="banner" dismissible />
+
         {items.length === 0 ? (
           <div className="rounded-2xl border border-border-subtle bg-surface-1 p-10 text-center">
             <p className="text-sm text-muted-foreground">
