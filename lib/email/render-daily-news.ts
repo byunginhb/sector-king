@@ -23,7 +23,7 @@ export interface RenderedEmail {
 }
 
 function defaultSubject(report: NewsReportDTO): string {
-  return `[Sector King] ${report.reportDate} ${report.title}`
+  return `[Sector King] 오늘 경제 요약! ${report.title}`
 }
 
 export async function renderDailyNewsEmail(

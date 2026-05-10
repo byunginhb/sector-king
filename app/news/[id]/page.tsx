@@ -9,6 +9,9 @@ import { NEWS_FULL_COLUMNS, rowToDto } from '@/lib/news/dto'
 import { NewsDetailContent } from '@/components/news/news-detail-content'
 import { getCurrentUser } from '@/lib/auth/get-user'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
+import { NewsArticleJsonLd, BreadcrumbJsonLd } from '@/components/json-ld'
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,14 +29,36 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const supabase = await createClient()
   const { data } = await supabase
     .from('news_reports')
-    .select('title, one_line_conclusion')
+    .select('title, one_line_conclusion, cover_keywords, published_at, report_date')
     .eq('id', id)
     .eq('status', 'published')
     .maybeSingle()
   if (!data) return { title: '마켓 리포트' }
+
+  const url = `${BASE_URL}/news/${id}`
+  const description =
+    data.one_line_conclusion ??
+    `${data.title} — Sector King 일별 마켓 리포트 (${data.report_date})`
+
   return {
     title: data.title,
-    description: data.one_line_conclusion ?? undefined,
+    description,
+    keywords: data.cover_keywords ?? undefined,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'article',
+      url,
+      title: data.title,
+      description,
+      publishedTime: data.published_at ?? undefined,
+      authors: ['Sector King'],
+      tags: data.cover_keywords ?? undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: data.title,
+      description,
+    },
   }
 }
 
@@ -58,8 +83,28 @@ export default async function NewsDetailPage({ params, searchParams }: PageProps
   const user = await getCurrentUser()
   const isLoggedIn = Boolean(user)
 
+  const description =
+    report.oneLineConclusion ??
+    `${report.title} — Sector King 일별 마켓 리포트 (${report.reportDate})`
+
   return (
     <div className="min-h-screen">
+      <NewsArticleJsonLd
+        id={report.id}
+        title={report.title}
+        description={description}
+        publishedAt={report.publishedAt}
+        reportDate={report.reportDate}
+        modifiedAt={report.updatedAt ?? null}
+        keywords={report.coverKeywords}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: '홈', url: BASE_URL },
+          { name: '마켓 리포트', url: `${BASE_URL}/news` },
+          { name: report.title, url: `${BASE_URL}/news/${report.id}` },
+        ]}
+      />
       <GlobalTopBar
         subtitle={report.title}
         mobileLeading={
