@@ -8,19 +8,29 @@
 import Link from 'next/link'
 import { TrendingUp, TrendingDown, Minus, Star, ArrowRight } from 'lucide-react'
 import { useMySummary } from '@/hooks/me/use-my-summary'
+import { useWatchlist } from '@/hooks/me/use-watchlist'
+import { IndustryIcon } from '@/components/ui/industry-icon'
+import { CategoryIcon } from '@/components/ui/category-icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 export function MyWatchlistCard() {
-  const { data, isLoading, error } = useMySummary()
+  const summaryQ = useMySummary()
+  const watchQ = useWatchlist()
 
-  if (isLoading) return <CardShell><LoadingState /></CardShell>
-  if (error) return null
-  if (!data) return null
+  if (summaryQ.isLoading || watchQ.isLoading) {
+    return <CardShell><LoadingState /></CardShell>
+  }
+  if (summaryQ.error || watchQ.error) return null
 
-  const { summary, items } = data
+  const summary = summaryQ.data?.summary
+  const allItems = watchQ.items ?? []
+  const tickerItems = allItems.filter((i) => i.itemType === 'ticker')
+  const industryItems = allItems.filter((i) => i.itemType === 'industry')
+  const sectorItems = allItems.filter((i) => i.itemType === 'sector')
 
-  if (summary.watchCount === 0) {
+  // 전체 워치 0개 → 진짜 빈 상태
+  if (allItems.length === 0) {
     return (
       <CardShell>
         <EmptyState />
@@ -28,7 +38,8 @@ export function MyWatchlistCard() {
     )
   }
 
-  const avg = summary.averageChange ?? 0
+  const tickerCount = tickerItems.length
+  const avg = summary?.averageChange ?? 0
   const trend: 'up' | 'down' | 'flat' =
     avg > 0 ? 'up' : avg < 0 ? 'down' : 'flat'
 
@@ -40,20 +51,26 @@ export function MyWatchlistCard() {
             내 워치리스트
           </h3>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {summary.watchCount}개 종목 · 평균{' '}
-            <span
-              className={cn(
-                'tabular-nums font-medium',
-                trend === 'up'
-                  ? 'text-success'
-                  : trend === 'down'
-                    ? 'text-danger'
-                    : 'text-muted-foreground'
-              )}
-            >
-              {avg > 0 ? '+' : ''}
-              {avg.toFixed(2)}%
-            </span>
+            {tickerCount > 0 ? (
+              <>
+                {tickerCount}개 종목 · 평균{' '}
+                <span
+                  className={cn(
+                    'tabular-nums font-medium',
+                    trend === 'up'
+                      ? 'text-success'
+                      : trend === 'down'
+                        ? 'text-danger'
+                        : 'text-muted-foreground'
+                  )}
+                >
+                  {avg > 0 ? '+' : ''}
+                  {avg.toFixed(2)}%
+                </span>
+              </>
+            ) : (
+              <>{allItems.length}개 추적 중 — 종목 별표를 누르면 PnL이 보여요</>
+            )}
           </p>
         </div>
         <Link
@@ -64,15 +81,52 @@ export function MyWatchlistCard() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <Column title="상승 Top" trend="up" items={summary.topGainers} />
-        <Column title="하락 Top" trend="down" items={summary.topLosers} />
-      </div>
+      {/* 산업·섹터 칩 (있을 때만) */}
+      {(industryItems.length > 0 || sectorItems.length > 0) && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {industryItems.map((i) => (
+            <Link
+              key={i.id}
+              href={`/${i.itemKey}`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-2 px-2 py-1 text-xs text-foreground hover:bg-surface-3 transition-colors"
+            >
+              <IndustryIcon iconKey={i.itemKey} className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="truncate max-w-[10rem]">{i.displayName ?? i.itemKey}</span>
+            </Link>
+          ))}
+          {sectorItems.map((i) => (
+            <span
+              key={i.id}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-2 px-2 py-1 text-xs text-foreground"
+            >
+              <CategoryIcon iconKey={i.itemKey} className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="truncate max-w-[10rem]">{i.displayName ?? i.itemKey}</span>
+            </span>
+          ))}
+        </div>
+      )}
 
-      {items.length > 0 && summary.topGainers.length === 0 && summary.topLosers.length === 0 && (
-        <p className="text-xs text-muted-foreground text-center mt-4">
-          가격 데이터가 아직 집계되지 않았습니다.
-        </p>
+      {/* 종목 PnL Top — ticker가 있을 때만 */}
+      {tickerCount > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <Column title="상승 Top" trend="up" items={summary?.topGainers ?? []} />
+          <Column title="하락 Top" trend="down" items={summary?.topLosers ?? []} />
+        </div>
+      )}
+
+      {tickerCount > 0 &&
+        (summary?.topGainers.length ?? 0) === 0 &&
+        (summary?.topLosers.length ?? 0) === 0 && (
+          <p className="text-xs text-muted-foreground text-center mt-3">
+            가격 데이터가 아직 집계되지 않았습니다.
+          </p>
+        )}
+
+      {/* ticker 0개일 때 — 종목 추가 안내 */}
+      {tickerCount === 0 && (
+        <div className="text-xs text-muted-foreground text-center py-2">
+          개별 종목을 추가하려면 산업 → 섹터 → 회사로 들어가 별표를 눌러주세요.
+        </div>
       )}
     </CardShell>
   )
