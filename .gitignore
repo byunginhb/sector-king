@@ -44,8 +44,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (실제 키는 git에 두지 않음. .env.example 만 예외로 공유)
 .env*
+!.env.example
 
 # vercel
 .vercel
