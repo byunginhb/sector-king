@@ -2,12 +2,13 @@
  * /news/[id] — 발행된 마켓 리포트 상세 (Server Component)
  */
 import Link from 'next/link'
-import { ArrowLeft, Newspaper } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { NEWS_FULL_COLUMNS, rowToDto } from '@/lib/news/dto'
 import { NewsDetailContent } from '@/components/news/news-detail-content'
 import { getCurrentUser } from '@/lib/auth/get-user'
+import { GlobalTopBar } from '@/components/layout/global-top-bar'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,8 +60,18 @@ export default async function NewsDetailPage({ params, searchParams }: PageProps
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border-subtle">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
+      <GlobalTopBar
+        subtitle={report.title}
+        mobileLeading={
+          <Link
+            href="/news"
+            aria-label="목록으로 돌아가기"
+            className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-border-subtle bg-surface-1 text-foreground hover:bg-surface-2 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+          </Link>
+        }
+        extraActions={
           <Link
             href="/news"
             aria-label="목록으로 돌아가기"
@@ -69,13 +80,8 @@ export default async function NewsDetailPage({ params, searchParams }: PageProps
             <ArrowLeft className="h-4 w-4" aria-hidden />
             목록
           </Link>
-          <span className="h-4 w-px bg-border" aria-hidden />
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground min-w-0">
-            <Newspaper className="h-4 w-4 text-primary shrink-0" aria-hidden />
-            <span className="truncate">{report.title}</span>
-          </div>
-        </div>
-      </header>
+        }
+      />
       <NewsDetailContent
         report={report}
         initialView={initialView}

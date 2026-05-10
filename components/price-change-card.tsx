@@ -52,7 +52,7 @@ export function PriceChangeCard({ industryId }: PriceChangeCardProps) {
     <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-card dark:border-border dark:shadow-none">
       <h3 className="text-base font-semibold text-slate-900 dark:text-slate-200 mb-4 flex items-center gap-2">
         <svg
-          className="w-5 h-5 text-emerald-500 dark:text-emerald-400"
+          className="w-5 h-5 text-success"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -93,8 +93,8 @@ export function PriceChangeCard({ industryId }: PriceChangeCardProps) {
                   className={cn(
                     'h-full rounded-full transition-all duration-300',
                     (company.percentChange ?? 0) >= 0
-                      ? 'bg-emerald-500 dark:bg-emerald-400'
-                      : 'bg-red-500 dark:bg-red-400'
+                      ? 'bg-success'
+                      : 'bg-danger'
                   )}
                   style={{
                     width: `${(Math.abs(company.percentChange ?? 0) / maxAbsChange) * 100}%`,
@@ -117,7 +117,7 @@ export function PriceChangeCard({ industryId }: PriceChangeCardProps) {
         <div className="mt-3 pt-3 border-t border-gray-100 dark:border-border">
           <Link
             href={industryId ? `/${industryId}/price-changes` : '/price-changes'}
-            className="flex items-center justify-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+            className="flex items-center justify-center gap-1 text-sm text-info hover:underline transition-colors"
           >
             전체 {data.total}개 회사 보기
             <svg

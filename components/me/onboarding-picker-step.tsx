@@ -99,12 +99,12 @@ export function OnboardingPickerStep({
                 alreadyWatched
                   ? 'border-border-subtle bg-surface-2 opacity-60 cursor-not-allowed'
                   : isPicked
-                    ? 'border-amber-500 bg-amber-500/10'
+                    ? 'border-primary bg-primary/10'
                     : 'border-border-subtle bg-surface-1 hover:bg-surface-2'
               )}
             >
               {isPicked && (
-                <span className="absolute top-2 right-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-slate-950">
+                <span className="absolute top-2 right-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
                   <Check className="h-3 w-3" aria-hidden />
                 </span>
               )}
@@ -116,7 +116,7 @@ export function OnboardingPickerStep({
                 {industry.name}
               </p>
               {alreadyWatched && (
-                <p className="text-[10px] text-amber-500 mt-1">이미 추가됨</p>
+                <p className="text-[10px] text-primary mt-1">이미 추가됨</p>
               )}
             </button>
           )
@@ -135,7 +135,7 @@ export function OnboardingPickerStep({
           type="button"
           onClick={handleSubmit}
           disabled={submitting || picked.size === 0}
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-semibold"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm rounded-lg bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-semibold"
         >
           {submitting ? '추가 중...' : `${picked.size}개 추가하기`}
           <ArrowRight className="h-4 w-4" aria-hidden />

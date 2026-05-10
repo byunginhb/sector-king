@@ -93,8 +93,8 @@ export function SectorCompanyList({
           'max-h-[90vh] rounded-t-2xl',
           'sm:max-w-2xl sm:max-h-[85vh] sm:rounded-xl sm:mx-4',
           isInflow
-            ? 'bg-red-50 dark:bg-slate-900 border-red-200 dark:border-red-800'
-            : 'bg-blue-50 dark:bg-slate-900 border-blue-200 dark:border-blue-800',
+            ? 'bg-danger-bg border-danger/30'
+            : 'bg-info-bg border-info/30',
           'border shadow-2xl'
         )}
       >
@@ -102,16 +102,16 @@ export function SectorCompanyList({
         <div className={cn(
           'sticky top-0 z-10 flex items-center justify-between p-4 border-b',
           isInflow
-            ? 'bg-red-50 dark:bg-slate-900 border-red-200 dark:border-red-800'
-            : 'bg-blue-50 dark:bg-slate-900 border-blue-200 dark:border-blue-800'
+            ? 'bg-danger-bg border-danger/30'
+            : 'bg-info-bg border-info/30'
         )}>
           <h3
             id="sector-modal-title"
             className={cn(
               'text-base font-semibold flex items-center gap-2',
               isInflow
-                ? 'text-red-700 dark:text-red-300'
-                : 'text-blue-700 dark:text-blue-300'
+                ? 'text-danger'
+                : 'text-info'
             )}
           >
             {isInflow ? (
@@ -153,7 +153,7 @@ export function SectorCompanyList({
 
           {/* Error */}
           {error && (
-            <div className="text-center py-6 text-red-500 text-sm">
+            <div className="text-center py-6 text-danger text-sm">
               {error.message}
             </div>
           )}
@@ -206,8 +206,8 @@ export function SectorCompanyList({
                       company.priceChangePercent === null
                         ? 'text-gray-400'
                         : company.priceChangePercent >= 0
-                          ? 'text-emerald-600 dark:text-emerald-400'
-                          : 'text-red-600 dark:text-red-400'
+                          ? 'text-success'
+                          : 'text-danger'
                     )}
                   >
                     {company.priceChangePercent !== null

@@ -37,7 +37,9 @@
     --danger: 0 72% 50%;               /* rose-600 하락 */
     --danger-bg: 0 75% 96%;
     --warning: 30 90% 45%;
+    --warning-bg: 38 95% 94%;
     --info: 210 85% 50%;
+    --info-bg: 210 80% 95%;
 
     /* Chart palette — recharts 일관 */
     --chart-1: 38 92% 50%;             /* gold */
@@ -82,7 +84,9 @@
     --danger: 0 75% 62%;               /* rose-400 */
     --danger-bg: 0 60% 14%;
     --warning: 38 92% 60%;
+    --warning-bg: 38 80% 14%;
     --info: 210 90% 62%;
+    --info-bg: 210 60% 14%;
 
     /* Chart palette — 다크 */
     --chart-1: 43 92% 58%;
@@ -125,7 +129,9 @@
   --color-danger: hsl(var(--danger));
   --color-danger-bg: hsl(var(--danger-bg));
   --color-warning: hsl(var(--warning));
+  --color-warning-bg: hsl(var(--warning-bg));
   --color-info: hsl(var(--info));
+  --color-info-bg: hsl(var(--info-bg));
   --color-chart-1: hsl(var(--chart-1));
   --color-chart-2: hsl(var(--chart-2));
   --color-chart-3: hsl(var(--chart-3));

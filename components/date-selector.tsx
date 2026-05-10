@@ -65,7 +65,7 @@ export function DateSelector({
           className={cn(
             'gap-2 text-xs font-medium',
             isHistorical &&
-              'bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/50 dark:border-amber-700 dark:text-amber-200 dark:hover:bg-amber-900/50'
+              'bg-warning-bg border-warning/40 text-warning hover:bg-warning/10'
           )}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -78,7 +78,7 @@ export function DateSelector({
           </svg>
           {selectedDate ? formatDate(selectedDate) : '날짜 선택'}
           {isHistorical && (
-            <span className="ml-1 px-1.5 py-0.5 rounded bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100 text-[10px]">
+            <span className="ml-1 px-1.5 py-0.5 rounded bg-warning/20 text-warning text-[10px]">
               과거
             </span>
           )}

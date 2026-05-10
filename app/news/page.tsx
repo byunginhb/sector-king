@@ -2,11 +2,11 @@
  * /news — 발행된 마켓 리포트 목록 (Server Component)
  */
 import Link from 'next/link'
-import { ArrowLeft, Newspaper } from 'lucide-react'
 import { format } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
 import { NEWS_LIST_COLUMNS, rowToListItem } from '@/lib/news/dto'
 import { NewsSubscribeCta } from '@/components/news/news-subscribe-cta'
+import { GlobalTopBar } from '@/components/layout/global-top-bar'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,23 +32,7 @@ export default async function NewsListPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border-subtle">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <Link
-            href="/"
-            aria-label="메인으로 돌아가기"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            메인
-          </Link>
-          <span className="h-4 w-px bg-border" aria-hidden />
-          <h1 className="flex items-center gap-2 text-lg sm:text-xl font-bold text-foreground tracking-tight">
-            <Newspaper className="h-5 w-5 text-primary" aria-hidden />
-            마켓 리포트
-          </h1>
-        </div>
-      </header>
+      <GlobalTopBar subtitle="마켓 리포트" />
 
       <main className="container mx-auto px-4 py-8 space-y-6">
         <NewsSubscribeCta variant="banner" dismissible />

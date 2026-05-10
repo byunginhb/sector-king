@@ -55,20 +55,18 @@ function getCellBg(value: number): string {
   const intensity = Math.round((abs / MAX_INTENSITY_PERCENT) * 100)
 
   if (value > 0) {
-    if (intensity > 60) return 'bg-emerald-200 dark:bg-emerald-900/60'
-    if (intensity > 30) return 'bg-emerald-100 dark:bg-emerald-900/40'
-    return 'bg-emerald-50 dark:bg-emerald-900/20'
+    if (intensity > 60) return 'bg-success/30'
+    if (intensity > 30) return 'bg-success/20'
+    return 'bg-success/10'
   }
-  if (intensity > 60) return 'bg-red-200 dark:bg-red-900/60'
-  if (intensity > 30) return 'bg-red-100 dark:bg-red-900/40'
-  return 'bg-red-50 dark:bg-red-900/20'
+  if (intensity > 60) return 'bg-danger/30'
+  if (intensity > 30) return 'bg-danger/20'
+  return 'bg-danger/10'
 }
 
 function getCellText(value: number): string {
-  if (value === 0) return 'text-gray-400 dark:text-slate-500'
-  return value > 0
-    ? 'text-emerald-700 dark:text-emerald-300'
-    : 'text-red-700 dark:text-red-300'
+  if (value === 0) return 'text-muted-foreground'
+  return value > 0 ? 'text-success' : 'text-danger'
 }
 
 interface SectorTrendSectionProps {
@@ -132,7 +130,7 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500">{error.message}</p>
+        <p className="text-danger">{error.message}</p>
       </div>
     )
   }
@@ -174,7 +172,7 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
                     className={cn(
                       'px-4 py-3 text-right font-semibold cursor-pointer select-none whitespace-nowrap transition-colors hover:bg-gray-200 dark:hover:bg-slate-700 min-w-[80px]',
                       sortPeriod === p
-                        ? 'text-blue-600 dark:text-blue-400'
+                        ? 'text-info'
                         : 'text-gray-700 dark:text-slate-300'
                     )}
                   >
@@ -233,7 +231,7 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
           {data.sectors.length > DEFAULT_VISIBLE_COUNT && (
             <button
               onClick={() => setShowAll((prev) => !prev)}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-sm text-info hover:underline"
             >
               {showAll
                 ? `상위 ${DEFAULT_VISIBLE_COUNT}개만 보기`

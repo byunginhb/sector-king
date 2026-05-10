@@ -119,7 +119,7 @@ export function NewsSubscribeCta({
         onClick={handleSubscribe}
         disabled={isPending}
         className={cn(
-          'inline-flex items-center gap-1 text-xs font-medium text-amber-600 hover:text-amber-700 underline-offset-4 hover:underline disabled:opacity-50',
+          'inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline disabled:opacity-50',
           className
         )}
       >
@@ -135,13 +135,13 @@ export function NewsSubscribeCta({
     return (
       <div
         className={cn(
-          'relative rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-amber-500/5 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4',
+          'relative rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4',
           className
         )}
       >
         <div className="flex items-start gap-3 min-w-0 flex-1">
-          <div className="shrink-0 rounded-full bg-amber-500/20 p-2">
-            <Mail className="h-4 w-4 text-amber-700 dark:text-amber-400" aria-hidden />
+          <div className="shrink-0 rounded-full bg-primary/20 p-2">
+            <Mail className="h-4 w-4 text-primary" aria-hidden />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-foreground">
@@ -162,7 +162,7 @@ export function NewsSubscribeCta({
               type="button"
               onClick={handleSubscribe}
               disabled={isPending}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 text-sm font-semibold disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 text-sm font-semibold disabled:opacity-50"
             >
               {isPending ? '처리 중...' : isLoggedIn ? '구독하기' : '로그인하고 구독'}
             </button>
@@ -191,8 +191,8 @@ export function NewsSubscribeCta({
       )}
     >
       <div className="flex items-start gap-3 min-w-0 flex-1">
-        <div className="shrink-0 rounded-full bg-amber-500/15 p-2.5">
-          <Mail className="h-5 w-5 text-amber-600" aria-hidden />
+        <div className="shrink-0 rounded-full bg-primary/15 p-2.5">
+          <Mail className="h-5 w-5 text-primary" aria-hidden />
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground">

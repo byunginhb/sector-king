@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { AlertTriangle } from 'lucide-react'
 import { SCORING } from '@/lib/scoring-methodology'
 import { ScoringDiagram } from '@/components/methodology/scoring-diagram'
 import { DataPipeline } from '@/components/methodology/data-pipeline'
+import { GlobalTopBar } from '@/components/layout/global-top-bar'
 
 export const metadata: Metadata = {
   title: '방법론',
@@ -30,26 +30,7 @@ function Card({ children }: { children: React.ReactNode }) {
 export default function MethodologyPage() {
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="홈으로 돌아가기"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </Link>
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-foreground">방법론</h1>
-              <p className="text-sm text-muted-foreground">데이터 수집부터 점수 산출까지</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <GlobalTopBar subtitle="방법론 · 데이터 수집부터 점수 산출까지" />
 
       <main className="container mx-auto px-4 py-8 max-w-3xl">
         {/* Table of Contents */}
@@ -73,7 +54,7 @@ export default function MethodologyPage() {
               <div className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <span className="shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-bold">1</span>
+                    <span className="shrink-0 w-6 h-6 rounded-full bg-info/10 text-info flex items-center justify-center text-xs font-bold">1</span>
                     <div>
                       <p className="text-sm font-medium text-foreground">데이터 출처</p>
                       <p className="text-sm text-muted-foreground">
@@ -82,14 +63,14 @@ export default function MethodologyPage() {
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <span className="shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-bold">2</span>
+                    <span className="shrink-0 w-6 h-6 rounded-full bg-info/10 text-info flex items-center justify-center text-xs font-bold">2</span>
                     <div>
                       <p className="text-sm font-medium text-foreground">수집 주기</p>
                       <p className="text-sm text-muted-foreground">매일 00:00 KST에 GitHub Actions를 통해 자동 수집됩니다.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <span className="shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-bold">3</span>
+                    <span className="shrink-0 w-6 h-6 rounded-full bg-info/10 text-info flex items-center justify-center text-xs font-bold">3</span>
                     <div>
                       <p className="text-sm font-medium text-foreground">수집 항목</p>
                       <p className="text-sm text-muted-foreground">
@@ -232,9 +213,9 @@ export default function MethodologyPage() {
                   각 기업의 <strong className="text-foreground">데이터 커버리지</strong>를 0.0~1.0 사이의 값으로 표시합니다.
                   7개 재무 필드(매출 성장률, 수익 성장률, 영업이익률, ROE, 애널리스트 의견, 애널리스트 수, 목표주가) 중 실제 수집된 비율입니다.
                 </p>
-                <div className="flex items-center gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3">
-                  <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" aria-hidden />
-                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                <div className="flex items-center gap-3 rounded-lg bg-warning-bg border border-warning/30 p-3">
+                  <AlertTriangle className="h-5 w-5 text-warning shrink-0" aria-hidden />
+                  <p className="text-xs text-warning">
                     커버리지 0.7 미만인 기업은 &quot;데이터 제한적&quot; 경고가 표시됩니다.
                     데이터가 부족한 지표는 중간값으로 대체되므로 점수 정확도가 낮을 수 있습니다.
                   </p>

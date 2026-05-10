@@ -72,7 +72,7 @@ export function GoogleSignInButton({
       {error && (
         <p
           role="alert"
-          className="mt-3 text-xs text-red-600 dark:text-red-400 text-center"
+          className="mt-3 text-xs text-danger text-center"
         >
           {error}
         </p>

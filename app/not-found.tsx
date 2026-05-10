@@ -12,7 +12,7 @@ export default function NotFound() {
     <main className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center px-6">
         <div className="mb-6">
-          <span className="text-7xl font-bold bg-gradient-to-r from-blue-500 to-sky-400 bg-clip-text text-transparent">
+          <span className="text-7xl font-bold bg-gradient-to-r from-primary to-info bg-clip-text text-transparent">
             404
           </span>
         </div>
@@ -24,7 +24,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
         >
           <Home size={16} />
           홈으로 돌아가기

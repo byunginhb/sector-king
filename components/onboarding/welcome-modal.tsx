@@ -78,10 +78,10 @@ function WelcomeVisual({ visual }: { visual: string }) {
     return (
       <div className="space-y-2 w-full max-w-[240px] mx-auto">
         {[
-          { label: '규모', color: 'bg-blue-500', width: '85%' },
-          { label: '성장', color: 'bg-emerald-500', width: '70%' },
-          { label: '수익성', color: 'bg-amber-500', width: '60%' },
-          { label: '시장평가', color: 'bg-purple-500', width: '90%' },
+          { label: '규모', color: 'bg-chart-3', width: '85%' },
+          { label: '성장', color: 'bg-chart-2', width: '70%' },
+          { label: '수익성', color: 'bg-chart-1', width: '60%' },
+          { label: '시장평가', color: 'bg-chart-4', width: '90%' },
         ].map((item) => (
           <div key={item.label} className="flex items-center gap-2 text-xs">
             <span className="w-14 text-muted-foreground shrink-0">{item.label}</span>
@@ -101,16 +101,16 @@ function WelcomeVisual({ visual }: { visual: string }) {
   if (visual === 'flow') {
     return (
       <div className="flex items-center gap-4 justify-center">
-        <div className="rounded-lg border-2 border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30 px-4 py-3 text-center">
-          <TrendingUp className="h-5 w-5 mx-auto text-red-600 dark:text-red-400" aria-hidden />
-          <div className="text-xs font-medium text-red-700 dark:text-red-300 mt-1">유입</div>
-          <div className="text-xs text-red-500">시총 증가</div>
+        <div className="rounded-lg border-2 border-danger/40 bg-danger-bg px-4 py-3 text-center">
+          <TrendingUp className="h-5 w-5 mx-auto text-danger" aria-hidden />
+          <div className="text-xs font-medium text-danger mt-1">유입</div>
+          <div className="text-xs text-danger/80">시총 증가</div>
         </div>
         <ArrowLeftRight className="h-5 w-5 text-muted-foreground" aria-hidden />
-        <div className="rounded-lg border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30 px-4 py-3 text-center">
-          <TrendingDown className="h-5 w-5 mx-auto text-blue-600 dark:text-blue-400" aria-hidden />
-          <div className="text-xs font-medium text-blue-700 dark:text-blue-300 mt-1">유출</div>
-          <div className="text-xs text-blue-500">시총 감소</div>
+        <div className="rounded-lg border-2 border-info/40 bg-info-bg px-4 py-3 text-center">
+          <TrendingDown className="h-5 w-5 mx-auto text-info" aria-hidden />
+          <div className="text-xs font-medium text-info mt-1">유출</div>
+          <div className="text-xs text-info/80">시총 감소</div>
         </div>
       </div>
     )

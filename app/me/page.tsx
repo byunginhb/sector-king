@@ -7,6 +7,7 @@ import { ArrowRight, Star, NotebookPen, Clock } from 'lucide-react'
 import { requireUser } from '@/lib/auth/require-admin'
 import { MyWatchlistCard } from '@/components/me/my-watchlist-card'
 import { RecentlyViewedRow } from '@/components/me/recently-viewed-row'
+import { GlobalTopBar } from '@/components/layout/global-top-bar'
 
 export const metadata: Metadata = {
   title: '내 페이지',
@@ -18,27 +19,7 @@ export default async function MePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border-subtle">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <Link
-              href="/"
-              className="text-sm text-muted-foreground hover:text-foreground"
-              aria-label="메인으로 돌아가기"
-            >
-              ← 메인
-            </Link>
-            <div className="min-w-0">
-              <h1 className="text-xl font-bold text-foreground tracking-tight truncate">
-                내 페이지
-              </h1>
-              <p className="text-xs text-muted-foreground truncate">
-                {profile.email}
-              </p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <GlobalTopBar subtitle={`내 페이지 · ${profile.email}`} />
 
       <main className="container mx-auto px-4 py-8 space-y-8">
         <section>
@@ -52,7 +33,7 @@ export default async function MePage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <NavCard
               href="/me/watchlist"
-              icon={<Star className="h-4 w-4 text-amber-500" aria-hidden />}
+              icon={<Star className="h-4 w-4 text-primary" aria-hidden />}
               title="워치리스트"
               desc="별표한 종목 관리"
             />
@@ -60,7 +41,7 @@ export default async function MePage() {
               href="/me/notes"
               icon={
                 <NotebookPen
-                  className="h-4 w-4 text-amber-500"
+                  className="h-4 w-4 text-primary"
                   aria-hidden
                 />
               }
@@ -69,7 +50,7 @@ export default async function MePage() {
             />
             <NavCard
               href="/me/settings"
-              icon={<Clock className="h-4 w-4 text-amber-500" aria-hidden />}
+              icon={<Clock className="h-4 w-4 text-primary" aria-hidden />}
               title="설정"
               desc="이메일 구독·발송 시각"
             />

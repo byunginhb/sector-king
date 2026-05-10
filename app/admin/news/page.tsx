@@ -121,7 +121,7 @@ export default async function AdminNewsListPage() {
                       </p>
                       <Link
                         href={`/admin/news/${it.id}/preview-email`}
-                        className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 hover:text-amber-700 underline-offset-4 hover:underline"
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline"
                         aria-label="이메일 미리보기"
                       >
                         <Mail className="h-3 w-3" aria-hidden />

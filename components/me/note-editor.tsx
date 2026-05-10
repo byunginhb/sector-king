@@ -142,7 +142,7 @@ export function NoteEditor({
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-semibold"
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-semibold"
           >
             <Save className="h-3.5 w-3.5" aria-hidden />
             {isSaving ? '저장 중...' : '저장'}

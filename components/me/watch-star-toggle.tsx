@@ -107,7 +107,7 @@ export function WatchStarToggle({
         className={cn(
           sizeClass,
           watched
-            ? 'text-amber-500 fill-amber-500'
+            ? 'text-primary fill-primary'
             : 'text-muted-foreground'
         )}
         aria-hidden

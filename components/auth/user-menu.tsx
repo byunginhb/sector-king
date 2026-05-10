@@ -78,7 +78,7 @@ export function UserMenu({ profile }: { profile: CurrentProfile }) {
             <span
               className={cn(
                 'mt-1 inline-flex w-fit items-center gap-1 rounded px-1.5 py-0.5',
-                'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300',
+                'bg-primary/15 text-primary',
                 'text-[10px] font-medium uppercase tracking-wide'
               )}
             >

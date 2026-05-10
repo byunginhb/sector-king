@@ -41,8 +41,8 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
   if (error || !data) {
     return (
       <div className="p-6 text-center">
-        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-          <svg className="w-6 h-6 text-red-500 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-danger-bg flex items-center justify-center">
+          <svg className="w-6 h-6 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01" />
           </svg>
         </div>
@@ -111,7 +111,7 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
                 href={stockLink.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 hover:underline mt-2"
+                className="inline-flex items-center gap-1.5 text-sm text-info hover:underline mt-2"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -139,7 +139,7 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
                 key={sector.id}
                 className={cn('border font-medium', style.badge)}
               >
-                {rank === 1 && <Star className="inline h-3 w-3 mr-1 fill-amber-500 text-amber-500" aria-hidden />}
+                {rank === 1 && <Star className="inline h-3 w-3 mr-1 fill-primary text-primary" aria-hidden />}
                 {sector.name}: {style.label}
               </Badge>
             )
@@ -176,14 +176,14 @@ function ScoreAnalysis({
       label: '규모',
       value: score.scale,
       max: SCORING.scale.maxScore,
-      color: 'bg-blue-500',
+      color: 'bg-chart-3',
       description: '섹터 내 시가총액 비중과 거래 활성도',
     },
     {
       label: '성장성',
       value: score.growth,
       max: SCORING.growth.maxScore,
-      color: 'bg-emerald-500',
+      color: 'bg-chart-2',
       description: '분기별 매출/수익 성장률',
       metrics: [
         ...(score.revenueGrowth !== null
@@ -198,7 +198,7 @@ function ScoreAnalysis({
       label: '수익성',
       value: score.profitability,
       max: SCORING.profitability.maxScore,
-      color: 'bg-amber-500',
+      color: 'bg-chart-1',
       description: '영업이익률과 자기자본이익률',
       metrics: [
         ...(score.operatingMargin !== null
@@ -213,7 +213,7 @@ function ScoreAnalysis({
       label: '시장 평가',
       value: score.sentiment,
       max: SCORING.sentiment.maxScore,
-      color: 'bg-purple-500',
+      color: 'bg-chart-4',
       description: '애널리스트 투자의견과 목표주가 괴리율',
       metrics: [
         ...(score.recommendationKey
@@ -295,7 +295,7 @@ function ScoreAnalysis({
         <div className="pt-2 border-t border-border flex items-center justify-between">
           <Link
             href="/methodology"
-            className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-[11px] text-info hover:underline"
           >
             방법론 상세 보기 →
           </Link>

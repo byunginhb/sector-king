@@ -229,8 +229,8 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
         particle: '#fbbf24', // Gold
         particleLight: '#fef3c7', // Light gold
         glow: 'rgba(16, 185, 129, 0.5)',
-        bg: 'bg-emerald-50 dark:bg-emerald-950/30',
-        text: 'text-emerald-600 dark:text-emerald-400',
+        bg: 'bg-success-bg',
+        text: 'text-success',
         riverGlow: '#10b981',
       }
     : {
@@ -238,8 +238,8 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
         particle: '#fb923c', // Orange
         particleLight: '#fed7aa', // Light orange
         glow: 'rgba(239, 68, 68, 0.5)',
-        bg: 'bg-red-50 dark:bg-red-950/30',
-        text: 'text-red-600 dark:text-red-400',
+        bg: 'bg-danger-bg',
+        text: 'text-danger',
         riverGlow: '#ef4444',
       }
 
@@ -457,7 +457,7 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
             <motion.div
               className={cn(
                 'h-full rounded-full',
-                flow.mfi >= 50 ? 'bg-emerald-500' : 'bg-red-500'
+                flow.mfi >= 50 ? 'bg-success' : 'bg-danger'
               )}
               initial={{ width: 0 }}
               animate={{ width: `${flow.mfi}%` }}
@@ -468,8 +468,8 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
             className={cn(
               'text-xs font-medium',
               flow.mfi >= 50
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-red-600 dark:text-red-400'
+                ? 'text-success'
+                : 'text-danger'
             )}
           >
             {flow.mfi.toFixed(1)}

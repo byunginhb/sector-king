@@ -32,18 +32,18 @@ export function CompanyBadge({ sectorCompany, isHistorical = false, isFirst = fa
 
   const priceChangeColor =
     snapshot?.priceChange && snapshot.priceChange > 0
-      ? 'text-emerald-700 dark:text-emerald-400'
+      ? 'text-success'
       : snapshot?.priceChange && snapshot.priceChange < 0
-        ? 'text-rose-700 dark:text-rose-400'
-        : 'text-slate-600 dark:text-slate-400'
+        ? 'text-danger'
+        : 'text-muted-foreground'
 
   // Historical mode: price change from snapshot to current
   const historicalChangeColor =
     priceChangeFromSnapshot && priceChangeFromSnapshot > 0
-      ? 'text-emerald-700 dark:text-emerald-400'
+      ? 'text-success'
       : priceChangeFromSnapshot && priceChangeFromSnapshot < 0
-        ? 'text-rose-700 dark:text-rose-400'
-        : 'text-slate-600 dark:text-slate-400'
+        ? 'text-danger'
+        : 'text-muted-foreground'
 
   const historicalChangeArrow =
     priceChangeFromSnapshot && priceChangeFromSnapshot > 0
@@ -68,7 +68,7 @@ export function CompanyBadge({ sectorCompany, isHistorical = false, isFirst = fa
               {...(isFirst ? { 'data-tour': 'company-badge' } : {})}
             >
               <span className="flex items-center gap-1.5">
-                {rank === 1 && <Star className="h-3 w-3 fill-amber-500 text-amber-500" aria-hidden />}
+                {rank === 1 && <Star className="h-3 w-3 fill-primary text-primary" aria-hidden />}
                 <span className="text-[10px] opacity-70">{rank}위</span>
                 {company.nameKo || company.ticker}
                 {isHistorical && historicalChangeArrow && (
@@ -122,27 +122,27 @@ export function CompanyBadge({ sectorCompany, isHistorical = false, isFirst = fa
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-[10px]">
                     <span className="text-muted-foreground w-7 shrink-0">규모</span>
-                    <ScoreBar value={score.scale} max={SCORING.scale.maxScore} color="bg-blue-500" />
+                    <ScoreBar value={score.scale} max={SCORING.scale.maxScore} color="bg-chart-3" />
                     <span className="text-muted-foreground w-9 text-right">{formatScore(score.scale, SCORING.scale.maxScore)}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px]">
                     <span className="text-muted-foreground w-7 shrink-0">성장</span>
-                    <ScoreBar value={score.growth} max={SCORING.growth.maxScore} color="bg-emerald-500" />
+                    <ScoreBar value={score.growth} max={SCORING.growth.maxScore} color="bg-chart-2" />
                     <span className="text-muted-foreground w-9 text-right">{formatScore(score.growth, SCORING.growth.maxScore)}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px]">
                     <span className="text-muted-foreground w-7 shrink-0">수익</span>
-                    <ScoreBar value={score.profitability} max={SCORING.profitability.maxScore} color="bg-amber-500" />
+                    <ScoreBar value={score.profitability} max={SCORING.profitability.maxScore} color="bg-chart-1" />
                     <span className="text-muted-foreground w-9 text-right">{formatScore(score.profitability, SCORING.profitability.maxScore)}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px]">
                     <span className="text-muted-foreground w-7 shrink-0">평가</span>
-                    <ScoreBar value={score.sentiment} max={SCORING.sentiment.maxScore} color="bg-purple-500" />
+                    <ScoreBar value={score.sentiment} max={SCORING.sentiment.maxScore} color="bg-chart-4" />
                     <span className="text-muted-foreground w-9 text-right">{formatScore(score.sentiment, SCORING.sentiment.maxScore)}</span>
                   </div>
                 </div>
                 {score.dataQuality < 0.7 && (
-                  <p className="text-[10px] text-amber-600 dark:text-amber-400">데이터 제한적</p>
+                  <p className="text-[10px] text-warning">데이터 제한적</p>
                 )}
                 <p className="text-[10px] text-muted-foreground">
                   순위는 EMA 스무딩된 점수 기준으로 결정됩니다

@@ -52,7 +52,7 @@ export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatis
       <h3 className="text-base font-semibold text-slate-900 dark:text-slate-200 mb-4 flex items-center gap-2">
         <svg
           aria-hidden="true"
-          className="w-5 h-5 text-amber-500 dark:text-slate-400"
+          className="w-5 h-5 text-primary"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -89,7 +89,7 @@ export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatis
             <div className="flex items-center gap-3">
               <div className="w-16 h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-amber-500 dark:bg-linear-to-r dark:from-indigo-400 dark:to-purple-400 rounded-full transition-all duration-300"
+                  className="h-full bg-primary dark:bg-linear-to-r dark:from-indigo-400 dark:to-purple-400 rounded-full transition-all duration-300"
                   style={{ width: `${(company.count / maxCount) * 100}%` }}
                 />
               </div>
@@ -104,7 +104,7 @@ export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatis
         <div className="mt-3 pt-3 border-t border-gray-100 dark:border-border">
           <Link
             href={industryId ? `/${industryId}/statistics` : '/statistics'}
-            className="flex items-center justify-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+            className="flex items-center justify-center gap-1 text-sm text-info hover:underline transition-colors"
           >
             전체 {companyCounts.length}개 회사 보기
             <svg

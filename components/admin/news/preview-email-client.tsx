@@ -110,14 +110,14 @@ export function PreviewEmailClient({
       <aside className="space-y-3">
         <div className="rounded-2xl border border-border-subtle bg-surface-1 p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-amber-500" aria-hidden />
+            <Mail className="h-4 w-4 text-primary" aria-hidden />
             <p className="text-sm font-semibold text-foreground">
               테스트 발송
             </p>
           </div>
 
           {!resendConfigured && (
-            <div className="rounded-md bg-amber-500/10 border border-amber-500/30 p-2.5 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
+            <div className="rounded-md bg-warning/10 border border-warning/30 p-2.5 text-xs text-warning flex items-start gap-2">
               <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden />
               <span>
                 RESEND_API_KEY 가 설정되지 않았습니다. 환경변수 등록 후 발송이
@@ -169,7 +169,7 @@ export function PreviewEmailClient({
                 result.kind === 'sent' &&
                   'bg-success/10 border border-success/30 text-success',
                 result.kind === 'skipped' &&
-                  'bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400',
+                  'bg-warning/10 border border-warning/30 text-warning',
                 result.kind === 'failed' &&
                   'bg-danger/10 border border-danger/30 text-danger'
               )}

@@ -12,7 +12,7 @@ const DIMENSIONS: DimensionBar[] = [
   {
     label: '규모 (Scale)',
     maxScore: SCORING.scale.maxScore,
-    color: 'bg-blue-500',
+    color: 'bg-chart-3',
     subMetrics: [
       { label: '시가총액 비중', maxScore: SCORING.scale.marketCapShare.maxScore },
       { label: '거래량 비율', maxScore: SCORING.scale.volumeRatio.maxScore },
@@ -21,7 +21,7 @@ const DIMENSIONS: DimensionBar[] = [
   {
     label: '성장성 (Growth)',
     maxScore: SCORING.growth.maxScore,
-    color: 'bg-emerald-500',
+    color: 'bg-chart-2',
     subMetrics: [
       { label: '매출 성장률', maxScore: SCORING.growth.revenueGrowth.maxScore },
       { label: '수익 성장률', maxScore: SCORING.growth.earningsGrowth.maxScore },
@@ -30,7 +30,7 @@ const DIMENSIONS: DimensionBar[] = [
   {
     label: '수익성 (Profitability)',
     maxScore: SCORING.profitability.maxScore,
-    color: 'bg-amber-500',
+    color: 'bg-chart-1',
     subMetrics: [
       { label: '영업이익률', maxScore: SCORING.profitability.operatingMargin.maxScore },
       { label: 'ROE', maxScore: SCORING.profitability.returnOnEquity.maxScore },
@@ -39,7 +39,7 @@ const DIMENSIONS: DimensionBar[] = [
   {
     label: '시장 평가 (Sentiment)',
     maxScore: SCORING.sentiment.maxScore,
-    color: 'bg-purple-500',
+    color: 'bg-chart-4',
     subMetrics: [
       { label: '애널리스트 의견', maxScore: SCORING.sentiment.recommendation.maxScore },
       { label: '목표주가 괴리율', maxScore: SCORING.sentiment.targetUpside.maxScore },

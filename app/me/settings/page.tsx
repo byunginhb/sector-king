@@ -2,10 +2,10 @@
  * /me/settings — 이메일 구독, 프로필 정보.
  */
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { Suspense } from 'react'
 import { requireUser } from '@/lib/auth/require-admin'
 import { EmailSubscriptionSection } from '@/components/me/email-subscription-section'
+import { GlobalTopBar } from '@/components/layout/global-top-bar'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,22 +18,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border-subtle">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <Link
-              href="/me"
-              className="text-sm text-muted-foreground hover:text-foreground"
-              aria-label="내 페이지로 돌아가기"
-            >
-              ← 내 페이지
-            </Link>
-            <h1 className="text-xl font-bold text-foreground tracking-tight">
-              설정
-            </h1>
-          </div>
-        </div>
-      </header>
+      <GlobalTopBar subtitle="설정" />
 
       <main className="container mx-auto px-4 py-8 max-w-2xl space-y-8">
         <section>

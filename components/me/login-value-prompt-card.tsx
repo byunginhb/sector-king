@@ -40,7 +40,7 @@ export function LoginValuePromptCard({
         </div>
         <Link
           href={loginHref}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 text-sm font-semibold whitespace-nowrap transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold whitespace-nowrap transition-colors"
         >
           시작하기
           <ArrowRight className="h-4 w-4" aria-hidden />
@@ -49,18 +49,18 @@ export function LoginValuePromptCard({
 
       <ul className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Feature
-          icon={<Star className="h-4 w-4 text-amber-500" aria-hidden />}
+          icon={<Star className="h-4 w-4 text-primary" aria-hidden />}
           title="워치리스트"
           desc="별 한 번으로 관심 종목 추적"
         />
         <Feature
-          icon={<Bell className="h-4 w-4 text-amber-500" aria-hidden />}
+          icon={<Bell className="h-4 w-4 text-primary" aria-hidden />}
           title="일별 리포트"
           desc="매일 아침 한 줄 마켓 요약"
         />
         <Feature
           icon={
-            <NotebookPen className="h-4 w-4 text-amber-500" aria-hidden />
+            <NotebookPen className="h-4 w-4 text-primary" aria-hidden />
           }
           title="개인 메모"
           desc="투자 근거를 마크다운으로 저장"

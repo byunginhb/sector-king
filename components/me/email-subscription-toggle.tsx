@@ -44,7 +44,7 @@ export function EmailSubscriptionToggle() {
     <div className="rounded-xl border border-border-subtle bg-surface-1 p-4 space-y-3">
       <div className="flex items-start gap-3">
         <div className="shrink-0 mt-0.5">
-          <Mail className="h-5 w-5 text-amber-500" aria-hidden />
+          <Mail className="h-5 w-5 text-primary" aria-hidden />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-3">
@@ -66,7 +66,7 @@ export function EmailSubscriptionToggle() {
                 'shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 disabled && 'opacity-50 cursor-not-allowed',
-                subscription.dailyReport ? 'bg-amber-500' : 'bg-surface-3'
+                subscription.dailyReport ? 'bg-primary' : 'bg-surface-3'
               )}
             >
               <span

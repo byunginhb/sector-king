@@ -19,13 +19,13 @@ export function Footer() {
           <nav className="flex items-center gap-4 flex-wrap">
             <Link
               href="/methodology"
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-sm text-info hover:underline"
             >
               방법론
             </Link>
             <Link
               href="/methodology#scoring"
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-sm text-info hover:underline"
             >
               점수 산출 공식
             </Link>
@@ -33,7 +33,7 @@ export function Footer() {
               href={GOOGLE_FORM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              className="inline-flex items-center gap-1.5 text-sm text-info hover:underline"
             >
               문의하기
               <ExternalLink className="h-3.5 w-3.5" />
