@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getAllIndustries } from '@/lib/industry'
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sectorking.co.kr'
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const industries = await getAllIndustries()

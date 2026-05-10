@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { getAllIndustries } from '@/lib/industry'
 import { MoneyFlowPageContent } from '@/components/money-flow/money-flow-page-content'
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sectorking.co.kr'
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 const getCachedIndustries = cache(() => getAllIndustries())
 
 export async function generateMetadata({

@@ -115,7 +115,7 @@ export default async function OgImage() {
             display: 'flex',
           }}
         >
-          sectorking.co.kr
+          sector-king.com
         </div>
       </div>
     ),

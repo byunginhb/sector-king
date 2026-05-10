@@ -6,7 +6,7 @@
  *   RESEND_FROM_EMAIL  — 발신 주소. 미설정 시 Resend sandbox 폴백
  *                        ('Sector King <onboarding@resend.dev>') — 본인 Resend
  *                        계정 이메일에만 발송 가능. 운영은 도메인 인증 후
- *                        'Sector King <noreply@sectorking.co.kr>' 같이 명시 권장.
+ *                        'Sector King <noreply@sector-king.com>' 같이 명시 권장.
  *
  * Resend SDK 패키지가 설치되지 않은 환경에서도 빌드가 깨지지 않도록 fetch 로 직접
  * 호출한다 (외부 의존성 0).

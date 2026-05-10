@@ -53,7 +53,7 @@ const FONT_STACK =
 // ----------------------------------------------------------------------------
 export interface DailyNewsEmailProps {
   report: NewsReportDTO
-  /** 풀 사이트 URL (e.g. https://sectorking.co.kr) — 없으면 상대 경로 */
+  /** 풀 사이트 URL (e.g. https://sector-king.com) — 없으면 상대 경로 */
   siteUrl?: string
   /** 수신자 이름 (있으면 인사말) */
   recipientName?: string

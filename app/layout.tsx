@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sectorking.co.kr'
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
