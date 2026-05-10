@@ -2,10 +2,11 @@
  * Resend SDK 얇은 래퍼.
  *
  * 환경변수:
- *   RESEND_API_KEY — 미설정 시 `sendEmail()` 은 status='skipped' 반환
- *   RESEND_FROM_EMAIL — 기본 'noreply@sectorking.co.kr'
- *
- * Cron 발송 워크플로우 자체는 본 PR 범위 외. 본 모듈은 호출 인터페이스만 노출.
+ *   RESEND_API_KEY     — 미설정 시 `sendEmail()` 은 status='skipped' 반환
+ *   RESEND_FROM_EMAIL  — 발신 주소. 미설정 시 Resend sandbox 폴백
+ *                        ('Sector King <onboarding@resend.dev>') — 본인 Resend
+ *                        계정 이메일에만 발송 가능. 운영은 도메인 인증 후
+ *                        'Sector King <noreply@sectorking.co.kr>' 같이 명시 권장.
  *
  * Resend SDK 패키지가 설치되지 않은 환경에서도 빌드가 깨지지 않도록 fetch 로 직접
  * 호출한다 (외부 의존성 0).
@@ -30,8 +31,14 @@ export function isResendConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY)
 }
 
+/**
+ * 발신 주소 결정. RESEND_FROM_EMAIL 미설정 시 Resend sandbox 도메인 폴백.
+ * sandbox 는 도메인 인증 없이 즉시 사용 가능하지만 본인 Resend 계정 이메일에만
+ * 발송할 수 있다. 운영은 자체 도메인을 https://resend.com/domains 에서 verify
+ * 한 뒤 RESEND_FROM_EMAIL 을 명시한다.
+ */
 export function getDefaultFromEmail(): string {
-  return process.env.RESEND_FROM_EMAIL || 'Sector King <noreply@sectorking.co.kr>'
+  return process.env.RESEND_FROM_EMAIL || 'Sector King <onboarding@resend.dev>'
 }
 
 export async function sendEmail(
