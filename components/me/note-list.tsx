@@ -1,12 +1,18 @@
 /**
  * 본인 메모 목록.
+ *
+ * 목록 카드는 성능을 위해 마크다운 본문을 plain text 로 truncate 한다.
+ * 풀 마크다운 렌더는 종목 상세 페이지의 NoteEditor 미리보기 탭에서 수행.
  */
 'use client'
 
 import { NotebookPen, Trash2 } from 'lucide-react'
 import { useNotes } from '@/hooks/me/use-notes'
 import { Skeleton } from '@/components/ui/skeleton'
+import { MarkdownView } from '@/components/ui/markdown-view'
 import type { NoteDTO, PerkItemType } from '@/drizzle/supabase-schema'
+
+const PREVIEW_LEN = 280
 
 export function NoteList({
   itemType,
@@ -80,9 +86,16 @@ function NoteItem({
           <Trash2 className="h-4 w-4" aria-hidden />
         </button>
       </div>
-      <p className="text-sm text-foreground whitespace-pre-wrap break-words">
-        {note.body}
-      </p>
+      {note.body.length <= PREVIEW_LEN ? (
+        <MarkdownView content={note.body} />
+      ) : (
+        <>
+          <MarkdownView content={note.body.slice(0, PREVIEW_LEN) + '…'} />
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            (전체 보려면 종목 상세에서 메모 열기)
+          </p>
+        </>
+      )}
       <p className="text-[11px] text-muted-foreground mt-2 tabular-nums">
         {new Date(note.updatedAt).toLocaleString('ko-KR')}
       </p>

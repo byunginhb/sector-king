@@ -3,13 +3,14 @@
  *
  * - autosave 없음 (명시적 저장 버튼). 사용자가 의도치 않게 덮어쓰는 것을 방지.
  * - 글자수 카운터.
- * - 미리보기는 매우 단순한 줄바꿈/링크 변환만 (서버 렌더링 도입은 B2 이후).
+ * - 미리보기는 `MarkdownView` 로 GFM 마크다운 풍부 렌더 + XSS sanitize.
  */
 'use client'
 
 import { useState } from 'react'
 import { Eye, EyeOff, Save, Trash2 } from 'lucide-react'
 import { useNotes } from '@/hooks/me/use-notes'
+import { MarkdownView } from '@/components/ui/markdown-view'
 import { cn } from '@/lib/utils'
 import type { PerkItemType } from '@/drizzle/supabase-schema'
 
@@ -80,47 +81,73 @@ export function NoteEditor({
     >
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-sm font-semibold text-foreground">메모</h4>
-        <div className="flex items-center gap-1.5">
+        <div
+          role="group"
+          aria-label="편집 모드 전환"
+          className="inline-flex items-center rounded-lg border border-border-subtle bg-surface-2/40 p-0.5"
+        >
           <button
             type="button"
-            onClick={() => setPreview((v) => !v)}
-            className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border border-border-subtle text-muted-foreground hover:bg-surface-2"
-            aria-pressed={preview}
-          >
-            {preview ? (
-              <>
-                <EyeOff className="h-3 w-3" aria-hidden />
-                편집
-              </>
-            ) : (
-              <>
-                <Eye className="h-3 w-3" aria-hidden />
-                미리보기
-              </>
+            onClick={() => setPreview(false)}
+            aria-pressed={!preview}
+            className={cn(
+              'inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors',
+              !preview
+                ? 'bg-surface-1 text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
             )}
+          >
+            <EyeOff className="h-3 w-3" aria-hidden />
+            편집
+          </button>
+          <button
+            type="button"
+            onClick={() => setPreview(true)}
+            aria-pressed={preview}
+            className={cn(
+              'inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors',
+              preview
+                ? 'bg-surface-1 text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <Eye className="h-3 w-3" aria-hidden />
+            미리보기
           </button>
         </div>
       </div>
 
       {preview ? (
-        <div className="min-h-[160px] text-sm text-foreground whitespace-pre-wrap break-words bg-surface-2/30 rounded p-3 border border-border-subtle">
-          {body || (
-            <span className="text-muted-foreground">미리볼 내용이 없습니다.</span>
+        <div className="min-h-[160px] bg-surface-2/30 rounded p-3 border border-border-subtle">
+          {body.trim().length > 0 ? (
+            <MarkdownView content={body} />
+          ) : (
+            <span className="text-sm text-muted-foreground">
+              미리볼 내용이 없습니다.
+            </span>
           )}
         </div>
       ) : (
-        <textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          rows={8}
-          maxLength={MAX_LEN}
-          placeholder="이 종목에 대한 생각, 매수 근거, 모니터링 포인트를 적어두세요."
-          className={cn(
-            'w-full text-sm font-mono leading-relaxed bg-surface-2/30',
-            'border border-border-subtle rounded p-3',
-            'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary'
-          )}
-        />
+        <>
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={8}
+            maxLength={MAX_LEN}
+            placeholder="이 종목에 대한 생각, 매수 근거, 모니터링 포인트를 적어두세요."
+            className={cn(
+              'w-full text-sm font-mono leading-relaxed bg-surface-2/30',
+              'border border-border-subtle rounded p-3',
+              'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary'
+            )}
+          />
+          <p className="mt-1.5 text-[11px] text-muted-foreground font-mono leading-relaxed">
+            <span className="font-semibold">**굵게**</span>
+            {'  '}
+            <span className="italic">*기울임*</span>
+            {'  '}[링크](url){'  '}- 목록{'  '}{'> '}인용{'  '}`코드`
+          </p>
+        </>
       )}
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-3">
