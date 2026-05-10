@@ -1,27 +1,22 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useMapData } from '@/hooks/use-map-data'
 import { useRegion } from '@/hooks/use-region'
 import { usePageTour } from '@/hooks/use-page-tour'
 import { CategoryCard } from './category-card'
 import { DateSelector } from './date-selector'
-import { ThemeToggle } from './theme-toggle'
-import { SearchTrigger } from './search-trigger'
-import { HelpButton } from './onboarding/help-button'
-import { ShareButton } from './share-button'
-import { SectorKingLogo } from './logo'
 import { IndustryTitle } from './industry-title'
 import { CompanyStatistics } from './company-statistics'
 import { PriceChangeCard } from './price-change-card'
 import { RegionToggle } from './region-toggle'
+import { GlobalTopBar } from '@/components/layout/global-top-bar'
+import { IndustryContextBar } from '@/components/layout/industry-context-bar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDate } from '@/lib/format'
-import { Wallet, BarChart3 } from 'lucide-react'
-import { AuthButtonClient } from './auth/auth-button-client'
+import { Clock } from 'lucide-react'
 
 // regionScope='KR' 카테고리 화이트리스트 (S1 백필 기준)
 const KR_ONLY_CATEGORY_IDS = new Set(['korea_bio', 'korea_banks'])
@@ -68,83 +63,44 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <SectorKingLogo size={40} className="shrink-0" />
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
-                  <span className="bg-linear-to-r from-blue-600 to-sky-600 dark:from-blue-400 dark:to-sky-400 bg-clip-text text-transparent">
-                    Sector King
-                  </span>
-                </h1>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  <IndustryTitle industryId={industryId} className="font-medium" /> 투자 패권 지도
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Navigation Links */}
-              <div data-tour="nav-links" className="flex items-center gap-2 sm:gap-3">
-                <Link
-                  href="/"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm sm:px-3 font-medium rounded-lg whitespace-nowrap bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <span>전체</span>
-                </Link>
-                <Link
-                  href={`/${industryId}/money-flow`}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm sm:px-3 font-medium rounded-lg whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors"
-                >
-                  <Wallet className="hidden sm:inline-block h-4 w-4" aria-hidden />
-                  <span>자금흐름</span>
-                </Link>
-                <Link
-                  href={`/${industryId}/price-changes`}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm sm:px-3 font-medium rounded-lg whitespace-nowrap bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors"
-                >
-                  <BarChart3 className="hidden sm:inline-block h-4 w-4" aria-hidden />
-                  <span>등락율</span>
-                </Link>
-              </div>
-              <RegionToggle value={region} onChange={setRegion} />
-              <ShareButton
-                title="투자 패권 지도 | Sector King"
-                description="산업 섹터별 시장 지배력 순위 시각화"
-              />
-              <SearchTrigger />
-              <HelpButton pageId="hegemony-map" />
-              <ThemeToggle />
-              <AuthButtonClient />
-              <DateSelector
-                availableDates={availableDates}
-                selectedDate={data.selectedDate}
-                latestDate={lastUpdated}
-                onDateChange={setSelectedDate}
-              />
+      <GlobalTopBar
+        pageId="hegemony-map"
+        lastUpdated={lastUpdated}
+        shareTitle="투자 패권 지도 | Sector King"
+        shareDescription="산업 섹터별 시장 지배력 순위 시각화"
+        subtitle={<IndustryTitle industryId={industryId} className="font-medium" />}
+      />
+      <IndustryContextBar
+        industryId={industryId}
+        rightActions={
+          <>
+            <RegionToggle value={region} onChange={setRegion} />
+            <DateSelector
+              availableDates={availableDates}
+              selectedDate={data.selectedDate}
+              latestDate={lastUpdated}
+              onDateChange={setSelectedDate}
+            />
+          </>
+        }
+      />
+
+      {/* Historical Mode Banner */}
+      {isHistorical && (
+        <div className="container mx-auto px-4 mt-3">
+          <div className="p-3 rounded-lg bg-warning/10 border border-warning/30">
+            <div className="flex items-center gap-2 text-sm text-warning">
+              <Clock className="w-4 h-4 shrink-0" aria-hidden />
+              <span className="font-medium">
+                {formatDate(data.selectedDate || '')} 기준 데이터를 보고 있습니다.
+              </span>
+              <span className="opacity-80">
+                뱃지에 표시된 변화율은 현재가 대비 변화입니다.
+              </span>
             </div>
           </div>
-
-          {/* Historical Mode Banner */}
-          {isHistorical && (
-            <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800">
-              <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="font-medium">
-                  {formatDate(data.selectedDate || '')} 기준 데이터를 보고 있습니다.
-                </span>
-                <span className="text-amber-600 dark:text-amber-400">
-                  뱃지에 표시된 변화율은 현재가 대비 변화입니다.
-                </span>
-              </div>
-            </div>
-          )}
         </div>
-      </header>
+      )}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
@@ -248,8 +204,8 @@ function MapError({ error }: { error: Error }) {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center py-12 px-6 max-w-md">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-          <svg className="w-8 h-8 text-red-500 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-danger/10 flex items-center justify-center">
+          <svg className="w-8 h-8 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
         </div>

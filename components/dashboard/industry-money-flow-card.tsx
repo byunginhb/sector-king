@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { TrendingUp as TrendingUpIcon } from 'lucide-react'
 import { useIndustryMoneyFlow } from '@/hooks/use-industry-money-flow'
 import { formatFlowAmount, formatKrw } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -36,7 +37,7 @@ function RisingArrow({ index, delay, total }: { index: number; delay: number; to
       }}
     >
       <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
-        <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="rgba(239, 68, 68, 0.7)" />
+        <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="rgba(16, 185, 129, 0.7)" />
       </svg>
     </motion.div>
   )
@@ -63,7 +64,7 @@ function FallingArrow({ index, delay, total }: { index: number; delay: number; t
       }}
     >
       <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
-        <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="rgba(59, 130, 246, 0.7)" />
+        <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="rgba(244, 63, 94, 0.7)" />
       </svg>
     </motion.div>
   )
@@ -84,43 +85,36 @@ export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardP
   if (data.industries.length === 0) return null
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-border bg-muted/30">
+      <div className="px-5 py-4 border-b border-border-subtle bg-surface-2/40">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <h3 className="text-lg font-bold text-card-foreground flex items-center gap-2 min-w-0">
-            <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
+            <TrendingUpIcon className="w-5 h-5 text-success shrink-0" aria-hidden />
             산업별 자금 흐름
           </h3>
           <div className="flex items-center gap-2">
             {/* Period Filter */}
-            <div className="flex rounded-lg overflow-hidden border border-border">
+            <div role="group" aria-label="기간 선택" className="flex rounded-lg overflow-hidden border border-border-subtle">
               {([1, 3, 7, 14, 30] as PeriodType[]).map((p) => (
                 <button
                   key={p}
                   onClick={() => setPeriod(p)}
+                  aria-pressed={period === p}
                   className={cn(
-                    'px-2 py-1 text-xs transition-colors',
+                    'px-2 py-1 text-xs transition-colors tabular-nums',
                     period === p
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white dark:bg-card text-muted-foreground hover:bg-gray-100 dark:hover:bg-slate-800'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-surface-1 text-muted-foreground hover:bg-surface-2 hover:text-foreground'
                   )}
                 >
                   {p}일
                 </button>
               ))}
             </div>
-            <Link
-              href="/industry-money-flow"
-              className="text-xs text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors shrink-0"
-            >
-              전체 보기 →
-            </Link>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground mt-1 tabular-nums">
           최근 {data.period}일 기준 ({data.dateRange.start} ~ {data.dateRange.end})
         </p>
       </div>
@@ -154,17 +148,17 @@ function IndustryFlowItem({
         whileHover={{ scale: 1.02 }}
         transition={{ delay: index * 0.1 }}
         className={cn(
-          'relative rounded-lg p-4 min-h-[120px] overflow-hidden cursor-pointer transition-shadow',
+          'relative rounded-lg p-4 min-h-[120px] overflow-hidden cursor-pointer transition-shadow border',
           isInflow
-            ? 'bg-linear-to-br from-red-50 to-rose-100 dark:from-red-950/40 dark:to-rose-900/30 border border-red-200 dark:border-red-800'
-            : 'bg-linear-to-br from-blue-50 to-indigo-100 dark:from-blue-950/40 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-800'
+            ? 'bg-success/5 border-success/30'
+            : 'bg-danger/5 border-danger/30'
         )}
       >
         {/* Background pulse */}
         <motion.div
           className={cn(
             'absolute inset-0 rounded-lg',
-            isInflow ? 'bg-red-400/10' : 'bg-blue-400/10'
+            isInflow ? 'bg-success/10' : 'bg-danger/10'
           )}
           animate={{ opacity: isInflow ? [0.2, 0.7, 0.2] : [0.3, 0.6, 0.3] }}
           transition={{ duration: isInflow ? 1.8 : 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -175,13 +169,13 @@ function IndustryFlowItem({
           <motion.div
             className="absolute inset-0 rounded-lg pointer-events-none"
             style={{
-              boxShadow: 'inset 0 0 20px rgba(239, 68, 68, 0.15), 0 0 15px rgba(239, 68, 68, 0.1)',
+              boxShadow: 'inset 0 0 20px rgba(16, 185, 129, 0.15), 0 0 15px rgba(16, 185, 129, 0.1)',
             }}
             animate={{
               boxShadow: [
-                'inset 0 0 20px rgba(239, 68, 68, 0.1), 0 0 10px rgba(239, 68, 68, 0.05)',
-                'inset 0 0 25px rgba(239, 68, 68, 0.25), 0 0 20px rgba(239, 68, 68, 0.15)',
-                'inset 0 0 20px rgba(239, 68, 68, 0.1), 0 0 10px rgba(239, 68, 68, 0.05)',
+                'inset 0 0 20px rgba(16, 185, 129, 0.1), 0 0 10px rgba(16, 185, 129, 0.05)',
+                'inset 0 0 25px rgba(16, 185, 129, 0.25), 0 0 20px rgba(16, 185, 129, 0.15)',
+                'inset 0 0 20px rgba(16, 185, 129, 0.1), 0 0 10px rgba(16, 185, 129, 0.05)',
               ],
             }}
             transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
@@ -205,9 +199,7 @@ function IndustryFlowItem({
               iconKey={industry.industryId}
               className={cn(
                 'h-5 w-5 shrink-0',
-                isInflow
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-blue-600 dark:text-blue-400'
+                isInflow ? 'text-success' : 'text-danger'
               )}
             />
             <span className="font-semibold text-card-foreground truncate">
@@ -217,8 +209,8 @@ function IndustryFlowItem({
               className={cn(
                 'ml-auto shrink-0 text-xs font-medium px-2 py-0.5 rounded-full',
                 isInflow
-                  ? 'bg-red-200 dark:bg-red-800/50 text-red-700 dark:text-red-300'
-                  : 'bg-blue-200 dark:bg-blue-800/50 text-blue-700 dark:text-blue-300'
+                  ? 'bg-success/15 text-success'
+                  : 'bg-danger/15 text-danger'
               )}
             >
               {isInflow ? '유입 ↑' : '유출 ↓'}
@@ -229,30 +221,24 @@ function IndustryFlowItem({
           <div className="mb-3">
             <div
               className={cn(
-                'text-base sm:text-xl font-bold',
-                isInflow
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-blue-600 dark:text-blue-400'
+                'text-base sm:text-xl font-bold tabular-nums',
+                isInflow ? 'text-success' : 'text-danger'
               )}
             >
               {isInflow ? '+' : '-'}{formatFlowAmount(Math.abs(industry.netFlow))}
             </div>
             <div
               className={cn(
-                'text-xs opacity-70',
-                isInflow
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-blue-600 dark:text-blue-400'
+                'text-xs opacity-70 tabular-nums',
+                isInflow ? 'text-success' : 'text-danger'
               )}
             >
               ({formatKrw(industry.netFlow)})
             </div>
             <div
               className={cn(
-                'text-sm',
-                isInflow
-                  ? 'text-red-500 dark:text-red-400'
-                  : 'text-blue-500 dark:text-blue-400'
+                'text-sm tabular-nums',
+                isInflow ? 'text-success' : 'text-danger'
               )}
             >
               {isInflow ? '+' : ''}{industry.netFlowPercent.toFixed(1)}%
@@ -262,16 +248,16 @@ function IndustryFlowItem({
           {/* Inflow / Outflow details */}
           <div className="flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-red-500" />
+              <div className="w-2 h-2 rounded-full bg-success" />
               <span className="text-muted-foreground">유입</span>
-              <span className="font-medium text-card-foreground">
+              <span className="font-medium text-card-foreground tabular-nums">
                 {formatFlowAmount(industry.totalInflow)}
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
+              <div className="w-2 h-2 rounded-full bg-danger" />
               <span className="text-muted-foreground">유출</span>
-              <span className="font-medium text-card-foreground">
+              <span className="font-medium text-card-foreground tabular-nums">
                 {formatFlowAmount(industry.totalOutflow)}
               </span>
             </div>
@@ -286,7 +272,7 @@ function IndustryFlowItem({
 
 function IndustryMoneyFlowCardSkeleton() {
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-xl border border-border-subtle bg-card overflow-hidden">
       <div className="px-5 py-4 border-b border-border bg-muted/30">
         <div className="flex items-center justify-between">
           <Skeleton className="h-6 w-48" />
@@ -296,7 +282,7 @@ function IndustryMoneyFlowCardSkeleton() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-lg border border-border p-4">
+          <div key={i} className="rounded-lg border border-border-subtle p-4">
             <div className="flex items-center gap-2 mb-3">
               <Skeleton className="h-6 w-6 rounded" />
               <Skeleton className="h-5 w-24" />

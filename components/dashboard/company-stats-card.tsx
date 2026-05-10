@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { BarChart3 } from 'lucide-react'
 import { useCompanyStatistics } from '@/hooks/use-statistics'
 import { formatMarketCap, formatPriceChange, formatKrw } from '@/lib/format'
 import { getPriceChangeStyle } from '@/lib/styles'
@@ -28,23 +28,13 @@ export function CompanyStatsCard({ region = 'all' }: CompanyStatsCardProps = {})
 
   return (
     <>
-      <div data-tour="company-stats-card" className="rounded-xl border border-border bg-card overflow-hidden">
+      <div data-tour="company-stats-card" className="rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-border bg-muted/30">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-card-foreground flex items-center gap-2">
-              <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              회사 등장 통계 Top 10
-            </h3>
-            <Link
-              href="/statistics"
-              className="text-xs text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              전체 보기 →
-            </Link>
-          </div>
+        <div className="px-5 py-4 border-b border-border-subtle bg-surface-2/40">
+          <h3 className="text-lg font-bold text-card-foreground flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-info" aria-hidden />
+            회사 등장 통계 Top 10
+          </h3>
           <p className="text-xs text-muted-foreground mt-1">
             가장 많은 섹터에 등장하는 회사
           </p>
@@ -60,7 +50,7 @@ export function CompanyStatsCard({ region = 'all' }: CompanyStatsCardProps = {})
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="text-xs text-muted-foreground border-b border-border">
+              <tr className="text-xs text-muted-foreground border-b border-border-subtle">
                 <th className="px-4 py-2.5 text-left w-8">#</th>
                 <th className="px-4 py-2.5 text-left">회사</th>
                 <th className="px-4 py-2.5 text-center">섹터수</th>
@@ -142,12 +132,12 @@ export function CompanyStatsCard({ region = 'all' }: CompanyStatsCardProps = {})
 
 function CompanyStatsCardSkeleton() {
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <div className="px-5 py-4 border-b border-border bg-muted/30">
+    <div className="rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden">
+      <div className="px-5 py-4 border-b border-border-subtle bg-surface-2/40">
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-3 w-36 mt-2" />
       </div>
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-border-subtle">
         {Array.from({ length: 10 }).map((_, i) => (
           <div key={i} className="px-4 py-2.5 flex items-center gap-3">
             <Skeleton className="h-4 w-4" />

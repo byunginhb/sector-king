@@ -209,4 +209,24 @@
   .sk-card-hover {
     @apply hover:-translate-y-px hover:border-primary/30 hover:bg-surface-2;
   }
+
+  /* TickerTape — 핫 종목 무한 가로 marquee (CSS 단, framer 미사용) */
+  .ticker-tape {
+    --ticker-duration: 60s;
+  }
+  .ticker-tape .ticker-track {
+    animation: ticker-marquee var(--ticker-duration) linear infinite;
+  }
+  .ticker-tape:hover .ticker-track,
+  .ticker-tape:focus-within .ticker-track {
+    animation-play-state: paused;
+  }
+  @keyframes ticker-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 }

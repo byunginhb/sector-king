@@ -22,33 +22,33 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
       className="grid grid-cols-1 md:grid-cols-3 gap-4"
     >
       {/* Total Inflow */}
-      <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
+      <div className="bg-success-bg/40 border border-success/30 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-2">
-          <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" aria-hidden />
-          <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+          <TrendingUp className="h-5 w-5 text-success" aria-hidden />
+          <span className="text-sm text-success font-medium">
             총 유입
           </span>
         </div>
-        <div className="text-xl sm:text-2xl font-bold text-emerald-700 dark:text-emerald-300">
+        <div className="text-xl sm:text-2xl font-bold text-success tabular-nums">
           +{formatFlowAmount(totalInflow)}
         </div>
-        <div className="text-sm text-emerald-600/70 dark:text-emerald-400/70">
+        <div className="text-sm text-success/70 tabular-nums">
           ({formatKrw(totalInflow)})
         </div>
       </div>
 
       {/* Total Outflow */}
-      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4">
+      <div className="bg-danger-bg/40 border border-danger/30 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-2">
-          <TrendingDown className="h-5 w-5 text-red-600 dark:text-red-400" aria-hidden />
-          <span className="text-sm text-red-600 dark:text-red-400 font-medium">
+          <TrendingDown className="h-5 w-5 text-danger" aria-hidden />
+          <span className="text-sm text-danger font-medium">
             총 유출
           </span>
         </div>
-        <div className="text-xl sm:text-2xl font-bold text-red-700 dark:text-red-300">
+        <div className="text-xl sm:text-2xl font-bold text-danger tabular-nums">
           -{formatFlowAmount(totalOutflow)}
         </div>
-        <div className="text-sm text-red-600/70 dark:text-red-400/70">
+        <div className="text-sm text-danger/70 tabular-nums">
           ({formatKrw(totalOutflow)})
         </div>
       </div>
@@ -57,24 +57,24 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
       <div
         className={
           isNetPositive
-            ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4'
-            : 'bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-xl p-4'
+            ? 'bg-info/10 border border-info/30 rounded-xl p-4'
+            : 'bg-warning/10 border border-warning/30 rounded-xl p-4'
         }
       >
         <div className="flex items-center gap-2 mb-2">
           <Wallet
             className={
               isNetPositive
-                ? 'h-5 w-5 text-blue-600 dark:text-blue-400'
-                : 'h-5 w-5 text-orange-600 dark:text-orange-400'
+                ? 'h-5 w-5 text-info'
+                : 'h-5 w-5 text-warning'
             }
             aria-hidden
           />
           <span
             className={
               isNetPositive
-                ? 'text-sm text-blue-600 dark:text-blue-400 font-medium'
-                : 'text-sm text-orange-600 dark:text-orange-400 font-medium'
+                ? 'text-sm text-info font-medium'
+                : 'text-sm text-warning font-medium'
             }
           >
             순 유입
@@ -83,8 +83,8 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
         <div
           className={
             isNetPositive
-              ? 'text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-300'
-              : 'text-xl sm:text-2xl font-bold text-orange-700 dark:text-orange-300'
+              ? 'text-xl sm:text-2xl font-bold text-info tabular-nums'
+              : 'text-xl sm:text-2xl font-bold text-warning tabular-nums'
           }
         >
           {isNetPositive ? '+' : '-'}{formatFlowAmount(Math.abs(netFlow))}
@@ -92,8 +92,8 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
         <div
           className={
             isNetPositive
-              ? 'text-sm text-blue-600/70 dark:text-blue-400/70'
-              : 'text-sm text-orange-600/70 dark:text-orange-400/70'
+              ? 'text-sm text-info/70 tabular-nums'
+              : 'text-sm text-warning/70 tabular-nums'
           }
         >
           ({formatKrw(netFlow)})

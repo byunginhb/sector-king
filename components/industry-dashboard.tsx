@@ -1,28 +1,23 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Stethoscope, Zap, ShoppingCart, Landmark, Flame, TrendingUp } from 'lucide-react'
 import { useIndustries } from '@/hooks/use-industries'
 import { useRegion } from '@/hooks/use-region'
 import { usePageTour } from '@/hooks/use-page-tour'
-import { ThemeToggle } from './theme-toggle'
-import { SearchTrigger } from './search-trigger'
-import { HelpButton } from './onboarding/help-button'
-import { ShareButton } from './share-button'
-import { SectorKingLogo } from './logo'
 import { RegionToggle } from './region-toggle'
-import { AuthButtonClient } from './auth/auth-button-client'
+import { GlobalTopBar } from '@/components/layout/global-top-bar'
 import { SectionHeader } from '@/components/ui/section-header'
 import { IndustryIcon } from '@/components/ui/industry-icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MiniSparkline } from '@/components/ui/mini-sparkline'
-import { formatMarketCap, formatRelativeTime, formatKrw, formatFlowAmount } from '@/lib/format'
+import { formatMarketCap, formatKrw, formatFlowAmount } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { CompanyStatsCard } from '@/components/dashboard/company-stats-card'
 import { PriceChangesCard } from '@/components/dashboard/price-changes-card'
 import { IndustryMoneyFlowCard } from '@/components/dashboard/industry-money-flow-card'
 import { MarketPulseStrip } from '@/components/dashboard/market-pulse-strip'
+import { TickerTape } from '@/components/dashboard/ticker-tape'
 import { NewsHomeCardSlot } from '@/components/news/news-home-card-slot'
 import type { IndustryOverview } from '@/types'
 
@@ -39,38 +34,13 @@ export function IndustryDashboard() {
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border-subtle">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <SectorKingLogo size={40} className="shrink-0" />
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-                  Sector King
-                </h1>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  산업별 투자 패권 지도
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              {lastUpdated && (
-                <UpdateTimestamp dateStr={lastUpdated} />
-              )}
-              <RegionToggle value={region} onChange={setRegion} />
-              <ShareButton
-                title="Sector King - 투자 패권 지도"
-                description="산업별 섹터 시장 지배력 순위 시각화"
-              />
-              <SearchTrigger />
-              <HelpButton pageId="dashboard" />
-              <ThemeToggle />
-              <AuthButtonClient />
-            </div>
-          </div>
-        </div>
-      </header>
+      <GlobalTopBar
+        pageId="dashboard"
+        lastUpdated={lastUpdated}
+        shareTitle="Sector King - 투자 패권 지도"
+        shareDescription="산업별 섹터 시장 지배력 순위 시각화"
+        extraActions={<RegionToggle value={region} onChange={setRegion} />}
+      />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
@@ -79,7 +49,12 @@ export function IndustryDashboard() {
           <MarketPulseStrip region={region} />
         </section>
 
-        {/* 오늘의 마켓 리포트 — MarketPulseStrip 바로 아래, 발행본 있으면 노출 */}
+        {/* 핫 종목 TickerTape — 24시간 등락률 절댓값 Top 20 */}
+        <section className="mt-6">
+          <TickerTape region={region} limit={20} />
+        </section>
+
+        {/* 오늘의 마켓 리포트 — 발행본 있으면 노출 */}
         <section className="mt-6">
           <NewsHomeCardSlot />
         </section>
@@ -333,35 +308,6 @@ function DashboardSkeleton() {
         </div>
       </main>
     </div>
-  )
-}
-
-function UpdateTimestamp({ dateStr }: { dateStr: string }) {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return <span className="text-xs text-muted-foreground">{dateStr} 기준</span>
-  }
-
-  const relative = formatRelativeTime(dateStr)
-  const diffDays = Math.floor(
-    (Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24)
-  )
-  const isStale = diffDays >= 1
-
-  return (
-    <span
-      className={cn(
-        'text-xs tabular-nums',
-        isStale ? 'text-warning' : 'text-muted-foreground'
-      )}
-    >
-      {dateStr} · {relative}
-    </span>
   )
 }
 

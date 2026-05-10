@@ -37,7 +37,7 @@ function RisingArrow({ index, delay, total }: { index: number; delay: number; to
       }}
     >
       <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
-        <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="rgba(239, 68, 68, 0.7)" />
+        <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="rgba(16, 185, 129, 0.7)" />
       </svg>
     </motion.div>
   )
@@ -64,7 +64,7 @@ function FallingArrow({ index, delay, total }: { index: number; delay: number; t
       }}
     >
       <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
-        <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="rgba(59, 130, 246, 0.7)" />
+        <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="rgba(244, 63, 94, 0.7)" />
       </svg>
     </motion.div>
   )
@@ -83,19 +83,19 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
       transition={{ delay: index * 0.1 }}
       onClick={onClick}
       className={cn(
-        'relative rounded-xl p-4 min-h-[120px] overflow-hidden cursor-pointer transition-shadow',
+        'relative rounded-xl p-4 min-h-[120px] overflow-hidden cursor-pointer transition-shadow border',
         isInflow
-          ? 'bg-linear-to-br from-red-50 to-rose-100 dark:from-red-950/40 dark:to-rose-900/30 border border-red-200 dark:border-red-800'
-          : 'bg-linear-to-br from-blue-50 to-indigo-100 dark:from-blue-950/40 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-800',
-        isExpanded && isInflow && 'ring-2 ring-red-400 dark:ring-red-500',
-        isExpanded && !isInflow && 'ring-2 ring-blue-400 dark:ring-blue-500'
+          ? 'bg-success/5 border-success/30'
+          : 'bg-danger/5 border-danger/30',
+        isExpanded && isInflow && 'ring-2 ring-success/50',
+        isExpanded && !isInflow && 'ring-2 ring-danger/50'
       )}
     >
       {/* Animated background pulse */}
       <motion.div
         className={cn(
           'absolute inset-0 rounded-xl',
-          isInflow ? 'bg-red-400/10' : 'bg-blue-400/10'
+          isInflow ? 'bg-success/10' : 'bg-danger/10'
         )}
         animate={{
           opacity: [0.3, 0.6, 0.3],
@@ -121,22 +121,20 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             {isInflow ? (
-              <TrendingUp className="h-6 w-6 text-red-600 dark:text-red-400" aria-hidden />
+              <TrendingUp className="h-6 w-6 text-success" aria-hidden />
             ) : (
-              <TrendingDown className="h-6 w-6 text-blue-600 dark:text-blue-400" aria-hidden />
+              <TrendingDown className="h-6 w-6 text-danger" aria-hidden />
             )}
             <span
               className={cn(
                 'text-lg font-bold',
-                isInflow
-                  ? 'text-red-700 dark:text-red-300'
-                  : 'text-blue-700 dark:text-blue-300'
+                isInflow ? 'text-success' : 'text-danger'
               )}
             >
               {flow.name}
             </span>
           </div>
-          <span className="text-xs text-gray-500 dark:text-slate-400">
+          <span className="text-xs text-muted-foreground tabular-nums">
             {flow.companyCount}개 기업
           </span>
         </div>
@@ -145,10 +143,8 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
           <div>
             <div
               className={cn(
-                'text-lg sm:text-2xl font-bold',
-                isInflow
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-blue-600 dark:text-blue-400'
+                'text-lg sm:text-2xl font-bold tabular-nums',
+                isInflow ? 'text-success' : 'text-danger'
               )}
             >
               {isInflow ? '+' : '-'}
@@ -156,20 +152,16 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
             </div>
             <div
               className={cn(
-                'text-xs sm:text-sm opacity-70',
-                isInflow
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-blue-600 dark:text-blue-400'
+                'text-xs sm:text-sm opacity-70 tabular-nums',
+                isInflow ? 'text-success' : 'text-danger'
               )}
             >
               ({formatKrw(flow.flowAmount)})
             </div>
             <div
               className={cn(
-                'text-sm',
-                isInflow
-                  ? 'text-red-500 dark:text-red-400'
-                  : 'text-blue-500 dark:text-blue-400'
+                'text-sm tabular-nums',
+                isInflow ? 'text-success' : 'text-danger'
               )}
             >
               {isInflow ? '+' : ''}
@@ -182,8 +174,8 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
             className={cn(
               'flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium',
               isInflow
-                ? 'bg-red-200 dark:bg-red-800/50 text-red-700 dark:text-red-300'
-                : 'bg-blue-200 dark:bg-blue-800/50 text-blue-700 dark:text-blue-300'
+                ? 'bg-success/15 text-success'
+                : 'bg-danger/15 text-danger'
             )}
           >
             {isInflow ? '유입 ↑' : '유출 ↓'}
@@ -193,12 +185,12 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
         {/* MFI Bar */}
         {flow.mfi !== null && (
           <div className="flex items-center gap-2 mt-3">
-            <span className="text-xs text-gray-500 dark:text-slate-400">MFI</span>
-            <div className="flex-1 h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <span className="text-xs text-muted-foreground">MFI</span>
+            <div className="flex-1 h-1.5 bg-surface-3 rounded-full overflow-hidden">
               <motion.div
                 className={cn(
                   'h-full rounded-full',
-                  flow.mfi >= 50 ? 'bg-emerald-500' : 'bg-orange-500'
+                  flow.mfi >= 50 ? 'bg-success' : 'bg-warning'
                 )}
                 initial={{ width: 0 }}
                 animate={{ width: `${flow.mfi}%` }}
@@ -207,10 +199,8 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
             </div>
             <span
               className={cn(
-                'text-xs font-medium',
-                flow.mfi >= 50
-                  ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-orange-600 dark:text-orange-400'
+                'text-xs font-medium tabular-nums',
+                flow.mfi >= 50 ? 'text-success' : 'text-warning'
               )}
             >
               {flow.mfi.toFixed(0)}

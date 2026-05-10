@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Link from 'next/link'
+import { TrendingUp } from 'lucide-react'
 import { usePriceChanges } from '@/hooks/use-price-changes'
 import { formatPrice, formatPriceChange, formatDate, formatKrw } from '@/lib/format'
 import { getPriceChangeStyle } from '@/lib/styles'
@@ -49,44 +49,37 @@ export function PriceChangesCard({ region = 'all' }: PriceChangesCardProps = {})
 
   return (
     <>
-      <div data-tour="price-changes-card" className="rounded-xl border border-border bg-card overflow-hidden">
+      <div data-tour="price-changes-card" className="rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-border bg-muted/30">
+        <div className="px-5 py-4 border-b border-border-subtle bg-surface-2/40">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div className="min-w-0">
               <h3 className="text-lg font-bold text-card-foreground flex items-center gap-2">
-                <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
+                <TrendingUp className="w-5 h-5 text-success shrink-0" aria-hidden />
                 가격 변화율
               </h3>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1 tabular-nums">
                 {formatDate(data.dateRange.start)} ~ {formatDate(data.dateRange.end)}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-border">
+              <div role="group" aria-label="기간 선택" className="flex rounded-lg overflow-hidden border border-border-subtle">
                 {PERIOD_OPTIONS.map((opt) => (
                   <button
                     key={opt.label}
                     onClick={() => setPeriod(opt.value)}
+                    aria-pressed={period === opt.value}
                     className={cn(
-                      'px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm transition-colors',
+                      'px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm transition-colors tabular-nums',
                       period === opt.value
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white dark:bg-card text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-surface-1 text-muted-foreground hover:bg-surface-2 hover:text-foreground'
                     )}
                   >
                     {opt.label}
                   </button>
                 ))}
               </div>
-              <Link
-                href="/price-changes"
-                className="text-xs text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors whitespace-nowrap"
-              >
-                전체 보기 →
-              </Link>
             </div>
           </div>
         </div>
@@ -101,8 +94,8 @@ export function PriceChangesCard({ region = 'all' }: PriceChangesCardProps = {})
         <div className="grid grid-cols-2 divide-x divide-border">
           {/* Gainers */}
           <div>
-            <div className="px-4 py-2 bg-red-50/50 dark:bg-red-950/20 border-b border-border">
-              <span className="text-xs font-semibold text-red-700 dark:text-red-400">
+            <div className="px-4 py-2 bg-danger-bg/50 border-b border-border-subtle">
+              <span className="text-xs font-semibold text-danger">
                 Top 10 상승
               </span>
             </div>
@@ -115,8 +108,8 @@ export function PriceChangesCard({ region = 'all' }: PriceChangesCardProps = {})
 
           {/* Losers */}
           <div>
-            <div className="px-4 py-2 bg-blue-50/50 dark:bg-blue-950/20 border-b border-border">
-              <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+            <div className="px-4 py-2 bg-info/10 border-b border-border-subtle">
+              <span className="text-xs font-semibold text-info">
                 Top 10 하락
               </span>
             </div>
@@ -154,10 +147,10 @@ function CompanyList({
 }) {
   return (
     <div className={cn(
-      'divide-y divide-border',
+      'divide-y divide-border-subtle',
       variant === 'gainer'
-        ? 'bg-red-50/30 dark:bg-red-950/10'
-        : 'bg-blue-50/30 dark:bg-blue-950/10'
+        ? 'bg-danger-bg/20'
+        : 'bg-info/5'
     )}>
       {companies.map((company) => (
         <div
@@ -174,8 +167,8 @@ function CompanyList({
           className={cn(
             'px-4 py-2.5 transition-colors cursor-pointer',
             variant === 'gainer'
-              ? 'hover:bg-red-100/50 dark:hover:bg-red-900/20'
-              : 'hover:bg-blue-100/50 dark:hover:bg-blue-900/20'
+              ? 'hover:bg-danger/10'
+              : 'hover:bg-info/10'
           )}
         >
           <div className="flex items-center justify-between">
@@ -217,7 +210,7 @@ function CompanyList({
 
 function PriceChangesCardSkeleton() {
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-xl border border-border-subtle bg-card overflow-hidden">
       <div className="px-5 py-4 border-b border-border bg-muted/30">
         <Skeleton className="h-6 w-32" />
         <Skeleton className="h-3 w-48 mt-2" />

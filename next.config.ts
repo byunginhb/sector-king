@@ -4,11 +4,28 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   async redirects() {
     return [
+      // Phase 2 IA 재구성 — 루트 폐기 라우트 4건은 메인이 흡수
       {
         source: '/money-flow',
-        destination: '/tech/money-flow',
+        destination: '/',
         permanent: true,
       },
+      {
+        source: '/price-changes',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/statistics',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/industry-money-flow',
+        destination: '/',
+        permanent: true,
+      },
+      // Legacy 경로
       {
         source: '/sector-trend',
         destination: '/tech/money-flow',

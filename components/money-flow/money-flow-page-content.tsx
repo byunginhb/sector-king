@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Link from 'next/link'
 import { useMoneyFlow } from '@/hooks/use-money-flow'
 import { useRegion } from '@/hooks/use-region'
 import { usePageTour } from '@/hooks/use-page-tour'
@@ -11,13 +10,12 @@ import { SectorTrendSection } from '@/components/sector-trend/sector-trend-secti
 import { SectorCompanyList } from '@/components/money-flow/sector-company-list'
 import { AnimatePresence } from 'framer-motion'
 import { IndustryTitle } from '@/components/industry-title'
-import { SearchTrigger } from '@/components/search-trigger'
-import { HelpButton } from '@/components/onboarding/help-button'
-import { ShareButton } from '@/components/share-button'
 import { RegionToggle } from '@/components/region-toggle'
+import { GlobalTopBar } from '@/components/layout/global-top-bar'
+import { IndustryContextBar } from '@/components/layout/industry-context-bar'
 import { EmptyRegionState } from '@/components/ui/empty-region-state'
 import { cn } from '@/lib/utils'
-import { Wallet, TrendingUp, TrendingDown } from 'lucide-react'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 
 type PeriodType = 1 | 3 | 7 | 14 | 30
 
@@ -48,81 +46,52 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-background">
-      {/* Header */}
-      <header className="bg-white dark:bg-card border-b border-gray-200 dark:border-border sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-4 min-w-0">
-              <Link
-                href={`/${industryId}`}
-                className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+    <div className="min-h-screen bg-background">
+      <GlobalTopBar
+        pageId="money-flow"
+        shareTitle="섹터 자금 흐름 | Sector King"
+        shareDescription="섹터별 자금 유입/유출 현황 분석"
+        subtitle={
+          <span>
+            <IndustryTitle industryId={industryId} /> 섹터 자금 흐름
+            {data?.dateRange ? ` · ${data.dateRange.start} ~ ${data.dateRange.end}` : ''}
+          </span>
+        }
+      />
+      <IndustryContextBar
+        industryId={industryId}
+        rightActions={
+          <>
+            <RegionToggle value={region} onChange={setRegion} />
+            <div data-tour="period-selector" className="flex rounded-lg overflow-hidden border border-border-subtle" role="group" aria-label="기간 선택">
+              {([1, 3, 7, 14, 30] as PeriodType[]).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  aria-pressed={period === p}
+                  className={cn(
+                    'px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm transition-colors tabular-nums',
+                    period === p
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-surface-1 text-muted-foreground hover:bg-surface-2 hover:text-foreground'
+                  )}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                  />
-                </svg>
-              </Link>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
-                  <Wallet className="h-6 w-6 text-foreground" aria-hidden />
-                  <IndustryTitle industryId={industryId} /> 섹터 자금 흐름
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-slate-400">
-                  {data?.dateRange
-                    ? `${data.dateRange.start} ~ ${data.dateRange.end}`
-                    : '섹터별 자금 유입/유출 현황'}
-                </p>
-              </div>
+                  {p}일
+                </button>
+              ))}
             </div>
+          </>
+        }
+      />
 
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <RegionToggle value={region} onChange={setRegion} />
-              <ShareButton
-                title="섹터 자금 흐름 | Sector King"
-                description="섹터별 자금 유입/유출 현황 분석"
-              />
-              <SearchTrigger />
-              <HelpButton pageId="money-flow" />
-              {/* Period Selector */}
-              <div data-tour="period-selector" className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-border">
-                {([1, 3, 7, 14, 30] as PeriodType[]).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPeriod(p)}
-                    className={cn(
-                      'px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm transition-colors',
-                      period === p
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white dark:bg-card text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'
-                    )}
-                  >
-                    {p}일
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="container mx-auto px-4 py-6">
         {/* Loading State */}
         {isLoading && (
           <div className="space-y-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-gray-200 dark:bg-slate-800 rounded-xl animate-pulse"
+                className="h-24 bg-surface-2 rounded-xl animate-pulse"
               />
             ))}
           </div>
@@ -131,7 +100,7 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
         {/* Error State */}
         {error && (
           <div className="text-center py-12">
-            <p className="text-red-500">{error.message}</p>
+            <p className="text-danger">{error.message}</p>
           </div>
         )}
 
@@ -146,10 +115,10 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
             {/* Inflows Section */}
             {inflowFlows.length > 0 && (
               <div data-tour="inflow-section" className="mb-8">
-                <h2 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-4 flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-red-600 dark:text-red-400" aria-hidden />
+                <h2 className="text-lg font-semibold text-success mb-4 flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-success" aria-hidden />
                   자금 유입 섹터
-                  <span className="text-sm font-normal text-red-500 dark:text-red-400 ml-2">
+                  <span className="text-sm font-normal text-success/80 ml-2">
                     돈이 들어오는 중...
                   </span>
                 </h2>
@@ -173,10 +142,10 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
             {/* Outflows Section */}
             {outflowFlows.length > 0 && (
               <div data-tour="outflow-section" className="mb-8">
-                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-4 flex items-center gap-2">
-                  <TrendingDown className="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden />
+                <h2 className="text-lg font-semibold text-danger mb-4 flex items-center gap-2">
+                  <TrendingDown className="h-5 w-5 text-danger" aria-hidden />
                   자금 유출 섹터
-                  <span className="text-sm font-normal text-blue-500 dark:text-blue-400 ml-2">
+                  <span className="text-sm font-normal text-danger/80 ml-2">
                     돈이 빠져나가는 중...
                   </span>
                 </h2>
