@@ -15,6 +15,8 @@ import type { NewsReportDTO } from '@/drizzle/supabase-schema'
 interface NewsDetailContentProps {
   report: NewsReportDTO
   initialView?: ReportView
+  /** 비로그인 시 일부 섹션 잠금 처리 */
+  isLoggedIn?: boolean
 }
 
 const EXPERT_TOC = [
@@ -39,6 +41,7 @@ const NOVICE_TOC = [
 export function NewsDetailContent({
   report,
   initialView = 'novice',
+  isLoggedIn = true,
 }: NewsDetailContentProps) {
   const [view, setView] = useState<ReportView>(initialView)
   const sections = view === 'expert' ? EXPERT_TOC : NOVICE_TOC
@@ -85,9 +88,9 @@ export function NewsDetailContent({
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-6 lg:gap-8">
         <div className="min-w-0 order-2 lg:order-1">
           {view === 'expert' ? (
-            <ExpertReportView report={report.expertView} />
+            <ExpertReportView report={report.expertView} isLoggedIn={isLoggedIn} />
           ) : (
-            <NoviceReportView report={report.noviceView} />
+            <NoviceReportView report={report.noviceView} isLoggedIn={isLoggedIn} />
           )}
 
           <NewsSubscribeCta variant="card" className="mt-10" />

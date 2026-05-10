@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { NEWS_FULL_COLUMNS, rowToDto } from '@/lib/news/dto'
 import { NewsDetailContent } from '@/components/news/news-detail-content'
+import { getCurrentUser } from '@/lib/auth/get-user'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,7 +53,9 @@ export default async function NewsDetailPage({ params, searchParams }: PageProps
   if (error || !data) notFound()
 
   const report = rowToDto(data as Parameters<typeof rowToDto>[0])
-  const initialView = view === 'novice' ? 'novice' : 'expert'
+  const initialView = view === 'expert' ? 'expert' : 'novice'
+  const user = await getCurrentUser()
+  const isLoggedIn = Boolean(user)
 
   return (
     <div className="min-h-screen">
@@ -73,7 +76,11 @@ export default async function NewsDetailPage({ params, searchParams }: PageProps
           </div>
         </div>
       </header>
-      <NewsDetailContent report={report} initialView={initialView} />
+      <NewsDetailContent
+        report={report}
+        initialView={initialView}
+        isLoggedIn={isLoggedIn}
+      />
     </div>
   )
 }

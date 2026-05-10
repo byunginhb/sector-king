@@ -5,6 +5,7 @@ import { Quote, Activity, Compass, ListChecks, Map, MoveRight } from 'lucide-rea
 import { HeadlineCard } from './headline-card'
 import { ScenarioCardGroup } from './scenario-card-group'
 import { TickerChip } from './ticker-chip'
+import { LockedSection } from './locked-section'
 import { cn } from '@/lib/utils'
 import type {
   ExpertView,
@@ -17,6 +18,8 @@ import type {
 
 interface ExpertReportViewProps {
   report: ExpertView
+  /** 비로그인 시 후반부(E·F·G·H) fade 처리 */
+  isLoggedIn?: boolean
 }
 
 const ACTION_LABELS: Record<ActionIdeaItem['label'], string> = {
@@ -46,10 +49,39 @@ const OPINION_META: Record<
   },
 }
 
-export function ExpertReportView({ report }: ExpertReportViewProps) {
+export function ExpertReportView({ report, isLoggedIn = true }: ExpertReportViewProps) {
+  // 후반부 (E·F·G·H) — 비로그인 시 fade 처리, 로그인 시 평소대로
+  const restSections = (
+    <>
+      <Section id="section-scenarios" title="E. 반대 시나리오" icon={<Activity className="h-4 w-4" />}>
+        <ScenarioCardGroup scenarios={report.scenarios} />
+      </Section>
+
+      <Section id="section-oneliner" title="F. 한 줄 결론" icon={<Quote className="h-4 w-4" />}>
+        <blockquote className="rounded-2xl border border-primary/40 bg-primary/5 p-5 sm:p-6">
+          <p className="text-base sm:text-lg font-semibold text-primary leading-relaxed italic">
+            “{report.oneLiner}”
+          </p>
+        </blockquote>
+      </Section>
+
+      <Section id="section-fundflow" title="G. 자금 흐름 맵" icon={<Map className="h-4 w-4" />}>
+        <FundFlowMapView flow={report.fundFlow} />
+      </Section>
+
+      <Section id="section-korea" title="H. 한국 주식 관계 분석" icon={<ListChecks className="h-4 w-4" />}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          {report.koreanStocks.map((k) => (
+            <KoreanStockCard key={k.index} item={k} />
+          ))}
+        </div>
+      </Section>
+    </>
+  )
+
   return (
     <div className="space-y-10">
-      {/* A. 30초 브리핑 */}
+      {/* A. 30초 브리핑 — 항상 노출 */}
       <Section id="section-brief" title="A. 30초 브리핑" icon={<Activity className="h-4 w-4" />}>
         <div className="rounded-2xl border border-border-subtle bg-surface-1 p-5 border-l-4 border-l-primary">
           <p className="text-sm sm:text-base text-foreground/90 leading-relaxed whitespace-pre-line">
@@ -58,7 +90,7 @@ export function ExpertReportView({ report }: ExpertReportViewProps) {
         </div>
       </Section>
 
-      {/* B. 헤드라인 */}
+      {/* B. 헤드라인 — 항상 노출 */}
       <Section id="section-headlines" title="B. 헤드라인 요약" icon={<ListChecks className="h-4 w-4" />}>
         <div className="space-y-3">
           {report.headlines.map((h) => (
@@ -67,7 +99,7 @@ export function ExpertReportView({ report }: ExpertReportViewProps) {
         </div>
       </Section>
 
-      {/* C. 테마 흐름 맵 */}
+      {/* C. 테마 흐름 맵 — 항상 노출 */}
       <Section id="section-themes" title="C. 테마/섹터 흐름 맵" icon={<Compass className="h-4 w-4" />}>
         <div className="space-y-3">
           {report.themeFlows.map((t) => (
@@ -76,7 +108,7 @@ export function ExpertReportView({ report }: ExpertReportViewProps) {
         </div>
       </Section>
 
-      {/* D. 액션 아이디어 */}
+      {/* D. 액션 아이디어 — 항상 노출 */}
       <Section id="section-actions" title="D. 액션 아이디어" icon={<MoveRight className="h-4 w-4" />}>
         <ul className="space-y-2">
           {report.actions.map((a, i) => (
@@ -107,33 +139,19 @@ export function ExpertReportView({ report }: ExpertReportViewProps) {
         </ul>
       </Section>
 
-      {/* E. 시나리오 */}
-      <Section id="section-scenarios" title="E. 반대 시나리오" icon={<Activity className="h-4 w-4" />}>
-        <ScenarioCardGroup scenarios={report.scenarios} />
-      </Section>
-
-      {/* F. 한 줄 결론 */}
-      <Section id="section-oneliner" title="F. 한 줄 결론" icon={<Quote className="h-4 w-4" />}>
-        <blockquote className="rounded-2xl border border-primary/40 bg-primary/5 p-5 sm:p-6">
-          <p className="text-base sm:text-lg font-semibold text-primary leading-relaxed italic">
-            “{report.oneLiner}”
-          </p>
-        </blockquote>
-      </Section>
-
-      {/* G. 자금 흐름 맵 */}
-      <Section id="section-fundflow" title="G. 자금 흐름 맵" icon={<Map className="h-4 w-4" />}>
-        <FundFlowMapView flow={report.fundFlow} />
-      </Section>
-
-      {/* H. 한국 주식 */}
-      <Section id="section-korea" title="H. 한국 주식 관계 분석" icon={<ListChecks className="h-4 w-4" />}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {report.koreanStocks.map((k) => (
-            <KoreanStockCard key={k.index} item={k} />
-          ))}
-        </div>
-      </Section>
+      {/* E~H — 비로그인 시 fade + 잠금 */}
+      {isLoggedIn ? (
+        <div className="space-y-10">{restSections}</div>
+      ) : (
+        <LockedSection
+          variant="fade"
+          fadeHeight="280px"
+          title="시나리오·자금흐름·한국주식은 로그인 후 공개돼요"
+          description="Bear/Base/Bull 시나리오, 자금 흐름 맵, 한국 추천주식까지 — Google 로그인 한 번이면 무료로 열립니다."
+        >
+          <div className="space-y-10">{restSections}</div>
+        </LockedSection>
+      )}
     </div>
   )
 }

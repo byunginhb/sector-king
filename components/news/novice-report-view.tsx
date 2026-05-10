@@ -3,6 +3,7 @@
  */
 import { Activity, ListChecks, BookOpen, Quote } from 'lucide-react'
 import { TickerChip } from './ticker-chip'
+import { LockedSection } from './locked-section'
 import { cn } from '@/lib/utils'
 import type {
   NoviceView,
@@ -14,6 +15,8 @@ import type {
 
 interface NoviceReportViewProps {
   report: NoviceView
+  /** 비로그인 시 한국 주식 섹션을 blur 처리 */
+  isLoggedIn?: boolean
 }
 
 const BUCKET_META: Record<
@@ -44,7 +47,7 @@ const ACTION_META: Record<
   },
 }
 
-export function NoviceReportView({ report }: NoviceReportViewProps) {
+export function NoviceReportView({ report, isLoggedIn = true }: NoviceReportViewProps) {
   return (
     <div className="space-y-10">
       {/* N1 */}
@@ -94,13 +97,27 @@ export function NoviceReportView({ report }: NoviceReportViewProps) {
         </div>
       </Section>
 
-      {/* N4 */}
+      {/* N4 — 비로그인 시 blur */}
       <Section id="section-novice-korea" title="한국 주식은 뭘 봐야 해?" icon={<Activity className="h-4 w-4" />}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {report.koreanStocks.map((k) => (
-            <NoviceKoreanCard key={k.index} item={k} />
-          ))}
-        </div>
+        {isLoggedIn ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {report.koreanStocks.map((k) => (
+              <NoviceKoreanCard key={k.index} item={k} />
+            ))}
+          </div>
+        ) : (
+          <LockedSection
+            variant="blur"
+            title="한국 추천주식은 로그인 후 공개돼요"
+            description="Google 로그인 한 번이면 한국 추천주식과 워치리스트, 일별 메일 모두 무료로 열립니다."
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {report.koreanStocks.map((k) => (
+                <NoviceKoreanCard key={k.index} item={k} />
+              ))}
+            </div>
+          </LockedSection>
+        )}
       </Section>
 
       {/* N5 */}
