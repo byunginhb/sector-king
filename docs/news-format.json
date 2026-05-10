@@ -1,0 +1,305 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Sector King — Market Report Ingestion Format v1",
+  "description": "POST /api/news/ingest 로 보낼 마켓 리포트 입력 스키마. zod 스키마(`lib/news/schema.ts`)와 1:1 일치. 모든 객체는 .strict — 알 수 없는 키 침투 차단.",
+  "endpoint": {
+    "url": "POST /api/news/ingest",
+    "auth": "Authorization: Bearer <NEWS_INGEST_API_KEY>",
+    "content_type": "application/json",
+    "idempotency": "(reportDate, title) 동일 시 기존 행을 update 하고 같은 id 반환",
+    "publish": "status='published' 으로 보내면 즉시 메인 NewsHomeCard 노출 (1시간 캐시)"
+  },
+  "schema": {
+    "type": "object",
+    "required": ["title", "reportDate", "expertView", "noviceView"],
+    "additionalProperties": false,
+    "properties": {
+      "title": { "type": "string", "minLength": 1, "maxLength": 200, "description": "리포트 제목 (한국어 권장)" },
+      "status": { "type": "string", "enum": ["draft", "published", "archived"], "default": "draft" },
+      "reportDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "리포트 기준일 (KST 자정 기준)" },
+      "oneLineConclusion": { "type": ["string", "null"], "maxLength": 500, "description": "한 줄 결론 (메인 카드에 노출)" },
+      "coverKeywords": { "type": "array", "items": { "type": "string", "maxLength": 40 }, "default": [] },
+      "expertView": {
+        "type": "object",
+        "required": ["thirtySecBrief", "scenarios", "oneLiner", "fundFlow"],
+        "additionalProperties": false,
+        "properties": {
+          "thirtySecBrief": { "type": "string", "minLength": 1, "maxLength": 3000, "description": "30초 브리핑" },
+          "headlines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["index", "category", "title", "core", "point"],
+              "additionalProperties": false,
+              "properties": {
+                "index": { "type": "integer", "minimum": 1 },
+                "category": { "type": "string", "maxLength": 60, "description": "예: Trending Analysis, Market News, Stock Ideas, Sector, Analysis" },
+                "title": { "type": "string", "minLength": 1, "maxLength": 300 },
+                "tickers": { "type": "array", "items": { "$ref": "#/$defs/tickerRef" }, "default": [] },
+                "core": { "type": "string", "minLength": 1, "maxLength": 800, "description": "핵심 한 단락" },
+                "point": { "type": "string", "minLength": 1, "maxLength": 800, "description": "투자 포인트" },
+                "keywords": { "type": "array", "items": { "type": "string", "maxLength": 40 }, "default": [] }
+              }
+            }
+          },
+          "themeFlows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["index", "title", "evidence", "interpretation", "nextCheckpoint"],
+              "additionalProperties": false,
+              "properties": {
+                "index": { "type": "integer", "minimum": 1 },
+                "title": { "type": "string", "maxLength": 200 },
+                "evidence": { "type": "string", "maxLength": 800 },
+                "interpretation": { "type": "string", "maxLength": 1200 },
+                "nextCheckpoint": { "type": "string", "maxLength": 800 }
+              }
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["label", "body"],
+              "additionalProperties": false,
+              "properties": {
+                "label": { "type": "string", "enum": ["watchlist", "report", "risk", "sector", "dividend"] },
+                "body": { "type": "string", "maxLength": 1500 },
+                "tickers": { "type": "array", "items": { "$ref": "#/$defs/tickerRef" } }
+              }
+            }
+          },
+          "scenarios": {
+            "type": "object",
+            "required": ["bear", "base", "bull"],
+            "additionalProperties": false,
+            "properties": {
+              "bear": { "$ref": "#/$defs/scenarioItem" },
+              "base": { "$ref": "#/$defs/scenarioItem" },
+              "bull": { "$ref": "#/$defs/scenarioItem" }
+            }
+          },
+          "oneLiner": { "type": "string", "minLength": 1, "maxLength": 500, "description": "전문가용 한 줄 결론" },
+          "fundFlow": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "outflows": { "type": "array", "items": { "$ref": "#/$defs/sectorFlow" }, "default": [] },
+              "inflows": { "type": "array", "items": { "$ref": "#/$defs/sectorFlow" }, "default": [] },
+              "driver": { "type": "string", "maxLength": 2000, "default": "" }
+            }
+          },
+          "koreanStocks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["index", "name", "code", "opinion", "rationale"],
+              "additionalProperties": false,
+              "properties": {
+                "index": { "type": "integer", "minimum": 1 },
+                "name": { "type": "string", "maxLength": 60 },
+                "code": { "type": "string", "maxLength": 20, "description": "예: 000660 (SK하이닉스), 005930 (삼성전자). .KS 접미사 X" },
+                "opinion": { "type": "string", "enum": ["buy", "buy_selective", "neutral", "reduce"] },
+                "rationale": { "type": "string", "maxLength": 1500 },
+                "risk": { "type": "string", "maxLength": 1500, "default": "" },
+                "comment": { "type": "string", "maxLength": 1500, "default": "" }
+              }
+            }
+          }
+        }
+      },
+      "noviceView": {
+        "type": "object",
+        "required": ["oneLineSummary", "closing"],
+        "additionalProperties": false,
+        "properties": {
+          "oneLineSummary": { "type": "string", "minLength": 1, "maxLength": 800, "description": "초보자 한 줄 요약" },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["index", "title", "body"],
+              "additionalProperties": false,
+              "properties": {
+                "index": { "type": "integer", "minimum": 1 },
+                "title": { "type": "string", "maxLength": 200 },
+                "body": { "type": "string", "maxLength": 2000 }
+              }
+            }
+          },
+          "stockTables": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["bucket"],
+              "additionalProperties": false,
+              "properties": {
+                "bucket": { "type": "string", "enum": ["will_rise", "will_fall", "buy_on_dip"] },
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["ticker", "reason"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "ticker": { "$ref": "#/$defs/tickerRef" },
+                      "reason": { "type": "string", "maxLength": 500 }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "koreanStocks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["index", "name", "code", "action", "body"],
+              "additionalProperties": false,
+              "properties": {
+                "index": { "type": "integer", "minimum": 1 },
+                "name": { "type": "string", "maxLength": 60 },
+                "code": { "type": "string", "maxLength": 20 },
+                "action": { "type": "string", "enum": ["사", "조심하면서 사", "지켜봐", "안 사"] },
+                "body": { "type": "string", "maxLength": 2000 }
+              }
+            }
+          },
+          "closing": { "type": "string", "minLength": 1, "maxLength": 800, "description": "초보자 한 줄 정리" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "tickerRef": {
+      "type": "object",
+      "required": ["symbol"],
+      "additionalProperties": false,
+      "properties": {
+        "symbol": { "type": "string", "minLength": 1, "maxLength": 20, "description": "예: NVDA, AAPL, 005930.KS, 000660.KS" },
+        "exchange": { "type": "string", "maxLength": 20, "description": "NASDAQ, NYSE, KOSPI, KOSDAQ 등 (선택)" },
+        "name": { "type": "string", "maxLength": 120 },
+        "industryId": { "type": "string", "maxLength": 40, "description": "산업 ID (예: tech, healthcare_industry, energy)" }
+      }
+    },
+    "scenarioItem": {
+      "type": "object",
+      "required": ["kind", "body", "trigger"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "enum": ["bear", "base", "bull"] },
+        "body": { "type": "string", "maxLength": 1500 },
+        "trigger": { "type": "string", "maxLength": 800 }
+      }
+    },
+    "sectorFlow": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "maxLength": 80 },
+        "ytdPct": { "type": "number" },
+        "note": { "type": "string", "maxLength": 800, "default": "" }
+      }
+    }
+  },
+  "example": {
+    "title": "AI 인프라 vs 호르무즈 — 자금 이동의 두 축",
+    "status": "published",
+    "reportDate": "2026-05-08",
+    "oneLineConclusion": "AI 투자는 계속되지만 돈은 실물로 이동 중이며, 호르무즈 해협이 시장의 천장과 바닥을 동시에 결정하고 있다.",
+    "coverKeywords": ["AI", "에너지", "지정학", "섹터로테이션"],
+    "expertView": {
+      "thirtySecBrief": "오늘 시장은 지정학 리스크(이란-미국 협상 불확실성)와 섹터 로테이션(에너지/산업재 강세 vs. 빅테크 약세) 두 축으로 움직이고 있다. S&P 500은 좁은 박스권에서 등락 중이며, 이란의 호르무즈 해협 관련 새로운 요구사항 보도 후 약세 전환.",
+      "headlines": [
+        {
+          "index": 1,
+          "category": "Trending Analysis",
+          "title": "The AI Boom Powering Celestica",
+          "tickers": [{ "symbol": "CLS", "name": "Celestica", "industryId": "tech" }],
+          "core": "Celestica, FY2026 매출 가이던스를 $17B로 상향하며 $1B CapEx 가속화 발표. 그러나 실적 발표 후 주가 14% 하락.",
+          "point": "AI CapEx 수혜주임에도 주가 하락은 '실적 발표 후 차익실현' 패턴 — 저점 매수 기회인지 구조적 한계인지 판단 필요.",
+          "keywords": ["AI_인프라", "CapEx", "하이퍼스케일러"]
+        },
+        {
+          "index": 2,
+          "category": "Market News",
+          "title": "Block (XYZ) Q1 Earnings Beat",
+          "tickers": [{ "symbol": "XYZ", "name": "Block", "industryId": "tech" }],
+          "core": "Block, Q1 실적 대폭 상회 후 시간외 9.8% 급등. 2026 연간 Gross Profit 가이던스 상향($12.2B, 18% 성장).",
+          "point": "인력 40% 감축과 동시에 수익성 급개선 — 핀테크 섹터의 효율성 혁명 사례.",
+          "keywords": ["핀테크", "구조조정", "수익성"]
+        }
+      ],
+      "themeFlows": [
+        {
+          "index": 1,
+          "title": "섹터 로테이션: 에너지·산업재 → 빅테크 OUT",
+          "evidence": "에너지 YTD +21%, 테크 YTD -3%, '2026 Most Violent Rotation: Buy Energy, Sell Software'",
+          "interpretation": "시장은 실물자산 + 현금창출력을 선호하며, AI 투자 붐의 수혜가 하드웨어/에너지로 이전 중. 소프트웨어는 디레이팅 구간.",
+          "nextCheckpoint": "Q2 빅테크 실적(Meta, Google CapEx 가이던스), 유가 $100 돌파 지속 여부."
+        }
+      ],
+      "actions": [
+        { "label": "watchlist", "body": "CLS — 14% 하락 후 반등 가능성 검증. $17B 매출 가이던스 달성 확률과 AI CapEx 의존도 분석 필요.", "tickers": [{ "symbol": "CLS" }] },
+        { "label": "risk", "body": "호르무즈 해협 관련 이란-미국 협상 뉴스 모니터링. 유가가 $105 돌파 시 포트폴리오 내 에너지 비중 재검토." }
+      ],
+      "scenarios": {
+        "bear": { "kind": "bear", "body": "호르무즈 해협 협상 결렬로 유가 $120+ 스파이크 → 글로벌 스태그플레이션 현실화 → 연준 금리인하 불가.", "trigger": "이란의 해협 완전 봉쇄 선언 또는 미국의 군사작전 재개." },
+        "base": { "kind": "base", "body": "이란-미국 협상이 불안정하나 부분적 통항 유지 → 유가 $90~$100 박스권 → 섹터 로테이션 지속.", "trigger": "이란 협상 현 상태 유지 + FOMC 금리 동결 지속." },
+        "bull": { "kind": "bull", "body": "이란-미국 핵합의 타결 → 유가 $70대 급락 → 인플레 해소 기대로 연준 금리인하 → 테크 + 소형주 동반 랠리.", "trigger": "이란 우라늄 해외이전 합의 + 호르무즈 완전 개방." }
+      },
+      "oneLiner": "AI 투자는 계속되지만 돈은 실물로 이동 중이며, 호르무즈 해협이 시장의 천장과 바닥을 동시에 결정하고 있다.",
+      "fundFlow": {
+        "outflows": [
+          { "name": "기술주(Tech)", "ytdPct": -3, "note": "AI 투자붐에도 불구하고 밸류에이션 부담 + 실적 성장 둔화. 소프트웨어 중심으로 디레이팅." }
+        ],
+        "inflows": [
+          { "name": "에너지", "ytdPct": 21, "note": "호르무즈 지정학 프리미엄 + OPEC 감산 + 실적 호조." },
+          { "name": "소재", "ytdPct": 17, "note": "인프라 투자 + 원자재 가격 상승 수혜." },
+          { "name": "산업재", "ytdPct": 12, "note": "리쇼어링/국방비 증가 수혜." }
+        ],
+        "driver": "실물자산(에너지, 원자재)과 현금흐름이 안정적인 기업으로의 자금 이동이 2026년의 가장 뚜렷한 시장 트렌드."
+      },
+      "koreanStocks": [
+        { "index": 1, "name": "SK하이닉스", "code": "000660", "opinion": "buy", "rationale": "한국 KOSPI 75% 급등의 핵심 드라이버. AI 반도체 수요 구조적 확대(빅4 클라우드 CapEx $700B). HBM 공급 타이트닝 지속.", "risk": "유가 상승 시 한국(순에너지 수입국) 경제 전반 타격 가능. 단, 반도체 수출 호조가 상쇄.", "comment": "AI CapEx 사이클이 꺾이지 않는 한 구조적 강세." },
+        { "index": 2, "name": "S-Oil", "code": "010950", "opinion": "buy", "rationale": "에너지 섹터 글로벌 최강세(YTD +21%). 호르무즈 지정학 프리미엄으로 정유 마진 확대.", "risk": "이란 합의 시 유가 급락 → 정유마진 압축.", "comment": "이란 협상 타결 시나리오에 대비한 손절 기준 설정 필요." }
+      ]
+    },
+    "noviceView": {
+      "oneLineSummary": "미국이랑 이란이 싸우고 있어서 기름값이 비싸고, 그래서 테크 주식보다 에너지/공장 관련 주식이 더 잘 나가는 중이야.",
+      "events": [
+        { "index": 1, "title": "AI 관련주는 여전히 핫해", "body": "Celestica(CLS)라는 AI 서버 부품 만드는 회사가 올해 매출 목표를 확 올렸어. 근데 주가는 실적 발표 후 오히려 14% 떨어짐. 이미 많이 올랐으니까 차익실현한 거야." },
+        { "index": 2, "title": "Block(XYZ) 대박", "body": "핀테크 회사인 Block이 직원 40% 자르고 수익을 확 끌어올렸어. 주가 시간외에서 거의 10% 뛰었어." },
+        { "index": 3, "title": "기름값 문제가 심각해", "body": "이란이 호르무즈 해협(전세계 석유 25%가 지나가는 좁은 바닷길)을 위협하고 있어서, 기름값이 $100 근처에서 안 내려와. 이게 오래가면 경기침체 올 수도 있어." }
+      ],
+      "stockTables": [
+        {
+          "bucket": "will_rise",
+          "rows": [
+            { "ticker": { "symbol": "XYZ", "name": "Block" }, "reason": "실적 대폭 상회 + 가이던스 상향. 모멘텀 강함" },
+            { "ticker": { "symbol": "UBER", "name": "Uber" }, "reason": "로보택시 우려 해소 + 실적 서프라이즈" }
+          ]
+        },
+        {
+          "bucket": "will_fall",
+          "rows": [
+            { "ticker": { "symbol": "CLS", "name": "Celestica" }, "reason": "실적 발표 후 14% 하락. 추가 차익실현 가능" }
+          ]
+        },
+        {
+          "bucket": "buy_on_dip",
+          "rows": [
+            { "ticker": { "symbol": "MSFT", "name": "Microsoft" }, "reason": "조정 시 안전한 AI 베팅. 퀄리티 대형주" }
+          ]
+        }
+      ],
+      "koreanStocks": [
+        { "index": 1, "name": "SK하이닉스", "code": "000660", "action": "사", "body": "AI 반도체 수요가 미쳤어. 빅테크 4개 회사가 올해 서버에 $700B(약 1,000조원) 쓰겠다잖아." },
+        { "index": 2, "name": "S-Oil", "code": "010950", "action": "사", "body": "기름값 비쌀 때 정유회사가 돈을 벌어. 지금 에너지가 올해 제일 잘 나가는 섹터야(+21%)." }
+      ],
+      "closing": "AI는 계속 돈을 쓰고, 기름값은 비싸고, 테크에서 실물경제로 돈이 이동 중. 반도체/에너지/조선이 핵심 키워드야."
+    }
+  }
+}
