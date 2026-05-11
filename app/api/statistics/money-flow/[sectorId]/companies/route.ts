@@ -13,6 +13,7 @@ import type {
   SectorCompanyPriceData,
 } from '@/types'
 import { toUsd } from '@/lib/currency'
+import { matchesRegion, resolveRegion } from '@/lib/region'
 
 export const revalidate = 3600
 
@@ -35,6 +36,7 @@ export async function GET(
     const period = Number.isNaN(rawPeriod)
       ? 14
       : Math.max(1, Math.min(rawPeriod, 365))
+    const region = resolveRegion(searchParams)
 
     const db = getDb()
 
@@ -93,6 +95,7 @@ export async function GET(
           period,
           dateRange: { start: startDateStr, end: startDateStr },
           companies: [],
+          appliedRegion: region,
         },
       })
     }
@@ -101,7 +104,7 @@ export async function GET(
     const lastDate = dates[dates.length - 1]
 
     // Get companies in this sector with details
-    const companiesInSector = await db
+    const companiesInSectorRaw = await db
       .select({
         ticker: sectorCompanies.ticker,
         rank: sectorCompanies.rank,
@@ -111,6 +114,12 @@ export async function GET(
       .from(sectorCompanies)
       .innerJoin(companies, eq(sectorCompanies.ticker, companies.ticker))
       .where(eq(sectorCompanies.sectorId, sectorId))
+
+    // region 필터를 회사 단위에서 먼저 적용한다.
+    // region === 'all' 이면 영향 없음.
+    const companiesInSector = companiesInSectorRaw.filter((c) =>
+      c.ticker ? matchesRegion(c.ticker, region) : false
+    )
 
     const tickers = companiesInSector
       .map((c) => c.ticker)
@@ -125,6 +134,7 @@ export async function GET(
           period,
           dateRange: { start: firstDate, end: lastDate },
           companies: [],
+          appliedRegion: region,
         },
       })
     }
@@ -221,6 +231,7 @@ export async function GET(
         period,
         dateRange: { start: firstDate, end: lastDate },
         companies: sorted,
+        appliedRegion: region,
       },
     })
   } catch (error) {

@@ -323,6 +323,7 @@ export interface SectorCompaniesResponse {
   period: number
   dateRange: { start: string; end: string }
   companies: SectorCompanyPriceData[]
+  appliedRegion?: _RegionFilter
 }
 
 export interface MoneyFlowResponse {

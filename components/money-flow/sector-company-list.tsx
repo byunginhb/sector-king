@@ -6,12 +6,14 @@ import { Wallet, TrendingDown } from 'lucide-react'
 import { useSectorCompanies } from '@/hooks/use-sector-companies'
 import { SparklineChart } from './sparkline-chart'
 import { cn } from '@/lib/utils'
+import type { RegionFilter } from '@/types'
 
 interface SectorCompanyListProps {
   sectorId: string
   sectorName: string
   period: number
   flowDirection: 'in' | 'out'
+  region?: RegionFilter
   onClose: () => void
 }
 
@@ -35,11 +37,13 @@ export function SectorCompanyList({
   sectorName,
   period,
   flowDirection,
+  region = 'all',
   onClose,
 }: SectorCompanyListProps) {
   const { data, isLoading, error } = useSectorCompanies({
     sectorId,
     period,
+    region,
   })
 
   const isInflow = flowDirection === 'in'
@@ -235,7 +239,9 @@ export function SectorCompanyList({
           {/* Empty */}
           {data && data.companies.length === 0 && (
             <div className="text-center py-6 text-gray-500 dark:text-slate-400 text-sm">
-              해당 기간에 데이터가 없습니다.
+              {region !== 'all'
+                ? `선택한 region(${region === 'kr' ? '국내' : '해외'})에 해당하는 종목이 없습니다.`
+                : '해당 기간에 데이터가 없습니다.'}
             </div>
           )}
         </div>

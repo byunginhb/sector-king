@@ -189,6 +189,7 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
             sectorName={expandedFlow.name}
             period={period}
             flowDirection={expandedFlow.flowDirection}
+            region={region}
             onClose={() => setExpandedSectorId(null)}
           />
         )}

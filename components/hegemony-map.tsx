@@ -49,16 +49,29 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
     ? categories.filter((cat) => !KR_ONLY_CATEGORY_IDS.has(cat.id))
     : categories
 
-  // Group sectors by category, and companies by sector
+  // Group sectors by category, and companies by sector.
+  // sector 내 회사는 marketCap desc 로 정렬 (시드의 정적 rank 무시).
+  // - marketCap 이 있는 회사가 먼저, null/undefined 는 0 으로 취급되어 후순위.
+  // - 불변성 유지: `[...arr].sort()`.
   const sectorsByCategory = visibleCategories.map((cat) => ({
     ...cat,
     sectors: sectors
       .filter((s) => s.categoryId === cat.id)
-      .map((sector) => ({
-        ...sector,
-        companies: sectorCompanies.filter((sc) => sc.sectorId === sector.id),
-      }))
-      .sort((a, b) => a.order - b.order),  // safe: filter+map creates new array
+      .map((sector) => {
+        const filtered = sectorCompanies.filter(
+          (sc) => sc.sectorId === sector.id
+        )
+        const sortedCompanies = [...filtered].sort((a, b) => {
+          const aCap = a.snapshot?.marketCap ?? 0
+          const bCap = b.snapshot?.marketCap ?? 0
+          return bCap - aCap
+        })
+        return {
+          ...sector,
+          companies: sortedCompanies,
+        }
+      })
+      .sort((a, b) => a.order - b.order), // safe: filter+map creates new array
   }))
 
   return (

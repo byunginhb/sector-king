@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { TrendingUp, TrendingDown } from 'lucide-react'
-import { usePriceChanges } from '@/hooks/use-price-changes'
+import { useDailyMovers } from '@/hooks/use-daily-movers'
 import { CompanyDetail } from '@/components/company-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
@@ -16,7 +16,7 @@ interface TickerTapeProps {
 
 interface TickerItem {
   ticker: string
-  name: string
+  name: string | null
   nameKo?: string | null
   percentChange: number
 }
@@ -24,37 +24,26 @@ interface TickerItem {
 /**
  * 핫 종목 marquee 띠
  *
- * - 등락률 절댓값 Top N 종목을 무한 가로 스크롤
+ * - 가장 최근 영업일 기준 등락률 절댓값 Top N 종목을 무한 가로 스크롤
  * - hover 시 정지 (CSS animation-play-state)
  * - 항목 클릭 시 회사 상세 모달 오픈
  * - reduced-motion 사용자에게는 정적으로 노출 (CSS 단)
+ *
+ * 데이터 소스: `useDailyMovers` (`daily_snapshots.price_change` percent 컬럼).
+ * `usePriceChanges({ days: 1 })` 의 0% 캐리 이슈(한국 휴장일)를 우회한다.
  */
 export function TickerTape({ region = 'all', limit = 20 }: TickerTapeProps) {
-  // sort=percentChange, order=desc → 상위 절댓값 상승. 하락은 reverse 정렬을 위해 1일 데이터 활용
-  const { data, isLoading } = usePriceChanges({
-    sort: 'percentChange',
-    order: 'desc',
-    region,
-    days: 1,
-  })
+  const { data, isLoading } = useDailyMovers({ region, limit })
 
   const items = useMemo<TickerItem[]>(() => {
-    if (!data?.companies) return []
-    // null 등락률 제거 + 절댓값 기준 정렬 (상승·하락 모두 높은 영향력)
-    const filtered = data.companies.filter(
-      (c): c is typeof c & { percentChange: number } =>
-        typeof c.percentChange === 'number'
-    )
-    const sorted = [...filtered].sort(
-      (a, b) => Math.abs(b.percentChange) - Math.abs(a.percentChange)
-    )
-    return sorted.slice(0, limit).map((c) => ({
+    if (!data?.items) return []
+    return data.items.map((c) => ({
       ticker: c.ticker,
       name: c.name,
       nameKo: c.nameKo,
       percentChange: c.percentChange,
     }))
-  }, [data?.companies, limit])
+  }, [data?.items])
 
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
 
