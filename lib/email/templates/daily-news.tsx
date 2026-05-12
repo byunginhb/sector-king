@@ -91,7 +91,7 @@ export function DailyNewsEmail({
   const willRise = (novice.stockTables ?? []).find(
     (t) => t.bucket === 'will_rise'
   )
-  const koreanStocks = (novice.koreanStocks ?? []).slice(0, 2)
+  const koreanStocks = novice.koreanStocks ?? []
   const detailUrl = siteUrl
     ? `${siteUrl}/news/${report.id}`
     : `/news/${report.id}`
