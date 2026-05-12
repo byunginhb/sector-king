@@ -2,8 +2,8 @@ name: Daily Data Update
 
 on:
   schedule:
-    # KST 00:00 (UTC 15:00) - 매일 자정
-    - cron: '0 15 * * *'
+    # KST 03:00 (UTC 18:00) — 매일 새벽 3시
+    - cron: '0 18 * * *'
   workflow_dispatch:
     inputs:
       date:
