@@ -6,11 +6,22 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Newspaper } from 'lucide-react'
+import { ArrowRight, Newspaper, HelpCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
-import type { NewsReportListItem } from '@/drizzle/supabase-schema'
+import type { NewsReportListItem, NoviceStockAction } from '@/drizzle/supabase-schema'
+import { useLatestKoreanStocks } from '@/hooks/use-latest-korean-stocks'
 import { NewsSubscribeCta } from './news-subscribe-cta'
+
+// action 별 chip 색상 토큰
+const PICK_CHIP_CLASS: Record<NoviceStockAction, string> = {
+  사: 'border-emerald-400/40 text-emerald-300 bg-emerald-500/10 group-hover:bg-emerald-500/20',
+  '조심하면서 사':
+    'border-amber-400/40 text-amber-300 bg-amber-500/10 group-hover:bg-amber-500/20',
+  지켜봐:
+    'border-slate-400/40 text-slate-300 bg-slate-500/10 group-hover:bg-slate-500/20',
+  '안 사': 'border-rose-400/40 text-rose-300 bg-rose-500/10 group-hover:bg-rose-500/20',
+}
 
 interface NewsHomeCardProps {
   report: NewsReportListItem
@@ -23,6 +34,11 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
   const dateLabel = report.publishedAt
     ? format(new Date(report.publishedAt), 'yyyy-MM-dd')
     : report.reportDate
+
+  // 같은 리포트의 한국 추천 종목 (없으면 미노출)
+  const { data: koreanPicks } = useLatestKoreanStocks()
+  const sameReport = koreanPicks?.reportId === report.id
+  const teasers = sameReport ? (koreanPicks?.picks ?? []).slice(0, 3) : []
 
   return (
     <div
@@ -61,6 +77,29 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
           <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3 mt-2">
             {brief}
           </p>
+        )}
+
+        {teasers.length > 0 && (
+          <div className="mt-4">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
+              오늘의 한국 종목 추천 · 이유 보러가기
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {teasers.map((p) => (
+                <span
+                  key={`${p.code}-${p.index}`}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+                    PICK_CHIP_CLASS[p.action] ?? PICK_CHIP_CLASS['지켜봐']
+                  )}
+                >
+                  <span className="font-semibold">{p.name}</span>
+                  <span className="opacity-80">‘{p.action}’ 이유는?</span>
+                  <HelpCircle className="h-3 w-3 opacity-80" aria-hidden />
+                </span>
+              ))}
+            </div>
+          </div>
         )}
 
         {report.coverKeywords.length > 0 && (
