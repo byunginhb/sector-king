@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Menu } from 'lucide-react'
+import { Menu, Newspaper, type LucideIcon } from 'lucide-react'
 import { SectorKingLogo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { SearchTrigger } from '@/components/search-trigger'
@@ -40,6 +41,17 @@ interface GlobalTopBarProps {
 
 const MOBILE_BREAKPOINT = '(min-width: 640px)'
 
+interface NavItem {
+  href: string
+  label: string
+  icon: LucideIcon
+}
+
+/** 헤더에 항상 노출되는 주요 콘텐츠 진입 메뉴. */
+const NAV_ITEMS: readonly NavItem[] = [
+  { href: '/news', label: '뉴스', icon: Newspaper },
+] as const
+
 /**
  * 모든 페이지 공통 글로벌 헤더
  *
@@ -61,9 +73,13 @@ export function GlobalTopBar({
   subtitle,
   mobileLeading,
 }: GlobalTopBarProps) {
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [isDesktop, setIsDesktop] = useState(true)
+
+  const isNavActive = (href: string) =>
+    pathname === href || pathname?.startsWith(`${href}/`)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -98,6 +114,33 @@ export function GlobalTopBar({
                 )}
               </div>
             </Link>
+
+            {/* 데스크탑 inline 메뉴 — 로고 옆에 자리잡는 콘텐츠 진입 */}
+            <nav
+              aria-label="주요 메뉴"
+              className="hidden md:flex items-center gap-1 ml-2 pl-3 border-l border-border-subtle"
+            >
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon
+                const active = isNavActive(item.href)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-sm font-medium transition-colors',
+                      active
+                        ? 'bg-surface-2 text-foreground'
+                        : 'text-foreground/70 hover:bg-surface-2 hover:text-foreground'
+                    )}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden />
+                    {item.label}
+                  </Link>
+                )
+              })}
+            </nav>
           </div>
 
           {/* 데스크탑 액션 — 마운트 전에는 기본 노출, 마운트 후 데스크탑에만 노출 */}
@@ -138,9 +181,37 @@ export function GlobalTopBar({
                   <SheetHeader>
                     <SheetTitle>메뉴</SheetTitle>
                     <SheetDescription className="sr-only">
-                      검색·도구·계정 액션 모음
+                      메뉴·필터·도구·계정 액션 모음
                     </SheetDescription>
                   </SheetHeader>
+
+                  {/* 콘텐츠 진입 메뉴 (뉴스 등) */}
+                  <section className="flex flex-col gap-2">
+                    <p className="eyebrow">메뉴</p>
+                    <nav aria-label="모바일 주요 메뉴" className="flex flex-col gap-0.5">
+                      {NAV_ITEMS.map((item) => {
+                        const Icon = item.icon
+                        const active = isNavActive(item.href)
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setOpen(false)}
+                            aria-current={active ? 'page' : undefined}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-sm px-2.5 py-2 text-sm font-medium transition-colors',
+                              active
+                                ? 'bg-surface-2 text-foreground'
+                                : 'text-foreground/80 hover:bg-surface-2 hover:text-foreground'
+                            )}
+                          >
+                            <Icon className="h-4 w-4" aria-hidden />
+                            {item.label}
+                          </Link>
+                        )
+                      })}
+                    </nav>
+                  </section>
 
                   {extraActions && (
                     <section className="flex flex-col gap-2">
