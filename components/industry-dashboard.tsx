@@ -1,7 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { Stethoscope, Zap, ShoppingCart, Landmark, Flame, TrendingUp } from 'lucide-react'
+import {
+  Stethoscope,
+  Zap,
+  ShoppingCart,
+  Landmark,
+  Flame,
+  TrendingUp,
+  ArrowDown,
+  Mail,
+} from 'lucide-react'
 import { useIndustries } from '@/hooks/use-industries'
 import { useRegion } from '@/hooks/use-region'
 import { usePageTour } from '@/hooks/use-page-tour'
@@ -11,6 +20,7 @@ import { SectionHeader } from '@/components/ui/section-header'
 import { IndustryIcon } from '@/components/ui/industry-icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MiniSparkline } from '@/components/ui/mini-sparkline'
+import { OnboardingHintStrip } from '@/components/onboarding/onboarding-hint-strip'
 import { formatMarketCap, formatKrw, formatFlowAmount } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { CompanyStatsCard } from '@/components/dashboard/company-stats-card'
@@ -44,23 +54,57 @@ export function IndustryDashboard() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 sm:py-10">
-        {/* Page masthead — Editorial 1면 헤드라인 */}
+        {/* Page masthead — 한국어 메인 + 영문 보조 2단 헤로 */}
         <section className="border-b border-foreground/80 pb-6 sm:pb-8 mb-8 sm:mb-10">
+          {/* eyebrow row: amber accent · 마지막 업데이트 KST */}
           <div className="flex items-baseline justify-between gap-4 flex-wrap mb-3">
-            <p className="eyebrow eyebrow-accent">The Map of Capital</p>
+            <p className="text-xs uppercase tracking-wider text-amber-400">
+              The Map of Capital · 자금 흐름 지도
+            </p>
             {lastUpdated ? (
               <p className="eyebrow num-mono">{lastUpdated} · KST</p>
             ) : null}
           </div>
-          <h1 className="display text-4xl sm:text-5xl lg:text-6xl text-foreground">
-            Where capital sits today,
+
+          {/* h1 한국어 메인 헤드라인 */}
+          <h1 className="display text-3xl sm:text-5xl lg:text-6xl tracking-tight text-foreground">
+            시장의 돈이 어디로 흐르는가.
             <br className="hidden sm:block" />
-            <span className="display-italic">where it moves next.</span>
+            <span className="display-italic text-foreground/70">산업·섹터·종목 단위로.</span>
           </h1>
-          <p className="text-sm text-foreground/75 mt-4 max-w-2xl">
-            산업·섹터·종목 단위로 시장의 자금 흐름과 시가총액 변화를 추적합니다. 보라색
-            그라데이션과 보여주기식 애니메이션 없이, 숫자와 hairline만으로.
+
+          {/* 영문 보조 카피 */}
+          <p className="mt-3 text-xs uppercase tracking-wider text-amber-400/70">
+            Where capital sits today, where it moves next.
           </p>
+
+          {/* 가치 제안 */}
+          <p className="mt-4 max-w-2xl text-sm text-foreground/75">
+            매일 아침, 산업별 자금 흐름과 핵심 마켓 뉴스를 한 통의 메일로 정리해 드립니다.
+          </p>
+
+          {/* CTA row */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="#industries"
+              className="inline-flex items-center gap-2 rounded-md border border-amber-500/60 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-300 transition-colors hover:bg-amber-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+            >
+              <ArrowDown className="h-4 w-4" aria-hidden />
+              산업 지도 보기
+            </Link>
+            <Link
+              href="/news"
+              className="inline-flex items-center gap-2 rounded-md border border-amber-500/40 px-4 py-2 text-sm text-amber-400 transition-colors hover:bg-amber-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+            >
+              <Mail className="h-4 w-4" aria-hidden />
+              메일로 받기
+            </Link>
+          </div>
+        </section>
+
+        {/* Onboarding hint strip (자동 투어 폐기 후 신규 진입 안내) */}
+        <section className="mb-6">
+          <OnboardingHintStrip />
         </section>
 
         {/* Market Pulse Strip — 최상단 KPI 헤로 */}
@@ -91,7 +135,7 @@ export function IndustryDashboard() {
         </section>
 
         {/* Industry Cards Grid */}
-        <section className="mt-12">
+        <section id="industries" className="mt-12 scroll-mt-24">
           <SectionHeader
             eyebrow="Hegemony Map"
             title="산업 패권 지도"

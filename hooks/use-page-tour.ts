@@ -4,10 +4,16 @@ import { useEffect, useRef, useCallback } from 'react'
 import { useOnboardingContext } from '@/components/onboarding/onboarding-provider'
 import { tourSteps, type PageId } from '@/components/onboarding/tour-steps'
 
+/**
+ * 페이지 투어 훅.
+ *
+ * 자동 트리거는 폐기되었다 (Phase 2 온보딩 전략 변경).
+ * 이제 이 훅은 `startTour()` 함수만 반환하며, 호출 측에서 명시적으로 호출해야 한다.
+ * 진입점은 우상단 도움말 버튼(HelpButton) 한 곳뿐.
+ */
 export function usePageTour(pageId: PageId) {
-  const { shouldShowPageTour, completePageTour } = useOnboardingContext()
+  const { completePageTour } = useOnboardingContext()
   const driverRef = useRef<ReturnType<typeof import('driver.js').driver> | null>(null)
-  const startedRef = useRef(false)
 
   const startTour = useCallback(() => {
     const steps = tourSteps[pageId]
@@ -51,21 +57,6 @@ export function usePageTour(pageId: PageId) {
         // driver.js 로드 실패 시 조용히 무시 (온보딩은 핵심 기능이 아님)
       })
   }, [pageId, completePageTour])
-
-  // Auto-start on page entry if not completed
-  useEffect(() => {
-    if (!shouldShowPageTour(pageId)) return
-    if (startedRef.current) return
-
-    // Wait for DOM to settle (data loading, animations)
-    const timer = setTimeout(() => {
-      if (!shouldShowPageTour(pageId)) return
-      startedRef.current = true
-      startTour()
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [pageId, shouldShowPageTour, startTour])
 
   // Cleanup on unmount
   useEffect(() => {
