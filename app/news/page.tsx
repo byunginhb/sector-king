@@ -86,12 +86,12 @@ export default async function NewsListPage() {
                     <time
                       dateTime={it.reportDate}
                       aria-label={`발행일 ${labels.korean}`}
-                      className="flex items-baseline gap-2 mb-2"
+                      className="flex items-baseline gap-2.5 mb-3"
                     >
-                      <span className="font-semibold tabular-nums tracking-tight text-amber-400 text-base sm:text-lg">
+                      <span className="font-display font-bold tabular-nums tracking-tight text-amber-400 text-2xl sm:text-3xl leading-none">
                         {labels.monthDay}
                       </span>
-                      <span className="text-muted-foreground/60 text-xs uppercase tracking-wider">
+                      <span className="text-amber-400/70 text-xs sm:text-sm font-semibold uppercase tracking-wider">
                         {labels.weekday}
                       </span>
                     </time>

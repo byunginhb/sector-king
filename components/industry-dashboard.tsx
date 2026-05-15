@@ -29,6 +29,7 @@ import { IndustryMoneyFlowCard } from '@/components/dashboard/industry-money-flo
 import { MarketPulseStrip } from '@/components/dashboard/market-pulse-strip'
 import { TickerTape } from '@/components/dashboard/ticker-tape'
 import { NewsHomeCardSlot } from '@/components/news/news-home-card-slot'
+import { KoreanPicksCard } from '@/components/dashboard/korean-picks-card'
 import type { IndustryOverview } from '@/types'
 
 export function IndustryDashboard() {
@@ -123,6 +124,9 @@ export function IndustryDashboard() {
         <section className="mt-8">
           <NewsHomeCardSlot />
         </section>
+
+        {/* 오늘의 한국 추천 종목 — 메일과 동일 콘텐츠 노출 + 이유 보러가기 CTA */}
+        <KoreanPicksCard />
 
         {/* Industry Money Flow */}
         <section className="mt-12">
