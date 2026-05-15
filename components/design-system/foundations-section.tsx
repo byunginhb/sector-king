@@ -4,87 +4,101 @@ interface TokenSwatch {
   name: string
   varName: string
   description?: string
+  accent?: boolean
 }
 
-const SHADCN_TOKENS: TokenSwatch[] = [
-  { name: 'background', varName: '--background', description: '페이지 기본 배경' },
-  { name: 'foreground', varName: '--foreground', description: '본문 텍스트' },
-  { name: 'card', varName: '--card', description: '카드/패널 배경' },
-  { name: 'card-foreground', varName: '--card-foreground' },
-  { name: 'muted', varName: '--muted', description: '보조 영역 배경' },
-  { name: 'muted-foreground', varName: '--muted-foreground' },
-  { name: 'primary', varName: '--primary', description: '강조/액션 색상' },
-  { name: 'primary-foreground', varName: '--primary-foreground' },
-  { name: 'accent', varName: '--accent' },
-  { name: 'accent-foreground', varName: '--accent-foreground' },
-  { name: 'border', varName: '--border', description: '테두리 기본색' },
-  { name: 'destructive', varName: '--destructive' },
+const SURFACE_TOKENS: TokenSwatch[] = [
+  { name: 'background', varName: '--background', description: '페이지 캔버스 (newsprint / charcoal)' },
+  { name: 'surface-1', varName: '--surface-1', description: '카드 베이스' },
+  { name: 'surface-2', varName: '--surface-2', description: 'hover / nested' },
+  { name: 'surface-3', varName: '--surface-3', description: 'elevated / pressed' },
+  { name: 'foreground', varName: '--foreground', description: '본문 잉크' },
+  { name: 'muted-foreground', varName: '--muted-foreground', description: '보조 텍스트' },
+  { name: 'border', varName: '--border', description: '기본 hairline' },
+  { name: 'border-subtle', varName: '--border-subtle', description: '약한 hairline' },
 ]
 
-const STATE_COLORS = [
-  {
-    name: '상승 (Up)',
-    cls: 'text-emerald-600 dark:text-emerald-400',
-    bg: 'bg-emerald-500',
-    code: 'text-emerald-600 dark:text-emerald-400',
-  },
-  {
-    name: '하락 (Down)',
-    cls: 'text-rose-600 dark:text-rose-400',
-    bg: 'bg-rose-500',
-    code: 'text-rose-600 dark:text-rose-400',
-  },
-  {
-    name: '경고 (Warning)',
-    cls: 'text-amber-600 dark:text-amber-400',
-    bg: 'bg-amber-500',
-    code: 'text-amber-600 dark:text-amber-400',
-  },
+const ACCENT_TOKENS: TokenSwatch[] = [
+  { name: 'primary', varName: '--primary', description: '단일 amber 시그널', accent: true },
+  { name: 'primary-foreground', varName: '--primary-foreground' },
+  { name: 'accent', varName: '--accent', description: 'amber tint 배경' },
+  { name: 'accent-foreground', varName: '--accent-foreground' },
+  { name: 'ring', varName: '--ring', description: 'focus ring' },
+]
+
+const STATE_TOKENS: TokenSwatch[] = [
+  { name: 'success', varName: '--success', description: '상승 (slate-teal)' },
+  { name: 'success-bg', varName: '--success-bg' },
+  { name: 'danger', varName: '--danger', description: '하락 (slate-rose)' },
+  { name: 'danger-bg', varName: '--danger-bg' },
+  { name: 'warning', varName: '--warning' },
+  { name: 'info', varName: '--info' },
+]
+
+const CHART_TOKENS: TokenSwatch[] = [
+  { name: 'chart-1', varName: '--chart-1', description: 'amber (signal)' },
+  { name: 'chart-2', varName: '--chart-2', description: 'slate teal' },
+  { name: 'chart-3', varName: '--chart-3', description: 'slate blue' },
+  { name: 'chart-4', varName: '--chart-4', description: 'aubergine' },
+  { name: 'chart-5', varName: '--chart-5', description: 'slate rose' },
+  { name: 'chart-6', varName: '--chart-6', description: 'burnt orange' },
+  { name: 'chart-7', varName: '--chart-7', description: 'slate cyan' },
+  { name: 'chart-8', varName: '--chart-8', description: 'moss' },
 ]
 
 const SPACINGS = [1, 2, 3, 4, 5, 6, 8, 10, 12]
 const RADII = [
-  { name: 'rounded-md', cls: 'rounded-md', size: '6px' },
-  { name: 'rounded-lg', cls: 'rounded-lg', size: '8px' },
-  { name: 'rounded-xl', cls: 'rounded-xl', size: '12px' },
-]
-const SHADOWS = [
-  { name: 'shadow-sm', cls: 'shadow-sm', desc: '카드 미세 강조' },
-  { name: 'shadow', cls: 'shadow', desc: '기본 카드' },
-  { name: 'shadow-md', cls: 'shadow-md', desc: '중간 강조' },
-  { name: 'shadow-lg', cls: 'shadow-lg', desc: '팝오버/모달' },
+  { name: 'rounded-sm', cls: 'rounded-sm', size: 'calc(radius - 2px)' },
+  { name: 'rounded-md', cls: 'rounded-md', size: 'radius (default)' },
+  { name: 'rounded-lg', cls: 'rounded-lg', size: 'calc(radius + 2px)' },
+  { name: 'rounded-xl', cls: 'rounded-xl', size: 'calc(radius + 4px)' },
 ]
 
 function ColorSwatch({ token }: { token: TokenSwatch }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-3">
-      <div
-        className="h-12 w-full rounded-md border border-border"
-        style={{ background: `hsl(var(${token.varName}))` }}
-        aria-hidden="true"
-      />
-      <p className="mt-2 text-sm font-semibold text-foreground">{token.name}</p>
-      <p className="font-mono text-[11px] text-muted-foreground">{token.varName}</p>
+    <div className="bg-surface-1 border border-border-subtle p-3">
+      <div className="flex items-center gap-3">
+        <span
+          className="h-10 w-10 shrink-0 border border-border"
+          style={{ background: `hsl(var(${token.varName}))` }}
+          aria-hidden="true"
+        />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground truncate">{token.name}</p>
+          <p className="font-mono text-[10px] text-muted-foreground truncate">{token.varName}</p>
+        </div>
+      </div>
       {token.description ? (
-        <p className="mt-1 text-xs text-muted-foreground">{token.description}</p>
+        <p className="mt-2 text-[11px] text-foreground/65 leading-snug">{token.description}</p>
       ) : null}
     </div>
   )
 }
 
-function ThemePreview({ mode, children }: { mode: 'light' | 'dark'; children: React.ReactNode }) {
+function ThemePreview({
+  mode,
+  label,
+  children,
+}: {
+  mode: 'light' | 'dark'
+  label: string
+  children: React.ReactNode
+}) {
   return (
     <div
       className={
         mode === 'dark'
-          ? 'dark rounded-xl border border-border bg-background p-4'
-          : 'rounded-xl border border-border bg-background p-4'
+          ? 'dark border border-foreground/20 bg-background'
+          : 'border border-foreground/20 bg-background'
       }
     >
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
-      </p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{children}</div>
+      <div className="flex items-baseline justify-between border-b border-border-subtle px-4 py-2">
+        <p className="eyebrow">{label}</p>
+        <p className="font-mono text-[10px] text-muted-foreground">
+          {mode === 'dark' ? 'html.dark' : 'html:root'}
+        </p>
+      </div>
+      <div className="p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">{children}</div>
     </div>
   )
 }
@@ -93,136 +107,221 @@ export function FoundationsSection() {
   return (
     <DsSection
       id="foundations"
-      title="Foundations (기반)"
-      description="색상 토큰, 타이포그래피, 간격, 반경, 그림자 등 디자인의 기본 단위를 정의합니다."
+      meta="02"
+      title="Foundations"
+      description="색상 토큰, 타이포그래피, 간격, 반경, hairline. 모든 화면은 이 토큰만 사용합니다. globals.css 단일 파일에서 톤을 통째로 갈아끼울 수 있습니다."
     >
+      {/* ─────────────────── Color Tokens ─────────────────── */}
       <DsSubsection
-        title="색상 팔레트 (shadcn 토큰)"
-        description="라이트/다크 모드 동시 미리보기. 토큰 변경은 globals.css에서만."
+        title="Surface & Ink"
+        hint="--background / --surface-* / --foreground"
+        description="라이트(신문지 톤)와 다크(터미널 차콜) 모두 동시 미리보기. 다크가 기본 발표 톤입니다."
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ThemePreview mode="light">
-            {SHADCN_TOKENS.map((t) => (
-              <ColorSwatch key={`light-${t.name}`} token={t} />
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <ThemePreview mode="light" label="Light · Newsprint">
+            {SURFACE_TOKENS.map((t) => (
+              <ColorSwatch key={`l-${t.name}`} token={t} />
             ))}
           </ThemePreview>
-          <ThemePreview mode="dark">
-            {SHADCN_TOKENS.map((t) => (
-              <ColorSwatch key={`dark-${t.name}`} token={t} />
+          <ThemePreview mode="dark" label="Dark · Terminal">
+            {SURFACE_TOKENS.map((t) => (
+              <ColorSwatch key={`d-${t.name}`} token={t} />
             ))}
           </ThemePreview>
         </div>
       </DsSubsection>
 
-      <DsSubsection title="상태 색상 (Up / Down / Warning)" description="등락률 등 의미를 가진 색.">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {STATE_COLORS.map((c) => (
-            <div key={c.name} className="rounded-lg border border-border bg-card p-4">
-              <div className="flex items-center gap-3">
-                <span className={`inline-block h-8 w-8 rounded-md ${c.bg}`} aria-hidden="true" />
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{c.name}</p>
-                  <p className={`text-xs ${c.cls}`}>+12.34%</p>
-                </div>
-              </div>
-              <p className="mt-3 font-mono text-[11px] text-muted-foreground break-all">{c.code}</p>
-            </div>
+      <DsSubsection title="Amber — the only signal" hint="Single accent">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <ThemePreview mode="light" label="Light">
+            {ACCENT_TOKENS.map((t) => (
+              <ColorSwatch key={`la-${t.name}`} token={t} />
+            ))}
+          </ThemePreview>
+          <ThemePreview mode="dark" label="Dark">
+            {ACCENT_TOKENS.map((t) => (
+              <ColorSwatch key={`da-${t.name}`} token={t} />
+            ))}
+          </ThemePreview>
+        </div>
+      </DsSubsection>
+
+      <DsSubsection
+        title="State — Up / Down / Warning"
+        hint="slate-tinted, not neon"
+        description="상승은 slate-teal, 하락은 slate-rose. 형광 emerald·red 사용 금지."
+      >
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <ThemePreview mode="light" label="Light">
+            {STATE_TOKENS.map((t) => (
+              <ColorSwatch key={`ls-${t.name}`} token={t} />
+            ))}
+          </ThemePreview>
+          <ThemePreview mode="dark" label="Dark">
+            {STATE_TOKENS.map((t) => (
+              <ColorSwatch key={`ds-${t.name}`} token={t} />
+            ))}
+          </ThemePreview>
+        </div>
+      </DsSubsection>
+
+      <DsSubsection
+        title="Chart palette"
+        hint="recharts 일관"
+        description="모든 차트는 --chart-1 ~ --chart-8 만 사용. amber는 항상 신호 시리즈에만."
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+          {CHART_TOKENS.map((t) => (
+            <ColorSwatch key={t.name} token={t} />
           ))}
         </div>
       </DsSubsection>
 
-      <DsSubsection title="타이포그래피">
-        <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold leading-tight text-foreground">
-              H1 — 페이지 타이틀
-            </h1>
-            <p className="font-mono text-[11px] text-muted-foreground mt-1">
-              text-3xl sm:text-4xl font-bold leading-tight
+      {/* ─────────────────── Typography ─────────────────── */}
+      <DsSubsection
+        title="Three Voices — Display · Sans · Mono"
+        hint="Fraunces · Geist · JetBrains Mono"
+        description="한 폰트로 모든 위계를 해결하지 않습니다. 헤드라인은 시리프(Fraunces), 본문은 산세리프(Geist), 데이터·티커는 모노(JetBrains Mono)."
+      >
+        <div className="border border-border-subtle bg-surface-1 divide-y divide-border-subtle">
+          {/* Display row */}
+          <TypeRow eyebrow="Display · Fraunces" hint="opsz 144 · SOFT 30">
+            <p className="display text-4xl sm:text-5xl text-foreground">
+              KOSPI · NDX · the Map of Capital
             </p>
-          </div>
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground">H2 — 섹션 타이틀</h2>
-            <p className="font-mono text-[11px] text-muted-foreground mt-1">
-              text-xl sm:text-2xl font-bold
+            <p className="display display-italic text-2xl sm:text-3xl text-foreground/80 mt-1">
+              and the sectors that move them
             </p>
-          </div>
-          <div>
-            <h3 className="text-lg sm:text-xl font-bold text-foreground">H3 — 카드 그룹 타이틀</h3>
-            <p className="font-mono text-[11px] text-muted-foreground mt-1">
-              text-lg sm:text-xl font-bold
+          </TypeRow>
+
+          {/* Sans body row */}
+          <TypeRow eyebrow="Body · Geist Sans" hint="rlig · calt · ss01">
+            <p className="text-base text-foreground leading-relaxed max-w-2xl">
+              Sector King은 산업과 섹터의 자금 흐름을 시각화합니다. 본문은 Geist Sans가 운반하며,
+              가독성을 위해 letter-spacing -0.01em, line-height 1.6을 표준으로 합니다.
             </p>
-          </div>
-          <div>
-            <h4 className="text-base font-bold leading-tight text-foreground">H4 — 카드 제목</h4>
-            <p className="font-mono text-[11px] text-muted-foreground mt-1">
-              text-base font-bold leading-tight
+            <p className="text-sm text-foreground/75 mt-2 max-w-2xl">
+              Smaller body — 보조 설명, 카드 내부 설명에 사용.
             </p>
-          </div>
-          <div>
-            <p className="text-sm text-foreground">
-              본문 텍스트 (body) — Sector King은 산업과 섹터의 자금 흐름을 시각화합니다.
+            <p className="text-xs text-muted-foreground mt-2">caption — 메타 정보·각주</p>
+          </TypeRow>
+
+          {/* Mono data row */}
+          <TypeRow eyebrow="Data · JetBrains Mono" hint="tabular · slashed-zero">
+            <div className="grid grid-cols-3 gap-x-6 gap-y-1 max-w-md font-mono text-foreground tabular-nums">
+              <p className="num-mono text-2xl">$4.21T</p>
+              <p className="num-mono text-2xl text-success">+1.82%</p>
+              <p className="num-mono text-2xl text-danger">-0.63%</p>
+              <p className="num-mono text-xs text-muted-foreground">prev 4.13T</p>
+              <p className="num-mono text-xs text-muted-foreground">d/d</p>
+              <p className="num-mono text-xs text-muted-foreground">14d</p>
+            </div>
+          </TypeRow>
+
+          {/* Eyebrow row */}
+          <TypeRow eyebrow="Eyebrow label" hint=".eyebrow">
+            <div className="flex flex-col gap-2">
+              <p className="eyebrow">Section · 04 · Components</p>
+              <p className="eyebrow eyebrow-accent">Hot Sector · Today</p>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              사용처: 카드 상단 라벨, 섹션 chip, KPI 라벨. uppercase + 0.14em + mono.
             </p>
-            <p className="font-mono text-[11px] text-muted-foreground mt-1">text-sm</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">caption — 보조 설명, 메타 정보</p>
-            <p className="font-mono text-[11px] text-muted-foreground mt-1">
-              text-xs text-muted-foreground
-            </p>
-          </div>
-          <div>
-            <p className="font-mono text-sm text-foreground">mono — $1,234.56 +2.34%</p>
-            <p className="font-mono text-[11px] text-muted-foreground mt-1">font-mono text-sm</p>
-          </div>
+          </TypeRow>
         </div>
       </DsSubsection>
 
-      <DsSubsection title="간격 (Spacing)" description="Tailwind spacing scale (1unit = 0.25rem).">
-        <div className="rounded-xl border border-border bg-card p-4 space-y-2">
+      {/* ─────────────────── Geometry ─────────────────── */}
+      <DsSubsection title="Spacing" hint="Tailwind scale · 1u = 0.25rem">
+        <div className="border border-border-subtle bg-surface-1 p-4 space-y-1.5">
           {SPACINGS.map((n) => (
             <div key={n} className="flex items-center gap-3 text-xs">
               <span className="w-10 font-mono text-muted-foreground">p-{n}</span>
               <span
-                className="inline-block h-3 rounded-sm bg-primary/70"
+                className="inline-block h-2 bg-primary/80"
                 style={{ width: `${n * 0.25}rem` }}
                 aria-hidden="true"
               />
-              <span className="text-muted-foreground">{n * 0.25}rem</span>
+              <span className="font-mono text-muted-foreground tabular-nums">
+                {n * 0.25}rem · {n * 4}px
+              </span>
             </div>
           ))}
         </div>
       </DsSubsection>
 
-      <DsSubsection title="반경 (Radius)">
-        <div className="grid grid-cols-3 gap-3">
+      <DsSubsection
+        title="Radius"
+        hint="--radius = 0.375rem"
+        description="라디우스는 작게. 둥근 모서리가 친근해 보일수록 SaaS 톤에 가까워집니다."
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {RADII.map((r) => (
-            <div key={r.name} className="rounded-xl border border-border bg-card p-4 text-center">
+            <div key={r.name} className="border border-border-subtle bg-surface-1 p-4 text-center">
               <div
-                className={`mx-auto mb-2 h-14 w-14 border border-border bg-muted ${r.cls}`}
+                className={`mx-auto mb-3 h-14 w-14 border border-foreground/30 bg-muted ${r.cls}`}
                 aria-hidden="true"
               />
-              <p className="text-sm font-semibold text-foreground">{r.name}</p>
-              <p className="text-xs text-muted-foreground">{r.size}</p>
+              <p className="text-xs font-semibold text-foreground">{r.name}</p>
+              <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{r.size}</p>
             </div>
           ))}
         </div>
       </DsSubsection>
 
-      <DsSubsection title="그림자 (Shadow)" description="카드와 팝오버에 사용.">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {SHADOWS.map((s) => (
-            <div key={s.name} className="text-center">
-              <div
-                className={`mx-auto mb-2 h-16 w-full rounded-lg border border-border bg-card ${s.cls}`}
-                aria-hidden="true"
-              />
-              <p className="text-sm font-semibold text-foreground">{s.name}</p>
-              <p className="text-xs text-muted-foreground">{s.desc}</p>
-            </div>
-          ))}
+      <DsSubsection
+        title="Hairline & Rules"
+        hint="1px border on hsl(var(--border))"
+        description="그림자 대신 hairline으로 위계를 만듭니다. .sk-rule은 일반 디바이더, .sk-rule-double은 신문 칼럼 사이의 더블 룰입니다."
+      >
+        <div className="border border-border-subtle bg-surface-1 p-6 space-y-6">
+          <div>
+            <p className="eyebrow mb-2">Single rule · .sk-rule</p>
+            <hr className="sk-rule" />
+          </div>
+          <div>
+            <p className="eyebrow mb-2">Double rule · .sk-rule-double</p>
+            <hr className="sk-rule-double" />
+          </div>
+          <div>
+            <p className="eyebrow mb-2">Statline · .sk-statline</p>
+            <dl>
+              <div className="sk-statline">
+                <dt className="label">Market Cap</dt>
+                <dd className="value">$4,213.84B</dd>
+              </div>
+              <div className="sk-statline">
+                <dt className="label">d/d</dt>
+                <dd className="value text-success">+1.82%</dd>
+              </div>
+              <div className="sk-statline">
+                <dt className="label">Hot Sector</dt>
+                <dd className="value">Semiconductors</dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </DsSubsection>
     </DsSection>
+  )
+}
+
+function TypeRow({
+  eyebrow,
+  hint,
+  children,
+}: {
+  eyebrow: string
+  hint?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-3 md:gap-6 p-5">
+      <div className="flex flex-col gap-1">
+        <p className="eyebrow eyebrow-accent">{eyebrow}</p>
+        {hint ? <p className="font-mono text-[10px] text-muted-foreground">{hint}</p> : null}
+      </div>
+      <div className="min-w-0">{children}</div>
+    </div>
   )
 }

@@ -145,7 +145,7 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
           value={
             <span
               className={cn(
-                'text-2xl sm:text-3xl font-bold tabular-nums tracking-tight',
+                'num-mono text-2xl sm:text-3xl tracking-tight',
                 aggregates.dayChangePct >= 0 ? 'text-success' : 'text-danger'
               )}
             >
@@ -167,13 +167,13 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
         {aggregates.hotSector ? (
           <KpiValue
             value={
-              <span className="text-xl sm:text-2xl font-bold text-card-foreground truncate block">
+              <span className="font-display text-xl sm:text-2xl font-semibold text-card-foreground truncate block tracking-tight">
                 {aggregates.hotSector.name}
               </span>
             }
             sub={
-              <span className="text-xs text-muted-foreground tabular-nums">
-                {aggregates.hotSector.industryName} · 14일{' '}
+              <span className="text-xs text-muted-foreground num-mono">
+                {aggregates.hotSector.industryName} · 14d{' '}
                 <span
                   className={cn(
                     'font-medium',
@@ -198,18 +198,18 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
         {aggregates.biggestMove ? (
           <KpiValue
             value={
-              <span className="text-xl sm:text-2xl font-bold text-card-foreground truncate block">
+              <span className="font-display text-xl sm:text-2xl font-semibold text-card-foreground truncate block tracking-tight">
                 {aggregates.biggestMove.industryName}
               </span>
             }
             sub={
               <span
                 className={cn(
-                  'text-xs font-medium tabular-nums',
+                  'num-mono text-xs',
                   aggregates.biggestMove.direction === 'in' ? 'text-success' : 'text-danger'
                 )}
               >
-                {aggregates.biggestMove.direction === 'in' ? '유입 ' : '유출 '}
+                {aggregates.biggestMove.direction === 'in' ? '↑ inflow ' : '↓ outflow '}
                 {aggregates.biggestMove.netFlow >= 0 ? '+' : '-'}
                 {formatFlowAmount(Math.abs(aggregates.biggestMove.netFlow))}
               </span>
@@ -235,12 +235,10 @@ function KpiCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-1 p-5 transition-[border-color,background-color,transform] duration-200 ease-out hover:-translate-y-px hover:border-primary/30">
+    <div className="sk-card sk-card-hover">
       <div className="flex items-center gap-2 mb-3">
         {icon}
-        <p className="text-xs font-medium text-muted-foreground tracking-tight">
-          {label}
-        </p>
+        <p className="eyebrow">{label}</p>
       </div>
       {children}
     </div>
@@ -274,7 +272,7 @@ function EmptyValue() {
 function CountUpMcap({ value }: { value: number }) {
   const v = useCountUp(value, { duration: 700 })
   return (
-    <span className="text-2xl sm:text-3xl font-bold tabular-nums tracking-tight text-card-foreground">
+    <span className="num-mono text-2xl sm:text-3xl tracking-tight text-card-foreground">
       {formatMarketCap(v)}
     </span>
   )
@@ -297,10 +295,7 @@ function MarketPulseStripSkeleton() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div
-          key={i}
-          className="rounded-2xl border border-border-subtle bg-surface-1 p-5"
-        >
+        <div key={i} className="sk-card">
           <Skeleton className="h-4 w-24 mb-3" />
           <Skeleton className="h-8 w-32 mb-2" />
           <Skeleton className="h-3 w-20" />

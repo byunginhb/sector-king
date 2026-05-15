@@ -85,14 +85,19 @@ export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardP
   if (data.industries.length === 0) return null
 
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden">
+    <div className="rounded-md border border-border-subtle bg-surface-1 overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-border-subtle bg-surface-2/40">
+      <div className="px-5 py-3 border-b border-border-subtle bg-surface-2/40">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <h3 className="text-lg font-bold text-card-foreground flex items-center gap-2 min-w-0">
-            <TrendingUpIcon className="w-5 h-5 text-success shrink-0" aria-hidden />
-            산업별 자금 흐름
-          </h3>
+          <div className="min-w-0">
+            <p className="eyebrow eyebrow-accent mb-1 flex items-center gap-1.5">
+              <TrendingUpIcon className="w-3 h-3 text-success shrink-0" aria-hidden />
+              Industry Money Flow
+            </p>
+            <h3 className="font-display text-lg sm:text-xl font-semibold text-foreground leading-tight">
+              산업별 자금 흐름
+            </h3>
+          </div>
           <div className="flex items-center gap-2">
             {/* Period Filter */}
             <div role="group" aria-label="기간 선택" className="flex rounded-lg overflow-hidden border border-border-subtle">
@@ -114,8 +119,8 @@ export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardP
             </div>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-1 tabular-nums">
-          최근 {data.period}일 기준 ({data.dateRange.start} ~ {data.dateRange.end})
+        <p className="num-mono text-[10px] text-muted-foreground mt-1">
+          최근 {data.period}일 · {data.dateRange.start} → {data.dateRange.end}
         </p>
       </div>
 

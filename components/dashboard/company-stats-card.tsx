@@ -28,16 +28,17 @@ export function CompanyStatsCard({ region = 'all' }: CompanyStatsCardProps = {})
 
   return (
     <>
-      <div data-tour="company-stats-card" className="rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden">
+      <div data-tour="company-stats-card" className="rounded-md border border-border-subtle bg-surface-1 overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-border-subtle bg-surface-2/40">
-          <h3 className="text-lg font-bold text-card-foreground flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-info" aria-hidden />
+        <div className="px-5 py-3 border-b border-border-subtle bg-surface-2/40">
+          <p className="eyebrow eyebrow-accent mb-1 flex items-center gap-1.5">
+            <BarChart3 className="w-3 h-3 text-foreground" aria-hidden />
+            Company Coverage
+          </p>
+          <h3 className="font-display text-lg sm:text-xl font-semibold text-foreground leading-tight">
             회사 등장 통계 Top 10
           </h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            가장 많은 섹터에 등장하는 회사
-          </p>
+          <p className="text-xs text-muted-foreground mt-1">가장 많은 섹터에 등장하는 회사</p>
         </div>
 
         {/* Empty state */}
@@ -132,8 +133,8 @@ export function CompanyStatsCard({ region = 'all' }: CompanyStatsCardProps = {})
 
 function CompanyStatsCardSkeleton() {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden">
-      <div className="px-5 py-4 border-b border-border-subtle bg-surface-2/40">
+    <div className="rounded-md border border-border-subtle bg-surface-1 overflow-hidden">
+      <div className="px-5 py-3 border-b border-border-subtle bg-surface-2/40">
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-3 w-36 mt-2" />
       </div>

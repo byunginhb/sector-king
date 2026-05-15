@@ -56,15 +56,16 @@ const SLIDES = [
 function WelcomeVisual({ visual }: { visual: string }) {
   if (visual === 'welcome') {
     return (
-      <div className="flex flex-col items-center gap-3">
-        <div className="text-5xl font-bold bg-linear-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">
-          섹터 킹
+      <div className="flex flex-col items-center gap-4">
+        <p className="eyebrow eyebrow-accent">Welcome to</p>
+        <div className="font-display text-5xl font-bold text-foreground tracking-tight">
+          Sector <span className="display-italic text-primary">King</span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-1">
           {([Monitor, BarChart3, Wallet, TrendingUp] as LucideIcon[]).map((Icon, i) => (
             <div
               key={i}
-              className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center"
+              className="w-11 h-11 border border-border-subtle bg-surface-1 flex items-center justify-center"
             >
               <Icon className="h-5 w-5 text-foreground" aria-hidden />
             </div>

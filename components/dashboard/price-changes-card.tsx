@@ -49,17 +49,20 @@ export function PriceChangesCard({ region = 'all' }: PriceChangesCardProps = {})
 
   return (
     <>
-      <div data-tour="price-changes-card" className="rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden">
+      <div data-tour="price-changes-card" className="rounded-md border border-border-subtle bg-surface-1 overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-border-subtle bg-surface-2/40">
+        <div className="px-5 py-3 border-b border-border-subtle bg-surface-2/40">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="text-lg font-bold text-card-foreground flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-success shrink-0" aria-hidden />
+              <p className="eyebrow eyebrow-accent mb-1 flex items-center gap-1.5">
+                <TrendingUp className="w-3 h-3 text-success shrink-0" aria-hidden />
+                Price Changes
+              </p>
+              <h3 className="font-display text-lg sm:text-xl font-semibold text-foreground leading-tight">
                 가격 변화율
               </h3>
-              <p className="text-xs text-muted-foreground mt-1 tabular-nums">
-                {formatDate(data.dateRange.start)} ~ {formatDate(data.dateRange.end)}
+              <p className="num-mono text-[10px] text-muted-foreground mt-1">
+                {formatDate(data.dateRange.start)} → {formatDate(data.dateRange.end)}
               </p>
             </div>
             <div className="flex items-center gap-2">

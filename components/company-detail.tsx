@@ -77,10 +77,11 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
 
       {/* Current Price Banner */}
       {snapshot && (
-        <div className="bg-linear-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50 rounded-xl p-4 border border-indigo-100 dark:border-indigo-800">
+        <div className="rounded-md border-l-2 border-l-primary border-y border-r border-y-border-subtle border-r-border-subtle bg-surface-1 p-4">
+          <p className="eyebrow mb-2">Last Price</p>
           <div className="flex items-baseline gap-3">
             <div>
-              <span className="text-3xl font-bold text-foreground">
+              <span className="num-mono text-3xl text-foreground">
                 {formatPrice(snapshot.price ?? null)}
               </span>
               {snapshot.price != null && (
@@ -252,9 +253,9 @@ function ScoreAnalysis({
             데이터 커버리지 {Math.round(score.dataQuality * 100)}%
           </span>
         </div>
-        <div className="bg-muted rounded-full h-2.5">
+        <div className="bg-muted h-1.5 rounded-sm overflow-hidden">
           <div
-            className="bg-linear-to-r from-indigo-500 to-purple-500 rounded-full h-2.5 transition-all"
+            className="bg-primary h-full rounded-sm transition-[width] duration-300"
             style={{ width: `${totalPercent}%` }}
           />
         </div>

@@ -18,15 +18,23 @@ export function EmptyRegionState({ region, message, className }: EmptyRegionStat
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center py-12 text-center',
+        'flex flex-col items-center justify-center py-14 px-6 text-center',
         className
       )}
       role="status"
       aria-live="polite"
     >
-      <Inbox className="w-10 h-10 text-muted-foreground mb-3" aria-hidden="true" />
-      <p className="text-sm text-muted-foreground">{message ?? defaultMessage}</p>
-      <p className="text-xs text-muted-foreground mt-1">다른 region을 선택해 보세요.</p>
+      <span
+        aria-hidden
+        className="inline-flex h-12 w-12 items-center justify-center border border-border-subtle bg-surface-1 mb-4"
+      >
+        <Inbox className="h-5 w-5 text-muted-foreground" />
+      </span>
+      <p className="eyebrow mb-2">No data</p>
+      <p className="font-display text-base sm:text-lg font-semibold text-foreground">
+        {message ?? defaultMessage}
+      </p>
+      <p className="text-xs text-muted-foreground mt-1.5">다른 region을 선택해 보세요.</p>
     </div>
   )
 }

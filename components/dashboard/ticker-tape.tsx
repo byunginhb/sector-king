@@ -49,8 +49,8 @@ export function TickerTape({ region = 'all', limit = 20 }: TickerTapeProps) {
 
   if (isLoading || items.length === 0) {
     return (
-      <div className="rounded-2xl border border-border-subtle bg-surface-1 px-4 py-3 overflow-hidden">
-        <div className="text-xs text-muted-foreground tabular-nums">
+      <div className="rounded-md border border-border-subtle bg-surface-1 px-4 py-3 overflow-hidden">
+        <div className="text-xs text-muted-foreground num-mono">
           {isLoading ? '핫 종목 불러오는 중…' : '오늘 추적할 핫 종목이 없습니다'}
         </div>
       </div>
@@ -65,7 +65,7 @@ export function TickerTape({ region = 'all', limit = 20 }: TickerTapeProps) {
   return (
     <>
       <div
-        className="ticker-tape group rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden"
+        className="ticker-tape group rounded-md border border-border-subtle bg-surface-1 overflow-hidden"
         aria-label="오늘의 핫 종목"
         aria-live="off"
       >
@@ -76,9 +76,9 @@ export function TickerTape({ region = 'all', limit = 20 }: TickerTapeProps) {
               type="button"
               onClick={() => setSelectedTicker(item.ticker)}
               aria-label={`${item.nameKo || item.name || item.ticker} 상세 보기, ${item.percentChange > 0 ? '+' : ''}${item.percentChange.toFixed(2)}%`}
-              className="inline-flex items-center gap-2 shrink-0 rounded-md px-2 py-1 hover:bg-surface-2 transition-colors text-left"
+              className="inline-flex items-baseline gap-2 shrink-0 rounded-sm px-2 py-1 hover:bg-surface-2 transition-colors text-left border-l border-border-subtle/0 hover:border-primary/40"
             >
-              <span className="font-mono text-xs font-bold text-foreground tabular-nums">
+              <span className="font-mono text-xs font-bold text-foreground tabular-nums tracking-tight">
                 {item.ticker.replace(/\.(KS|KQ)$/, '')}
               </span>
               <span className="text-xs text-muted-foreground line-clamp-1 max-w-[120px]">
@@ -86,7 +86,7 @@ export function TickerTape({ region = 'all', limit = 20 }: TickerTapeProps) {
               </span>
               <span
                 className={cn(
-                  'inline-flex items-center gap-0.5 text-xs font-semibold tabular-nums',
+                  'inline-flex items-center gap-0.5 num-mono text-xs',
                   item.percentChange > 0
                     ? 'text-success'
                     : item.percentChange < 0

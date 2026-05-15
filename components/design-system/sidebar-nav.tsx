@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 export interface SidebarNavItem {
   id: string
   label: string
+  meta?: string
 }
 
 interface SidebarNavProps {
@@ -16,21 +17,24 @@ export function SidebarNav({ items, className }: SidebarNavProps) {
     <nav
       aria-label="디자인 시스템 섹션 내비게이션"
       className={cn(
-        'sticky top-4 self-start rounded-xl border border-border bg-card p-3',
+        'sticky top-6 self-start border-l border-border-subtle pl-4',
         className
       )}
     >
-      <p className="px-2 pb-2 text-[11px] uppercase tracking-wide text-muted-foreground">
-        Sections
-      </p>
-      <ul className="flex flex-col gap-0.5">
+      <p className="eyebrow mb-4">Contents</p>
+      <ul className="flex flex-col gap-0">
         {items.map((item) => (
-          <li key={item.id}>
+          <li key={item.id} className="border-b border-border-subtle/70 last:border-b-0">
             <Link
               href={`#${item.id}`}
-              className="block rounded-md px-2 py-1.5 text-sm text-foreground/80 hover:bg-muted hover:text-foreground transition-colors"
+              className="group flex items-baseline gap-3 py-2 text-sm text-foreground/75 hover:text-foreground transition-colors"
             >
-              {item.label}
+              {item.meta ? (
+                <span className="font-mono text-[10px] text-muted-foreground group-hover:text-primary">
+                  {item.meta}
+                </span>
+              ) : null}
+              <span className="font-medium">{item.label}</span>
             </Link>
           </li>
         ))}

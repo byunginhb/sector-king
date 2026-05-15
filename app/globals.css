@@ -1,102 +1,137 @@
 @import "tailwindcss";
 
-/* Tailwind v4: Use class-based dark mode instead of prefers-color-scheme */
+/* Pretendard Variable — 한국어 본문/헤드라인 가독성을 책임진다.
+ * 라틴 글리프는 우리가 정한 Fraunces / Geist / JetBrains Mono 가 그리고,
+ * 한글 글리프만 자연스럽게 Pretendard 로 떨어진다 (브라우저 per-glyph fallback). */
+@import 'pretendard/dist/web/variable/pretendardvariable.css';
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Sector King — Editorial Bloomberg Terminal
+ *
+ * Voice:
+ *   1.  Newsprint typography. Fraunces serif for headlines, Geist for body,
+ *       JetBrains Mono for prices. Three voices, never one.
+ *   2.  Charcoal canvas, ivory ink, single amber accent. No purple, no
+ *       gradients, no glow. Color carries meaning (up / down / signal).
+ *   3.  Hairline rules. 1px borders at low alpha, like a financial paper grid.
+ *   4.  Data density first. Numbers are tabular and tight. Whitespace exists
+ *       to clarify, not to luxuriate.
+ *
+ * If something looks like a generic SaaS landing page, it is wrong here.
+ * ────────────────────────────────────────────────────────────────────────── */
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
-    /* Light mode — Bloomberg + Linear: warm off-white + amber 단일 강조 */
-    --background: 36 20% 98%;          /* #FAF9F6 stone-50 톤 */
-    --surface-1:  0 0% 100%;           /* 카드 베이스 */
-    --surface-2: 36 14% 96%;           /* hover */
-    --surface-3: 36 12% 93%;           /* nested / elevated */
-    --foreground: 222 30% 16%;         /* 본문 */
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 38 92% 50%;             /* amber 정통 (단일 강조) */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 217 33% 17%;
-    --muted: 36 14% 95%;
-    --muted-foreground: 220 9% 42%;
-    --accent: 38 95% 96%;              /* amber tint highlight bg */
-    --accent-foreground: 38 92% 38%;
-    --destructive: 0 72% 50%;
+    /* Light — Newsprint / Editorial paper.
+     * Warm off-white (#F4EFE4) + charcoal ink. Like Bloomberg Businessweek. */
+    --background:        40 32% 95%;       /* #F4EFE4 paper */
+    --surface-1:          0  0% 100%;       /* card */
+    --surface-2:         40 20% 92%;       /* hover / nested */
+    --surface-3:         38 18% 88%;       /* elevated / pressed */
+    --foreground:       222 30% 11%;       /* #131820 charcoal ink */
+    --card:               0  0% 100%;
+    --card-foreground:  222 35%  9%;
+    --popover:            0  0% 100%;
+    --popover-foreground:222 35%  9%;
+
+    /* Single amber signature — used for primary actions and meaning-bearing
+     * highlights. Not decorative. */
+    --primary:           36 78% 44%;       /* #C68A28 editorial amber */
+    --primary-foreground:40 32% 97%;
+
+    --secondary:         40 14% 90%;
+    --secondary-foreground:222 35% 12%;
+    --muted:             40 16% 92%;
+    --muted-foreground: 222  9% 36%;
+    --accent:            36 60% 92%;       /* amber tint highlight bg */
+    --accent-foreground: 36 78% 32%;
+
+    --destructive:        2 68% 46%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 14% 88%;
-    --border-subtle: 220 14% 93%;      /* 1px hairline */
-    --input: 220 14% 91%;
-    --ring: 38 92% 50%;
-    --radius: 0.75rem;
 
-    /* Status — 채도 한 단계 다운 */
-    --success: 160 70% 35%;            /* teal-700 상승 */
-    --success-bg: 160 50% 94%;
-    --danger: 0 72% 50%;               /* rose-600 하락 */
-    --danger-bg: 0 75% 96%;
-    --warning: 30 90% 45%;
-    --warning-bg: 38 95% 94%;
-    --info: 210 85% 50%;
-    --info-bg: 210 80% 95%;
+    /* Hairlines — warm, low-alpha, newspaper grid */
+    --border:            34 14% 78%;
+    --border-subtle:     34 14% 86%;
+    --input:             34 14% 80%;
+    --ring:              36 78% 44%;
 
-    /* Chart palette — recharts 일관 */
-    --chart-1: 38 92% 50%;             /* gold */
-    --chart-2: 160 60% 40%;            /* teal */
-    --chart-3: 210 85% 50%;            /* sky */
-    --chart-4: 280 55% 55%;            /* violet */
-    --chart-5: 0 72% 55%;              /* rose */
-    --chart-6: 30 90% 50%;             /* orange */
-    --chart-7: 190 60% 45%;            /* cyan */
-    --chart-8: 145 45% 45%;            /* lime-green */
+    /* Geometry — restrained, almost rectilinear */
+    --radius: 0.375rem;                    /* was 0.75rem — less SaaS-friendly */
+
+    /* State — slate-tinted, not neon */
+    --success:          162 48% 28%;       /* slate-teal, not lime */
+    --success-bg:       162 30% 92%;
+    --danger:             2 68% 46%;       /* slate-rose, not red */
+    --danger-bg:          2 60% 95%;
+    --warning:           28 80% 42%;
+    --warning-bg:        36 70% 93%;
+    --info:             212 60% 38%;
+    --info-bg:          210 55% 94%;
+
+    /* Charts — editorial palette. Amber is signal, others read as ink shades. */
+    --chart-1:           36 78% 44%;       /* amber (signal) */
+    --chart-2:          162 48% 30%;       /* slate teal */
+    --chart-3:          212 50% 38%;       /* slate blue */
+    --chart-4:          262 28% 42%;       /* aubergine */
+    --chart-5:            2 60% 48%;       /* slate rose */
+    --chart-6:           28 70% 46%;       /* burnt orange */
+    --chart-7:          186 36% 38%;       /* slate cyan */
+    --chart-8:          120 18% 36%;       /* moss */
   }
 
   .dark {
-    /* Dark mode — Bloomberg/Koyfin 톤 slate-950 + amber */
-    --background: 222 24% 6%;          /* #0A0E14 거의 검정 슬레이트 */
-    --surface-1: 222 20% 9%;           /* #0F141C 카드 베이스 */
-    --surface-2: 220 18% 12%;          /* #161C26 hover / nested */
-    --surface-3: 220 16% 16%;          /* #1F2733 elevated */
-    --foreground: 220 14% 96%;
-    --card: 222 20% 9%;
-    --card-foreground: 220 14% 96%;
-    --popover: 222 20% 9%;
-    --popover-foreground: 220 14% 96%;
-    --primary: 43 92% 58%;             /* #F2C24A 골드 */
-    --primary-foreground: 222 24% 6%;
-    --secondary: 220 16% 14%;
-    --secondary-foreground: 220 14% 92%;
-    --muted: 220 16% 14%;
-    --muted-foreground: 220 10% 62%;
-    --accent: 220 16% 14%;
-    --accent-foreground: 43 92% 70%;
-    --destructive: 0 60% 50%;
+    /* Dark — Bloomberg Terminal at 2am.
+     * Pitch charcoal (#0B0E13) + bone ivory text (#E8E4DA) + warm amber. */
+    --background:        222 22%  6%;       /* #0B0E13 terminal black */
+    --surface-1:         222 18%  8%;       /* #0F131A card */
+    --surface-2:         220 14% 11%;       /* #161A22 hover */
+    --surface-3:         220 12% 15%;       /* #1F242E elevated */
+    --foreground:         40 22% 88%;       /* #E8E4DA bone ivory */
+    --card:              222 18%  8%;
+    --card-foreground:    40 22% 90%;
+    --popover:           222 18%  8%;
+    --popover-foreground: 40 22% 90%;
+
+    --primary:           38 80% 56%;       /* #E5B14C burnished amber */
+    --primary-foreground:222 22%  6%;
+
+    --secondary:         220 12% 13%;
+    --secondary-foreground: 40 22% 88%;
+    --muted:             220 12% 13%;
+    --muted-foreground:  40  8% 60%;
+    --accent:            220 12% 14%;
+    --accent-foreground: 38 80% 64%;
+
+    --destructive:        2 70% 56%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 14% 20%;
-    --border-subtle: 220 14% 16%;
-    --input: 220 14% 20%;
-    --ring: 43 92% 58%;
 
-    /* Status — 다크 모드 */
-    --success: 160 60% 45%;            /* teal-400 */
-    --success-bg: 160 60% 12%;
-    --danger: 0 75% 62%;               /* rose-400 */
-    --danger-bg: 0 60% 14%;
-    --warning: 38 92% 60%;
-    --warning-bg: 38 80% 14%;
-    --info: 210 90% 62%;
-    --info-bg: 210 60% 14%;
+    /* Hairlines on dark — barely-there, like a CRT grid */
+    --border:            220  8% 18%;
+    --border-subtle:     220  8% 13%;
+    --input:             220  8% 18%;
+    --ring:              38 80% 56%;
 
-    /* Chart palette — 다크 */
-    --chart-1: 43 92% 58%;
-    --chart-2: 160 60% 50%;
-    --chart-3: 210 90% 62%;
-    --chart-4: 280 65% 65%;
-    --chart-5: 0 75% 62%;
-    --chart-6: 30 90% 58%;
-    --chart-7: 190 70% 55%;
-    --chart-8: 145 50% 55%;
+    /* State — desaturated, terminal-readable */
+    --success:          155 46% 50%;       /* slate-teal up */
+    --success-bg:       162 36% 10%;
+    --danger:             2 72% 60%;       /* slate-rose down */
+    --danger-bg:          2 50% 11%;
+    --warning:           38 80% 58%;
+    --warning-bg:        36 60% 12%;
+    --info:             210 65% 60%;
+    --info-bg:          210 40% 12%;
+
+    /* Charts — dark palette. Amber still the only signal color. */
+    --chart-1:           38 80% 56%;
+    --chart-2:          162 50% 50%;
+    --chart-3:          212 60% 60%;
+    --chart-4:          262 38% 60%;
+    --chart-5:            2 72% 62%;
+    --chart-6:           28 80% 58%;
+    --chart-7:          186 50% 56%;
+    --chart-8:          120 26% 56%;
   }
 }
 
@@ -140,49 +175,106 @@
   --color-chart-6: hsl(var(--chart-6));
   --color-chart-7: hsl(var(--chart-7));
   --color-chart-8: hsl(var(--chart-8));
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+
+  /* Three voices — display (serif), sans (body), mono (data).
+   * Latin glyphs use Fraunces / Geist / JetBrains Mono first.
+   * Korean glyphs (and other CJK) fall through to Pretendard Variable, which
+   * is loaded above as a webfont. The browser does per-glyph fallback so a
+   * mixed line like "KOSPI 코스피 +1.82%" lands on three different families
+   * automatically without manual unicode-range juggling. */
+  --font-display:
+    var(--font-fraunces), 'Fraunces', 'Newsreader', ui-serif, Georgia,
+    'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo',
+    'Noto Sans KR', sans-serif;
+  --font-sans:
+    var(--font-geist-sans), 'Pretendard Variable', Pretendard,
+    -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR',
+    'Malgun Gothic', system-ui, sans-serif;
+  --font-mono:
+    var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, 'SF Mono',
+    Menlo, Consolas, 'Pretendard Variable', Pretendard, monospace;
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
 }
-
-/* Unified neutral pastel design */
 
 @layer base {
   * {
     @apply border-border;
   }
 
-  /* Prevent Chrome's automatic dark mode */
-  html {
-    color-scheme: light;
-  }
-  html.dark {
-    color-scheme: dark;
-  }
+  html { color-scheme: light; }
+  html.dark { color-scheme: dark; }
 
   body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
-  /* 숫자 정렬 일관성 — Bloomberg 패턴 (tabular-nums) */
+  /* Headlines wear the serif. */
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-feature-settings: 'ss01' 1, 'liga' 1, 'kern' 1;
+    letter-spacing: -0.018em;
+  }
+  h1 { letter-spacing: -0.028em; }
+
+  /* Numbers are tabular and tight everywhere they are flagged. */
   .tabular-nums,
   .num,
   [data-num] {
-    font-feature-settings: "tnum" 1, "lnum" 1;
-    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1, 'zero' 1;
+    font-variant-numeric: tabular-nums lining-nums slashed-zero;
     letter-spacing: -0.01em;
   }
 
-  /* prefers-reduced-motion 존중 */
+  /* Data values default to mono — opt-in via class. */
+  .num-mono,
+  [data-num='mono'] {
+    font-family: var(--font-mono);
+    font-feature-settings: 'tnum' 1, 'lnum' 1, 'zero' 1, 'ss01' 1;
+    font-variant-numeric: tabular-nums lining-nums slashed-zero;
+    letter-spacing: -0.012em;
+  }
+
+  /* Editorial eyebrow — small caps mono uppercase label.
+   * Replaces the generic "uppercase tracking-wide" SaaS habit. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;       /* 11px */
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    font-weight: 500;
+  }
+  .eyebrow-accent {
+    color: hsl(var(--primary));
+  }
+
+  /* Display headline — Fraunces, optical size large. */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    font-feature-settings: 'ss01' 1, 'liga' 1;
+    font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  }
+  .display-italic {
+    font-style: italic;
+    font-variation-settings: 'opsz' 144, 'SOFT' 50;
+  }
+
+  /* prefers-reduced-motion */
   @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    *, *::before, *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
@@ -190,33 +282,72 @@
   }
 }
 
-/* Custom scrollbar */
 @layer components {
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+  /* ── Scrollbar — thin, ink-toned ── */
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
-    border-radius: 3px;
+    background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
+    background: hsl(var(--muted-foreground) / 0.25);
     border-radius: 3px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
+    background: hsl(var(--muted-foreground) / 0.45);
   }
 
-  /* 표준 카드 토큰 — Bloomberg + Linear */
+  /* ── sk-card — editorial paper card.
+   *    Tight radius, hairline border, no shadow by default.
+   *    On hover: amber hairline + faint surface lift. No translate.
+   * ── */
   .sk-card {
-    @apply rounded-2xl border border-border-subtle bg-surface-1 p-5 transition-[border-color,background-color,transform] duration-200 ease-out;
+    @apply rounded-md border border-border-subtle bg-surface-1 p-5
+      transition-[border-color,background-color] duration-200 ease-out;
   }
   .sk-card-hover {
-    @apply hover:-translate-y-px hover:border-primary/30 hover:bg-surface-2;
+    @apply hover:border-primary/40 hover:bg-surface-2;
+  }
+  .sk-card-flush {
+    @apply rounded-none border-x-0 border-border-subtle;
   }
 
-  /* TickerTape — 핫 종목 무한 가로 marquee (CSS 단, framer 미사용) */
+  /* ── Hairline rule — a single 1px ink line, used for editorial grid ── */
+  .sk-rule {
+    border: 0;
+    border-top: 1px solid hsl(var(--border));
+    margin: 0;
+  }
+  .sk-rule-double {
+    border: 0;
+    border-top: 1px solid hsl(var(--foreground));
+    border-bottom: 1px solid hsl(var(--foreground));
+    height: 3px;
+  }
+
+  /* ── Statline — small "Bloomberg row" element.
+   *    Use for label · value pairs aligned across columns. ── */
+  .sk-statline {
+    @apply flex items-baseline justify-between gap-3
+      border-b border-border-subtle/70 py-2 last:border-b-0;
+  }
+  .sk-statline .label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    font-weight: 500;
+  }
+  .sk-statline .value {
+    font-family: var(--font-mono);
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.012em;
+    @apply text-sm text-foreground;
+  }
+
+  /* ── TickerTape — infinite horizontal marquee (CSS only, no framer) ── */
   .ticker-tape {
     --ticker-duration: 60s;
   }
@@ -228,11 +359,13 @@
     animation-play-state: paused;
   }
   @keyframes ticker-marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── Selection — amber, like a highlighter on newsprint ── */
+  ::selection {
+    background: hsl(var(--primary) / 0.32);
+    color: hsl(var(--foreground));
   }
 }

@@ -81,20 +81,20 @@ export function GlobalTopBar({
   const showMobile = mounted && !isDesktop
 
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border-subtle">
-      <div className="container mx-auto px-4 py-4">
+    <header className="sticky top-0 z-50 bg-background/85 backdrop-blur-sm border-b border-foreground/15">
+      <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <Link href="/" className="flex items-center gap-3 shrink-0" aria-label="홈으로">
-              <SectorKingLogo size={40} className="shrink-0" />
+            <Link href="/" className="flex items-baseline gap-3 shrink-0 group" aria-label="홈으로">
+              <SectorKingLogo size={32} className="shrink-0 self-center" />
               <div className="min-w-0">
-                <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
+                <h1 className="font-display text-xl md:text-2xl font-bold text-foreground leading-none tracking-tight">
                   Sector King
                 </h1>
                 {subtitle ? (
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{subtitle}</p>
+                  <p className="eyebrow mt-1.5 line-clamp-1">{subtitle}</p>
                 ) : (
-                  <p className="text-xs text-muted-foreground mt-0.5">산업별 투자 패권 지도</p>
+                  <p className="eyebrow mt-1.5">The Map of Capital</p>
                 )}
               </div>
             </Link>

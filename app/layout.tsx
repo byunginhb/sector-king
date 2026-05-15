@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Fraunces, JetBrains_Mono } from 'next/font/google'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Providers } from '@/components/providers'
@@ -12,14 +12,29 @@ import './onboarding.css'
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
+// Editorial Bloomberg Terminal — three voices:
+//   - Geist Sans for body and UI
+//   - Fraunces (variable, opsz + SOFT) for serif display headlines
+//   - JetBrains Mono for prices, tickers, and numeric data
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
+  display: 'swap',
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const fraunces = Fraunces({
+  variable: '--font-fraunces',
   subsets: ['latin'],
+  display: 'swap',
+  style: ['normal', 'italic'],
+  axes: ['opsz', 'SOFT'],
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: '--font-jetbrains-mono',
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
 })
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
@@ -107,7 +122,9 @@ export default function RootLayout({
         <meta name="color-scheme" content="light dark" />
         <WebSiteJsonLd />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}>
+      <body
+        className={`${geistSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} antialiased bg-background font-sans`}
+      >
         <Providers>
           <TooltipProvider delayDuration={0}>
             {children}
