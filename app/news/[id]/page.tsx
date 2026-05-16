@@ -106,7 +106,7 @@ export default async function NewsDetailPage({ params, searchParams }: PageProps
         ]}
       />
       <GlobalTopBar
-        subtitle={report.title}
+        subtitle="마켓 리포트"
         mobileLeading={
           <Link
             href="/news"
