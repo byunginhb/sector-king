@@ -59,7 +59,7 @@ export function IndustryDashboard() {
         <section className="border-b border-foreground/80 pb-6 sm:pb-8 mb-8 sm:mb-10">
           {/* eyebrow row: amber accent · 마지막 업데이트 KST */}
           <div className="flex items-baseline justify-between gap-4 flex-wrap mb-3">
-            <p className="text-xs uppercase tracking-wider text-amber-400">
+            <p className="text-xs uppercase tracking-wider font-semibold text-amber-700 dark:text-amber-400">
               The Map of Capital · 자금 흐름 지도
             </p>
             {lastUpdated ? (
@@ -75,7 +75,7 @@ export function IndustryDashboard() {
           </h1>
 
           {/* 영문 보조 카피 */}
-          <p className="mt-3 text-xs uppercase tracking-wider text-amber-400/70">
+          <p className="mt-3 text-xs uppercase tracking-wider font-medium text-amber-700/85 dark:text-amber-400/70">
             Where capital sits today, where it moves next.
           </p>
 
@@ -88,14 +88,14 @@ export function IndustryDashboard() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="#industries"
-              className="inline-flex items-center gap-2 rounded-md border border-amber-500/60 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-300 transition-colors hover:bg-amber-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 border-amber-600 bg-amber-500/15 text-amber-900 hover:bg-amber-500/25 dark:border-amber-500/60 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20"
             >
               <ArrowDown className="h-4 w-4" aria-hidden />
               산업 지도 보기
             </Link>
             <Link
               href="/news"
-              className="inline-flex items-center gap-2 rounded-md border border-amber-500/40 px-4 py-2 text-sm text-amber-400 transition-colors hover:bg-amber-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 border-amber-700/70 text-amber-800 hover:bg-amber-500/10 dark:border-amber-500/40 dark:text-amber-300 dark:hover:bg-amber-500/10"
             >
               <Mail className="h-4 w-4" aria-hidden />
               메일로 받기
