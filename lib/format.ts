@@ -11,6 +11,24 @@ export function formatPrice(value: number | null): string {
   return `$${value.toFixed(2)}`
 }
 
+/**
+ * 좁은 셀(모바일 리스트 등)에서 쓰는 짧은 가격 포맷.
+ *  - >= 1e6  : $1.82M
+ *  - >= 1e5  : $834K
+ *  - >= 1e4  : $80.3K
+ *  - >= 1e3  : $3,260
+ *  - else    : $108.77
+ */
+export function formatPriceCompact(value: number | null | undefined): string {
+  if (value === null || value === undefined) return 'N/A'
+  const abs = Math.abs(value)
+  if (abs >= 1e6) return `$${(value / 1e6).toFixed(2)}M`
+  if (abs >= 1e5) return `$${Math.round(value / 1e3).toLocaleString()}K`
+  if (abs >= 1e4) return `$${(value / 1e3).toFixed(1)}K`
+  if (abs >= 1e3) return `$${Math.round(value).toLocaleString()}`
+  return `$${value.toFixed(2)}`
+}
+
 export function formatPriceChange(value: number | null): string {
   if (value === null || value === undefined) return 'N/A'
   const sign = value >= 0 ? '+' : ''

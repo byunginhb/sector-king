@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { TrendingUp } from 'lucide-react'
 import { usePriceChanges } from '@/hooks/use-price-changes'
-import { formatPrice, formatPriceChange, formatDate, formatKrw } from '@/lib/format'
+import { formatPriceCompact, formatPriceChange, formatDate, formatKrw } from '@/lib/format'
 import { getPriceChangeStyle } from '@/lib/styles'
 import { cn } from '@/lib/utils'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
@@ -174,26 +174,26 @@ function CompanyList({
               : 'hover:bg-info/10'
           )}
         >
-          <div className="flex items-center justify-between">
-            <div className="truncate max-w-[120px]">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
               <div className="text-sm font-medium text-card-foreground truncate">
                 {company.nameKo || company.name}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground truncate">
                 {company.ticker}
               </div>
             </div>
-            <div className="text-right shrink-0 ml-2">
+            <div className="text-right shrink-0">
               <div
                 className={cn(
-                  'text-sm font-bold',
+                  'text-sm font-bold tabular-nums',
                   getPriceChangeStyle(company.percentChange ?? null)
                 )}
               >
                 {formatPriceChange(company.percentChange)}
               </div>
-              <div className="text-xs text-muted-foreground">
-                {formatPrice(company.latestPrice)}
+              <div className="text-xs text-muted-foreground tabular-nums">
+                {formatPriceCompact(company.latestPrice)}
                 {company.latestPrice != null && (
                   <span className="ml-1">({formatKrw(company.latestPrice)})</span>
                 )}
