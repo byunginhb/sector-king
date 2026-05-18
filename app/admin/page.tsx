@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Mail,
   MessageSquare,
+  Users,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
@@ -52,6 +53,12 @@ export default async function AdminPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <AdminLinkCard
+          href="/admin/users"
+          icon={<Users className="h-4 w-4 text-primary" aria-hidden />}
+          title="사용자 관리"
+          description="가입자 목록과 메일 구독 여부를 한눈에 확인합니다."
+        />
         <AdminLinkCard
           href="/admin/email-log"
           icon={<Mail className="h-4 w-4 text-primary" aria-hidden />}
