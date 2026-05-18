@@ -3,6 +3,7 @@ import { eq, desc } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { dailySnapshots, companies } from '@/drizzle/schema'
 import { matchesRegion, resolveRegion } from '@/lib/region'
+import { toUsd } from '@/lib/currency'
 import type { ApiResponse, RegionFilter } from '@/types'
 
 export const revalidate = 3600
@@ -97,7 +98,7 @@ export async function GET(
       name: row.name ?? null,
       nameKo: row.nameKo ?? null,
       percentChange: row.priceChange,
-      price: row.price ?? null,
+      price: row.price !== null ? toUsd(row.price, row.ticker) : null,
     }))
 
     return NextResponse.json({

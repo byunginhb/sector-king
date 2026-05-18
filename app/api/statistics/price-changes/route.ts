@@ -150,8 +150,17 @@ export async function GET(
 
       const company = companyMap.get(ticker)
 
+      // 가격은 클라이언트에서 $ 표기로 사용 → 통화 정규화(USD).
+      // .KS/.KQ 등은 DB 에 네이티브 통화로 저장되므로 toUsd() 필수.
+      const firstPriceUsd =
+        first.price !== null ? toUsd(first.price, ticker) : null
+      const latestPriceUsd =
+        latest.price !== null ? toUsd(latest.price, ticker) : null
+
       const priceChange =
-        first.price && latest.price ? latest.price - first.price : null
+        firstPriceUsd !== null && latestPriceUsd !== null
+          ? latestPriceUsd - firstPriceUsd
+          : null
       const percentChange =
         first.price && latest.price
           ? ((latest.price - first.price) / first.price) * 100
@@ -161,9 +170,9 @@ export async function GET(
         ticker,
         name: company?.name || ticker,
         nameKo: company?.nameKo || null,
-        firstPrice: first.price,
+        firstPrice: firstPriceUsd,
         firstDate: dates.minDate,
-        latestPrice: latest.price,
+        latestPrice: latestPriceUsd,
         latestDate: dates.maxDate,
         priceChange,
         percentChange,
