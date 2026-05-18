@@ -7,29 +7,29 @@ import { SectionHeader } from '@/components/ui/section-header'
 import { cn } from '@/lib/utils'
 import type { NoviceStockAction } from '@/drizzle/supabase-schema'
 
-// action 별 시각 토큰 (메일 템플릿과 동일한 의미 매핑)
+// action 별 시각 토큰 (시맨틱 — 라이트/다크 자동 대응, 메일 템플릿과 동일한 의미 매핑)
 const ACTION_STYLE: Record<
   NoviceStockAction,
   { label: string; chipClass: string; icon: React.ComponentType<{ className?: string }> }
 > = {
   사: {
     label: '사',
-    chipClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30',
+    chipClass: 'bg-success/15 text-success border-success/30',
     icon: Flag,
   },
   '조심하면서 사': {
     label: '조심하면서 사',
-    chipClass: 'bg-amber-500/15 text-amber-300 border-amber-400/30',
+    chipClass: 'bg-warning/15 text-warning border-warning/40',
     icon: ShieldAlert,
   },
   지켜봐: {
     label: '지켜봐',
-    chipClass: 'bg-slate-500/15 text-slate-300 border-slate-400/30',
+    chipClass: 'bg-surface-2 text-muted-foreground border-border-subtle',
     icon: Eye,
   },
   '안 사': {
     label: '안 사',
-    chipClass: 'bg-rose-500/15 text-rose-300 border-rose-400/30',
+    chipClass: 'bg-danger/15 text-danger border-danger/30',
     icon: Ban,
   },
 }
@@ -97,7 +97,7 @@ export function KoreanPicksCard() {
           </p>
           <Link
             href={detailUrl}
-            className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 px-3 py-1.5 text-xs font-semibold text-amber-300 transition-colors hover:bg-amber-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+            className="inline-flex items-center gap-1.5 rounded-md border border-warning/40 px-3 py-1.5 text-xs font-semibold text-warning transition-colors hover:bg-warning/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning/60"
           >
             이유 보러가기
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />

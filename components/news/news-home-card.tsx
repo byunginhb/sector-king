@@ -13,14 +13,15 @@ import type { NewsReportListItem, NoviceStockAction } from '@/drizzle/supabase-s
 import { useLatestKoreanStocks } from '@/hooks/use-latest-korean-stocks'
 import { NewsSubscribeCta } from './news-subscribe-cta'
 
-// action 별 chip 색상 토큰
+// action 별 chip 색상 토큰 (시맨틱 — 라이트/다크 자동 대응)
 const PICK_CHIP_CLASS: Record<NoviceStockAction, string> = {
-  사: 'border-emerald-400/40 text-emerald-300 bg-emerald-500/10 group-hover:bg-emerald-500/20',
+  사: 'border-success/40 text-success bg-success/10 group-hover:bg-success/20',
   '조심하면서 사':
-    'border-amber-400/40 text-amber-300 bg-amber-500/10 group-hover:bg-amber-500/20',
+    'border-warning/40 text-warning bg-warning/10 group-hover:bg-warning/20',
   지켜봐:
-    'border-slate-400/40 text-slate-300 bg-slate-500/10 group-hover:bg-slate-500/20',
-  '안 사': 'border-rose-400/40 text-rose-300 bg-rose-500/10 group-hover:bg-rose-500/20',
+    'border-border-subtle text-muted-foreground bg-surface-2 group-hover:bg-surface-2/70',
+  '안 사':
+    'border-danger/40 text-danger bg-danger/10 group-hover:bg-danger/20',
 }
 
 interface NewsHomeCardProps {
