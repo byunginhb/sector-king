@@ -75,12 +75,21 @@ export const metadata: Metadata = {
     title: 'Sector King — 한국·미국 주식 섹터 패권 지도',
     description:
       '산업별 섹터 시장 지배력을 한 눈에. 자금 흐름·시가총액·등락율·일별 리포트 무료 제공.',
+    images: [
+      {
+        url: '/screen.png',
+        width: 1274,
+        height: 808,
+        alt: 'Sector King — 시장의 돈이 어디로 흐르는가',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Sector King — 한국·미국 주식 섹터 패권 지도',
     description:
       '산업별 섹터 시장 지배력을 한 눈에. 자금 흐름·시가총액·등락율·일별 리포트 무료 제공.',
+    images: ['/screen.png'],
   },
   robots: {
     index: true,
