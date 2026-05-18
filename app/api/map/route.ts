@@ -13,6 +13,7 @@ import type { ApiResponse, MapResponse } from '@/types'
 import { resolveIndustryFilter } from '@/lib/api-helpers'
 import { applyRegionFilter, matchesRegion } from '@/lib/region'
 import { toScoreSummary } from '@/lib/format'
+import { toUsd } from '@/lib/currency'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -114,8 +115,9 @@ export async function GET(
 
       for (const cp of currentPrices) {
         if (cp.ticker) {
+          // price 는 USD 정규화 (priceChange 는 % — 변환 불필요)
           currentPricesMap.set(cp.ticker, {
-            price: cp.price,
+            price: cp.price != null ? toUsd(cp.price, cp.ticker) : null,
             priceChange: cp.priceChange,
           })
         }
@@ -137,34 +139,40 @@ export async function GET(
       return true
     })
 
-    // Transform data
+    // Transform data — price·marketCap 은 USD 정규화 (priceChange 는 % — 변환 불필요)
     const transformedSectorCompanies = filteredSCWithDetails.map((sc) => {
+      const ticker = sc.ticker ?? ''
+      const priceUsd = sc.price != null ? toUsd(sc.price, ticker) : null
+      const marketCapUsd =
+        sc.marketCap != null ? toUsd(sc.marketCap, ticker) : null
+
       const currentSnapshot = isHistorical
-        ? currentPricesMap.get(sc.ticker ?? '') || null
+        ? currentPricesMap.get(ticker) || null
         : null
 
-      // Calculate price change from snapshot date to now
+      // Calculate price change from snapshot date to now (둘 다 USD 기준 → 비율 정확)
       let priceChangeFromSnapshot: number | null = null
-      if (isHistorical && sc.price && currentSnapshot?.price) {
-        priceChangeFromSnapshot = ((currentSnapshot.price - sc.price) / sc.price) * 100
+      if (isHistorical && priceUsd && currentSnapshot?.price) {
+        priceChangeFromSnapshot =
+          ((currentSnapshot.price - priceUsd) / priceUsd) * 100
       }
 
       return {
         sectorId: sc.sectorId ?? '',
-        ticker: sc.ticker ?? '',
+        ticker,
         rank: sc.rank,
         notes: sc.notes,
         company: {
-          ticker: sc.ticker ?? '',
+          ticker,
           name: sc.companyName ?? '',
           nameKo: sc.companyNameKo,
           logoUrl: sc.logoUrl,
         },
-        snapshot: sc.marketCap
+        snapshot: marketCapUsd
           ? {
               date: sc.snapshotDate ?? selectedDate ?? '',
-              marketCap: sc.marketCap,
-              price: sc.price,
+              marketCap: marketCapUsd,
+              price: priceUsd,
               priceChange: sc.priceChange,
             }
           : null,

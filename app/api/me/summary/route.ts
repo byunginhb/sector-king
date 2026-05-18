@@ -11,6 +11,7 @@ import { inArray, sql } from 'drizzle-orm'
 import { createClient } from '@/lib/supabase/server'
 import { requireUserApi } from '@/lib/auth/require-user-api'
 import { getDb, schema } from '@/lib/db'
+import { toUsd } from '@/lib/currency'
 import type { ApiResponse } from '@/types'
 import type {
   MyWatchPnlItem,
@@ -96,9 +97,11 @@ export async function GET() {
       >()
       for (const row of snapshots) {
         if (!row.ticker) continue
+        // 가격·시총은 USD 정규화 (priceChange 는 % — 통화 무관)
         byTicker.set(row.ticker, {
-          marketCap: row.marketCap ?? null,
-          price: row.price ?? null,
+          marketCap:
+            row.marketCap != null ? toUsd(row.marketCap, row.ticker) : null,
+          price: row.price != null ? toUsd(row.price, row.ticker) : null,
           priceChange: row.priceChange ?? null,
         })
       }

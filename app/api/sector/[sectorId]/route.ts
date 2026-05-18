@@ -11,6 +11,7 @@ import {
 import { eq, sql } from 'drizzle-orm'
 import type { ApiResponse, SectorDetailResponse } from '@/types'
 import { toScoreSummary } from '@/lib/format'
+import { toUsd } from '@/lib/currency'
 
 export const revalidate = 3600 // 1 hour cache
 
@@ -78,34 +79,40 @@ export async function GET(
       .where(eq(sectorCompanies.sectorId, sectorId))
       .orderBy(sectorCompanies.rank)
 
-    // Calculate total market cap
-    const marketCapTotal = sectorCompaniesWithDetails.reduce(
-      (sum, sc) => sum + (sc.marketCap || 0),
+    // Transform data (가격·시총은 toUsd 정규화 — 클라이언트에서 $ 표기)
+    const transformedCompanies = sectorCompaniesWithDetails.map((sc) => {
+      const ticker = sc.ticker ?? ''
+      const marketCapUsd =
+        sc.marketCap != null ? toUsd(sc.marketCap, ticker) : null
+      const priceUsd = sc.price != null ? toUsd(sc.price, ticker) : null
+      return {
+        sectorId: sc.sectorId ?? '',
+        ticker,
+        rank: sc.rank,
+        notes: sc.notes,
+        company: {
+          ticker,
+          name: sc.companyName ?? '',
+          nameKo: sc.companyNameKo,
+          logoUrl: sc.logoUrl,
+        },
+        snapshot: marketCapUsd
+          ? {
+              date: sc.snapshotDate ?? '',
+              marketCap: marketCapUsd,
+              price: priceUsd,
+              priceChange: sc.priceChange, // % 단위(통화 무관)
+            }
+          : null,
+        score: toScoreSummary(sc),
+      }
+    })
+
+    // Calculate total market cap (USD 정규화 후)
+    const marketCapTotal = transformedCompanies.reduce(
+      (sum, c) => sum + (c.snapshot?.marketCap || 0),
       0
     )
-
-    // Transform data
-    const transformedCompanies = sectorCompaniesWithDetails.map((sc) => ({
-      sectorId: sc.sectorId ?? '',
-      ticker: sc.ticker ?? '',
-      rank: sc.rank,
-      notes: sc.notes,
-      company: {
-        ticker: sc.ticker ?? '',
-        name: sc.companyName ?? '',
-        nameKo: sc.companyNameKo,
-        logoUrl: sc.logoUrl,
-      },
-      snapshot: sc.marketCap
-        ? {
-            date: sc.snapshotDate ?? '',
-            marketCap: sc.marketCap,
-            price: sc.price,
-            priceChange: sc.priceChange,
-          }
-        : null,
-      score: toScoreSummary(sc),
-    }))
 
     return NextResponse.json({
       success: true,

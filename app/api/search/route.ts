@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { companies, dailySnapshots } from '@/drizzle/schema'
 import { or, like, desc, eq, sql } from 'drizzle-orm'
+import { toUsd } from '@/lib/currency'
 import type { ApiResponse, SearchResponse } from '@/types'
 
 export async function GET(request: NextRequest) {
@@ -77,13 +78,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json<ApiResponse<SearchResponse>>({
       success: true,
       data: {
+        // price·marketCap 은 USD 정규화 (priceChange 는 % — 변환 불필요)
         results: results.map((r) => ({
           ticker: r.ticker,
           name: r.name,
           nameKo: r.nameKo,
-          price: r.price,
+          price: r.price != null ? toUsd(r.price, r.ticker) : null,
           priceChange: r.priceChange,
-          marketCap: r.marketCap,
+          marketCap: r.marketCap != null ? toUsd(r.marketCap, r.ticker) : null,
         })),
         query,
         total: results.length,

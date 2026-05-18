@@ -9,6 +9,7 @@ import {
   sectors,
 } from '@/drizzle/schema'
 import { eq, desc } from 'drizzle-orm'
+import { toUsd } from '@/lib/currency'
 import type { ApiResponse, CompanyDetailResponse } from '@/types'
 
 export const revalidate = 3600 // 1 hour cache
@@ -88,13 +89,27 @@ export async function GET(
       data: {
         company: company[0],
         profile: profile[0] || null,
+        // 가격 필드(marketCap/price/week52High/week52Low/history.price) 는 USD 정규화.
+        // priceChange/volume/peRatio/pegRatio 는 통화 무관.
         snapshot: snapshot[0]
           ? {
-              marketCap: snapshot[0].marketCap,
-              price: snapshot[0].price,
+              marketCap:
+                snapshot[0].marketCap != null
+                  ? toUsd(snapshot[0].marketCap, ticker)
+                  : null,
+              price:
+                snapshot[0].price != null
+                  ? toUsd(snapshot[0].price, ticker)
+                  : null,
               priceChange: snapshot[0].priceChange,
-              week52High: snapshot[0].week52High,
-              week52Low: snapshot[0].week52Low,
+              week52High:
+                snapshot[0].week52High != null
+                  ? toUsd(snapshot[0].week52High, ticker)
+                  : null,
+              week52Low:
+                snapshot[0].week52Low != null
+                  ? toUsd(snapshot[0].week52Low, ticker)
+                  : null,
               volume: snapshot[0].volume,
               peRatio: snapshot[0].peRatio,
               pegRatio: snapshot[0].pegRatio,
@@ -104,7 +119,7 @@ export async function GET(
           .filter((h) => h.price !== null)
           .map((h) => ({
             date: h.date,
-            price: h.price as number,
+            price: toUsd(h.price as number, ticker),
             volume: h.volume || 0,
           }))
           .reverse(),
@@ -122,7 +137,10 @@ export async function GET(
               returnOnEquity: scoreRow.returnOnEquity,
               recommendationKey: scoreRow.recommendationKey,
               analystCount: scoreRow.analystCount,
-              targetMeanPrice: scoreRow.targetMeanPrice,
+              targetMeanPrice:
+                scoreRow.targetMeanPrice != null
+                  ? toUsd(scoreRow.targetMeanPrice, ticker)
+                  : null,
             }
           : null,
         sectors: companySectors.map((s) => ({

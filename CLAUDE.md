@@ -6,6 +6,28 @@ Next.js 15 + TypeScript + Drizzle/SQLite + React Query + framer-motion + rechart
 
 `pnpm`만 사용. `pnpm-lock.yaml` 외 lockfile 생성 금지.
 
+## 통화 정규화 규칙 (필수)
+
+**`dailySnapshots` 와 `companyScores` 의 가격성 필드는 네이티브 통화로 저장된다.** 클라이언트는 모든 응답을 USD($)로 표시하므로, **API 응답 직전 반드시 `toUsd(value, ticker)` 로 변환**해야 한다. 누락 시 .KS/.KQ/.T/.TW/.HK/.PA 티커가 raw 원·엔·NT달러 값으로 노출되어 `$1.82M` 같은 이중 환산 버그가 발생한다(2026-05-09, 2026-05-18 두 번 재발).
+
+**변환 필수 필드:**
+- `dailySnapshots`: `price`, `marketCap`, `week52High`, `week52Low`, `dayHigh`, `dayLow`, `firstPrice`, `latestPrice`, `priceChange`(절댓값 차이일 때만 — 원 컬럼 `daily_snapshots.price_change` 는 %라 변환 불요)
+- `companyScores`: `targetMeanPrice`, `freeCashflow`
+- 위 값들로 파생 계산하는 가격 차/합도 USD 변환 후 계산
+
+**변환 불요 필드 (통화 무관):**
+- 비율·퍼센트: `percentChange`, `priceChange`(dailySnapshots 컬럼 = %), `revenueGrowth`, `earningsGrowth`, `operatingMargin`, `returnOnEquity`
+- 무차원: `volume`, `peRatio`, `pegRatio`, `beta`, `debtToEquity`, score 값
+- 클라이언트 표시용 KRW: `formatKrw(usd)` 가 USD를 받아 ×환율 → 원화 표기 (절대 원값을 넘기지 말 것)
+
+**체크리스트 (모든 신규/수정 API 라우트에서):**
+- [ ] 응답에 가격·시총 필드가 있는가?
+- [ ] 해당 필드를 `toUsd(value, ticker)` 로 감쌌는가?
+- [ ] 두 가격을 빼서 차액을 만든다면, 양쪽을 USD 로 변환 후 빼는가?
+- [ ] 같은 통화의 두 가격을 나눠 비율을 구한다면(같은 ticker 한정), 변환은 선택 — 단 출력 시 USD로 변환된 값을 응답해야 함
+
+**SoT:** `lib/currency.ts` (`toUsd`, `TICKER_SUFFIX_CURRENCY`). 새 거래소 접미사 추가 시 여기 한 곳만 수정.
+
 ## 하네스: sector-king domain harness
 
 **목표:** 산업/섹터/티커 데이터 모델, 필터 체인(`lib/industry.ts`), API 라우트, UI 페이지가 동시에 영향받는 작업을 안전하게 조율한다.
