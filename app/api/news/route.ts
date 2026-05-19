@@ -33,6 +33,8 @@ export async function GET(req: Request) {
       .from('news_reports')
       .select(NEWS_LIST_COLUMNS)
       .eq('status', 'published')
+      // 리포트 일자(report_date) 최신순. 같은 날짜 내 다중 발행이 있다면 발행 시각 desc 로 tie-break.
+      .order('report_date', { ascending: false })
       .order('published_at', { ascending: false })
       .limit(limit)
 
