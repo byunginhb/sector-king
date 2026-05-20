@@ -28,7 +28,7 @@ const ACTION_STYLE: Record<
     icon: Eye,
   },
   '안 사': {
-    label: '안 사',
+    label: '사지마',
     chipClass: 'bg-danger/15 text-danger border-danger/30',
     icon: Ban,
   },

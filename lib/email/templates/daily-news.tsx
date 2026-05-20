@@ -77,6 +77,14 @@ const ACTION_COLOR: Record<NoviceKoreanStockItem['action'], string> = {
   '안 사': COLOR.danger,
 }
 
+// 표시용 라벨 (DB enum 값과 분리 — '안 사' 는 UI 에서 '사지마' 로 노출)
+const ACTION_LABEL: Record<NoviceKoreanStockItem['action'], string> = {
+  사: '사',
+  '조심하면서 사': '조심하면서 사',
+  지켜봐: '지켜봐',
+  '안 사': '사지마',
+}
+
 // ----------------------------------------------------------------------------
 // 메인 컴포넌트
 // ----------------------------------------------------------------------------
@@ -377,7 +385,7 @@ export function DailyNewsEmail({
                           borderRadius: 999,
                         }}
                       >
-                        {ks.action}
+                        {ACTION_LABEL[ks.action] ?? ks.action}
                       </span>
                     </Column>
                   </Row>

@@ -24,6 +24,14 @@ const PICK_CHIP_CLASS: Record<NoviceStockAction, string> = {
     'border-danger/40 text-danger bg-danger/10 group-hover:bg-danger/20',
 }
 
+// 표시용 라벨 (DB enum 값과 분리 — '안 사' 는 UI 에서 '사지마' 로 노출)
+const PICK_LABEL: Record<NoviceStockAction, string> = {
+  사: '사',
+  '조심하면서 사': '조심하면서 사',
+  지켜봐: '지켜봐',
+  '안 사': '사지마',
+}
+
 interface NewsHomeCardProps {
   report: NewsReportListItem
   /** 30초 브리핑 (있으면 표시). API 응답이 ListItem 이라 기본은 결론만 노출 */
@@ -95,7 +103,7 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
                   )}
                 >
                   <span className="font-semibold">{p.name}</span>
-                  <span className="opacity-80">‘{p.action}’ 이유는?</span>
+                  <span className="opacity-80">‘{PICK_LABEL[p.action] ?? p.action}’ 이유는?</span>
                   <HelpCircle className="h-3 w-3 opacity-80" aria-hidden />
                 </span>
               ))}

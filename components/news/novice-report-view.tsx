@@ -42,7 +42,7 @@ const ACTION_META: Record<
     cls: 'bg-surface-2 text-muted-foreground border-border-subtle',
   },
   '안 사': {
-    label: '안 사',
+    label: '사지마',
     cls: 'bg-danger/15 text-danger border-danger/30',
   },
 }
