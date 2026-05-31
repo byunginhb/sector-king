@@ -129,13 +129,14 @@ export async function POST(req: Request) {
 
   const admin = createAdminClient()
 
-  // 1. 발행된 최신 리포트 1건 조회
+  // 1. 발행된 "오늘(KST)" 리포트 1건 조회.
+  //    report_date 가 오늘이 아니면 발송하지 않는다 — "당일 뉴스 없으면 메일 X" 가드.
   const { data: reportRow, error: reportErr } = await admin
     .from('news_reports')
     .select(NEWS_FULL_COLUMNS)
     .eq('status', 'published')
+    .eq('report_date', kstNow.today)
     .order('published_at', { ascending: false, nullsFirst: false })
-    .order('report_date', { ascending: false })
     .limit(1)
     .maybeSingle()
 
@@ -153,7 +154,8 @@ export async function POST(req: Request) {
       sent: 0,
       skipped: 0,
       failed: 0,
-      reason: 'no_published_report',
+      reason: 'no_today_report',
+      reportDateKst: kstNow.today,
       hourKst: targetHour,
       processedAt: new Date().toISOString(),
     })
