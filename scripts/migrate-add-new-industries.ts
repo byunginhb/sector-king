@@ -163,8 +163,6 @@ const COMPANIES = [
   { ticker: 'ETN', name: 'Eaton Corporation plc', nameKo: '이튼' },
   { ticker: 'EMR', name: 'Emerson Electric Co.', nameKo: '에머슨' },
   // Consumer
-  { ticker: 'MC.PA', name: 'LVMH Moët Hennessy Louis Vuitton SE', nameKo: 'LVMH' },
-  { ticker: 'RMS.PA', name: 'Hermès International SCA', nameKo: '에르메스' },
   { ticker: 'RACE', name: 'Ferrari N.V.', nameKo: '페라리' },
   { ticker: 'KO', name: 'The Coca-Cola Company', nameKo: '코카콜라' },
   { ticker: 'PEP', name: 'PepsiCo Inc.', nameKo: '펩시코' },
@@ -257,8 +255,6 @@ const SECTOR_COMPANIES = [
   { sectorId: 'grid', ticker: 'ETN', rank: 1 },
   { sectorId: 'grid', ticker: 'EMR', rank: 2 },
   // Consumer - luxury
-  { sectorId: 'luxury_fashion', ticker: 'MC.PA', rank: 1 },
-  { sectorId: 'luxury_fashion', ticker: 'RMS.PA', rank: 2 },
   { sectorId: 'luxury_auto', ticker: 'RACE', rank: 1 },
   { sectorId: 'luxury_auto', ticker: 'TSLA', rank: 2 },
   // Consumer - food_beverage

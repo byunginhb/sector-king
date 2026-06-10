@@ -186,6 +186,12 @@ def calculate_hegemony_scores(conn: sqlite3.Connection, target_date: str):
             "revenue_weight",
         ]
 
+        # RISK (07_market_scope, 범위 밖 — 로직 변경 보류):
+        #   row[1]=market_cap 은 native 통화(KR=KRW raw). 혼합 통화 섹터(US+KR 공존)에서는
+        #   KRW raw 가 ~1450배 과대평가되어 sector_total_mc 와 mc_score(시총 비중)가 왜곡된다.
+        #   올바른 보정: scripts/currency.py::to_usd(market_cap, ticker) 로 USD 환산 후 합산/비중 계산.
+        #   이번 라운드 범위 밖이라 별도 리스크 이슈로 트래킹(integrated-plan.md §4, data-model.md §4-2).
+        #   적용 시: row 에 ticker(row[0]) 가 있으므로 to_usd(row[1], row[0]) 로 감싸면 됨.
         sector_total_mc = sum(
             (row[1] or 0) * (row[15] or 1.0) for row in companies
         )

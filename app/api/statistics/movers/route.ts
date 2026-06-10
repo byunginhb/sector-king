@@ -4,6 +4,7 @@ import { getDb } from '@/lib/db'
 import { dailySnapshots, companies } from '@/drizzle/schema'
 import { matchesRegion, resolveRegion } from '@/lib/region'
 import { toUsd } from '@/lib/currency'
+import { clampIntParam } from '@/lib/api-helpers'
 import type { ApiResponse, RegionFilter } from '@/types'
 
 export const revalidate = 3600
@@ -40,10 +41,11 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams
     const region = resolveRegion(searchParams)
 
-    const rawLimit = parseInt(searchParams.get('limit') || '30', 10)
-    const limit = Number.isNaN(rawLimit)
-      ? 30
-      : Math.max(1, Math.min(rawLimit, 100))
+    const limit = clampIntParam(searchParams, 'limit', {
+      fallback: 30,
+      min: 1,
+      max: 100,
+    })
 
     const db = getDb()
 

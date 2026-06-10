@@ -39,7 +39,10 @@ import { validateRegion } from './validate'
 /** DB 컬럼 값 — `companies.region` */
 export type RegionValue = 'KR' | 'INTL'
 
-/** URL/UI/API 쿼리 값 */
+/**
+ * URL/UI/API 쿼리 값.
+ * `global` = INTL = 미국(비US/KR 22종목 제거 후 INTL의 외연이 미국으로 좁혀짐). 식별자는 불변, UI 라벨만 "미국".
+ */
 export type RegionFilter = 'all' | 'kr' | 'global'
 
 /** 사용자 토글이 노출하는 필터 옵션 (순서 SoT) */

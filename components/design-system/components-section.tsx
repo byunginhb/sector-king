@@ -137,7 +137,7 @@ export function ComponentsSection() {
       </DsSubsection>
 
       {/* Region toggle */}
-      <DsSubsection title="Region Toggle" hint="국내 / 해외 / 전체">
+      <DsSubsection title="Region Toggle" hint="국내 / 미국 / 전체">
         <div className="border border-border-subtle bg-surface-1 p-5 flex flex-wrap items-center gap-4">
           <RegionToggle
             value={region}

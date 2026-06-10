@@ -56,6 +56,10 @@ export interface ScoreDetail extends ScoreSummary {
   recommendationKey: string | null
   analystCount: number | null
   targetMeanPrice: number | null
+  // 08_stock_insights 가산 확장 (전부 옵셔널/nullable → 구버전 소비자 무손상)
+  beta?: number | null // 무차원
+  debtToEquity?: number | null // 무차원
+  freeCashflow?: number | null // toUsd 변환 필수
 }
 
 export interface SectorCompanyWithDetails {
@@ -139,6 +143,11 @@ export interface CompanyDetailResponse {
     volume: number | null
     peRatio: number | null
     pegRatio: number | null
+    // 08_stock_insights 가산 확장 (옵셔널)
+    week52Position?: number | null // (price-low)/(high-low), 0~1. 동일 ticker 비율 → 변환 불요
+    dayHigh?: number | null // toUsd
+    dayLow?: number | null // toUsd
+    avgVolume?: number | null // 무차원
   } | null
   history: PriceHistory[]
   score: ScoreDetail | null
@@ -150,6 +159,17 @@ export interface CompanyDetailResponse {
     }
     rank: number
   }[]
+  // 08_stock_insights 가산 확장 (옵셔널 → 모달 무손상)
+  analystUpside?: {
+    targetMeanPriceUsd: number | null
+    currentPriceUsd: number | null
+    upsidePct: number | null // (target-current)/current, 둘 다 USD 환산 후 계산
+  } | null
+  dominance?: {
+    sectorCount: number // 소속 섹터 수
+    topRankCount: number // rank===1 인 섹터 수
+    bestRank: number | null // min(rank)
+  } | null
 }
 
 export interface SectorDetailResponse {
@@ -168,6 +188,68 @@ export interface SectorDetailResponse {
   } | null
   companies: SectorCompanyWithDetails[]
   marketCapTotal: number
+}
+
+// Company Insights API Types (08_stock_insights — /api/company/[ticker]/insights)
+export interface ScoreHistoryPoint {
+  date: string
+  total: number // smoothed_score
+  raw: number // raw_total_score
+  scale: number
+  growth: number
+  profitability: number
+  sentiment: number
+}
+
+export interface ScoreMomentum {
+  deltaTotal: number | null // 최신 - range시작
+  deltaPct: number | null
+  trend: 'up' | 'down' | 'flat'
+}
+
+export interface InsightPeer {
+  ticker: string
+  name: string
+  nameKo: string | null
+  rank: number
+  isSelf: boolean
+  marketCapUsd: number | null // toUsd 후
+  score: number | null // smoothed_score (무차원)
+}
+
+export interface InsightSectorContext {
+  sectorId: string
+  sectorName: string
+  peerCount: number
+  marketCapTotalUsd: number // toUsd 후 합산
+  marketSharePct: number | null // self / total (둘 다 USD)
+  medianScore: number | null
+  medianMarketCapUsd: number | null
+}
+
+export interface ValuationMetric {
+  value: number | null
+  percentile: number | null // 0~100, min-peer<4 시 null
+  median: number | null
+}
+
+export interface InsightValuation {
+  peRatio: ValuationMetric
+  pegRatio: ValuationMetric
+  returnOnEquity: ValuationMetric
+}
+
+export interface CompanyInsightsResponse {
+  primarySectorId: string | null
+  allSectorIds: string[]
+  scoreHistory: ScoreHistoryPoint[]
+  scoreMomentum: ScoreMomentum | null
+  peers: InsightPeer[]
+  sectorContext: InsightSectorContext | null
+  valuation: InsightValuation | null
+  /** peer 표본이 min-peer(N≥4) 미만이면 true → median/percentile null */
+  insufficientPeerSample: boolean
+  appliedRange: number // 실제 적용된 일수
 }
 
 // Statistics API Types

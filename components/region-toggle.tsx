@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useRef } from 'react'
-import { Earth, Flag, Globe2, type LucideIcon } from 'lucide-react'
+import { DollarSign, Flag, Globe2, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { RegionFilter } from '@/types'
 
@@ -32,7 +32,8 @@ interface OptionDef {
 const OPTIONS: readonly OptionDef[] = [
   { value: 'all', label: '전체', icon: Globe2, ariaLabel: '전체 region' },
   { value: 'kr', label: '국내', icon: Flag, ariaLabel: '국내 종목만 보기' },
-  { value: 'global', label: '해외', icon: Earth, ariaLabel: '해외 종목만 보기' },
+  // value 'global' 은 불변(URL/캐시/북마크 하위호환). 비US/KR 제거 후 INTL=미국이므로 라벨만 '미국'.
+  { value: 'global', label: '미국', icon: DollarSign, ariaLabel: '미국 종목만 보기' },
 ] as const
 
 export function RegionToggle({

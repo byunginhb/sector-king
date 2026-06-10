@@ -127,10 +127,6 @@ const COMPANIES = [
   { ticker: '000660.KS', name: 'SK Hynix Inc.', nameKo: 'SK하이닉스' },
   { ticker: '005380.KS', name: 'Hyundai Motor Company', nameKo: '현대차' },
 
-  // Other Markets
-  { ticker: '1810.HK', name: 'Xiaomi Corporation', nameKo: '샤오미' },
-  { ticker: '2454.TW', name: 'MediaTek Inc.', nameKo: '미디어텍' },
-
   // Fintech
   { ticker: 'V', name: 'Visa Inc.', nameKo: '비자' },
   { ticker: 'MA', name: 'Mastercard Inc.', nameKo: '마스터카드' },
@@ -164,7 +160,6 @@ const COMPANIES = [
   { ticker: 'ASML', name: 'ASML Holding N.V.', nameKo: 'ASML' },
   { ticker: 'AMAT', name: 'Applied Materials Inc.', nameKo: '어플라이드 머티어리얼즈' },
   { ticker: 'LRCX', name: 'Lam Research Corporation', nameKo: '램리서치' },
-  { ticker: '4063.T', name: 'Shin-Etsu Chemical Co.', nameKo: '신에츠화학' },
 
   // Cloud & SaaS
   { ticker: 'CRM', name: 'Salesforce Inc.', nameKo: '세일즈포스' },
@@ -250,12 +245,10 @@ const SECTOR_COMPANIES = [
   // Mobile Device
   { sectorId: 'mobile_device', ticker: 'AAPL', rank: 1, revenueWeight: 0.50, notes: null },
   { sectorId: 'mobile_device', ticker: '005930.KS', rank: 2, revenueWeight: 0.25, notes: null },
-  { sectorId: 'mobile_device', ticker: '1810.HK', rank: 3, revenueWeight: 1.0, notes: null },
 
   // AP
-  { sectorId: 'ap', ticker: '2454.TW', rank: 1, revenueWeight: 1.0, notes: null },
-  { sectorId: 'ap', ticker: 'QCOM', rank: 2, revenueWeight: 1.0, notes: null },
-  { sectorId: 'ap', ticker: 'AAPL', rank: 3, revenueWeight: 0.05, notes: null },
+  { sectorId: 'ap', ticker: 'QCOM', rank: 1, revenueWeight: 1.0, notes: null },
+  { sectorId: 'ap', ticker: 'AAPL', rank: 2, revenueWeight: 0.05, notes: null },
 
   // Social Media
   { sectorId: 'social_media', ticker: 'META', rank: 1, revenueWeight: 0.97, notes: null },
@@ -382,8 +375,8 @@ const SECTOR_COMPANIES = [
   { sectorId: 'equipment', ticker: 'AMAT', rank: 2, revenueWeight: 1.0, notes: null },
   { sectorId: 'equipment', ticker: 'LRCX', rank: 3, revenueWeight: 1.0, notes: null },
 
-  // Materials (반도체 소재)
-  { sectorId: 'materials', ticker: '4063.T', rank: 1, revenueWeight: 1.0, notes: null },
+  // Materials (반도체 소재) — 비 US/KR 종목(신에쓰화학) 좀비 제거(07_market_scope).
+  //   미국·한국 소재 종목은 add_ticker.py / migrate-add-us-kr-replacements 로 편입.
 
   // IaaS (클라우드)
   { sectorId: 'iaas', ticker: 'AMZN', rank: 1, revenueWeight: 0.17, notes: 'AWS' },

@@ -59,3 +59,53 @@ export async function resolveIndustryFilter(
 
   return { filter, region }
 }
+
+interface ResolveRangeOptions {
+  /** 허용 일수 화이트리스트 (예: [30, 60, 74, 120]) */
+  allowed: readonly number[]
+  /** 화이트리스트 외/누락 시 적용할 기본 일수 */
+  fallback: number
+}
+
+/**
+ * `?range=<int>` 일수 파라미터를 화이트리스트로 정규화한다.
+ *
+ * - 정수 파싱 실패 / 누락 / 화이트리스트 외 값 → `fallback` 반환.
+ * - 화이트리스트에 포함된 값만 그대로 통과.
+ * - 보유 데이터로의 클램프(예: 120 요청인데 74일만 보유)는 호출부 책임
+ *   (보유 일수에 의존하므로 헬퍼는 화이트리스트 검증까지만 담당).
+ *
+ * movers 라우트의 인라인 `parseInt + Math.min/max` 중복을 제거하는 SSOT.
+ */
+export function resolveRange(
+  searchParams: URLSearchParams,
+  { allowed, fallback }: ResolveRangeOptions
+): number {
+  const raw = searchParams.get('range')
+  if (raw === null) return fallback
+  const parsed = parseInt(raw, 10)
+  if (Number.isNaN(parsed)) return fallback
+  return allowed.includes(parsed) ? parsed : fallback
+}
+
+interface ClampIntParamOptions {
+  fallback: number
+  min: number
+  max: number
+}
+
+/**
+ * 정수 search param 을 `[min, max]` 로 클램프한다 (연속 범위, 화이트리스트 아님).
+ *
+ * 파싱 실패/누락 → `fallback`. movers 의 `limit`(1~100) 같은 연속 클램프 SSOT.
+ * 이산 화이트리스트가 필요하면 `resolveRange` 를 사용한다.
+ */
+export function clampIntParam(
+  searchParams: URLSearchParams,
+  key: string,
+  { fallback, min, max }: ClampIntParamOptions
+): number {
+  const parsed = parseInt(searchParams.get(key) || '', 10)
+  if (Number.isNaN(parsed)) return fallback
+  return Math.max(min, Math.min(parsed, max))
+}

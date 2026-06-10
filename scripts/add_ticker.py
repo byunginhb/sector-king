@@ -32,10 +32,35 @@ DB_PATH = Path(__file__).parent.parent / "data" / "hegemony.db"
 # region 분류 — lib/region.ts의 getRegionFromTicker와 동일 로직
 KR_TICKER_SUFFIXES = (".KS", ".KQ")
 
+# 시장 게이트 — 비 US/KR 접미사 차단(데이터 오염 재발 방지, 07_market_scope).
+# US = 접미사 없음(NYSE/NASDAQ/ADR), KR = .KS/.KQ. 그 외(.T/.HK/.TW/.PA/.DE/.SW/.MC/.AX 등) 거부.
+NON_US_KR_SUFFIXES = (
+    ".T", ".HK", ".TW", ".PA", ".DE", ".SW", ".MC", ".AX",
+    ".SZ", ".SS", ".L", ".AS", ".MI", ".ST", ".OL", ".CO",
+)
+# 점(.)을 포함하지만 미국 정식 종목인 화이트리스트 예외(예: 클래스 주식)
+US_DOT_WHITELIST = ("BRK.B", "BRK.A", "BF.B")
+
 
 def get_region_from_ticker(ticker: str) -> str:
     """Return 'KR' for KOSPI/KOSDAQ tickers, 'INTL' otherwise."""
     return "KR" if ticker.endswith(KR_TICKER_SUFFIXES) else "INTL"
+
+
+def is_us_or_kr_market(ticker: str) -> bool:
+    """허용 시장(US=접미사 없음, KR=.KS/.KQ)인지 판정. 그 외 거래소 접미사는 거부.
+
+    lib/region.ts / suggest_candidates.py 의 시장 게이트와 동일 규칙(미러).
+    """
+    upper = ticker.upper()
+    if upper in US_DOT_WHITELIST:
+        return True
+    if upper.endswith(KR_TICKER_SUFFIXES):
+        return True
+    if upper.endswith(NON_US_KR_SUFFIXES):
+        return False
+    # 접미사 없음 → US. 알 수 없는 점(.) 포함 티커는 보수적으로 거부.
+    return "." not in upper
 
 
 def list_sectors(conn: sqlite3.Connection):
@@ -79,6 +104,14 @@ def add_ticker(
     no_backfill: bool = False,
 ):
     """Add a ticker to a sector with full data pipeline."""
+
+    # 0. Market gate — reject non US/KR markets (data contamination guard, 07_market_scope)
+    if not is_us_or_kr_market(ticker):
+        print(
+            f"Error: '{ticker}' is not a US/KR market ticker. "
+            f"Allowed: US (no suffix), KR (.KS/.KQ). Rejected to prevent data contamination."
+        )
+        return False
 
     # 1. Validate sector exists
     sector = conn.execute(

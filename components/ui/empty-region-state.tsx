@@ -9,7 +9,7 @@ interface EmptyRegionStateProps {
 }
 
 export function EmptyRegionState({ region, message, className }: EmptyRegionStateProps) {
-  const regionLabel = region === 'kr' ? '국내' : region === 'global' ? '해외' : ''
+  const regionLabel = region === 'kr' ? '국내' : region === 'global' ? '미국' : ''
   const defaultMessage =
     regionLabel.length > 0
       ? `${regionLabel} region에 표시할 데이터가 없습니다.`

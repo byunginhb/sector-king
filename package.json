@@ -24,6 +24,9 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:migrate:region": "tsx scripts/migrate-add-region.ts",
     "db:migrate:relax-rank": "tsx scripts/migrate-relax-rank-check.ts",
+    "db:migrate:remove-non-us-kr": "tsx scripts/migrate-remove-non-us-kr.ts",
+    "db:migrate:add-us-kr-replacements": "tsx scripts/migrate-add-us-kr-replacements.ts",
+    "db:verify:market-scope": "tsx scripts/verify-market-scope.ts",
     "db:fill-gaps": "tsx scripts/migrate-fill-ticker-gaps.ts",
     "db:seed-news": "tsx scripts/seed-news.ts",
     "format": "prettier --write ."

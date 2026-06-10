@@ -1,10 +1,14 @@
 import type { MetadataRoute } from 'next'
 import { getAllIndustries } from '@/lib/industry'
+import { getAllStockTickers } from '@/lib/stock-server'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const industries = await getAllIndustries()
+  const [industries, tickers] = await Promise.all([
+    getAllIndustries(),
+    getAllStockTickers(),
+  ])
   const now = new Date()
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -43,5 +47,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ])
 
-  return [...staticPages, ...industryPages]
+  // 종목 상세 페이지 — DB 에 존재하는(= active) 티커만 동적 등록.
+  // 시장 한정으로 제거된 티커는 DB 에서 빠지므로 자동으로 sitemap 에서도 제외된다.
+  const stockPages: MetadataRoute.Sitemap = tickers.map((ticker) => ({
+    url: `${BASE_URL}/stock/${encodeURIComponent(ticker)}`,
+    lastModified: now,
+    changeFrequency: 'daily' as const,
+    priority: 0.6,
+  }))
+
+  return [...staticPages, ...industryPages, ...stockPages]
 }

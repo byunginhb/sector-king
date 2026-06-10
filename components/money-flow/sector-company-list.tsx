@@ -240,7 +240,7 @@ export function SectorCompanyList({
           {data && data.companies.length === 0 && (
             <div className="text-center py-6 text-gray-500 dark:text-slate-400 text-sm">
               {region !== 'all'
-                ? `선택한 region(${region === 'kr' ? '국내' : '해외'})에 해당하는 종목이 없습니다.`
+                ? `선택한 region(${region === 'kr' ? '국내' : '미국'})에 해당하는 종목이 없습니다.`
                 : '해당 기간에 데이터가 없습니다.'}
             </div>
           )}

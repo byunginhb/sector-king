@@ -10,9 +10,13 @@ import {
 } from '@/drizzle/schema'
 import { eq, desc } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
+import { resolveRange } from '@/lib/api-helpers'
 import type { ApiResponse, CompanyDetailResponse } from '@/types'
 
 export const revalidate = 3600 // 1 hour cache
+
+/** 가격 history 허용 일수. 누락 시 30(기존 동작 보존 → 모달 무영향). */
+const HISTORY_RANGES = [30, 60, 90, 129] as const
 
 export async function GET(
   request: Request,
@@ -21,6 +25,11 @@ export async function GET(
   try {
     const { ticker } = await params
     const db = getDb()
+
+    const historyLimit = resolveRange(new URL(request.url).searchParams, {
+      allowed: HISTORY_RANGES,
+      fallback: 30,
+    })
 
     // Get company info
     const company = await db
@@ -51,7 +60,7 @@ export async function GET(
       .orderBy(desc(dailySnapshots.date))
       .limit(1)
 
-    // Get price history (last 30 days)
+    // Get price history (default 30 days, ?range= 로 확장 — 모달은 미지정이라 30일 유지)
     const history = await db
       .select({
         date: dailySnapshots.date,
@@ -61,7 +70,7 @@ export async function GET(
       .from(dailySnapshots)
       .where(eq(dailySnapshots.ticker, ticker))
       .orderBy(desc(dailySnapshots.date))
-      .limit(30)
+      .limit(historyLimit)
 
     // Get company scores
     const scoreResult = await db
@@ -83,6 +92,47 @@ export async function GET(
       .from(sectorCompanies)
       .leftJoin(sectors, eq(sectorCompanies.sectorId, sectors.id))
       .where(eq(sectorCompanies.ticker, ticker))
+
+    // 가산 확장용 파생값 (모달 무영향, 전부 옵셔널/nullable)
+    const snap = snapshot[0] ?? null
+    // 52주 위치: (price-low)/(high-low). 동일 ticker 비율이므로 변환 불요 (raw 그대로 계산).
+    const week52Position =
+      snap &&
+      snap.price != null &&
+      snap.week52High != null &&
+      snap.week52Low != null &&
+      snap.week52High > snap.week52Low
+        ? Math.min(
+            1,
+            Math.max(0, (snap.price - snap.week52Low) / (snap.week52High - snap.week52Low))
+          )
+        : null
+
+    // 애널리스트 상승여력: target/current 둘 다 USD 환산 후 비율 계산
+    const targetMeanPriceUsd =
+      scoreRow?.targetMeanPrice != null ? toUsd(scoreRow.targetMeanPrice, ticker) : null
+    const currentPriceUsd = snap?.price != null ? toUsd(snap.price, ticker) : null
+    const upsidePct =
+      targetMeanPriceUsd != null && currentPriceUsd != null && currentPriceUsd > 0
+        ? (targetMeanPriceUsd - currentPriceUsd) / currentPriceUsd
+        : null
+    const analystUpside =
+      targetMeanPriceUsd != null || currentPriceUsd != null
+        ? { targetMeanPriceUsd, currentPriceUsd, upsidePct }
+        : null
+
+    // 멀티섹터 패권 요약 (전 섹터 대상, 기존 sectors 결과로 집계 — 추가 쿼리 0)
+    const validRanks = companySectors
+      .map((s) => s.rank)
+      .filter((r): r is number => typeof r === 'number')
+    const dominance =
+      companySectors.length > 0
+        ? {
+            sectorCount: companySectors.length,
+            topRankCount: companySectors.filter((s) => s.rank === 1).length,
+            bestRank: validRanks.length > 0 ? Math.min(...validRanks) : null,
+          }
+        : null
 
     return NextResponse.json({
       success: true,
@@ -113,6 +163,17 @@ export async function GET(
               volume: snapshot[0].volume,
               peRatio: snapshot[0].peRatio,
               pegRatio: snapshot[0].pegRatio,
+              // 08_stock_insights 가산 확장
+              week52Position,
+              dayHigh:
+                snapshot[0].dayHigh != null
+                  ? toUsd(snapshot[0].dayHigh, ticker)
+                  : null,
+              dayLow:
+                snapshot[0].dayLow != null
+                  ? toUsd(snapshot[0].dayLow, ticker)
+                  : null,
+              avgVolume: snapshot[0].avgVolume,
             }
           : null,
         history: history
@@ -141,6 +202,13 @@ export async function GET(
                 scoreRow.targetMeanPrice != null
                   ? toUsd(scoreRow.targetMeanPrice, ticker)
                   : null,
+              // 08_stock_insights 가산 확장 (beta/debtToEquity 무차원, freeCashflow=toUsd)
+              beta: scoreRow.beta,
+              debtToEquity: scoreRow.debtToEquity,
+              freeCashflow:
+                scoreRow.freeCashflow != null
+                  ? toUsd(scoreRow.freeCashflow, ticker)
+                  : null,
             }
           : null,
         sectors: companySectors.map((s) => ({
@@ -151,6 +219,9 @@ export async function GET(
           },
           rank: s.rank,
         })),
+        // 08_stock_insights 가산 확장 (옵셔널 → 모달 무손상)
+        analystUpside,
+        dominance,
       },
     })
   } catch (error) {

@@ -107,6 +107,49 @@ export function NewsArticleJsonLd({
 }
 
 /**
+ * 종목 상세 (`/stock/[ticker]`) 의 Corporation JSON-LD.
+ * schema.org `Corporation` + `tickerSymbol` 로 종목 엔티티를 색인 후보로 노출한다.
+ * 가격성 데이터(시가총액)는 반드시 toUsd 변환된 값을 받아 사용한다(통화 규칙).
+ */
+interface StockJsonLdProps {
+  ticker: string
+  name: string
+  nameKo?: string | null
+  /** USD 정규화된 시가총액 (없으면 생략) */
+  marketCapUsd?: number | null
+}
+
+export function StockJsonLd({ ticker, name, nameKo, marketCapUsd }: StockJsonLdProps) {
+  const url = `${BASE_URL}/stock/${ticker}`
+  const alternateName = nameKo && nameKo !== name ? nameKo : undefined
+
+  const jsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Corporation',
+    '@id': url,
+    name,
+    alternateName,
+    tickerSymbol: ticker,
+    url,
+  }
+
+  if (marketCapUsd != null && Number.isFinite(marketCapUsd)) {
+    jsonLd.marketCap = {
+      '@type': 'MonetaryAmount',
+      currency: 'USD',
+      value: Math.round(marketCapUsd),
+    }
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  )
+}
+
+/**
  * 산업/뉴스 페이지의 BreadcrumbList JSON-LD.
  * Google 검색 결과의 빵부스러기 노출.
  */

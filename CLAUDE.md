@@ -50,3 +50,5 @@ Next.js 15 + TypeScript + Drizzle/SQLite + React Query + framer-motion + rechart
 |------|----------|------|------|
 | 2026-05-09 | 초기 하네스 구성 | 전체 | region 필터(전체/국내/해외) + 누락 티커 보완 작업 시작 |
 | 2026-05-09 | S1~S5 완료 — region 토글 + 티커 보완 출시 | DB 스키마, lib/region, API 8개, hook 8개, UI 5개 페이지 | 통합 기획서 수락 기준 14개 코드 검증 통과 |
+| 2026-06-10 | 07_market_scope 완료 — 시장 미국·한국 한정 + `/stock/[ticker]` 신규 | DB(비US/KR 22개 제거, MUFG/JD 등 대체), scripts(remove/add 마이그레이션·currency.py·suggest_candidates), region 라벨 4파일, app/stock·components/stock | INTL=미국 재정의(식별자 유지), 시총+섹터대표성 수집기준, 종목 전용 상세 라우트. 수락기준 8개 CONDITIONAL→PASS(좀비소스 정리 후) |
+| 2026-06-10 | 08_stock_insights 완료 — `/stock/[ticker]` 인사이트 페이지 격상 | API base 가산확장 + 신규 `/api/company/[ticker]/insights`, components/stock/insights/* 7개, lib/stock-signals·chart-colors, use-company-insights | 모달=스냅샷/페이지=시계열·peer·룰시그널 차별화. score_history 74일·시총점유율(USD집계)·밸류에이션 percentile 활용. 수락기준 15개 PASS(모달 무회귀, toUsd 집계 실증) |
