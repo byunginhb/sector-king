@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Menu, Newspaper, type LucideIcon } from 'lucide-react'
+import { Menu, Newspaper, BookOpen, type LucideIcon } from 'lucide-react'
 import { SectorKingLogo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { SearchTrigger } from '@/components/search-trigger'
@@ -49,6 +49,7 @@ interface NavItem {
 
 /** 헤더에 항상 노출되는 주요 콘텐츠 진입 메뉴. */
 const NAV_ITEMS: readonly NavItem[] = [
+  { href: '/guide', label: '이용 안내', icon: BookOpen },
   { href: '/news', label: '뉴스', icon: Newspaper },
 ] as const
 

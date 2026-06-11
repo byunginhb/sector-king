@@ -171,6 +171,7 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
 
           {/* Direction indicator */}
           <span
+            title="기간 시가총액 변화 기준 · 주가 상승에 의한 평가액 증감을 포함하며 실제 순매수 자금이 아닙니다"
             className={cn(
               'flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium',
               isInflow

@@ -76,6 +76,13 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
       />
 
       <main className="container mx-auto px-4 py-6">
+        {/* 데이터 기준일 */}
+        {data?.dateRange?.end && (
+          <p className="text-xs text-muted-foreground mb-4">
+            {data.dateRange.end} 기준
+          </p>
+        )}
+
         {/* Sort Buttons */}
         <div data-tour="sort-buttons" className="mb-6 flex items-center gap-4">
           <span className="text-sm text-muted-foreground">정렬:</span>

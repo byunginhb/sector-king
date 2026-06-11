@@ -255,7 +255,9 @@ def add_ticker(
             info.get("fiftyTwoWeekLow"),
             info.get("dayHigh") or info.get("regularMarketDayHigh"),
             info.get("dayLow") or info.get("regularMarketDayLow"),
-            info.get("volume"),
+            # Store NULL (not 0) for an off-session fetch so the row reads as
+            # "unknown volume" rather than a false 0 (audit B4-c).
+            info.get("volume") or None,
             info.get("averageVolume"),
             info.get("trailingPE"),
             info.get("pegRatio"),

@@ -97,6 +97,9 @@ export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardP
             <h3 className="font-display text-lg sm:text-xl font-semibold text-foreground leading-tight">
               산업별 자금 흐름
             </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              기간 시가총액 변화 기준 · 실제 순매수 자금이 아닙니다
+            </p>
           </div>
           <div className="flex items-center gap-2">
             {/* Period Filter */}
@@ -238,7 +241,7 @@ function IndustryFlowItem({
                 isInflow ? 'text-success' : 'text-danger'
               )}
             >
-              ({formatKrw(industry.netFlow)})
+              ({formatKrw(industry.netFlow, { signed: true })})
             </div>
             <div
               className={cn(
