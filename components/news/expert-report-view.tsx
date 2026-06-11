@@ -1,7 +1,8 @@
 /**
  * 전문가용 전체 뷰 (8섹션 A~H).
  */
-import { Quote, Activity, Compass, ListChecks, Map, MoveRight } from 'lucide-react'
+import { Quote, Activity, Compass, ListChecks, Map, MoveRight, Info } from 'lucide-react'
+import { parseBrief } from '@/lib/news/brief'
 import { HeadlineCard } from './headline-card'
 import { ScenarioCardGroup } from './scenario-card-group'
 import { TickerChip } from './ticker-chip'
@@ -83,11 +84,7 @@ export function ExpertReportView({ report, isLoggedIn = true }: ExpertReportView
     <div className="space-y-10">
       {/* A. 30초 브리핑 — 항상 노출 */}
       <Section id="section-brief" title="A. 30초 브리핑" icon={<Activity className="h-4 w-4" />}>
-        <div className="rounded-2xl border border-border-subtle bg-surface-1 p-5 border-l-4 border-l-primary">
-          <p className="text-sm sm:text-base text-foreground/90 leading-relaxed whitespace-pre-line">
-            {report.thirtySecBrief}
-          </p>
-        </div>
+        <ThirtySecBrief raw={report.thirtySecBrief} />
       </Section>
 
       {/* B. 헤드라인 — 항상 노출 */}
@@ -151,6 +148,61 @@ export function ExpertReportView({ report, isLoggedIn = true }: ExpertReportView
         >
           <div className="space-y-10">{restSections}</div>
         </LockedSection>
+      )}
+    </div>
+  )
+}
+
+/**
+ * A. 30초 브리핑 — 한 덩어리 텍스트를 표시 레이어에서 구조화.
+ * `[수집방법: ...]` 메타는 하단 각주로 분리, 본문은 문장 단위 리스트로.
+ * 문장이 1개뿐이면 기존 문단 렌더로 폴백(파싱 실패에도 안전).
+ */
+function ThirtySecBrief({ raw }: { raw: string }) {
+  const { meta, sentences } = parseBrief(raw)
+
+  // 본문도 메타도 없으면(에디터 프리뷰 기본값 등) 빈 박스를 렌더하지 않는다
+  if (sentences.length === 0 && !meta) {
+    return null
+  }
+
+  return (
+    <div className="rounded-2xl border border-border-subtle bg-surface-1 p-5 border-l-4 border-l-primary">
+      {sentences.length > 1 ? (
+        <ul className="space-y-2.5">
+          {sentences.map((sentence, i) => (
+            <li key={i} className="flex gap-2.5">
+              <span
+                className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70"
+                aria-hidden
+              />
+              <p
+                className={cn(
+                  'text-sm sm:text-base text-foreground/90 leading-relaxed',
+                  i === 0 && 'font-medium text-foreground'
+                )}
+              >
+                {sentence}
+              </p>
+            </li>
+          ))}
+        </ul>
+      ) : sentences.length === 1 ? (
+        <p className="text-sm sm:text-base text-foreground/90 leading-relaxed whitespace-pre-line">
+          {sentences[0]}
+        </p>
+      ) : null}
+
+      {meta && (
+        <p
+          className={cn(
+            'flex items-start gap-1.5 text-xs text-muted-foreground leading-relaxed',
+            sentences.length > 0 && 'mt-4 border-t border-border-subtle pt-3'
+          )}
+        >
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+          {meta}
+        </p>
       )}
     </div>
   )
