@@ -67,7 +67,7 @@ export function ScoreTrendChart({ history, appliedRange }: ScoreTrendChartProps)
           패권 점수 추이
         </h2>
         <p className="rounded-md border border-dashed border-border-subtle p-4 text-sm text-muted-foreground">
-          추이 데이터 축적 중 ({history.length}/74일). 데이터가 더 모이면 표시됩니다.
+          추이 데이터 축적 중 (현재 {history.length}거래일). 데이터가 더 모이면 표시됩니다.
         </p>
       </section>
     )

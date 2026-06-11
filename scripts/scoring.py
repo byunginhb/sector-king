@@ -11,7 +11,14 @@ Uses EMA smoothing (alpha=0.3) for rank stability.
 """
 
 import sqlite3
+import sys
 from datetime import datetime, timedelta
+from pathlib import Path
+
+# Ensure sibling modules (currency.py) are importable regardless of CWD
+sys.path.insert(0, str(Path(__file__).parent))
+
+from currency import to_usd
 
 RECOMMENDATION_SCORES = {
     "strong_buy": 8,
@@ -129,6 +136,128 @@ def calculate_data_quality(row: dict) -> float:
     return available / len(FUNDAMENTAL_FIELDS)
 
 
+# Column order returned by SECTOR_COMPANIES_QUERY (kept in one place so
+# calculate_hegemony_scores and backfill_score_history use identical formula).
+SCORE_COL_NAMES = [
+    "ticker",
+    "market_cap",
+    "volume",
+    "avg_volume",
+    "price",
+    "revenue_growth",
+    "earnings_growth",
+    "operating_margin",
+    "return_on_equity",
+    "recommendation_key",
+    "analyst_count",
+    "target_mean_price",
+    "free_cashflow",
+    "beta",
+    "debt_to_equity",
+    "revenue_weight",
+]
+
+
+def compute_sector_company_scores(companies: list) -> dict:
+    """Compute raw component scores for one sector's companies.
+
+    `companies` is a list of rows ordered per SCORE_COL_NAMES. market_cap is the
+    native-currency value from daily_snapshots; this function converts it to USD
+    via to_usd(value, ticker) so that mixed-currency sectors (US + KR) compute
+    market-cap share correctly (audit X1 / T1-S3 fix, 2026-06-11).
+
+    Returns {ticker: {scale, growth, profitability, sentiment, raw_total, data_quality}}.
+    """
+    out: dict = {}
+    if not companies:
+        return out
+
+    # Sector total market cap in USD (mixed-currency safe).
+    sector_total_mc = sum(
+        (to_usd(row[1], row[0]) or 0) * (row[15] or 1.0)
+        for row in companies
+    )
+
+    for row in companies:
+        data = dict(zip(SCORE_COL_NAMES, row))
+        ticker = data["ticker"]
+        rw = data["revenue_weight"] or 1.0
+        # Convert native market_cap to USD before applying revenue weight so the
+        # share denominator (sector_total_mc, also USD) is on the same scale.
+        mc_usd = to_usd(data["market_cap"], ticker) if data["market_cap"] else None
+        weighted_mc = mc_usd * rw if mc_usd is not None else None
+
+        mc_score, vol_score = calculate_scale_score(
+            weighted_mc,
+            data["volume"],
+            data["avg_volume"],
+            sector_total_mc,
+        )
+
+        rev_score, earn_score = calculate_growth_score(
+            data["revenue_growth"], data["earnings_growth"]
+        )
+
+        om_score, roe_score = calculate_profitability_score(
+            data["operating_margin"], data["return_on_equity"]
+        )
+
+        rec_score, upside_score = calculate_sentiment_score(
+            data["recommendation_key"],
+            data["target_mean_price"],
+            data["price"],
+        )
+
+        scale = mc_score + vol_score
+        growth = rev_score + earn_score
+        profitability = om_score + roe_score
+        sentiment = rec_score + upside_score
+        raw_total = scale + growth + profitability + sentiment
+
+        dq = calculate_data_quality(data)
+
+        # A ticker can appear in multiple sectors.
+        # Keep the highest score (best sector context).
+        if ticker not in out or raw_total > out[ticker]["raw_total"]:
+            out[ticker] = {
+                "scale": scale,
+                "growth": growth,
+                "profitability": profitability,
+                "sentiment": sentiment,
+                "raw_total": raw_total,
+                "data_quality": dq,
+            }
+
+    return out
+
+
+def fetch_sector_companies(conn: sqlite3.Connection, sector_id: str, snapshot_date: str) -> list:
+    """Fetch a sector's companies joined to the snapshot of `snapshot_date`.
+
+    Fundamental metrics come from company_scores (current values). For historical
+    backfill the snapshot_date varies per day while fundamentals use latest —
+    this matches the original engine which only ever joined the latest fundamentals.
+    """
+    return conn.execute(
+        """
+        SELECT sc.ticker, ds.market_cap, ds.volume, ds.avg_volume, ds.price,
+               cs.revenue_growth, cs.earnings_growth, cs.operating_margin,
+               cs.return_on_equity, cs.recommendation_key, cs.analyst_count,
+               cs.target_mean_price, cs.free_cashflow, cs.beta, cs.debt_to_equity,
+               sc.revenue_weight
+        FROM sector_companies sc
+        LEFT JOIN (
+            SELECT ticker, market_cap, volume, avg_volume, price
+            FROM daily_snapshots
+            WHERE date = ?
+        ) ds ON sc.ticker = ds.ticker
+        LEFT JOIN company_scores cs ON sc.ticker = cs.ticker
+        WHERE sc.sector_id = ?
+    """,
+        (snapshot_date, sector_id),
+    ).fetchall()
+
+
 def calculate_hegemony_scores(conn: sqlite3.Connection, target_date: str):
     """Calculate hegemony scores for all companies and update company_scores."""
     print("\n" + "=" * 50)
@@ -145,103 +274,17 @@ def calculate_hegemony_scores(conn: sqlite3.Connection, target_date: str):
         return
 
     for (sector_id,) in sectors:
-        companies = conn.execute(
-            """
-            SELECT sc.ticker, ds.market_cap, ds.volume, ds.avg_volume, ds.price,
-                   cs.revenue_growth, cs.earnings_growth, cs.operating_margin,
-                   cs.return_on_equity, cs.recommendation_key, cs.analyst_count,
-                   cs.target_mean_price, cs.free_cashflow, cs.beta, cs.debt_to_equity,
-                   sc.revenue_weight
-            FROM sector_companies sc
-            LEFT JOIN (
-                SELECT ticker, market_cap, volume, avg_volume, price
-                FROM daily_snapshots
-                WHERE date = ?
-            ) ds ON sc.ticker = ds.ticker
-            LEFT JOIN company_scores cs ON sc.ticker = cs.ticker
-            WHERE sc.sector_id = ?
-        """,
-            (max_date, sector_id),
-        ).fetchall()
-
+        companies = fetch_sector_companies(conn, sector_id, max_date)
         if not companies:
             continue
 
-        col_names = [
-            "ticker",
-            "market_cap",
-            "volume",
-            "avg_volume",
-            "price",
-            "revenue_growth",
-            "earnings_growth",
-            "operating_margin",
-            "return_on_equity",
-            "recommendation_key",
-            "analyst_count",
-            "target_mean_price",
-            "free_cashflow",
-            "beta",
-            "debt_to_equity",
-            "revenue_weight",
-        ]
-
-        # RISK (07_market_scope, 범위 밖 — 로직 변경 보류):
-        #   row[1]=market_cap 은 native 통화(KR=KRW raw). 혼합 통화 섹터(US+KR 공존)에서는
-        #   KRW raw 가 ~1450배 과대평가되어 sector_total_mc 와 mc_score(시총 비중)가 왜곡된다.
-        #   올바른 보정: scripts/currency.py::to_usd(market_cap, ticker) 로 USD 환산 후 합산/비중 계산.
-        #   이번 라운드 범위 밖이라 별도 리스크 이슈로 트래킹(integrated-plan.md §4, data-model.md §4-2).
-        #   적용 시: row 에 ticker(row[0]) 가 있으므로 to_usd(row[1], row[0]) 로 감싸면 됨.
-        sector_total_mc = sum(
-            (row[1] or 0) * (row[15] or 1.0) for row in companies
-        )
-
-        for row in companies:
-            data = dict(zip(col_names, row))
-            ticker = data["ticker"]
-            rw = data["revenue_weight"] or 1.0
-            weighted_mc = (data["market_cap"] or 0) * rw if data["market_cap"] else None
-
-            mc_score, vol_score = calculate_scale_score(
-                weighted_mc,
-                data["volume"],
-                data["avg_volume"],
-                sector_total_mc,
-            )
-
-            rev_score, earn_score = calculate_growth_score(
-                data["revenue_growth"], data["earnings_growth"]
-            )
-
-            om_score, roe_score = calculate_profitability_score(
-                data["operating_margin"], data["return_on_equity"]
-            )
-
-            rec_score, upside_score = calculate_sentiment_score(
-                data["recommendation_key"],
-                data["target_mean_price"],
-                data["price"],
-            )
-
-            scale = mc_score + vol_score
-            growth = rev_score + earn_score
-            profitability = om_score + roe_score
-            sentiment = rec_score + upside_score
-            raw_total = scale + growth + profitability + sentiment
-
-            dq = calculate_data_quality(data)
-
-            # A ticker can appear in multiple sectors.
-            # Keep the highest score (best sector context).
-            if ticker not in all_scores or raw_total > all_scores[ticker]["raw_total"]:
-                all_scores[ticker] = {
-                    "scale": scale,
-                    "growth": growth,
-                    "profitability": profitability,
-                    "sentiment": sentiment,
-                    "raw_total": raw_total,
-                    "data_quality": dq,
-                }
+        sector_scores = compute_sector_company_scores(companies)
+        for ticker, scores in sector_scores.items():
+            if (
+                ticker not in all_scores
+                or scores["raw_total"] > all_scores[ticker]["raw_total"]
+            ):
+                all_scores[ticker] = scores
 
     # Apply EMA smoothing and update DB
     updated = 0

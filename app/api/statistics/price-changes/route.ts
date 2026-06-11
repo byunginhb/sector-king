@@ -157,7 +157,9 @@ export async function GET(
       const latestPriceUsd =
         latest.price !== null ? toUsd(latest.price, ticker) : null
 
-      const priceChange =
+      // USD 절댓값 차액(달러 차이). %가 아니므로 priceChangeAbs 로 명명해
+      // daily_snapshots.price_change(%) 와 의미 충돌을 제거한다.
+      const priceChangeAbs =
         firstPriceUsd !== null && latestPriceUsd !== null
           ? latestPriceUsd - firstPriceUsd
           : null
@@ -174,7 +176,7 @@ export async function GET(
         firstDate: dates.minDate,
         latestPrice: latestPriceUsd,
         latestDate: dates.maxDate,
-        priceChange,
+        priceChangeAbs,
         percentChange,
         marketCap: latest.marketCap ? toUsd(latest.marketCap, ticker) : null,
       })

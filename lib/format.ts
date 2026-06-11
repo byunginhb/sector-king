@@ -1,3 +1,5 @@
+import { getKrwRate } from '@/lib/currency'
+
 export function formatMarketCap(value: number | null | undefined): string {
   if (value === null || value === undefined) return 'N/A'
   if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`
@@ -132,14 +134,21 @@ export function formatRelativeTime(dateStr: string): string {
   return formatDate(dateStr)
 }
 
-const KRW_RATE = 1450
-
-export function formatKrw(usdAmount: number): string {
-  const krw = Math.abs(usdAmount) * KRW_RATE
-  if (krw >= 1e12) return `${(krw / 1e12).toFixed(1)}조원`
-  if (krw >= 1e8) return `${Math.round(krw / 1e8).toLocaleString()}억원`
-  if (krw >= 1e4) return `${Math.round(krw / 1e4).toLocaleString()}만원`
-  return `${Math.round(krw).toLocaleString()}원`
+/**
+ * USD 금액을 ₩ 표기로 변환. 환율은 lib/currency.ts 의 getKrwRate() 단일 SoT 사용.
+ * @param usdAmount USD 금액(이미 toUsd 로 환산된 값이어야 함)
+ * @param options.signed true 면 음수 입력 시 "-₩..." 로 부호를 보존(기본 false=절댓값 표기)
+ */
+export function formatKrw(
+  usdAmount: number,
+  options?: { signed?: boolean }
+): string {
+  const krw = Math.abs(usdAmount) * getKrwRate()
+  const sign = options?.signed && usdAmount < 0 ? '-' : ''
+  if (krw >= 1e12) return `${sign}${(krw / 1e12).toFixed(1)}조원`
+  if (krw >= 1e8) return `${sign}${Math.round(krw / 1e8).toLocaleString()}억원`
+  if (krw >= 1e4) return `${sign}${Math.round(krw / 1e4).toLocaleString()}만원`
+  return `${sign}${Math.round(krw).toLocaleString()}원`
 }
 
 export function formatFlowAmount(amount: number): string {

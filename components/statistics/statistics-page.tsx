@@ -102,6 +102,13 @@ export function StatisticsPage({ industryId }: StatisticsPageProps) {
       />
 
       <main className="container mx-auto px-4 py-6">
+        {/* 데이터 기준일 */}
+        {sectorTrends?.dateRange?.end && (
+          <p className="text-xs text-muted-foreground mb-4">
+            {sectorTrends.dateRange.end} 기준
+          </p>
+        )}
+
         {/* Filters */}
         <div data-tour="days-filter" className="mb-6 flex items-center gap-4">
           <div className="flex items-center gap-2">

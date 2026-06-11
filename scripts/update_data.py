@@ -3,7 +3,7 @@
 
 import sqlite3
 import sys
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 # Ensure sibling modules (scoring.py) are importable regardless of CWD
@@ -15,10 +15,22 @@ from scoring import calculate_hegemony_scores, update_sector_rankings
 
 DB_PATH = Path(__file__).parent.parent / "data" / "hegemony.db"
 
-# Invalid tickers that should be skipped (e.g., wrong format in DB)
-SKIP_TICKERS = {
-    "CATL",  # Invalid - should be 300750.SZ
-}
+# Invalid tickers that should be skipped (e.g., wrong format in DB).
+# CATL/ABB 등 좀비 종목은 09_accuracy_audit(A5) 마이그레이션으로 DB 에서 제거됨.
+SKIP_TICKERS: set[str] = set()
+
+
+def is_weekend(date_str: str) -> bool:
+    """True if date_str (YYYY-MM-DD) falls on Saturday or Sunday.
+
+    Markets are closed on weekends; yfinance .info still returns the last
+    trading day's values, which produced carry-forward weekend rows (audit B4-b).
+    We skip persisting snapshots/scores for weekend target dates.
+    """
+    try:
+        return date.fromisoformat(date_str).weekday() >= 5  # 5=Sat, 6=Sun
+    except ValueError:
+        return False
 
 
 def get_tickers_from_db(conn: sqlite3.Connection) -> list[str]:
@@ -77,13 +89,33 @@ def fetch_stock_data(ticker: str, target_date: str) -> dict | None:
 
 
 def upsert_snapshot(conn: sqlite3.Connection, data: dict):
-    """SQLite UPSERT (INSERT OR REPLACE) for daily_snapshots."""
+    """UPSERT a daily_snapshots row (ON CONFLICT(ticker,date) DO UPDATE).
+
+    Volume guard (audit B4-c): when an incoming fetch has volume 0 or NULL
+    (common for KR tickers fetched outside their trading session), we must NOT
+    overwrite an existing valid (>0) volume. NULLIF(excluded.volume, 0) maps an
+    incoming 0 to NULL, then COALESCE falls back to the existing stored volume.
+    For a brand-new row, storing NULL (no overwrite path) is more honest than 0.
+    """
     conn.execute(
         """
-        INSERT OR REPLACE INTO daily_snapshots
+        INSERT INTO daily_snapshots
         (ticker, date, market_cap, price, price_change, week_52_high,
          week_52_low, day_high, day_low, volume, avg_volume, pe_ratio, peg_ratio, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        ON CONFLICT(ticker, date) DO UPDATE SET
+            market_cap = excluded.market_cap,
+            price = excluded.price,
+            price_change = excluded.price_change,
+            week_52_high = excluded.week_52_high,
+            week_52_low = excluded.week_52_low,
+            day_high = excluded.day_high,
+            day_low = excluded.day_low,
+            volume = COALESCE(NULLIF(excluded.volume, 0), daily_snapshots.volume),
+            avg_volume = COALESCE(excluded.avg_volume, daily_snapshots.avg_volume),
+            pe_ratio = excluded.pe_ratio,
+            peg_ratio = excluded.peg_ratio,
+            updated_at = datetime('now')
     """,
         (
             data["ticker"],
@@ -95,7 +127,9 @@ def upsert_snapshot(conn: sqlite3.Connection, data: dict):
             data["week_52_low"],
             data["day_high"],
             data["day_low"],
-            data["volume"],
+            # NULLIF at write time: store NULL (not 0) for a fresh weekend/off-session
+            # fetch so the column reads as "unknown" rather than a false 0.
+            data["volume"] if data["volume"] else None,
             data["avg_volume"],
             data["pe_ratio"],
             data["peg_ratio"],
@@ -200,6 +234,13 @@ def main():
         target_date = sys.argv[1]
     else:
         target_date = datetime.now().date().isoformat()
+
+    # Weekend guard (audit B4-b): markets are closed Sat/Sun. Persisting a
+    # snapshot here only duplicates Friday's values (carry-forward noise) and
+    # writes weekend score_history rows. Skip the whole run for weekend dates.
+    if is_weekend(target_date):
+        print(f"Target date {target_date} is a weekend (market closed) — skipping update.")
+        sys.exit(0)
 
     conn = sqlite3.connect(DB_PATH)
 

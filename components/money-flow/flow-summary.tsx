@@ -19,8 +19,11 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
       data-tour="flow-summary"
-      className="grid grid-cols-1 md:grid-cols-3 gap-4"
     >
+      <p className="text-xs text-muted-foreground mb-2">
+        기간 시가총액 변화 기준 · 주가 상승에 의한 평가액 증가를 포함하며 실제 순매수 자금이 아닙니다
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Total Inflow */}
       <div className="bg-success-bg/40 border border-success/30 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-2">
@@ -96,8 +99,9 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
               : 'text-sm text-warning/70 tabular-nums'
           }
         >
-          ({formatKrw(netFlow)})
+          ({formatKrw(netFlow, { signed: true })})
         </div>
+      </div>
       </div>
     </motion.div>
   )

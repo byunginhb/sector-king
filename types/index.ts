@@ -328,7 +328,8 @@ export interface PriceChangeItem {
   firstDate: string
   latestPrice: number | null
   latestDate: string
-  priceChange: number | null
+  /** 첫날→마지막날 가격의 USD 절댓값 차이(달러 차액). %가 아님. daily_snapshots.price_change(%)와 다름. */
+  priceChangeAbs: number | null
   percentChange: number | null
   marketCap: number | null
 }

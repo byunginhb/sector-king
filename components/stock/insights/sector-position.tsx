@@ -45,7 +45,8 @@ export function SectorPosition({ insights }: SectorPositionProps) {
           본 종목 시총 점유율{' '}
           <span className="font-medium text-foreground">
             {sectorContext.marketSharePct.toFixed(1)}%
-          </span>
+          </span>{' '}
+          (섹터 {sectorContext.peerCount}개 종목 기준)
         </p>
       )}
 

@@ -193,6 +193,7 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
 
       <KpiCard
         label="가장 큰 자금 이동"
+        hint="기간 시가총액 변화 기준 · 실제 순매수 자금이 아닙니다"
         icon={<ArrowRightLeft className="h-4 w-4 text-muted-foreground" />}
       >
         {aggregates.biggestMove ? (
@@ -228,17 +229,21 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
 function KpiCard({
   label,
   icon,
+  hint,
   children,
 }: {
   label: string
   icon?: React.ReactNode
+  hint?: string
   children: React.ReactNode
 }) {
   return (
     <div className="sk-card sk-card-hover">
       <div className="flex items-center gap-2 mb-3">
         {icon}
-        <p className="eyebrow">{label}</p>
+        <p className="eyebrow" title={hint}>
+          {label}
+        </p>
       </div>
       {children}
     </div>

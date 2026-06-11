@@ -27,6 +27,10 @@
     "db:migrate:remove-non-us-kr": "tsx scripts/migrate-remove-non-us-kr.ts",
     "db:migrate:add-us-kr-replacements": "tsx scripts/migrate-add-us-kr-replacements.ts",
     "db:verify:market-scope": "tsx scripts/verify-market-scope.ts",
+    "db:migrate:clean-weekend-rows": "tsx scripts/migrate-clean-weekend-rows.ts",
+    "db:migrate:clean-broken-tickers": "tsx scripts/migrate-clean-broken-tickers.ts",
+    "db:backfill:score-history": ".venv/bin/python scripts/backfill_score_history.py",
+    "db:verify:accuracy": "tsx scripts/verify-accuracy.ts",
     "db:fill-gaps": "tsx scripts/migrate-fill-ticker-gaps.ts",
     "db:seed-news": "tsx scripts/seed-news.ts",
     "format": "prettier --write ."

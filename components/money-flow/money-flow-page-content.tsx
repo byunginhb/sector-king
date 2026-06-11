@@ -85,6 +85,13 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
       />
 
       <main className="container mx-auto px-4 py-6">
+        {/* 데이터 기준일 + 자금 흐름 정의 고지 */}
+        {data?.dateRange?.end && (
+          <p className="text-xs text-muted-foreground mb-4">
+            {data.dateRange.end} 기준 · 자금 흐름은 기간 시가총액 변화액이며 실제 순매수 자금이 아닙니다
+          </p>
+        )}
+
         {/* Loading State */}
         {isLoading && (
           <div className="space-y-4">
@@ -119,7 +126,7 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
                   <TrendingUp className="h-5 w-5 text-success" aria-hidden />
                   자금 유입 섹터
                   <span className="text-sm font-normal text-success/80 ml-2">
-                    돈이 들어오는 중...
+                    기간 시가총액이 늘어난 섹터
                   </span>
                 </h2>
 
@@ -146,7 +153,7 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
                   <TrendingDown className="h-5 w-5 text-danger" aria-hidden />
                   자금 유출 섹터
                   <span className="text-sm font-normal text-danger/80 ml-2">
-                    돈이 빠져나가는 중...
+                    기간 시가총액이 줄어든 섹터
                   </span>
                 </h2>
 

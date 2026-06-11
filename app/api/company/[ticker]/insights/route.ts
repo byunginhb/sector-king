@@ -23,7 +23,11 @@ import type {
 
 export const revalidate = 3600 // 1 hour cache
 
-/** score_history 허용 일수 화이트리스트 (74=보유 전체). */
+/**
+ * score_history 조회 일수 화이트리스트(클램프 상한).
+ * 실제 반환 일수는 보유 거래일 수에 따라 더 적을 수 있다(주말·휴장일 제외).
+ * 74 는 상한값으로만 의미가 있으며 "정확히 74일"을 보장하지 않는다.
+ */
 const ALLOWED_RANGES = [30, 60, 74, 120] as const
 const DEFAULT_RANGE = 74
 /** percentile/median 산출 최소 표본 (소형 섹터 보호). */
