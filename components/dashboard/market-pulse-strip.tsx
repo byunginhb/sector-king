@@ -18,8 +18,8 @@ interface MarketPulseStripProps {
 /**
  * 메인 헤로 KPI 띠 — 시장 거시 지표 4종.
  *
- * 1. 전체 시총 (모든 산업 합산)
- * 2. 전일 대비 % (가중 평균)
+ * 1. 추적 종목 시총 (중복 제거 — 멀티산업 종목 1회만 합산)
+ * 2. 전일 대비 % (추적 종목 시총 기준)
  * 3. 핫 섹터 (14일 자금 유입 1위)
  * 4. 가장 큰 자금 이동 (산업 단위 net flow 절댓값 1위)
  */
@@ -36,25 +36,35 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
       return null
     }
     const industries = indData.industries
+    // 추적 종목 전체(중복 제거) 집계. 산업 합산은 멀티산업 종목을 중복 계산하므로 이 값을 우선 사용.
+    const market = indData.market
 
-    // 1. 전체 시총
-    const totalMarketCap = industries.reduce((sum, i) => sum + (i.totalMarketCap ?? 0), 0)
+    // 1. 추적 종목 시총 (중복 제거). market 부재(구버전 캐시) 시 산업 합산으로 폴백.
+    const totalMarketCap =
+      market?.marketCapTotal ??
+      industries.reduce((sum, i) => sum + (i.totalMarketCap ?? 0), 0)
+    const tickerCount = market?.tickerCount ?? null
 
-    // 2. 전일 대비 % — 시총 가중 평균 (가중치 = 전일 시총)
-    let weightedNumer = 0
-    let weightedDenom = 0
-    for (const i of industries) {
-      // i.marketCapChange 는 (today - prev) / prev * 100
-      // i.totalMarketCap 는 today 시총. prev = today / (1 + change/100)
-      const change = i.marketCapChange ?? 0
-      const today = i.totalMarketCap ?? 0
-      const prev = change !== -100 ? today / (1 + change / 100) : 0
-      if (prev > 0) {
-        weightedNumer += change * prev
-        weightedDenom += prev
+    // 2. 전일 대비 % — dedup 총합 기준. 부재 시 산업 시총 가중 평균으로 폴백.
+    let dayChangePct: number
+    if (market) {
+      dayChangePct = market.marketCapChange
+    } else {
+      let weightedNumer = 0
+      let weightedDenom = 0
+      for (const i of industries) {
+        // i.marketCapChange 는 (today - prev) / prev * 100
+        // i.totalMarketCap 는 today 시총. prev = today / (1 + change/100)
+        const change = i.marketCapChange ?? 0
+        const today = i.totalMarketCap ?? 0
+        const prev = change !== -100 ? today / (1 + change / 100) : 0
+        if (prev > 0) {
+          weightedNumer += change * prev
+          weightedDenom += prev
+        }
       }
+      dayChangePct = weightedDenom > 0 ? weightedNumer / weightedDenom : 0
     }
-    const dayChangePct = weightedDenom > 0 ? weightedNumer / weightedDenom : 0
 
     // 3. 핫 섹터 — 모든 산업의 topSectorByFlow 중 flow 1위
     let hotSector: { name: string; flow: number; industryName: string } | null = null
@@ -84,19 +94,25 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
       }
     }
 
-    // 시총 추세용: 모든 산업의 marketCapHistory 합산
-    const histLen = Math.max(0, ...industries.map((i) => i.marketCapHistory?.length ?? 0))
-    const totalHistory: number[] = []
-    for (let idx = 0; idx < histLen; idx++) {
-      let s = 0
-      for (const ind of industries) {
-        s += ind.marketCapHistory?.[idx] ?? 0
+    // 시총 추세용: dedup 시계열 우선. 부재 시 산업별 시계열 합산(중복 포함)으로 폴백.
+    let totalHistory: number[]
+    if (market?.marketCapHistory?.length) {
+      totalHistory = market.marketCapHistory
+    } else {
+      const histLen = Math.max(0, ...industries.map((i) => i.marketCapHistory?.length ?? 0))
+      totalHistory = []
+      for (let idx = 0; idx < histLen; idx++) {
+        let s = 0
+        for (const ind of industries) {
+          s += ind.marketCapHistory?.[idx] ?? 0
+        }
+        totalHistory.push(s)
       }
-      totalHistory.push(s)
     }
 
     return {
       totalMarketCap,
+      tickerCount,
       totalHistory,
       dayChangePct: Math.round(dayChangePct * 100) / 100,
       hotSector,
@@ -113,7 +129,12 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       <KpiCard
-        label="전체 시가총액"
+        label="추적 종목 시총"
+        hint={
+          aggregates.tickerCount
+            ? `Sector King이 추적하는 미국·한국 주요 ${aggregates.tickerCount.toLocaleString()}개 종목의 합산 시가총액입니다. 전체 시장 시가총액이 아닙니다.`
+            : '추적 중인 미국·한국 주요 종목의 합산 시가총액입니다. 전체 시장 시가총액이 아닙니다.'
+        }
         icon={<Layers className="h-4 w-4 text-muted-foreground" />}
       >
         <KpiValue
@@ -121,13 +142,21 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
             <CountUpMcap value={aggregates.totalMarketCap} />
           }
           sub={
-            <MiniSparkline
-              data={aggregates.totalHistory}
-              width={96}
-              height={20}
-              fill
-              ariaLabel="14일 시총 추세"
-            />
+            <div className="space-y-1">
+              <MiniSparkline
+                data={aggregates.totalHistory}
+                width={96}
+                height={20}
+                fill
+                ariaLabel="14일 시총 추세"
+              />
+              <p className="text-[10px] leading-tight text-muted-foreground">
+                {aggregates.tickerCount
+                  ? `추적 ${aggregates.tickerCount.toLocaleString()}개 종목 합산`
+                  : '추적 종목 합산'}
+                <span className="text-muted-foreground/70"> · 전체 시장 아님</span>
+              </p>
+            </div>
           }
         />
       </KpiCard>
@@ -155,7 +184,7 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
           }
           sub={
             <span className="text-xs text-muted-foreground">
-              산업 시총 가중 평균
+              추적 종목 시총 기준
             </span>
           }
         />
