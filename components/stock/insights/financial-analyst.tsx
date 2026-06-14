@@ -2,12 +2,8 @@
 
 import { Landmark } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import {
-  formatPercent,
-  formatPrice,
-  formatRecommendation,
-  formatMarketCap,
-} from '@/lib/format'
+import { formatPercent, formatRecommendation } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import type { CompanyDetailResponse } from '@/types'
 
 interface FinancialAnalystProps {
@@ -26,6 +22,7 @@ interface MetricRow {
  */
 export function FinancialAnalyst({ data }: FinancialAnalystProps) {
   const { score, analystUpside } = data
+  const fmt = useCurrencyFormat()
 
   if (!score) {
     return (
@@ -61,7 +58,7 @@ export function FinancialAnalyst({ data }: FinancialAnalystProps) {
     },
     {
       label: '잉여현금흐름',
-      value: formatMarketCap(score.freeCashflow ?? null),
+      value: fmt.marketCap(score.freeCashflow ?? null),
       show: score.freeCashflow != null,
     },
   ].filter((r) => r.show)
@@ -113,7 +110,7 @@ export function FinancialAnalyst({ data }: FinancialAnalystProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">목표주가</span>
                   <span className="num-mono text-sm font-medium text-foreground">
-                    {formatPrice(analystUpside.targetMeanPriceUsd)}
+                    {fmt.price(analystUpside.targetMeanPriceUsd)}
                     {analystUpside.upsidePct != null && (
                       <span className="ml-1.5 text-xs text-muted-foreground">
                         ({formatPercent(analystUpside.upsidePct)})

@@ -35,8 +35,9 @@ export default async function OgImage({
   const [summary, fontData] = await Promise.all([getStockSummary(ticker), loadFont()])
 
   const name = summary ? summary.nameKo || summary.name : ticker
+  // OG 이미지는 서버 렌더라 사용자 통화 토글 상태를 알 수 없다. 기본값(KRW)으로 고정한다(D2).
   const marketCapLabel =
-    summary?.marketCapUsd != null ? formatMarketCap(summary.marketCapUsd) : null
+    summary?.marketCapUsd != null ? formatMarketCap(summary.marketCapUsd, 'KRW') : null
 
   return new ImageResponse(
     (

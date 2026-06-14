@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { BarChart3 } from 'lucide-react'
 import { useCompanyStatistics } from '@/hooks/use-statistics'
-import { formatMarketCap, formatPriceChange, formatKrw } from '@/lib/format'
+import { formatPriceChange } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { getPriceChangeStyle } from '@/lib/styles'
 import { cn } from '@/lib/utils'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
@@ -20,6 +21,7 @@ interface CompanyStatsCardProps {
 export function CompanyStatsCard({ region = 'all' }: CompanyStatsCardProps = {}) {
   const { data, isLoading, error } = useCompanyStatistics({ limit: 10, region })
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
+  const fmt = useCurrencyFormat()
 
   if (isLoading) return <CompanyStatsCardSkeleton />
   if (error || !data) return <CardError message="회사 통계를 불러올 수 없습니다" />
@@ -92,13 +94,8 @@ export function CompanyStatsCard({ region = 'all' }: CompanyStatsCardProps = {})
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <div className="text-sm text-card-foreground">
-                      {formatMarketCap(company.latestSnapshot?.marketCap ?? null)}
+                      {fmt.marketCap(company.latestSnapshot?.marketCap ?? null)}
                     </div>
-                    {company.latestSnapshot?.marketCap != null && (
-                      <div className="text-xs text-muted-foreground">
-                        ({formatKrw(company.latestSnapshot.marketCap)})
-                      </div>
-                    )}
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <span

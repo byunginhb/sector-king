@@ -3,7 +3,8 @@
 import { useState, useMemo } from 'react'
 import { TrendingUp } from 'lucide-react'
 import { usePriceChanges } from '@/hooks/use-price-changes'
-import { formatPriceCompact, formatPriceChange, formatDate, formatKrw } from '@/lib/format'
+import { formatPriceChange, formatDate } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { getPriceChangeStyle } from '@/lib/styles'
 import { cn } from '@/lib/utils'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
@@ -148,6 +149,7 @@ function CompanyList({
   onCompanyClick: (ticker: string) => void
   variant: 'gainer' | 'loser'
 }) {
+  const fmt = useCurrencyFormat()
   return (
     <div className={cn(
       'divide-y divide-border-subtle',
@@ -193,10 +195,7 @@ function CompanyList({
                 {formatPriceChange(company.percentChange)}
               </div>
               <div className="text-xs text-muted-foreground tabular-nums">
-                {formatPriceCompact(company.latestPrice)}
-                {company.latestPrice != null && (
-                  <span className="ml-1">({formatKrw(company.latestPrice)})</span>
-                )}
+                {fmt.priceCompact(company.latestPrice)}
               </div>
             </div>
           </div>

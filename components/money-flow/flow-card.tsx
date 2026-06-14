@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import type { SectorMoneyFlow } from '@/types'
 import { cn } from '@/lib/utils'
-import { formatFlowAmount, formatKrw } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 
 interface FlowCardProps {
   flow: SectorMoneyFlow
@@ -74,6 +74,7 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
   const isInflow = flow.flowDirection === 'in'
   const flowRatio = Math.min(flow.flowAmount / maxFlow, 1)
   const arrowCount = Math.max(Math.floor(flowRatio * 3) + 5, 5)
+  const fmt = useCurrencyFormat()
 
   return (
     <motion.div
@@ -148,15 +149,7 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
               )}
             >
               {isInflow ? '+' : '-'}
-              {formatFlowAmount(flow.flowAmount)}
-            </div>
-            <div
-              className={cn(
-                'text-xs sm:text-sm opacity-70 tabular-nums',
-                isInflow ? 'text-success' : 'text-danger'
-              )}
-            >
-              ({formatKrw(flow.flowAmount)})
+              {fmt.flowAmount(flow.flowAmount)}
             </div>
             <div
               className={cn(

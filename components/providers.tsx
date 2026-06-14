@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
+import { CurrencyProvider } from '@/hooks/use-currency'
 import { SearchProvider } from './search-provider'
 import { GlobalSearch } from './global-search'
 import { OnboardingProvider } from './onboarding/onboarding-provider'
@@ -24,13 +25,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-        <SearchProvider>
-          <OnboardingProvider>
-            {children}
-            <GlobalSearch />
-            <WelcomeTrigger />
-          </OnboardingProvider>
-        </SearchProvider>
+        <CurrencyProvider>
+          <SearchProvider>
+            <OnboardingProvider>
+              {children}
+              <GlobalSearch />
+              <WelcomeTrigger />
+            </OnboardingProvider>
+          </SearchProvider>
+        </CurrencyProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )

@@ -3,26 +3,12 @@
 import { motion } from 'framer-motion'
 import type { SectorMoneyFlow } from '@/types'
 import { cn } from '@/lib/utils'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 
 interface FlowRiverProps {
   flow: SectorMoneyFlow
   index: number
   maxFlow: number
-}
-
-// Format large numbers
-function formatAmount(amount: number): string {
-  const absAmount = Math.abs(amount)
-  if (absAmount >= 1e12) {
-    return `$${(absAmount / 1e12).toFixed(1)}T`
-  }
-  if (absAmount >= 1e9) {
-    return `$${(absAmount / 1e9).toFixed(1)}B`
-  }
-  if (absAmount >= 1e6) {
-    return `$${(absAmount / 1e6).toFixed(1)}M`
-  }
-  return `$${absAmount.toLocaleString()}`
 }
 
 // Dollar sign particle component for inflow
@@ -216,6 +202,7 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
   const isInflow = flow.flowDirection === 'in'
   const flowRatio = Math.min(flow.flowAmount / maxFlow, 1)
   const strokeWidth = Math.max(flowRatio * 20, 10) // Min 10px, max 20px
+  const fmt = useCurrencyFormat()
 
   // Number of particles based on flow amount
   const particleCount = Math.max(Math.floor(flowRatio * 8), 3)
@@ -268,7 +255,7 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
         <div className="text-right">
           <div className={cn('text-lg font-bold', colors.text)}>
             {isInflow ? '+' : '-'}
-            {formatAmount(flow.flowAmount)}
+            {fmt.flowAmount(flow.flowAmount)}
           </div>
           <div className="text-xs text-gray-500 dark:text-slate-400">
             {isInflow ? '+' : ''}

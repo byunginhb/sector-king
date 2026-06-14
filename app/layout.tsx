@@ -129,6 +129,14 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <head>
         <meta name="color-scheme" content="light dark" />
+        <script
+          // 첫 페인트 전 동기 실행: localStorage 의 표시 통화를 <html data-currency> 로 선반영(flash 방지).
+          // 키('sector-king-currency')·기본값('KRW')은 lib/currency.ts SoT 와 문자열로 일치시켜야 함
+          // (번들러가 상수를 자동 치환하지 못하므로 하드코딩 — 변경 시 SoT 와 동시 수정).
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var c=localStorage.getItem('sector-king-currency');document.documentElement.setAttribute('data-currency',(c==='USD'||c==='KRW')?c:'KRW');}catch(e){document.documentElement.setAttribute('data-currency','KRW');}})();`,
+          }}
+        />
         <WebSiteJsonLd />
       </head>
       <body

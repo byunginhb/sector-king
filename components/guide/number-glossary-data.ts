@@ -79,13 +79,15 @@ export const NUMBER_GLOSSARY: NumberGlossaryEntry[] = [
     id: 'market-cap',
     icon: DollarSign,
     term: '시가총액',
-    english: '$',
+    english: '₩ / $',
     definition: '주가 × 발행주식수 = 회사 전체에 매겨진 가격표입니다.',
-    howToRead: '회사의 "덩치". 한국 종목도 달러($)로 환산해 보여줍니다.',
-    analogy: 'T=1조 달러, B=10억 달러, M=100만 달러.',
+    howToRead:
+      '회사의 "덩치". 기본은 원화(₩)로 보여주며, 상단 통화 토글로 달러($) 표시로 바꿀 수 있습니다.',
+    analogy:
+      '원화는 조원·억원 단위, 달러는 T=1조 달러·B=10억 달러·M=100만 달러로 표기합니다.',
     links: [{ label: '대시보드에서 보기', href: '/' }],
     methodologyHref: '/methodology#scoring',
-    caution: '한국 종목의 달러 환산은 고정 환율(약 1,450원)을 사용합니다.',
+    caution: '달러 표시는 고정 환율(약 1,450원)로 환산합니다.',
   },
   {
     id: 'price-change',

@@ -1,4 +1,9 @@
 import { DsSection, DsSubsection } from './ds-section'
+import {
+  formatMarketCap,
+  formatPrice,
+  formatFlowAmount,
+} from '@/lib/format'
 
 interface TokenSwatch {
   name: string
@@ -302,9 +307,70 @@ export function FoundationsSection() {
           </div>
         </div>
       </DsSubsection>
+
+      {/* ─────────────────── Currency notation ─────────────────── */}
+      <DsSubsection
+        title="통화 표기 규칙"
+        hint="₩ / $ · toggle-aware"
+        description="가격·시총·자금흐름은 통화 토글을 따릅니다(기본 ₩). 입력은 항상 USD이며 표시 통화만 전환됩니다. 등락률·거래량·점수 같은 통화 무관 항목은 토글과 무관하게 항상 동일합니다."
+      >
+        <div className="border border-border-subtle bg-surface-1 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border-subtle bg-surface-2/40 text-xs text-muted-foreground">
+                <th className="px-4 py-2.5 text-left font-medium">항목</th>
+                <th className="px-4 py-2.5 text-right font-medium">USD ($)</th>
+                <th className="px-4 py-2.5 text-right font-medium">KRW (₩)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-subtle">
+              {CURRENCY_NOTATION_ROWS.map((row) => (
+                <tr key={row.label}>
+                  <td className="px-4 py-2.5 text-foreground">{row.label}</td>
+                  <td className="px-4 py-2.5 text-right num-mono tabular-nums text-foreground">
+                    {row.usd}
+                  </td>
+                  <td className="px-4 py-2.5 text-right num-mono tabular-nums text-foreground">
+                    {row.krw}
+                  </td>
+                </tr>
+              ))}
+              {CURRENCY_NEUTRAL_ROWS.map((row) => (
+                <tr key={row.label} className="bg-surface-2/20">
+                  <td className="px-4 py-2.5 text-foreground">
+                    {row.label}
+                    <span className="ml-2 inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                      토글 영향 없음
+                    </span>
+                  </td>
+                  <td
+                    className="px-4 py-2.5 text-right num-mono tabular-nums text-muted-foreground"
+                    colSpan={2}
+                  >
+                    {row.value}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </DsSubsection>
     </DsSection>
   )
 }
+
+/** 통화 표기 규칙 라이브 예시(format 코어를 두 통화로 직접 호출 — 순수 함수라 안전). */
+const CURRENCY_NOTATION_ROWS = [
+  { label: '시가총액', usd: formatMarketCap(4.21e12, 'USD'), krw: formatMarketCap(4.21e12, 'KRW') },
+  { label: '주가', usd: formatPrice(108.77, 'USD'), krw: formatPrice(108.77, 'KRW') },
+  { label: '자금흐름', usd: `+${formatFlowAmount(76.4e9, 'USD')}`, krw: `+${formatFlowAmount(76.4e9, 'KRW')}` },
+] as const
+
+const CURRENCY_NEUTRAL_ROWS = [
+  { label: '등락률', value: '+1.82%' },
+  { label: '거래량', value: '1.2M' },
+  { label: '점수', value: '7.3/10' },
+] as const
 
 function TypeRow({
   eyebrow,

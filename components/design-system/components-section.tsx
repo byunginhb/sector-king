@@ -6,13 +6,16 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SectionHeader } from '@/components/ui/section-header'
 import { RegionToggle } from '@/components/region-toggle'
+import { CurrencyToggle } from '@/components/currency-toggle'
 import { EmptyRegionState } from '@/components/ui/empty-region-state'
 import type { RegionFilter } from '@/types'
+import type { Currency } from '@/lib/currency'
 import { DsSection, DsSubsection } from './ds-section'
 import { CodeBlock } from './code-block'
 
 export function ComponentsSection() {
   const [region, setRegion] = useState<RegionFilter>('all')
+  const [currency, setCurrency] = useState<Currency>('KRW')
 
   return (
     <DsSection
@@ -133,6 +136,24 @@ export function ComponentsSection() {
   description="최근 14일 산업별 순매수/순매도 합계"
   actions={<Button size="sm" variant="default">14일</Button>}
 />`}
+        />
+      </DsSubsection>
+
+      {/* Currency toggle */}
+      <DsSubsection title="Currency Toggle" hint="원(₩) / 달러($)">
+        <div className="border border-border-subtle bg-surface-1 p-5 flex flex-wrap items-center gap-4">
+          <CurrencyToggle value={currency} onChange={setCurrency} />
+          <span className="text-xs text-muted-foreground">
+            현재 선택: <span className="font-mono text-foreground">{currency}</span>
+          </span>
+        </div>
+        <CodeBlock
+          label="사용 예 (controlled)"
+          code={`import { CurrencyToggle } from '@/components/currency-toggle'
+
+// 전역 연결은 top-bar 래퍼가 useCurrency()로:
+const { currency, setCurrency } = useCurrency()
+<CurrencyToggle value={currency} onChange={setCurrency} />`}
         />
       </DsSubsection>
 

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { TrendingUp as TrendingUpIcon } from 'lucide-react'
 import { useIndustryMoneyFlow } from '@/hooks/use-industry-money-flow'
-import { formatFlowAmount, formatKrw } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IndustryIcon } from '@/components/ui/industry-icon'
@@ -147,6 +147,7 @@ function IndustryFlowItem({
   index: number
 }) {
   const isInflow = industry.flowDirection === 'in'
+  const fmt = useCurrencyFormat()
 
   return (
     <Link href={`/${industry.industryId}/money-flow`} className="block">
@@ -233,15 +234,7 @@ function IndustryFlowItem({
                 isInflow ? 'text-success' : 'text-danger'
               )}
             >
-              {isInflow ? '+' : '-'}{formatFlowAmount(Math.abs(industry.netFlow))}
-            </div>
-            <div
-              className={cn(
-                'text-xs opacity-70 tabular-nums',
-                isInflow ? 'text-success' : 'text-danger'
-              )}
-            >
-              ({formatKrw(industry.netFlow, { signed: true })})
+              {isInflow ? '+' : '-'}{fmt.flowAmount(Math.abs(industry.netFlow))}
             </div>
             <div
               className={cn(
@@ -259,14 +252,14 @@ function IndustryFlowItem({
               <div className="w-2 h-2 rounded-full bg-success" />
               <span className="text-muted-foreground">유입</span>
               <span className="font-medium text-card-foreground tabular-nums">
-                {formatFlowAmount(industry.totalInflow)}
+                {fmt.flowAmount(industry.totalInflow)}
               </span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-danger" />
               <span className="text-muted-foreground">유출</span>
               <span className="font-medium text-card-foreground tabular-nums">
-                {formatFlowAmount(industry.totalOutflow)}
+                {fmt.flowAmount(industry.totalOutflow)}
               </span>
             </div>
           </div>

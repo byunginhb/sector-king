@@ -6,7 +6,8 @@ import { useSearch } from '@/hooks/use-search'
 import { useSearchContext } from './search-provider'
 import { CompanyDetail } from './company-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { formatMarketCap, formatPriceChange } from '@/lib/format'
+import { formatPriceChange } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
 
 export function GlobalSearch() {
@@ -19,6 +20,7 @@ export function GlobalSearch() {
 
   const { data, isLoading } = useSearch({ query })
   const results = data?.results ?? []
+  const fmt = useCurrencyFormat()
 
   // Focus input when opened
   useEffect(() => {
@@ -160,7 +162,7 @@ export function GlobalSearch() {
                         <div className="text-right shrink-0">
                           {item.marketCap != null && (
                             <p className="text-xs text-muted-foreground">
-                              {formatMarketCap(item.marketCap)}
+                              {fmt.marketCap(item.marketCap)}
                             </p>
                           )}
                           {item.priceChange != null && (

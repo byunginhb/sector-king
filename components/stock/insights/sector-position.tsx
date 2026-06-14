@@ -1,7 +1,8 @@
 'use client'
 
 import { Users, Star } from 'lucide-react'
-import { formatMarketCap, formatScore } from '@/lib/format'
+import { formatScore } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
 import type { CompanyInsightsResponse } from '@/types'
 
@@ -17,6 +18,7 @@ const MAX_ROWS = 8
  */
 export function SectorPosition({ insights }: SectorPositionProps) {
   const { peers, sectorContext } = insights
+  const fmt = useCurrencyFormat()
 
   if (!sectorContext || peers.length === 0) {
     return null
@@ -124,7 +126,8 @@ export function SectorPosition({ insights }: SectorPositionProps) {
       </div>
 
       <p className="mt-2 text-[11px] text-muted-foreground">
-        섹터 합산 시총 {formatMarketCap(total)} (USD 환산 기준)
+        섹터 합산 시총 {fmt.marketCap(total)} (
+        {fmt.currency === 'KRW' ? '원화 환산 기준' : 'USD 환산 기준'})
       </p>
     </section>
   )

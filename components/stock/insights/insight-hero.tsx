@@ -3,7 +3,8 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { StockPriceBanner } from '@/components/stock/stock-price-banner'
 import { SCORING } from '@/lib/scoring-methodology'
-import { formatPrice, formatPercent } from '@/lib/format'
+import { formatPercent } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
 import type { CompanyDetailResponse } from '@/types'
 
@@ -18,6 +19,7 @@ interface InsightHeroProps {
  */
 export function InsightHero({ ticker, data }: InsightHeroProps) {
   const { snapshot, score, history, analystUpside } = data
+  const fmt = useCurrencyFormat()
 
   const week52Position = snapshot?.week52Position ?? null
   const positionPct = week52Position != null ? Math.round(week52Position * 100) : null
@@ -62,8 +64,8 @@ export function InsightHero({ ticker, data }: InsightHeroProps) {
                 />
               </div>
               <div className="flex justify-between text-[11px] text-muted-foreground">
-                <span>{formatPrice(snapshot.week52Low ?? null)}</span>
-                <span>{formatPrice(snapshot.week52High ?? null)}</span>
+                <span>{fmt.price(snapshot.week52Low ?? null)}</span>
+                <span>{fmt.price(snapshot.week52High ?? null)}</span>
               </div>
             </>
           ) : (
@@ -115,7 +117,7 @@ export function InsightHero({ ticker, data }: InsightHeroProps) {
               </div>
               {analystUpside?.targetMeanPriceUsd != null && (
                 <p className="text-[11px] text-muted-foreground">
-                  컨센서스 목표가 {formatPrice(analystUpside.targetMeanPriceUsd)}
+                  컨센서스 목표가 {fmt.price(analystUpside.targetMeanPriceUsd)}
                 </p>
               )}
             </>
