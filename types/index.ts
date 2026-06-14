@@ -491,6 +491,23 @@ export interface IndustriesResponse {
   appliedRegion?: _RegionFilter
 }
 
+/** 추적 종목 시총 일자별 추이 1포인트. */
+export interface MarketCapHistoryPoint {
+  date: string
+  /** 해당일 추적 종목(중복 제거) 합산 시가총액 (USD) */
+  marketCapUsd: number
+  /** 전일 대비 변화율 (%). 직전 거래일 데이터 없으면 null. */
+  changePct: number | null
+}
+
+export interface MarketCapHistoryResponse {
+  /** 오래된 → 최신 순 일자별 추이 */
+  history: MarketCapHistoryPoint[]
+  /** 합산에 포함된 추적 종목 수 */
+  tickerCount: number
+  appliedRegion?: _RegionFilter
+}
+
 export interface IndustryFilterResult {
   categoryIds: string[]
   sectorIds: string[]

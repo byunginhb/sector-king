@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
-import { TrendingUp, TrendingDown, Flame, ArrowRightLeft, Layers } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { TrendingUp, TrendingDown, Flame, ArrowRightLeft, Layers, ChevronRight } from 'lucide-react'
+import { MarketCapDetailModal } from './market-cap-detail-modal'
 import { useIndustries } from '@/hooks/use-industries'
 import { useIndustryMoneyFlow } from '@/hooks/use-industry-money-flow'
 import { useCountUp } from '@/hooks/use-count-up'
@@ -30,6 +31,7 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
     region,
   })
   const fmt = useCurrencyFormat()
+  const [detailOpen, setDetailOpen] = useState(false)
 
   const aggregates = useMemo(() => {
     if (!indData) {
@@ -136,6 +138,8 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
             : '추적 중인 미국·한국 주요 종목의 합산 시가총액입니다. 전체 시장 시가총액이 아닙니다.'
         }
         icon={<Layers className="h-4 w-4 text-muted-foreground" />}
+        onClick={() => setDetailOpen(true)}
+        actionLabel="일자별 추이 보기"
       >
         <KpiValue
           value={
@@ -250,6 +254,12 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
           <EmptyValue />
         )}
       </KpiCard>
+
+      <MarketCapDetailModal
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        region={region}
+      />
     </div>
   )
 }
@@ -261,20 +271,51 @@ function KpiCard({
   icon,
   hint,
   children,
+  onClick,
+  actionLabel,
 }: {
   label: string
   icon?: React.ReactNode
   hint?: string
   children: React.ReactNode
+  /** 지정 시 카드 전체가 클릭 가능한 버튼이 되고 우상단에 chevron affordance 표시 */
+  onClick?: () => void
+  /** 클릭 시 동작 설명 (a11y). onClick 과 함께 사용 */
+  actionLabel?: string
 }) {
+  const header = (
+    <div className="flex items-center gap-2 mb-3">
+      {icon}
+      <p className="eyebrow" title={hint}>
+        {label}
+      </p>
+      {onClick && (
+        <ChevronRight
+          className="ml-auto h-4 w-4 text-muted-foreground/60"
+          aria-hidden
+        />
+      )}
+    </div>
+  )
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-haspopup="dialog"
+        aria-label={actionLabel ?? label}
+        className="sk-card sk-card-hover w-full text-left cursor-pointer transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
+        {header}
+        {children}
+      </button>
+    )
+  }
+
   return (
     <div className="sk-card sk-card-hover">
-      <div className="flex items-center gap-2 mb-3">
-        {icon}
-        <p className="eyebrow" title={hint}>
-          {label}
-        </p>
-      </div>
+      {header}
       {children}
     </div>
   )
