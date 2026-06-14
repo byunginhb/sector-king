@@ -233,10 +233,42 @@ export async function GET(
       }
     })
 
+    // 추적 종목 전체(중복 제거) 시장 집계.
+    // 산업별 totalMarketCap 합산은 멀티산업 종목(예: TSLA 5개 산업)을 중복 계산하므로
+    // distinct ticker 기준으로 별도 집계한다. "전체 시장"이 아니라 "추적 종목" 범위다.
+    const distinctTickers = new Set<string>()
+    for (const sc of allSC) {
+      if (sc.ticker) distinctTickers.add(sc.ticker)
+    }
+    let mktTotal = 0
+    let mktPrev = 0
+    for (const ticker of distinctTickers) {
+      const inner = snapshotIndex.get(ticker)
+      if (!inner) continue
+      if (latestDate) mktTotal += inner.get(latestDate) ?? 0
+      if (prevDate) mktPrev += inner.get(prevDate) ?? 0
+    }
+    const mktChange = mktPrev > 0 ? ((mktTotal - mktPrev) / mktPrev) * 100 : 0
+    const mktHistory = historyDates.map((d) => {
+      let sum = 0
+      for (const ticker of distinctTickers) {
+        const inner = snapshotIndex.get(ticker)
+        if (!inner) continue
+        sum += inner.get(d) ?? 0
+      }
+      return sum
+    })
+
     return NextResponse.json({
       success: true,
       data: {
         industries: industryOverviews,
+        market: {
+          marketCapTotal: mktTotal,
+          marketCapChange: Math.round(mktChange * 100) / 100,
+          marketCapHistory: mktHistory,
+          tickerCount: distinctTickers.size,
+        },
         lastUpdated: latestDate,
         appliedRegion: region,
       },

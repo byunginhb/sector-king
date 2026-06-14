@@ -161,7 +161,19 @@ export function formatKrw(
 ): string {
   const krw = Math.abs(usdAmount) * getKrwRate()
   const sign = options?.signed && usdAmount < 0 ? '-' : ''
-  if (krw >= 1e12) return `${sign}${(krw / 1e12).toFixed(1)}조원`
+  // 경(10^16) = 1만조. 조 단위가 수만에 이르면 콤마/소수가 길어 가독성이 떨어지므로 경으로 압축.
+  if (krw >= 1e16) {
+    return `${sign}${(krw / 1e16).toLocaleString('ko-KR', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    })}경원`
+  }
+  if (krw >= 1e12) {
+    const jo = krw / 1e12
+    // 100조 이상은 정수+천단위 콤마, 미만은 소수 1자리
+    const body = jo >= 100 ? Math.round(jo).toLocaleString() : jo.toFixed(1)
+    return `${sign}${body}조원`
+  }
   if (krw >= 1e8) return `${sign}${Math.round(krw / 1e8).toLocaleString()}억원`
   if (krw >= 1e4) return `${sign}${Math.round(krw / 1e4).toLocaleString()}만원`
   return `${sign}${Math.round(krw).toLocaleString()}원`

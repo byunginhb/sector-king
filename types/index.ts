@@ -467,8 +467,26 @@ export interface IndustryOverview {
   } | null
 }
 
+/**
+ * 추적 종목 전체(중복 제거) 시장 집계.
+ * 산업별 `totalMarketCap` 단순 합산은 멀티산업 종목을 중복 계산(현재 약 3.4배)하므로,
+ * distinct 종목 기준으로 별도 집계한 값. "전체 시장"이 아니라 "추적 종목" 범위다.
+ */
+export interface MarketAggregate {
+  /** 추적 종목(중복 제거) 합산 시가총액 (USD, 최신일) */
+  marketCapTotal: number
+  /** 전일 대비 시가총액 변화율 (%) */
+  marketCapChange: number
+  /** 최근 14일 시가총액 시계열 (오래된 → 최신, USD) */
+  marketCapHistory: number[]
+  /** 합산에 포함된 추적 종목 수 */
+  tickerCount: number
+}
+
 export interface IndustriesResponse {
   industries: IndustryOverview[]
+  /** 추적 종목 전체(중복 제거) 집계. 구버전 캐시 호환을 위해 옵셔널. */
+  market?: MarketAggregate
   lastUpdated: string | null
   appliedRegion?: _RegionFilter
 }
