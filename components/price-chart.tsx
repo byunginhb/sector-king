@@ -2,12 +2,14 @@
 
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
 import type { PriceHistory } from '@/types'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 
 interface PriceChartProps {
   data: PriceHistory[]
 }
 
 export function PriceChart({ data }: PriceChartProps) {
+  const fmt = useCurrencyFormat()
   if (data.length === 0) {
     return (
       <div className="h-48 flex items-center justify-center text-muted-foreground bg-muted/50 rounded-lg border border-dashed border-border">
@@ -61,15 +63,15 @@ export function PriceChart({ data }: PriceChartProps) {
           <YAxis
             domain={[minPrice, maxPrice]}
             tick={{ fontSize: 10, fill: '#94a3b8' }}
-            tickFormatter={(value) => `$${value.toFixed(0)}`}
+            tickFormatter={(value) => fmt.price(value as number)}
             tickLine={false}
             axisLine={false}
-            width={50}
+            width={fmt.currency === 'KRW' ? 64 : 50}
           />
           <Tooltip
             formatter={(value) => {
               const numValue = typeof value === 'number' ? value : 0
-              return [`$${numValue.toFixed(2)}`, 'Price']
+              return [fmt.price(numValue), 'Price']
             }}
             labelStyle={{ color: '#64748b', fontWeight: 500 }}
             contentStyle={{

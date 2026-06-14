@@ -13,6 +13,7 @@ import {
 } from 'recharts'
 import { useSectorTrend } from '@/hooks/use-sector-trend'
 import { useRegion } from '@/hooks/use-region'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
 import type { SectorTrendData } from '@/types'
 
@@ -39,14 +40,6 @@ function getFlowPercent(sector: SectorTrendData, period: number): number {
 
 function getFlowAmount(sector: SectorTrendData, period: number): number {
   return sector.periods.find((p) => p.period === period)?.flowAmount ?? 0
-}
-
-function formatAmount(amount: number): string {
-  const abs = Math.abs(amount)
-  if (abs >= 1e9) return `${(amount / 1e9).toFixed(1)}B`
-  if (abs >= 1e6) return `${(amount / 1e6).toFixed(1)}M`
-  if (abs >= 1e3) return `${(amount / 1e3).toFixed(1)}K`
-  return amount.toFixed(0)
 }
 
 function getCellBg(value: number): string {
@@ -76,6 +69,7 @@ interface SectorTrendSectionProps {
 export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {}) {
   const { region } = useRegion()
   const { data, isLoading, error } = useSectorTrend({ industryId, region })
+  const fmt = useCurrencyFormat()
   const [sortPeriod, setSortPeriod] = useState(30)
   const [sortAsc, setSortAsc] = useState(false)
   const [showAll, setShowAll] = useState(false)
@@ -199,7 +193,7 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
                     return (
                       <td
                         key={p}
-                        title={`시총 변화: ${formatAmount(amount)}`}
+                        title={`시총 변화: ${fmt.marketCap(amount)}`}
                         className={cn(
                           'px-4 py-2.5 text-right tabular-nums font-medium',
                           getCellBg(percent),

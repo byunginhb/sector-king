@@ -1,28 +1,44 @@
-import { getKrwRate } from '@/lib/currency'
+import { getKrwRate, type Currency } from '@/lib/currency'
 
-export function formatMarketCap(value: number | null | undefined): string {
+// 통화 인지 포맷 4종(formatMarketCap/formatPrice/formatPriceCompact/formatFlowAmount).
+// 입력은 항상 USD. currency 기본값을 'USD' 로 두어 인자 미지정 기존 호출은 USD 로 동작한다.
+// KRW 분기는 formatKrw/getKrwRate 단일 SoT 를 재사용한다(이중환산 방지: raw 원/엔 입력 금지).
+
+export function formatMarketCap(
+  value: number | null | undefined,
+  currency: Currency = 'USD'
+): string {
   if (value === null || value === undefined) return 'N/A'
+  if (currency === 'KRW') return formatKrw(value) // 조원/억원/만원/원 압축 재사용
   if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`
   if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`
   if (value >= 1e6) return `$${(value / 1e6).toFixed(2)}M`
   return `$${value.toLocaleString()}`
 }
 
-export function formatPrice(value: number | null): string {
+export function formatPrice(
+  value: number | null,
+  currency: Currency = 'USD'
+): string {
   if (value === null || value === undefined) return 'N/A'
+  if (currency === 'KRW') {
+    const krw = value * getKrwRate()
+    return `₩${Math.round(krw).toLocaleString()}` // 원 단위 정수, 천단위 콤마
+  }
   return `$${value.toFixed(2)}`
 }
 
 /**
  * 좁은 셀(모바일 리스트 등)에서 쓰는 짧은 가격 포맷.
- *  - >= 1e6  : $1.82M
- *  - >= 1e5  : $834K
- *  - >= 1e4  : $80.3K
- *  - >= 1e3  : $3,260
- *  - else    : $108.77
+ *  - USD  >= 1e6 : $1.82M / >= 1e5 : $834K / >= 1e4 : $80.3K / >= 1e3 : $3,260 / else $108.77
+ *  - KRW         : formatKrw 압축(억/만원) — 좁은 셀 우선이라 단가도 압축
  */
-export function formatPriceCompact(value: number | null | undefined): string {
+export function formatPriceCompact(
+  value: number | null | undefined,
+  currency: Currency = 'USD'
+): string {
   if (value === null || value === undefined) return 'N/A'
+  if (currency === 'KRW') return formatKrw(value) // 억/만원 압축 표기 재사용
   const abs = Math.abs(value)
   if (abs >= 1e6) return `$${(value / 1e6).toFixed(2)}M`
   if (abs >= 1e5) return `$${Math.round(value / 1e3).toLocaleString()}K`
@@ -151,7 +167,13 @@ export function formatKrw(
   return `${sign}${Math.round(krw).toLocaleString()}원`
 }
 
-export function formatFlowAmount(amount: number): string {
+// 자금흐름액. 입력이 음수일 수 있으나 호출부가 부호(+/-)를 따로 붙이는 패턴이라
+// USD·KRW 모두 절댓값 표기로 일치시킨다(formatKrw 기본 동작과 동일).
+export function formatFlowAmount(
+  amount: number,
+  currency: Currency = 'USD'
+): string {
+  if (currency === 'KRW') return formatKrw(amount) // 절댓값·조/억/만원 압축
   const absAmount = Math.abs(amount)
   if (absAmount >= 1e12) {
     return `$${(absAmount / 1e12).toFixed(1)}T`

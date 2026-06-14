@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Wallet } from 'lucide-react'
-import { formatFlowAmount, formatKrw } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 
 interface FlowSummaryProps {
   totalInflow: number
@@ -12,6 +12,7 @@ interface FlowSummaryProps {
 
 export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryProps) {
   const isNetPositive = netFlow >= 0
+  const fmt = useCurrencyFormat()
 
   return (
     <motion.div
@@ -33,10 +34,7 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
           </span>
         </div>
         <div className="text-xl sm:text-2xl font-bold text-success tabular-nums">
-          +{formatFlowAmount(totalInflow)}
-        </div>
-        <div className="text-sm text-success/70 tabular-nums">
-          ({formatKrw(totalInflow)})
+          +{fmt.flowAmount(totalInflow)}
         </div>
       </div>
 
@@ -49,10 +47,7 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
           </span>
         </div>
         <div className="text-xl sm:text-2xl font-bold text-danger tabular-nums">
-          -{formatFlowAmount(totalOutflow)}
-        </div>
-        <div className="text-sm text-danger/70 tabular-nums">
-          ({formatKrw(totalOutflow)})
+          -{fmt.flowAmount(totalOutflow)}
         </div>
       </div>
 
@@ -90,16 +85,7 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
               : 'text-xl sm:text-2xl font-bold text-warning tabular-nums'
           }
         >
-          {isNetPositive ? '+' : '-'}{formatFlowAmount(Math.abs(netFlow))}
-        </div>
-        <div
-          className={
-            isNetPositive
-              ? 'text-sm text-info/70 tabular-nums'
-              : 'text-sm text-warning/70 tabular-nums'
-          }
-        >
-          ({formatKrw(netFlow, { signed: true })})
+          {isNetPositive ? '+' : '-'}{fmt.flowAmount(Math.abs(netFlow))}
         </div>
       </div>
       </div>

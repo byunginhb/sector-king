@@ -10,7 +10,7 @@ import {
   Cell,
 } from 'recharts'
 import type { CategoryMarketCap } from '@/types'
-import { formatMarketCap, formatKrw } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 
 const CATEGORY_COLORS = [
   '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
@@ -24,6 +24,7 @@ interface CategoryComparisonChartProps {
 }
 
 export function CategoryComparisonChart({ data, isLoading }: CategoryComparisonChartProps) {
+  const fmt = useCurrencyFormat()
   if (isLoading) {
     return (
       <div className="h-72 bg-muted/30 rounded-lg animate-pulse flex items-center justify-center">
@@ -57,11 +58,7 @@ export function CategoryComparisonChart({ data, isLoading }: CategoryComparisonC
           <XAxis
             type="number"
             tick={{ fontSize: 10, fill: '#94a3b8' }}
-            tickFormatter={(value) => {
-              if (value >= 1e12) return `${(value / 1e12).toFixed(1)}T`
-              if (value >= 1e9) return `${(value / 1e9).toFixed(0)}B`
-              return `${(value / 1e6).toFixed(0)}M`
-            }}
+            tickFormatter={(value) => fmt.marketCap(value as number)}
             tickLine={false}
             axisLine={{ stroke: '#e2e8f0' }}
           />
@@ -74,7 +71,7 @@ export function CategoryComparisonChart({ data, isLoading }: CategoryComparisonC
             width={70}
           />
           <Tooltip
-            formatter={(value) => [`${formatMarketCap(value as number)} (${formatKrw(value as number)})`, '시가총액']}
+            formatter={(value) => [fmt.marketCap(value as number), '시가총액']}
             labelFormatter={(label, payload) => {
               const item = payload?.[0]?.payload as CategoryMarketCap | undefined
               return item ? `${item.name} (${item.sectorCount}개 섹터)` : label

@@ -6,7 +6,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { getRankStyle } from '@/lib/styles'
-import { formatMarketCap, formatPriceChange, formatScore } from '@/lib/format'
+import { formatPriceChange, formatScore } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { SCORING } from '@/lib/scoring-methodology'
 import { CompanyDetail } from './company-detail'
 import type { SectorCompanyWithDetails } from '@/types'
@@ -29,6 +30,7 @@ function ScoreBar({ value, max, color }: { value: number; max: number; color: st
 export function CompanyBadge({ sectorCompany, isHistorical = false, isFirst = false }: CompanyBadgeProps) {
   const { company, rank, snapshot, notes, score, priceChangeFromSnapshot } = sectorCompany
   const style = getRankStyle(rank)
+  const fmt = useCurrencyFormat()
 
   const priceChangeColor =
     snapshot?.priceChange && snapshot.priceChange > 0
@@ -93,7 +95,7 @@ export function CompanyBadge({ sectorCompany, isHistorical = false, isFirst = fa
               <div className="pt-1 border-t border-border space-y-0.5">
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">시총</span>
-                  <span className="font-medium">{formatMarketCap(snapshot.marketCap)}</span>
+                  <span className="font-medium">{fmt.marketCap(snapshot.marketCap)}</span>
                 </div>
                 {!isHistorical && snapshot.priceChange !== null && (
                   <div className="flex justify-between text-xs">

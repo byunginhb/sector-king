@@ -1,7 +1,8 @@
 'use client'
 
 import type { PriceChangeItem } from '@/types'
-import { formatMarketCap, formatPrice, formatPriceChange } from '@/lib/format'
+import { formatPriceChange } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { getPriceChangeStyle } from '@/lib/styles'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +17,7 @@ export function PriceChangeTable({
   onCompanyClick,
   isLoading,
 }: PriceChangeTableProps) {
+  const fmt = useCurrencyFormat()
   if (isLoading) {
     return (
       <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl overflow-hidden">
@@ -80,7 +82,7 @@ export function PriceChangeTable({
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right">
                   <div className="text-sm text-gray-900 dark:text-slate-200">
-                    {formatPrice(company.firstPrice)}
+                    {fmt.price(company.firstPrice)}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-slate-400">
                     {company.firstDate}
@@ -88,7 +90,7 @@ export function PriceChangeTable({
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right">
                   <div className="text-sm text-gray-900 dark:text-slate-200">
-                    {formatPrice(company.latestPrice)}
+                    {fmt.price(company.latestPrice)}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-slate-400">
                     {company.latestDate}
@@ -105,7 +107,7 @@ export function PriceChangeTable({
                   </span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-slate-200">
-                  {formatMarketCap(company.marketCap)}
+                  {fmt.marketCap(company.marketCap)}
                 </td>
               </tr>
             ))}

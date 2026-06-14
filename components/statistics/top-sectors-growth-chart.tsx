@@ -11,7 +11,7 @@ import {
   ReferenceLine,
 } from 'recharts'
 import type { SectorGrowth } from '@/types'
-import { formatMarketCap, formatKrw } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 
 interface TopSectorsGrowthChartProps {
   data: SectorGrowth[]
@@ -19,6 +19,7 @@ interface TopSectorsGrowthChartProps {
 }
 
 export function TopSectorsGrowthChart({ data, isLoading }: TopSectorsGrowthChartProps) {
+  const fmt = useCurrencyFormat()
   if (isLoading) {
     return (
       <div className="h-72 bg-muted/30 rounded-lg animate-pulse flex items-center justify-center">
@@ -75,7 +76,7 @@ export function TopSectorsGrowthChart({ data, isLoading }: TopSectorsGrowthChart
                 <div key="growth" className="space-y-1">
                   <div className="font-medium">{numValue.toFixed(2)}%</div>
                   <div className="text-xs text-gray-500">
-                    {formatMarketCap(item.startMarketCap)} ({formatKrw(item.startMarketCap)}) → {formatMarketCap(item.endMarketCap)} ({formatKrw(item.endMarketCap)})
+                    {fmt.marketCap(item.startMarketCap)} → {fmt.marketCap(item.endMarketCap)}
                   </div>
                 </div>,
                 '성장률',

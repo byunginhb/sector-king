@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react'
 import { Menu, Newspaper, BookOpen, type LucideIcon } from 'lucide-react'
 import { SectorKingLogo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { CurrencyToggle } from '@/components/currency-toggle'
+import { useCurrency } from '@/hooks/use-currency'
 import { SearchTrigger } from '@/components/search-trigger'
 import { HelpButton } from '@/components/onboarding/help-button'
 import { ShareButton } from '@/components/share-button'
@@ -152,6 +154,7 @@ export function GlobalTopBar({
               <ShareButton title={shareTitle} description={shareDescription} />
               <SearchTrigger />
               {pageId && <HelpButton pageId={pageId} />}
+              <CurrencyToggleConnected />
               <ThemeToggle />
               <AuthButtonClient />
             </div>
@@ -228,6 +231,7 @@ export function GlobalTopBar({
                       {pageId && <HelpButton pageId={pageId} />}
                       <ShareButton title={shareTitle} description={shareDescription} />
                       <ThemeToggle />
+                      <CurrencyToggleConnected />
                     </div>
                   </section>
 
@@ -245,6 +249,12 @@ export function GlobalTopBar({
       </div>
     </header>
   )
+}
+
+/** 전역 통화 상태(useCurrency)를 controlled CurrencyToggle 에 연결하는 래퍼. */
+function CurrencyToggleConnected() {
+  const { currency, setCurrency } = useCurrency()
+  return <CurrencyToggle value={currency} onChange={setCurrency} />
 }
 
 function UpdateTimestamp({ dateStr }: { dateStr: string }) {

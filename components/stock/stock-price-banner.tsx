@@ -2,12 +2,8 @@
 
 import { ExternalLink, DollarSign, Flag } from 'lucide-react'
 import { getRegionFromTicker } from '@/lib/region'
-import {
-  formatMarketCap,
-  formatPrice,
-  formatPriceChange,
-  formatKrw,
-} from '@/lib/format'
+import { formatPriceChange } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { getPriceChangeStyle } from '@/lib/styles'
 import { cn } from '@/lib/utils'
 import type { CompanyDetailResponse } from '@/types'
@@ -60,6 +56,7 @@ interface StockPriceBannerProps {
  * 가격·시총은 API 에서 이미 toUsd 변환된 값을 받는다.
  */
 export function StockPriceBanner({ ticker, snapshot, history }: StockPriceBannerProps) {
+  const fmt = useCurrencyFormat()
   if (!snapshot) return null
 
   const cumulativeChange = (() => {
@@ -78,13 +75,8 @@ export function StockPriceBanner({ ticker, snapshot, history }: StockPriceBanner
       <div className="flex flex-wrap items-baseline gap-3">
         <div>
           <span className="num-mono text-3xl text-foreground">
-            {formatPrice(snapshot.price ?? null)}
+            {fmt.price(snapshot.price ?? null)}
           </span>
-          {snapshot.price != null && (
-            <span className="text-sm text-muted-foreground ml-2">
-              ({formatKrw(snapshot.price)})
-            </span>
-          )}
         </div>
         {cumulativeChange && (
           <div className="flex items-baseline gap-1">
@@ -101,8 +93,7 @@ export function StockPriceBanner({ ticker, snapshot, history }: StockPriceBanner
         )}
       </div>
       <p className="text-sm text-muted-foreground mt-1">
-        시가총액: {formatMarketCap(snapshot.marketCap ?? null)}
-        {snapshot.marketCap != null && ` (${formatKrw(snapshot.marketCap)})`}
+        시가총액: {fmt.marketCap(snapshot.marketCap ?? null)}
       </p>
       <a
         href={stockLink.url}

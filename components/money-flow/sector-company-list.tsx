@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Wallet, TrendingDown } from 'lucide-react'
 import { useSectorCompanies } from '@/hooks/use-sector-companies'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { SparklineChart } from './sparkline-chart'
 import { cn } from '@/lib/utils'
 import type { RegionFilter } from '@/types'
@@ -15,21 +16,6 @@ interface SectorCompanyListProps {
   flowDirection: 'in' | 'out'
   region?: RegionFilter
   onClose: () => void
-}
-
-function formatPrice(price: number | null): string {
-  if (price === null) return '-'
-  if (price >= 1000) return `$${price.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-  if (price >= 1) return `$${price.toFixed(2)}`
-  return `$${price.toFixed(4)}`
-}
-
-function formatMarketCap(cap: number | null): string {
-  if (cap === null) return '-'
-  if (cap >= 1e12) return `$${(cap / 1e12).toFixed(1)}T`
-  if (cap >= 1e9) return `$${(cap / 1e9).toFixed(1)}B`
-  if (cap >= 1e6) return `$${(cap / 1e6).toFixed(0)}M`
-  return `$${cap.toLocaleString()}`
 }
 
 export function SectorCompanyList({
@@ -45,6 +31,7 @@ export function SectorCompanyList({
     period,
     region,
   })
+  const fmt = useCurrencyFormat()
 
   const isInflow = flowDirection === 'in'
 
@@ -200,7 +187,7 @@ export function SectorCompanyList({
 
                   {/* Price */}
                   <span className="text-sm text-right text-gray-900 dark:text-slate-100 font-mono">
-                    {formatPrice(company.endPrice)}
+                    {fmt.price(company.endPrice)}
                   </span>
 
                   {/* Change % */}
@@ -221,7 +208,7 @@ export function SectorCompanyList({
 
                   {/* Market Cap (hidden on mobile) */}
                   <span className="hidden sm:block text-xs text-right text-gray-500 dark:text-slate-400 font-mono">
-                    {formatMarketCap(company.marketCap)}
+                    {fmt.marketCap(company.marketCap)}
                   </span>
 
                   {/* Sparkline */}

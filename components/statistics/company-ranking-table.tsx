@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import type { CompanyStatItem } from '@/types'
-import { formatMarketCap, formatPriceChange } from '@/lib/format'
+import { formatPriceChange } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
 
 interface CompanyRankingTableProps {
@@ -30,6 +30,7 @@ export function CompanyRankingTable({
   onCompanyClick,
   isLoading,
 }: CompanyRankingTableProps) {
+  const fmt = useCurrencyFormat()
   const handleSort = (newSort: 'count' | 'marketCap' | 'name') => {
     onSortChange(newSort)
   }
@@ -147,7 +148,7 @@ export function CompanyRankingTable({
                   </span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-slate-200">
-                  {formatMarketCap(company.latestSnapshot?.marketCap ?? null)}
+                  {fmt.marketCap(company.latestSnapshot?.marketCap ?? null)}
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right">
                   {company.latestSnapshot?.priceChange !== null &&

@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, Flame, ArrowRightLeft, Layers } from 'lucide-
 import { useIndustries } from '@/hooks/use-industries'
 import { useIndustryMoneyFlow } from '@/hooks/use-industry-money-flow'
 import { useCountUp } from '@/hooks/use-count-up'
-import { formatMarketCap, formatFlowAmount } from '@/lib/format'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MiniSparkline } from '@/components/ui/mini-sparkline'
@@ -29,6 +29,7 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
     period: 14,
     region,
   })
+  const fmt = useCurrencyFormat()
 
   const aggregates = useMemo(() => {
     if (!indData) {
@@ -181,7 +182,7 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
                   )}
                 >
                   {aggregates.hotSector.flow >= 0 ? '+' : '-'}
-                  {formatFlowAmount(Math.abs(aggregates.hotSector.flow))}
+                  {fmt.flowAmount(Math.abs(aggregates.hotSector.flow))}
                 </span>
               </span>
             }
@@ -212,7 +213,7 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
               >
                 {aggregates.biggestMove.direction === 'in' ? '↑ inflow ' : '↓ outflow '}
                 {aggregates.biggestMove.netFlow >= 0 ? '+' : '-'}
-                {formatFlowAmount(Math.abs(aggregates.biggestMove.netFlow))}
+                {fmt.flowAmount(Math.abs(aggregates.biggestMove.netFlow))}
               </span>
             }
           />
@@ -276,9 +277,10 @@ function EmptyValue() {
 
 function CountUpMcap({ value }: { value: number }) {
   const v = useCountUp(value, { duration: 700 })
+  const fmt = useCurrencyFormat()
   return (
     <span className="num-mono text-2xl sm:text-3xl tracking-tight text-card-foreground">
-      {formatMarketCap(v)}
+      {fmt.marketCap(v)}
     </span>
   )
 }

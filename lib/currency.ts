@@ -43,3 +43,30 @@ export function toUsd(value: number, ticker: string): number {
 export function getKrwRate(): number {
   return CURRENCY_RATES.KRW
 }
+
+// ── 표시 통화 토글 SoT ────────────────────────────────────────────────
+// 사용자가 화면에서 선택하는 표시 통화. API 응답은 항상 USD 이며, 이 값은
+// "어떤 단위로 표기할지"만 결정한다(toUsd 의 데이터 변환과는 별개의 표시 레이어).
+
+/** 화면 표시 통화. 'KRW'=원화(₩), 'USD'=달러($). */
+export type Currency = 'KRW' | 'USD'
+
+/** 요구사항: 기본 표기는 원화(₩). */
+export const DEFAULT_CURRENCY: Currency = 'KRW'
+
+/**
+ * localStorage / inline-script / data-attr 가 공유하는 상수(오타 방지·단일 진실).
+ *
+ * 주의: app/layout.tsx 의 <head> inline script 는 번들러가 이 상수를 자동
+ *   치환하지 못하므로 키('sector-king-currency')·기본값('KRW')을 문자열로
+ *   하드코딩한다. 값 변경 시 inline script 와 반드시 동시 수정할 것.
+ */
+export const CURRENCY_STORAGE_KEY = 'sector-king-currency'
+
+/** <html data-currency="KRW|USD"> 속성명. inline script 와 동기화. */
+export const CURRENCY_ATTRIBUTE = 'data-currency'
+
+/** 임의 값이 유효한 Currency 인지 검증(런타임 가드). */
+export function isCurrency(v: unknown): v is Currency {
+  return v === 'KRW' || v === 'USD'
+}

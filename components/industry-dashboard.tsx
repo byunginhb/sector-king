@@ -21,7 +21,7 @@ import { IndustryIcon } from '@/components/ui/industry-icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MiniSparkline } from '@/components/ui/mini-sparkline'
 import { OnboardingHintStrip } from '@/components/onboarding/onboarding-hint-strip'
-import { formatMarketCap, formatKrw, formatFlowAmount } from '@/lib/format'
+import { useCurrencyFormat, type CurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
 import { CompanyStatsCard } from '@/components/dashboard/company-stats-card'
 import { PriceChangesCard } from '@/components/dashboard/price-changes-card'
@@ -184,6 +184,7 @@ function IndustryCard({
   isFirst?: boolean
   industry: IndustryOverview
 }) {
+  const fmt = useCurrencyFormat()
   const changeColor =
     industry.marketCapChange > 0
       ? 'text-success'
@@ -192,7 +193,7 @@ function IndustryCard({
         : 'text-muted-foreground'
 
   // 미니 인사이트 한 줄 — topCompany / topSector 우선
-  const insight = buildInsight(industry)
+  const insight = buildInsight(industry, fmt)
 
   const trend: 'up' | 'down' | 'flat' =
     industry.marketCapChange > 0 ? 'up' : industry.marketCapChange < 0 ? 'down' : 'flat'
@@ -229,16 +230,13 @@ function IndustryCard({
             <div className="min-w-0">
               <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="num-mono text-xl sm:text-2xl text-foreground">
-                  {formatMarketCap(industry.totalMarketCap)}
+                  {fmt.marketCap(industry.totalMarketCap)}
                 </span>
                 <span className={cn('num-mono text-xs', changeColor)}>
                   {industry.marketCapChange > 0 ? '+' : ''}
                   {industry.marketCapChange.toFixed(2)}%
                 </span>
               </div>
-              <p className="num-mono text-[10px] text-muted-foreground mt-0.5">
-                {formatKrw(industry.totalMarketCap)}
-              </p>
             </div>
             {industry.marketCapHistory && industry.marketCapHistory.length >= 2 && (
               <MiniSparkline
@@ -287,7 +285,8 @@ function IndustryCard({
 }
 
 function buildInsight(
-  industry: IndustryOverview
+  industry: IndustryOverview,
+  fmt: CurrencyFormat
 ): { icon: React.ReactNode; text: string } | null {
   const top = industry.topCompanyByChange
   const sec = industry.topSectorByFlow
@@ -302,7 +301,7 @@ function buildInsight(
   if (sec && sec.flowAmount > 0) {
     return {
       icon: <Flame className="h-3 w-3 text-primary shrink-0" aria-hidden />,
-      text: `자금 1위 ${sec.name} +${formatFlowAmount(sec.flowAmount)}`,
+      text: `자금 1위 ${sec.name} +${fmt.flowAmount(sec.flowAmount)}`,
     }
   }
   if (top) {
