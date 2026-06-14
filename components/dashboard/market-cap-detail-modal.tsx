@@ -52,12 +52,11 @@ export function MarketCapDetailModal({
   })
 
   const history = data?.history ?? []
+  // 기간 첫 표시일 시총이 0(스냅샷 전무)일 수 있어 분모 0 가드 — Infinity/NaN 추세색 오판 방지
+  const firstCap = history[0]?.marketCapUsd ?? 0
+  const lastCap = history[history.length - 1]?.marketCapUsd ?? 0
   const periodChange =
-    history.length >= 2
-      ? ((history[history.length - 1].marketCapUsd - history[0].marketCapUsd) /
-          history[0].marketCapUsd) *
-        100
-      : 0
+    history.length >= 2 && firstCap > 0 ? ((lastCap - firstCap) / firstCap) * 100 : 0
   const trendColor = periodChange >= 0 ? CHART_POSITIVE : CHART_NEGATIVE
 
   const chartData = history.map((p) => ({
@@ -188,9 +187,9 @@ export function MarketCapDetailModal({
               <table className="w-full text-sm">
                 <thead className="bg-surface-1">
                   <tr className="text-xs text-muted-foreground">
-                    <th className="px-3 py-2 text-left font-medium">날짜</th>
-                    <th className="px-3 py-2 text-right font-medium">시가총액</th>
-                    <th className="px-3 py-2 text-right font-medium">전일 대비</th>
+                    <th scope="col" className="px-3 py-2 text-left font-medium">날짜</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium">시가총액</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium">전일 대비</th>
                   </tr>
                 </thead>
                 <tbody>
