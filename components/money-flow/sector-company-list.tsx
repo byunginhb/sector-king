@@ -6,6 +6,7 @@ import { Wallet, TrendingDown } from 'lucide-react'
 import { useSectorCompanies } from '@/hooks/use-sector-companies'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { SparklineChart } from './sparkline-chart'
+import { CompanyDialog } from '@/components/company-dialog'
 import { cn } from '@/lib/utils'
 import type { RegionFilter } from '@/types'
 
@@ -175,15 +176,18 @@ export function SectorCompanyList({
                     {idx + 1}
                   </span>
 
-                  {/* Company Name */}
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate">
-                      {company.nameKo || company.name}
-                    </div>
-                    <div className="text-xs text-gray-400 dark:text-slate-500 truncate">
-                      {company.ticker}
-                    </div>
-                  </div>
+                  {/* Company Name — 클릭 시 종목 상세 모달. 이 모달이 z-[60] 이라 위로 띄우려고 z-[70]. */}
+                  {/* ponytail: DialogOverlay 는 z-50 고정이라 중첩 시 dim 이 살짝 약함(기능엔 무영향). */}
+                  <CompanyDialog ticker={company.ticker} contentClassName="z-[70]">
+                    <button type="button" className="group min-w-0 text-left">
+                      <div className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate group-hover:underline">
+                        {company.nameKo || company.name}
+                      </div>
+                      <div className="text-xs text-gray-400 dark:text-slate-500 truncate">
+                        {company.ticker}
+                      </div>
+                    </button>
+                  </CompanyDialog>
 
                   {/* Price */}
                   <span className="text-sm text-right text-gray-900 dark:text-slate-100 font-mono">

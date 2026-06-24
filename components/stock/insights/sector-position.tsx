@@ -3,6 +3,7 @@
 import { Users, Star } from 'lucide-react'
 import { formatScore } from '@/lib/format'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
+import { CompanyDialog } from '@/components/company-dialog'
 import { cn } from '@/lib/utils'
 import type { CompanyInsightsResponse } from '@/types'
 
@@ -85,14 +86,17 @@ export function SectorPosition({ insights }: SectorPositionProps) {
                     </span>
                   </td>
                   <td className="px-2 py-2">
-                    <span
-                      className={cn(
-                        'truncate',
-                        peer.isSelf ? 'font-semibold text-foreground' : 'text-foreground'
-                      )}
-                    >
-                      {peer.nameKo || peer.name || peer.ticker}
-                    </span>
+                    <CompanyDialog ticker={peer.ticker}>
+                      <button
+                        type="button"
+                        className={cn(
+                          'truncate text-left hover:underline focus:underline focus:outline-none',
+                          peer.isSelf ? 'font-semibold text-foreground' : 'text-foreground'
+                        )}
+                      >
+                        {peer.nameKo || peer.name || peer.ticker}
+                      </button>
+                    </CompanyDialog>
                     {peer.isSelf && (
                       <span className="ml-1 text-[10px] text-primary">(본 종목)</span>
                     )}
