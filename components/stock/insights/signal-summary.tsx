@@ -14,14 +14,24 @@ function SignalRow({ signal }: { signal: StockSignal }) {
   const Icon = isStrength ? ArrowUp : AlertTriangle
   // 색만이 아닌 아이콘+텍스트로 의미 전달 (a11y)
   const tone = isStrength ? 'text-success' : 'text-warning'
+  const horizonLabel = signal.horizon === 'short' ? '단기' : signal.horizon === 'long' ? '장기' : null
   return (
     <li className="flex items-start gap-2.5">
       <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone}`} aria-hidden />
       <div className="min-w-0">
         <span className="text-sm font-medium text-foreground">{signal.label}</span>
+        {horizonLabel && (
+          <span className="ml-1.5 align-middle rounded border border-border-subtle px-1 py-px text-[10px] text-muted-foreground">
+            {horizonLabel}
+          </span>
+        )}
         <span className="ml-1.5 text-xs text-muted-foreground">— {signal.evidence}</span>
+        <span className="mt-0.5 block text-[11px] text-muted-foreground/80">출처: {signal.source}</span>
       </div>
-      <span className="sr-only">{isStrength ? '강점' : '주의'}</span>
+      <span className="sr-only">
+        {isStrength ? '강점' : '주의'}
+        {horizonLabel ? `, ${horizonLabel} 시계` : ''}
+      </span>
     </li>
   )
 }
