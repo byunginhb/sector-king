@@ -50,6 +50,10 @@ const EXPERT_VIEW: ExpertView = {
       point:
         'AI CapEx 수혜주임에도 주가 하락은 "실적 발표 후 차익실현" 패턴 — 저점 매수 기회인지 구조적 한계인지 판단 필요.',
       keywords: ['AI 인프라', 'CapEx', '하이퍼스케일러'],
+      sources: [
+        { name: 'Celestica IR', url: 'https://investor.celestica.com' },
+        { name: 'Reuters' },
+      ],
     },
     {
       index: 2,

@@ -19,6 +19,13 @@ export const tickerRefSchema = z
   })
   .strict()
 
+export const sourceRefSchema = z
+  .object({
+    name: z.string().min(1).max(120),
+    url: z.string().url().max(500).optional(),
+  })
+  .strict()
+
 // ----------------------------------------------------------------------------
 // 전문가용
 // ----------------------------------------------------------------------------
@@ -31,6 +38,7 @@ export const headlineItemSchema = z
     core: z.string().min(1).max(800),
     point: z.string().min(1).max(800),
     keywords: z.array(z.string().max(40)).default([]),
+    sources: z.array(sourceRefSchema).default([]),
   })
   .strict()
 

@@ -38,7 +38,8 @@
                 "tickers": { "type": "array", "items": { "$ref": "#/$defs/tickerRef" }, "default": [] },
                 "core": { "type": "string", "minLength": 1, "maxLength": 800, "description": "핵심 한 단락" },
                 "point": { "type": "string", "minLength": 1, "maxLength": 800, "description": "투자 포인트" },
-                "keywords": { "type": "array", "items": { "type": "string", "maxLength": 40 }, "default": [] }
+                "keywords": { "type": "array", "items": { "type": "string", "maxLength": 40 }, "default": [] },
+                "sources": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" }, "default": [], "description": "근거 출처 (언론사명 + 선택적 원문 URL)" }
               }
             }
           },
@@ -183,6 +184,15 @@
         "industryId": { "type": "string", "maxLength": 40, "description": "산업 ID (예: tech, healthcare_industry, energy)" }
       }
     },
+    "sourceRef": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 120, "description": "언론사/출처명 (예: Reuters, Bloomberg, 회사 IR)" },
+        "url": { "type": "string", "format": "uri", "maxLength": 500, "description": "원문 URL (선택)" }
+      }
+    },
     "scenarioItem": {
       "type": "object",
       "required": ["kind", "body", "trigger"],
@@ -220,7 +230,11 @@
           "tickers": [{ "symbol": "CLS", "name": "Celestica", "industryId": "tech" }],
           "core": "Celestica, FY2026 매출 가이던스를 $17B로 상향하며 $1B CapEx 가속화 발표. 그러나 실적 발표 후 주가 14% 하락.",
           "point": "AI CapEx 수혜주임에도 주가 하락은 '실적 발표 후 차익실현' 패턴 — 저점 매수 기회인지 구조적 한계인지 판단 필요.",
-          "keywords": ["AI_인프라", "CapEx", "하이퍼스케일러"]
+          "keywords": ["AI_인프라", "CapEx", "하이퍼스케일러"],
+          "sources": [
+            { "name": "Celestica IR", "url": "https://investor.celestica.com" },
+            { "name": "Reuters" }
+          ]
         },
         {
           "index": 2,

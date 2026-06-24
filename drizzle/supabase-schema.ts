@@ -69,6 +69,12 @@ export interface TickerRef {
   industryId?: string
 }
 
+/** 뉴스 근거 출처 (언론사명 + 선택적 원문 URL) */
+export interface SourceRef {
+  name: string
+  url?: string
+}
+
 export interface HeadlineItem {
   index: number
   category: string
@@ -77,6 +83,8 @@ export interface HeadlineItem {
   core: string
   point: string
   keywords: string[]
+  /** 출처 — 신뢰성 검증용. 없으면 미표기. */
+  sources?: SourceRef[]
 }
 
 export interface ThemeFlowItem {

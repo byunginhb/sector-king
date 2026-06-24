@@ -1,6 +1,7 @@
 /**
  * 전문가용 헤드라인 카드 (B 섹션 1건).
  */
+import { ExternalLink } from 'lucide-react'
 import { TickerChip } from './ticker-chip'
 import type { HeadlineItem } from '@/drizzle/supabase-schema'
 
@@ -64,6 +65,35 @@ export function HeadlineCard({ item }: HeadlineCardProps) {
               #{kw}
             </span>
           ))}
+        </div>
+      )}
+
+      {item.sources && item.sources.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border-subtle pt-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            출처
+          </span>
+          {item.sources.map((s, i) =>
+            s.url ? (
+              <a
+                key={`${s.name}-${i}`}
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground rounded-md border border-border-subtle bg-surface-2 px-2 py-0.5 hover:text-foreground hover:border-primary/40"
+              >
+                {s.name}
+                <ExternalLink className="h-3 w-3" aria-hidden />
+              </a>
+            ) : (
+              <span
+                key={`${s.name}-${i}`}
+                className="text-[11px] text-muted-foreground rounded-md border border-border-subtle bg-surface-2 px-2 py-0.5"
+              >
+                {s.name}
+              </span>
+            )
+          )}
         </div>
       )}
     </article>
