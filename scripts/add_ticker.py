@@ -236,34 +236,46 @@ def add_ticker(
     )
     print("  Company profile saved")
 
-    # 8. Insert today's snapshot
+    # 8. Insert today's snapshot — ONLY if today's daily cohort already exists.
+    # ponytail: inserting a today-row before the daily update has run makes
+    # `today` the global MAX(date) with just this one ticker, so every other
+    # ticker reads N/A / -100% on the frontend (current price keys off the
+    # global latest date). Backfill (step 9) covers history; the next daily
+    # update adds today's row for all tickers together.
     today = datetime.now().date().isoformat()
-    conn.execute(
-        """
-        INSERT OR REPLACE INTO daily_snapshots
-        (ticker, date, market_cap, price, price_change, week_52_high,
-         week_52_low, day_high, day_low, volume, avg_volume, pe_ratio, peg_ratio, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    """,
-        (
-            ticker,
-            today,
-            info.get("marketCap"),
-            info.get("currentPrice") or info.get("regularMarketPrice"),
-            info.get("regularMarketChangePercent"),
-            info.get("fiftyTwoWeekHigh"),
-            info.get("fiftyTwoWeekLow"),
-            info.get("dayHigh") or info.get("regularMarketDayHigh"),
-            info.get("dayLow") or info.get("regularMarketDayLow"),
-            # Store NULL (not 0) for an off-session fetch so the row reads as
-            # "unknown volume" rather than a false 0 (audit B4-c).
-            info.get("volume") or None,
-            info.get("averageVolume"),
-            info.get("trailingPE"),
-            info.get("pegRatio"),
-        ),
-    )
-    print(f"  Today's snapshot saved ({today})")
+    cohort_max = conn.execute("SELECT MAX(date) FROM daily_snapshots").fetchone()[0]
+    if cohort_max == today:
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO daily_snapshots
+            (ticker, date, market_cap, price, price_change, week_52_high,
+             week_52_low, day_high, day_low, volume, avg_volume, pe_ratio, peg_ratio, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        """,
+            (
+                ticker,
+                today,
+                info.get("marketCap"),
+                info.get("currentPrice") or info.get("regularMarketPrice"),
+                info.get("regularMarketChangePercent"),
+                info.get("fiftyTwoWeekHigh"),
+                info.get("fiftyTwoWeekLow"),
+                info.get("dayHigh") or info.get("regularMarketDayHigh"),
+                info.get("dayLow") or info.get("regularMarketDayLow"),
+                # Store NULL (not 0) for an off-session fetch so the row reads as
+                # "unknown volume" rather than a false 0 (audit B4-c).
+                info.get("volume") or None,
+                info.get("averageVolume"),
+                info.get("trailingPE"),
+                info.get("pegRatio"),
+            ),
+        )
+        print(f"  Today's snapshot saved ({today})")
+    else:
+        print(
+            f"  Skipped today's snapshot ({today}) — daily cohort not present "
+            f"yet (latest={cohort_max}); backfill + next daily update cover it"
+        )
 
     conn.commit()
 
