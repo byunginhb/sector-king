@@ -1,0 +1,140 @@
+{
+  "title": "오늘의 마켓 리포트",
+  "status": "published",
+  "reportDate": "2026-06-25",
+  "oneLineConclusion": "AI 투자는 계속되지만 돈은 실물로 이동 중이며, 호르무즈 해협이 시장의 천장과 바닥을 동시에 결정하고 있다.",
+  "coverKeywords": ["ai", "energy", "geopolitics", "korea"],
+  "expertView": {
+    "thirtySecBrief": "오늘 시장은 지정학 리스크와 섹터 로테이션(에너지/산업재 강세 vs. 빅테크 약세) 두 축으로 움직이고 있다. S&P 500은 좁은 박스권에서 등락 중.",
+    "headlines": [
+      {
+        "index": 1,
+        "category": "Trending Analysis",
+        "title": "The AI Boom Powering Celestica",
+        "tickers": [{ "symbol": "CLS", "exchange": "NYSE", "industryId": "tech" }],
+        "core": "Celestica, FY2026 매출 가이던스를 $17B로 상향하며 $1B CapEx 가속화 발표. 그러나 실적 발표 후 주가 14% 하락.",
+        "point": "AI CapEx 수혜주임에도 주가 하락은 '실적 발표 후 차익실현' 패턴 — 저점 매수 기회인지 구조적 한계인지 판단 필요.",
+        "keywords": ["AI 인프라", "CapEx", "하이퍼스케일러"],
+        "sources": [
+          { "name": "Celestica IR", "url": "https://investor.celestica.com" },
+          { "name": "Reuters" }
+        ]
+      },
+      {
+        "index": 2,
+        "category": "Market News",
+        "title": "Iran-US Negotiations Stall — 호르무즈 해협 리스크 재부각",
+        "tickers": [],
+        "core": "이란이 해협 통과 선박에 새 요건 부과 가능성 보도 + 미국 Project Freedom 재개 검토.",
+        "point": "유가 $100 근방 고착화 시 글로벌 경기침체 리스크 아직 시장에 미반영.",
+        "keywords": ["지정학", "유가", "호르무즈"],
+        "sources": [
+          { "name": "WSJ", "url": "https://www.wsj.com" }
+        ]
+      },
+      {
+        "index": 3,
+        "category": "Analysis",
+        "title": "1999 Bubble Comparison — Shiller P/E at 41",
+        "tickers": [],
+        "core": "현재 Shiller P/E 41배는 인터넷 버블 이후 최고치. 밸류에이션 경고 신호.",
+        "point": "과거 이 수준에서 10년 연환산 수익률은 역사적으로 매우 낮았음 — 장기 투자자 주의.",
+        "keywords": ["밸류에이션", "버블", "P/E"],
+        "sources": []
+      }
+    ],
+    "themeFlows": [
+      {
+        "index": 1,
+        "title": "섹터 로테이션: 에너지·산업재 → 빅테크 OUT",
+        "evidence": "에너지 YTD +21%, 테크 YTD -3%",
+        "interpretation": "시장은 '실물자산 + 현금창출력'을 선호하며, AI 투자 붐의 수혜가 하드웨어/에너지로 이전 중.",
+        "nextCheckpoint": "Q2 빅테크 실적(Meta, Google CapEx 가이던스), 유가 $100 돌파 지속 여부."
+      }
+    ],
+    "actions": [
+      {
+        "label": "watchlist",
+        "tickers": [{ "symbol": "CLS" }],
+        "body": "Watchlist 추가: CLS(Celestica) — 14% 하락 후 반등 가능성 검증. $17B 매출 가이던스 달성 확률 분석 필요."
+      },
+      {
+        "label": "risk",
+        "body": "리스크 점검: 호르무즈 해협 관련 이란-미국 협상 뉴스 모니터링. 유가가 $105 돌파 시 에너지 비중 재검토."
+      }
+    ],
+    "scenarios": {
+      "bear": {
+        "kind": "bear",
+        "body": "호르무즈 협상 결렬로 유가 $120+ 스파이크 → 스태그플레이션 현실화 → 밸류에이션 멀티플 급격 축소.",
+        "trigger": "이란의 해협 완전 봉쇄 선언 또는 미국의 군사작전 재개."
+      },
+      "base": {
+        "kind": "base",
+        "body": "협상 불안정하나 부분적 통항 유지 → 유가 $90~$100 박스권 → 섹터 로테이션 지속 → S&P 500 한자릿수 수익률.",
+        "trigger": "이란 협상 '현 상태 유지' + FOMC 금리 동결 지속."
+      },
+      "bull": {
+        "kind": "bull",
+        "body": "이란-미국 핵합의 타결 → 유가 $70대 급락 → 연준 금리인하 → 테크 + 소형주 동반 랠리.",
+        "trigger": "이란 우라늄 해외이전 합의 + 호르무즈 완전 개방."
+      }
+    },
+    "oneLiner": "AI 투자는 계속되지만 돈은 실물로 이동 중이며, 호르무즈 해협이 시장의 천장과 바닥을 동시에 결정하고 있다.",
+    "fundFlow": {
+      "outflows": [
+        { "name": "기술주(Tech)", "ytdPct": -3, "note": "밸류에이션 부담 + 실적 성장 둔화. 소프트웨어 중심 디레이팅." }
+      ],
+      "inflows": [
+        { "name": "에너지(Energy)", "ytdPct": 21, "note": "호르무즈 지정학 프리미엄 + OPEC 감산 + 실적 호조." },
+        { "name": "산업재(Industrials)", "ytdPct": 12, "note": "리쇼어링/국방비 증가 수혜." }
+      ],
+      "driver": "실물자산(에너지, 원자재)과 현금흐름이 안정적인 기업으로의 자금 이동이 2026년의 가장 뚜렷한 시장 트렌드."
+    },
+    "koreanStocks": [
+      {
+        "index": 1,
+        "name": "SK하이닉스",
+        "code": "000660",
+        "opinion": "buy",
+        "rationale": "AI 반도체 수요 구조적 확대(빅4 클라우드 CapEx $700B). HBM 공급 타이트닝 지속.",
+        "risk": "유가 상승 시 한국 경제 전반 타격 가능. 단, 반도체 수출 호조가 상쇄.",
+        "comment": "매수 유지. AI CapEx 사이클이 꺾이지 않는 한 구조적 강세."
+      }
+    ]
+  },
+  "noviceView": {
+    "oneLineSummary": "미국이랑 이란이 싸우고 있어서 기름값이 비싸고, 그래서 테크 주식보다 에너지/공장 관련 주식이 더 잘 나가는 중이야.",
+    "events": [
+      {
+        "index": 1,
+        "title": "AI 관련주는 여전히 핫해",
+        "body": "Celestica(CLS)라는 AI 서버 부품 회사가 매출 목표를 확 올렸어. 근데 주가는 실적 발표 후 오히려 14% 떨어짐 — 이미 많이 올라서 차익실현한 거야."
+      }
+    ],
+    "stockTables": [
+      {
+        "bucket": "will_rise",
+        "rows": [
+          { "ticker": { "symbol": "SM", "name": "SM Energy" }, "reason": "에너지 섹터 강세 + 생산 확대 + 자사주매입" }
+        ]
+      },
+      {
+        "bucket": "buy_on_dip",
+        "rows": [
+          { "ticker": { "symbol": "MSFT", "name": "Microsoft" }, "reason": "조정 시 '안전한 AI 베팅'. 퀄리티 대형주" }
+        ]
+      }
+    ],
+    "koreanStocks": [
+      {
+        "index": 1,
+        "name": "SK하이닉스",
+        "code": "000660",
+        "action": "사",
+        "body": "AI 반도체 수요가 미쳤어. 빅테크 4곳이 올해 서버에 약 1,000조원 쓰겠다잖아. HBM 메모리 품귀 계속될 거야."
+      }
+    ],
+    "closing": "AI는 계속 돈을 쓰고, 기름값은 비싸고, 테크에서 실물경제로 돈이 이동 중. 반도체/에너지/조선이 핵심 키워드야."
+  }
+}
