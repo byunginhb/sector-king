@@ -19,7 +19,8 @@ import { RankingCardList } from './ranking-card-list'
 import { InfoTip } from './info-tip'
 
 interface RankingsPageProps {
-  industryId: string
+  /** 산업 스코프. 생략하면 전 종목(섹터킹 픽 전역 랭킹). */
+  industryId?: string
 }
 
 export function RankingsPage({ industryId }: RankingsPageProps) {
@@ -79,26 +80,37 @@ export function RankingsPage({ industryId }: RankingsPageProps) {
 
   const items = useMemo(() => data?.items ?? [], [data])
 
+  const toolbar = (
+    <>
+      <ScoreSortToggle value={horizon} onChange={setHorizon} />
+      <RegionToggle value={region} onChange={setRegion} />
+    </>
+  )
+
   return (
     <div className="min-h-screen bg-background">
       <GlobalTopBar
         shareTitle="점수 랭킹 | Sector King"
         shareDescription="단기·장기 점수로 보는 종목 랭킹"
         subtitle={
-          <span>
-            <IndustryTitle industryId={industryId} /> 점수 랭킹
-          </span>
+          industryId ? (
+            <span>
+              <IndustryTitle industryId={industryId} /> 점수 랭킹
+            </span>
+          ) : (
+            <span>섹터킹 픽 · 전 종목 점수 랭킹</span>
+          )
         }
       />
-      <IndustryContextBar
-        industryId={industryId}
-        rightActions={
-          <>
-            <ScoreSortToggle value={horizon} onChange={setHorizon} />
-            <RegionToggle value={region} onChange={setRegion} />
-          </>
-        }
-      />
+      {industryId ? (
+        <IndustryContextBar industryId={industryId} rightActions={toolbar} />
+      ) : (
+        <div className="border-b border-border-subtle bg-surface-1/50">
+          <div className="container mx-auto flex flex-wrap items-center justify-end gap-2 px-4 py-2 sm:gap-3">
+            {toolbar}
+          </div>
+        </div>
+      )}
 
       <main className="container mx-auto px-4 py-6">
         {/* 제목 + 기준일 + 설명 — Editorial 헤더 */}

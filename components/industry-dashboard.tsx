@@ -91,7 +91,7 @@ export function IndustryDashboard() {
               className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 border-amber-600 bg-amber-500/15 text-amber-900 hover:bg-amber-500/25 dark:border-amber-500/60 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20"
             >
               <ArrowDown className="h-4 w-4" aria-hidden />
-              산업 지도 보기
+              돈의 흐름 보기
             </Link>
             <Link
               href="/news"

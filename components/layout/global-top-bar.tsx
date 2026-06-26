@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Menu, Newspaper, BookOpen, type LucideIcon } from 'lucide-react'
+import { Menu, Newspaper, BookOpen, Trophy, type LucideIcon } from 'lucide-react'
 import { SectorKingLogo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { CurrencyToggle } from '@/components/currency-toggle'
@@ -53,6 +53,7 @@ interface NavItem {
 const NAV_ITEMS: readonly NavItem[] = [
   { href: '/guide', label: '이용 안내', icon: BookOpen },
   { href: '/news', label: '뉴스', icon: Newspaper },
+  { href: '/rankings', label: '섹터킹 픽', icon: Trophy },
 ] as const
 
 /**
