@@ -15,6 +15,7 @@ import {
 import { RegionBadge } from '@/components/stock/stock-price-banner'
 import { StockHegemonyBadges } from '@/components/stock/stock-hegemony-badges'
 import { InsightHero } from '@/components/stock/insights/insight-hero'
+import { ShortLongScores } from '@/components/stock/insights/short-long-scores'
 import { SignalSummary } from '@/components/stock/insights/signal-summary'
 import { ScoreTrendChart } from '@/components/stock/insights/score-trend-chart'
 import { SectorPosition } from '@/components/stock/insights/sector-position'
@@ -121,6 +122,7 @@ function StockInsights({
       {/* 메인 컬럼 */}
       <div className="space-y-6">
         <InsightHero ticker={ticker} data={data} />
+        <ShortLongScores data={data} scoreHistory={insights?.scoreHistory} />
         <SignalSummary data={data} insights={insights} />
         {insights && (
           <ScoreTrendChart

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronRight, Map, Wallet, BarChart3, LineChart } from 'lucide-react'
+import { ChevronRight, Map, Wallet, BarChart3, LineChart, Trophy } from 'lucide-react'
 import { useIndustries } from '@/hooks/use-industries'
 import { cn } from '@/lib/utils'
 
@@ -14,7 +14,7 @@ interface IndustryContextBarProps {
 }
 
 interface TabDef {
-  key: 'map' | 'flow' | 'price' | 'stats'
+  key: 'map' | 'flow' | 'price' | 'stats' | 'rank'
   label: string
   href: (id: string) => string
   /** active 매칭 정규화 함수 */
@@ -51,12 +51,19 @@ const TABS: TabDef[] = [
     match: (p, id) => p === `/${id}/statistics` || p.startsWith(`/${id}/statistics/`),
     Icon: LineChart,
   },
+  {
+    key: 'rank',
+    label: '점수 랭킹',
+    href: (id) => `/${id}/rankings`,
+    match: (p, id) => p === `/${id}/rankings` || p.startsWith(`/${id}/rankings/`),
+    Icon: Trophy,
+  },
 ]
 
 /**
  * 산업 페이지 전용 컨텍스트 바
  *
- * - 좌: 브레드크럼 `홈 > [산업]` + 4탭 (패권지도/자금흐름/등락율/기업·섹터 트렌드)
+ * - 좌: 브레드크럼 `홈 > [산업]` + 5탭 (패권지도/자금흐름/등락율/기업·섹터 트렌드/점수 랭킹)
  * - 우: rightActions (RegionToggle, period 등 페이지가 주입)
  * - 반응형 표준 패턴
  */
@@ -96,7 +103,7 @@ export function IndustryContextBar({ industryId, rightActions }: IndustryContext
               </span>
             </nav>
 
-            {/* 4탭 — 모바일 가로 스크롤 */}
+            {/* 5탭 — 모바일 가로 스크롤 */}
             <nav
               aria-label="산업 탭"
               className="-mx-4 px-4 overflow-x-auto scrollbar-thin sm:mx-0 sm:px-0 sm:overflow-visible"

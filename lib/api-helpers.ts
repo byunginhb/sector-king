@@ -88,6 +88,31 @@ export function resolveRange(
   return allowed.includes(parsed) ? parsed : fallback
 }
 
+/** 랭킹 점수축 — 단기/장기. */
+export type RankingHorizon = 'short' | 'long'
+/** 정렬 방향. */
+export type RankingSortDir = 'desc' | 'asc'
+
+/**
+ * `?horizon=short|long` 을 화이트리스트로 정규화한다.
+ *
+ * - 누락/외값 → `'long'`(기본). 첫 화면 신뢰도·정렬 안정성이 높은 장기를 기본으로 둔다.
+ * - `resolveRange` 패턴과 동일한 관대 폴백(에러 아님, movers/region 컨벤션 일치).
+ */
+export function resolveHorizon(searchParams: URLSearchParams): RankingHorizon {
+  const raw = searchParams.get('horizon')
+  return raw === 'short' ? 'short' : 'long'
+}
+
+/**
+ * `?sort=desc|asc` 를 화이트리스트로 정규화한다. 누락/외값 → `'desc'`.
+ * 요구사항이 "높은 순"이므로 desc 기본.
+ */
+export function resolveSortDir(searchParams: URLSearchParams): RankingSortDir {
+  const raw = searchParams.get('sort')
+  return raw === 'asc' ? 'asc' : 'desc'
+}
+
 interface ClampIntParamOptions {
   fallback: number
   min: number
