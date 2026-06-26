@@ -16,6 +16,7 @@ import sqlite3
 from pathlib import Path
 from datetime import datetime, timezone
 
+import pandas as pd
 import yfinance as yf
 
 DB_PATH = Path(__file__).parent.parent / "data" / "hegemony.db"
@@ -71,7 +72,26 @@ def ensure_tables(conn: sqlite3.Connection) -> None:
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_index_history_symbol ON market_index_history(symbol)"
     )
+    # 기간별 등락 컬럼(기존 테이블에 없으면 추가) — change_percent 는 1일 등락.
+    existing = {r[1] for r in conn.execute("PRAGMA table_info(market_indices)").fetchall()}
+    for col in ("change_1w", "change_1m", "change_1y"):
+        if col not in existing:
+            conn.execute(f"ALTER TABLE market_indices ADD COLUMN {col} REAL")
     conn.commit()
+
+
+def pct_change_since(close: "pd.Series", days: int) -> float | None:
+    """최신 종가 대비 약 `days` 일 전(달력 기준) 종가의 % 변화."""
+    if len(close) < 2:
+        return None
+    target = close.index[-1] - pd.Timedelta(days=days)
+    past = close[close.index <= target]
+    if len(past) == 0:
+        return None
+    base = float(past.iloc[-1])
+    if base == 0:
+        return None
+    return round((float(close.iloc[-1]) - base) / base * 100, 2)
 
 
 def upsert_snapshot(conn: sqlite3.Connection, row: dict) -> None:
@@ -79,10 +99,10 @@ def upsert_snapshot(conn: sqlite3.Connection, row: dict) -> None:
         """
         INSERT INTO market_indices
             (symbol, country, name, price, change_percent, week_52_high, week_52_low,
-             as_of_date, sort_order, updated_at)
+             as_of_date, sort_order, updated_at, change_1w, change_1m, change_1y)
         VALUES
             (:symbol, :country, :name, :price, :change_percent, :week_52_high, :week_52_low,
-             :as_of_date, :sort_order, :updated_at)
+             :as_of_date, :sort_order, :updated_at, :change_1w, :change_1m, :change_1y)
         ON CONFLICT(symbol) DO UPDATE SET
             country=excluded.country,
             name=excluded.name,
@@ -92,7 +112,10 @@ def upsert_snapshot(conn: sqlite3.Connection, row: dict) -> None:
             week_52_low=excluded.week_52_low,
             as_of_date=excluded.as_of_date,
             sort_order=excluded.sort_order,
-            updated_at=excluded.updated_at
+            updated_at=excluded.updated_at,
+            change_1w=excluded.change_1w,
+            change_1m=excluded.change_1m,
+            change_1y=excluded.change_1y
         """,
         row,
     )
@@ -135,6 +158,9 @@ def fetch(country: str, name: str, symbol: str, order: int):
         "as_of_date": close.index[-1].strftime("%Y-%m-%d"),
         "sort_order": order,
         "updated_at": datetime.now(timezone.utc).isoformat(),
+        "change_1w": pct_change_since(close, 7),
+        "change_1m": pct_change_since(close, 30),
+        "change_1y": pct_change_since(close, 365),
     }
     return snapshot, points
 

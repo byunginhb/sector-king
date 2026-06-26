@@ -69,27 +69,34 @@ function PositionBar({ pos }: { pos: number | null }) {
   )
 }
 
+function ChangeCell({ value }: { value: number | null }) {
+  const tone =
+    value == null ? 'text-muted-foreground' : value >= 0 ? 'text-success' : 'text-danger'
+  return (
+    <td className={cn('whitespace-nowrap px-3 py-2.5 text-right num-mono tabular-nums', tone)}>
+      {fmtChange(value)}
+    </td>
+  )
+}
+
 function IndexRow({ item }: { item: MarketIndexItem }) {
-  const changeTone =
-    item.changePercent == null
-      ? 'text-muted-foreground'
-      : item.changePercent >= 0
-        ? 'text-success'
-        : 'text-danger'
   const label = positionLabel(item.week52Position)
 
   return (
     <tr className="border-b border-border-subtle/70 transition-colors last:border-b-0 hover:bg-surface-2">
       <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">{item.country}</td>
       <td className="px-3 py-2.5">
-        <span className="block font-semibold leading-tight text-foreground">{item.name}</span>
+        <span className="block whitespace-nowrap font-semibold leading-tight text-foreground">
+          {item.name}
+        </span>
       </td>
       <td className="whitespace-nowrap px-3 py-2.5 text-right num-mono tabular-nums text-foreground">
         {fmtLevel(item.price)}
       </td>
-      <td className={cn('whitespace-nowrap px-3 py-2.5 text-right num-mono tabular-nums', changeTone)}>
-        {fmtChange(item.changePercent)}
-      </td>
+      <ChangeCell value={item.changePercent} />
+      <ChangeCell value={item.change1w} />
+      <ChangeCell value={item.change1m} />
+      <ChangeCell value={item.change1y} />
       <td className="px-3 py-2.5">
         <div className="flex flex-col items-end gap-0.5">
           <PositionBar pos={item.week52Position} />
@@ -161,14 +168,17 @@ export function IndicesPage() {
 
         {data && items.length > 0 && (
           <div className="overflow-x-auto rounded-md border border-border-subtle">
-            <table className="w-full min-w-[560px] border-collapse text-sm">
+            <table className="w-full min-w-[760px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-1 text-xs font-medium text-muted-foreground">
                   <th scope="col" className="px-3 py-2.5 text-left">국가</th>
                   <th scope="col" className="px-3 py-2.5 text-left">지수</th>
                   <th scope="col" className="px-3 py-2.5 text-right">현재 지수</th>
-                  <th scope="col" className="px-3 py-2.5 text-right">1일 등락</th>
-                  <th scope="col" className="px-3 py-2.5 text-right">52주 위치</th>
+                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right">1일</th>
+                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right">1주</th>
+                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right">1달</th>
+                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right">1년</th>
+                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right">52주 위치</th>
                 </tr>
               </thead>
               <tbody>

@@ -14,6 +14,12 @@ export interface MarketIndexItem {
   price: number | null
   /** 1일 등락률(%). */
   changePercent: number | null
+  /** 1주 등락률(%). */
+  change1w: number | null
+  /** 1달 등락률(%). */
+  change1m: number | null
+  /** 1년 등락률(%). */
+  change1y: number | null
   week52High: number | null
   week52Low: number | null
   /** 52주 밴드 내 위치 0~1 (고점 근처/저점권 판단용). */
@@ -47,6 +53,9 @@ export async function GET(): Promise<NextResponse<ApiResponse<IndicesResponse>>>
         name: r.name,
         price: r.price,
         changePercent: r.changePercent,
+        change1w: r.change1w,
+        change1m: r.change1m,
+        change1y: r.change1y,
         week52High: r.week52High,
         week52Low: r.week52Low,
         week52Position,

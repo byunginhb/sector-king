@@ -27,6 +27,12 @@ const RANGE_OPTIONS: { value: IndexRange; label: string }[] = [
   { value: '5y', label: '5년' },
 ]
 
+// 기본 선택(전부 그리면 복잡해 한국 투자자 기준 대표 2개만 켜둔다).
+const DEFAULT_SELECTED = ['^GSPC', '^KS11']
+
+/** 나라별 고정 색(선택 여부와 무관하게 같은 색 유지). */
+const colorFor = (i: number) => `hsl(var(--chart-${(i % 8) + 1}))`
+
 function useIndicesHistory(range: IndexRange) {
   return useQuery<IndicesHistoryResponse>({
     queryKey: ['indices-history', range],
@@ -43,31 +49,25 @@ function useIndicesHistory(range: IndexRange) {
 
 export function IndicesComparisonChart() {
   const [range, setRange] = useState<IndexRange>('1y')
+  const [selected, setSelected] = useState<Set<string>>(new Set(DEFAULT_SELECTED))
   const { data, isLoading, isError } = useIndicesHistory(range)
 
   const series = useMemo(() => data?.series ?? [], [data])
 
-  // 각 지수를 기간 시작점 대비 % 변화로 정규화해 한 차트에서 비교 가능하게 만든다.
-  const chartData = useMemo(() => {
-    if (series.length === 0) return []
-    const dateSet = new Set<string>()
-    const firstClose: Record<string, number> = {}
-    const closeByDate: Record<string, Map<string, number>> = {}
-    for (const s of series) {
-      if (s.points.length > 0) firstClose[s.symbol] = s.points[0].close
-      closeByDate[s.symbol] = new Map(s.points.map((p) => [p.date, p.close]))
-      for (const p of s.points) dateSet.add(p.date)
-    }
-    const dates = [...dateSet].sort()
-    return dates.map((date) => {
-      const row: Record<string, string | number | null> = { date }
-      for (const s of series) {
-        const c = closeByDate[s.symbol].get(date)
-        const f = firstClose[s.symbol]
-        row[s.symbol] = c != null && f ? ((c - f) / f) * 100 : null
-      }
-      return row
+  const toggle = (symbol: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(symbol)) next.delete(symbol)
+      else next.add(symbol)
+      return next
     })
+  }
+
+  // 선택 여부와 무관하게 나라→색 인덱스를 고정한다.
+  const colorIndex = useMemo(() => {
+    const m: Record<string, number> = {}
+    series.forEach((s, i) => (m[s.symbol] = i))
+    return m
   }, [series])
 
   const nameBySymbol = useMemo(() => {
@@ -76,10 +76,35 @@ export function IndicesComparisonChart() {
     return m
   }, [series])
 
+  // 각 지수를 기간 시작점 대비 % 변화로 정규화(선택된 것만 계산).
+  const chartData = useMemo(() => {
+    const active = series.filter((s) => selected.has(s.symbol))
+    if (active.length === 0) return []
+    const dateSet = new Set<string>()
+    const firstClose: Record<string, number> = {}
+    const closeByDate: Record<string, Map<string, number>> = {}
+    for (const s of active) {
+      if (s.points.length > 0) firstClose[s.symbol] = s.points[0].close
+      closeByDate[s.symbol] = new Map(s.points.map((p) => [p.date, p.close]))
+      for (const p of s.points) dateSet.add(p.date)
+    }
+    const dates = [...dateSet].sort()
+    return dates.map((date) => {
+      const row: Record<string, string | number | null> = { date }
+      for (const s of active) {
+        const c = closeByDate[s.symbol].get(date)
+        const f = firstClose[s.symbol]
+        row[s.symbol] = c != null && f ? ((c - f) / f) * 100 : null
+      }
+      return row
+    })
+  }, [series, selected])
+
+  const activeSeries = series.filter((s) => selected.has(s.symbol))
+
   const formatTick = (value: string) => {
-    // 'YYYY-MM-DD' → 범위에 따라 간결히
-    if (range === '5y' || range === '1y') return value.slice(2, 7).replace('-', '.') // YY.MM
-    return value.slice(5).replace('-', '/') // MM/DD
+    if (range === '5y' || range === '1y') return value.slice(2, 7).replace('-', '.')
+    return value.slice(5).replace('-', '/')
   }
 
   return (
@@ -88,7 +113,7 @@ export function IndicesComparisonChart() {
         <div className="min-w-0">
           <h2 className="text-sm font-semibold text-foreground">국가별 지수 비교</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            기간 시작점을 0%로 맞춰, 어느 나라 시장이 더 오르내렸는지 한눈에 비교해요.
+            보고 싶은 나라를 눌러 켜고 끄세요. 기간 시작점을 0%로 맞춰 비교합니다.
           </p>
         </div>
         <div
@@ -116,23 +141,54 @@ export function IndicesComparisonChart() {
         </div>
       </div>
 
+      {/* 나라 선택 칩 */}
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        {series.map((s) => {
+          const active = selected.has(s.symbol)
+          const color = colorFor(colorIndex[s.symbol] ?? 0)
+          return (
+            <button
+              key={s.symbol}
+              type="button"
+              role="checkbox"
+              aria-checked={active}
+              onClick={() => toggle(s.symbol)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+                active
+                  ? 'border-transparent bg-surface-2 text-foreground'
+                  : 'border-border-subtle text-muted-foreground hover:text-foreground'
+              )}
+              style={active ? { boxShadow: `inset 0 0 0 1.5px ${color}` } : undefined}
+            >
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: active ? color : 'hsl(var(--muted-foreground) / 0.4)' }}
+                aria-hidden
+              />
+              {s.country} {s.name}
+            </button>
+          )
+        })}
+      </div>
+
       <div className="rounded-md border border-border-subtle bg-surface-1 p-3 sm:p-4">
         {isError ? (
           <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
             그래프를 불러오지 못했어요
           </div>
-        ) : isLoading && chartData.length === 0 ? (
+        ) : isLoading && series.length === 0 ? (
           <Skeleton className="h-80 w-full" />
-        ) : chartData.length === 0 ? (
-          <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
-            표시할 데이터가 없습니다
+        ) : activeSeries.length === 0 ? (
+          <div className="flex h-80 items-center justify-center px-6 text-center text-sm text-muted-foreground">
+            위에서 보고 싶은 나라를 한 곳 이상 선택하세요.
           </div>
         ) : (
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              {/* key: 기간 변경 시 stale 활성 인덱스로 십자선이 어긋나는 것 방지(remount). */}
+              {/* key: 기간/선택 변경 시 stale 활성 인덱스로 십자선이 어긋나는 것 방지(remount). */}
               <LineChart
-                key={range}
+                key={`${range}:${activeSeries.map((s) => s.symbol).join(',')}`}
                 data={chartData}
                 margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
               >
@@ -155,7 +211,10 @@ export function IndicesComparisonChart() {
                   itemSorter={(item) => -(item.value as number)}
                   formatter={(value, name) => {
                     const v = value as number
-                    return [`${v >= 0 ? '+' : ''}${v.toFixed(2)}%`, nameBySymbol[name as string] ?? name]
+                    return [
+                      `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`,
+                      nameBySymbol[name as string] ?? name,
+                    ]
                   }}
                   contentStyle={{
                     fontSize: 12,
@@ -163,8 +222,6 @@ export function IndicesComparisonChart() {
                     border: '1px solid hsl(var(--border))',
                     borderRadius: 8,
                     color: 'hsl(var(--popover-foreground))',
-                    maxHeight: 280,
-                    overflowY: 'auto',
                   }}
                   labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
                 />
@@ -173,18 +230,20 @@ export function IndicesComparisonChart() {
                   wrapperStyle={{ fontSize: 11 }}
                 />
                 <ReferenceLine y={0} stroke="hsl(var(--border))" strokeDasharray="3 3" />
-                {series.map((s, i) => (
-                  <Line
-                    key={s.symbol}
-                    type="monotone"
-                    dataKey={s.symbol}
-                    stroke={`hsl(var(--chart-${(i % 8) + 1}))`}
-                    strokeWidth={1.75}
-                    dot={false}
-                    activeDot={{ r: 3 }}
-                    connectNulls
-                  />
-                ))}
+                {series.map((s) =>
+                  selected.has(s.symbol) ? (
+                    <Line
+                      key={s.symbol}
+                      type="monotone"
+                      dataKey={s.symbol}
+                      stroke={colorFor(colorIndex[s.symbol] ?? 0)}
+                      strokeWidth={1.75}
+                      dot={false}
+                      activeDot={{ r: 3 }}
+                      connectNulls
+                    />
+                  ) : null
+                )}
               </LineChart>
             </ResponsiveContainer>
           </div>
