@@ -65,7 +65,13 @@ export function CompanyTrendChart({ data, isLoading }: CompanyTrendChartProps) {
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+        {/* key: 기간(30일 등) 토글·종목 변경 시 데이터 길이가 바뀌면 recharts 의 stale 한
+            활성 인덱스가 남아 십자선/툴팁이 어긋난다. 시그니처가 바뀌면 차트를 remount 한다. */}
+        <AreaChart
+          key={`${chartData.length}:${data.map((d) => d.id).join(',')}`}
+          data={chartData}
+          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+        >
           <defs>
             {CHART_COLORS.map((color, index) => (
               <linearGradient

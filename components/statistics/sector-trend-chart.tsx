@@ -79,7 +79,12 @@ export function SectorTrendChart({ data, isLoading }: SectorTrendChartProps) {
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+        {/* key: 기간 토글·섹터 변경 시 stale 한 활성 인덱스로 십자선이 어긋나는 것 방지(remount). */}
+        <LineChart
+          key={`${chartData.length}:${data.map((d) => d.id).join(',')}`}
+          data={chartData}
+          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+        >
           <XAxis
             dataKey="date"
             tick={{ fontSize: 10, fill: '#94a3b8' }}

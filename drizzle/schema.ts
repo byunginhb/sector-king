@@ -177,3 +177,21 @@ export type CompanyScore = typeof companyScores.$inferSelect
 export type NewCompanyScore = typeof companyScores.$inferInsert
 export type ScoreHistory = typeof scoreHistory.$inferSelect
 export type NewScoreHistory = typeof scoreHistory.$inferInsert
+
+// 주요 국가 대표 지수 — 개별 종목(US/KR) 모델과 분리. 지수 레벨은 포인트라 통화 환산 없음.
+// 적재: scripts/update_indices.py (yfinance), symbol 기준 UPSERT.
+export const marketIndices = sqliteTable('market_indices', {
+  symbol: text('symbol').primaryKey(),
+  country: text('country').notNull(),
+  name: text('name').notNull(),
+  price: real('price'),
+  changePercent: real('change_percent'),
+  week52High: real('week_52_high'),
+  week52Low: real('week_52_low'),
+  asOfDate: text('as_of_date'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  updatedAt: text('updated_at'),
+})
+
+export type MarketIndex = typeof marketIndices.$inferSelect
+export type NewMarketIndex = typeof marketIndices.$inferInsert

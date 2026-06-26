@@ -30,6 +30,7 @@
     "db:migrate:clean-weekend-rows": "tsx scripts/migrate-clean-weekend-rows.ts",
     "db:migrate:clean-broken-tickers": "tsx scripts/migrate-clean-broken-tickers.ts",
     "db:backfill:score-history": ".venv/bin/python scripts/backfill_score_history.py",
+    "db:update-indices": ".venv/bin/python scripts/update_indices.py",
     "db:verify:accuracy": "tsx scripts/verify-accuracy.ts",
     "db:fill-gaps": "tsx scripts/migrate-fill-ticker-gaps.ts",
     "db:seed-news": "tsx scripts/seed-news.ts",

@@ -236,7 +236,9 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
         <div className="bg-white dark:bg-card rounded-xl border border-gray-200 dark:border-border p-4">
           <div className="h-96 w-full">
             <ResponsiveContainer width="100%" height="100%">
+              {/* key: 표시 섹터 집합(전체/상위10) 변경 시 stale 활성 인덱스로 십자선이 어긋나는 것 방지. */}
               <LineChart
+                key={chartSectors.map((s) => s.id).join(',')}
                 data={chartData}
                 margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
               >
