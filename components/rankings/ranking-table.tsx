@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { RankingItem } from '@/app/api/rankings/route'
 import type { RankingHorizon, RankingSortDir } from '@/lib/api-helpers'
@@ -18,6 +19,8 @@ interface RankingTableProps {
   sortDir: RankingSortDir
   onSort: (key: RankingSortKey) => void
   onRowClick: (ticker: string) => void
+  /** 추가 지표(PER·PEG·베타 등) 컬럼 확장 여부. */
+  showAdvanced?: boolean
 }
 
 interface ColumnDef {
@@ -25,14 +28,20 @@ interface ColumnDef {
   label: string
   /** 헤더 옆 초보자 설명. */
   tip?: string
-  /** 반응형 노출 클래스(좁은 화면 숨김). */
-  cellClass?: string
+  /** 헤더 th 추가 클래스(고정 컬럼 등). */
+  headClass?: string
   align?: 'left' | 'right' | 'center'
 }
 
-const COLUMNS: ColumnDef[] = [
-  { key: null, label: '순위', align: 'center' },
-  { key: 'name', label: '종목', align: 'left' },
+// 좌측 고정 컬럼 — 가로 스크롤 시 순위·종목은 제자리에 고정된다.
+const TH_STICKY_RANK = 'sticky left-0 z-20 w-11 bg-surface-1'
+const TH_STICKY_NAME = 'sticky left-11 z-20 bg-surface-1'
+const TD_STICKY_RANK = 'sticky left-0 z-10 w-11 bg-background group-hover:bg-surface-2'
+const TD_STICKY_NAME = 'sticky left-11 z-10 bg-background group-hover:bg-surface-2'
+
+const BASE_COLUMNS: ColumnDef[] = [
+  { key: null, label: '순위', align: 'center', headClass: TH_STICKY_RANK },
+  { key: 'name', label: '종목', align: 'left', headClass: TH_STICKY_NAME },
   {
     key: 'short',
     label: '단기 점수',
@@ -54,7 +63,13 @@ const COLUMNS: ColumnDef[] = [
   {
     key: 'target',
     label: '목표주가',
-    tip: '증권사들이 적정하다고 본 주가의 평균.',
+    tip: '애널리스트들이 제시한 목표 주가의 평균값.',
+    align: 'right',
+  },
+  {
+    key: null,
+    label: '현재가',
+    tip: '지금 실제로 거래되는 가격.',
     align: 'right',
   },
   {
@@ -67,14 +82,52 @@ const COLUMNS: ColumnDef[] = [
     key: 'roe',
     label: 'ROE',
     tip: '자기 돈으로 얼마나 잘 버는지(자본 대비 이익률).',
-    cellClass: 'hidden lg:table-cell',
     align: 'right',
   },
   {
     key: 'margin',
     label: '영업이익률',
     tip: '매출 중 본업으로 남긴 이익의 비율.',
-    cellClass: 'hidden xl:table-cell',
+    align: 'right',
+  },
+]
+
+// "추가 지표" 토글을 켜면 붙는 컬럼들 (우리가 보유한 지표).
+const ADVANCED_COLUMNS: ColumnDef[] = [
+  {
+    key: 'pe',
+    label: 'PER',
+    tip: '주가가 순이익의 몇 배인지. 낮을수록 이익 대비 싸게 거래되는 편.',
+    align: 'right',
+  },
+  {
+    key: null,
+    label: 'PEG',
+    tip: 'PER을 이익 성장으로 나눈 값. 1보다 낮으면 성장 대비 싼 편.',
+    align: 'right',
+  },
+  {
+    key: null,
+    label: '이익성장',
+    tip: '순이익이 1년 전보다 얼마나 늘었는지.',
+    align: 'right',
+  },
+  {
+    key: null,
+    label: '베타',
+    tip: '시장보다 얼마나 더 출렁이는지. 1보다 크면 변동이 큰 편.',
+    align: 'right',
+  },
+  {
+    key: null,
+    label: '부채비율',
+    tip: '자본 대비 빚의 비율. 높을수록 빚이 많은 편.',
+    align: 'right',
+  },
+  {
+    key: 'marketcap',
+    label: '시가총액',
+    tip: '회사 전체의 시장 가치(주가 × 주식 수).',
     align: 'right',
   },
 ]
@@ -93,7 +146,6 @@ function SortHeader({
   onSort: (key: RankingSortKey) => void
 }) {
   const isActive = col.key !== null && col.key === activeKey
-  // 토글이 부각하는 점수 컬럼: 헤더에 amber 밑줄로 선택 상태 연동.
   const isHorizonCol = col.key === horizon
   const ariaSort = isActive ? (dir === 'asc' ? 'ascending' : 'descending') : undefined
   const alignClass =
@@ -104,12 +156,20 @@ function SortHeader({
       <th
         scope="col"
         className={cn(
-          'eyebrow px-3 py-2.5 font-medium normal-case tracking-normal',
+          'whitespace-nowrap px-3 py-2.5 text-xs font-medium text-muted-foreground',
           alignClass,
-          col.cellClass
+          col.headClass
         )}
       >
-        {col.label}
+        <span
+          className={cn(
+            'inline-flex items-center gap-1',
+            col.align === 'right' && 'flex-row-reverse'
+          )}
+        >
+          <span>{col.label}</span>
+          {col.tip && <InfoTip text={col.tip} label={col.label} />}
+        </span>
       </th>
     )
   }
@@ -121,10 +181,10 @@ function SortHeader({
       scope="col"
       aria-sort={ariaSort}
       className={cn(
-        'px-3 py-2.5 text-xs font-medium',
+        'whitespace-nowrap px-3 py-2.5 text-xs font-medium',
         alignClass,
         isHorizonCol && 'bg-primary/5',
-        col.cellClass
+        col.headClass
       )}
     >
       <span
@@ -154,6 +214,23 @@ function SortHeader({
   )
 }
 
+/** 우측 정렬 숫자 셀. value 가 null 이면 N/A. */
+function NumCell({
+  value,
+  render,
+  className,
+}: {
+  value: number | null | undefined
+  render: (n: number) => ReactNode
+  className?: string
+}) {
+  return (
+    <td className={cn('whitespace-nowrap px-3 py-2.5 text-right num-mono tabular-nums', className)}>
+      {value == null ? <span className="text-muted-foreground">N/A</span> : render(value)}
+    </td>
+  )
+}
+
 export function RankingTable({
   items,
   horizon,
@@ -161,15 +238,17 @@ export function RankingTable({
   sortDir,
   onSort,
   onRowClick,
+  showAdvanced = false,
 }: RankingTableProps) {
   const fmt = useCurrencyFormat()
+  const columns = showAdvanced ? [...BASE_COLUMNS, ...ADVANCED_COLUMNS] : BASE_COLUMNS
 
   return (
     <div className="overflow-x-auto rounded-md border border-border-subtle">
-      <table className="w-full min-w-[720px] border-collapse text-sm">
+      <table className="w-full min-w-[760px] border-collapse text-sm">
         <thead>
           <tr className="border-b border-border bg-surface-1">
-            {COLUMNS.map((col, idx) => (
+            {columns.map((col, idx) => (
               <SortHeader
                 key={col.key ?? `col-${idx}`}
                 col={col}
@@ -197,13 +276,16 @@ export function RankingTable({
               <tr
                 key={item.ticker}
                 onClick={() => onRowClick(item.ticker)}
-                className={cn(
-                  'cursor-pointer border-b border-border-subtle/70 transition-colors last:border-b-0 hover:bg-surface-2',
-                  isTop3 && 'border-l-2 border-l-primary/40'
-                )}
+                className="group cursor-pointer border-b border-border-subtle/70 transition-colors last:border-b-0 hover:bg-surface-2"
               >
-                {/* 순위 */}
-                <td className="px-3 py-2.5 text-center">
+                {/* 순위 (고정) */}
+                <td
+                  className={cn(
+                    'px-3 py-2.5 text-center',
+                    TD_STICKY_RANK,
+                    isTop3 && 'border-l-2 border-l-primary/40'
+                  )}
+                >
                   <span
                     className={cn(
                       'num-mono tabular-nums',
@@ -216,8 +298,8 @@ export function RankingTable({
                   </span>
                 </td>
 
-                {/* 종목 */}
-                <td className="px-3 py-2.5">
+                {/* 종목 (고정) */}
+                <td className={cn('px-3 py-2.5', TD_STICKY_NAME)}>
                   <button
                     type="button"
                     onClick={(e) => {
@@ -267,40 +349,35 @@ export function RankingTable({
                 </td>
 
                 {/* 목표주가 */}
-                <td className="px-3 py-2.5 text-right num-mono tabular-nums">
-                  {item.targetMeanPriceUsd != null ? (
-                    fmt.price(item.targetMeanPriceUsd)
-                  ) : (
-                    <span className="text-muted-foreground">N/A</span>
-                  )}
-                </td>
+                <NumCell value={item.targetMeanPriceUsd} render={(v) => fmt.price(v)} />
+
+                {/* 현재가 */}
+                <NumCell value={item.priceUsd} render={(v) => fmt.price(v)} />
 
                 {/* 상승여력 */}
-                <td className={cn('px-3 py-2.5 text-right num-mono tabular-nums', upTone)}>
-                  {item.upsidePct != null ? (
-                    formatPercent(item.upsidePct)
-                  ) : (
-                    <span className="text-muted-foreground">N/A</span>
-                  )}
-                </td>
+                <NumCell
+                  value={item.upsidePct}
+                  render={(v) => formatPercent(v)}
+                  className={upTone}
+                />
 
                 {/* ROE */}
-                <td className="px-3 py-2.5 text-right num-mono tabular-nums hidden lg:table-cell">
-                  {item.returnOnEquity != null ? (
-                    formatPercent(item.returnOnEquity)
-                  ) : (
-                    <span className="text-muted-foreground">N/A</span>
-                  )}
-                </td>
+                <NumCell value={item.returnOnEquity} render={(v) => formatPercent(v)} />
 
                 {/* 영업이익률 */}
-                <td className="px-3 py-2.5 text-right num-mono tabular-nums hidden xl:table-cell">
-                  {item.operatingMargin != null ? (
-                    formatPercent(item.operatingMargin)
-                  ) : (
-                    <span className="text-muted-foreground">N/A</span>
-                  )}
-                </td>
+                <NumCell value={item.operatingMargin} render={(v) => formatPercent(v)} />
+
+                {/* ── 추가 지표 ── */}
+                {showAdvanced && (
+                  <>
+                    <NumCell value={item.peRatio} render={(v) => v.toFixed(1)} />
+                    <NumCell value={item.pegRatio} render={(v) => v.toFixed(2)} />
+                    <NumCell value={item.earningsGrowth} render={(v) => formatPercent(v)} />
+                    <NumCell value={item.beta} render={(v) => v.toFixed(2)} />
+                    <NumCell value={item.debtToEquity} render={(v) => v.toFixed(1)} />
+                    <NumCell value={item.marketCapUsd} render={(v) => fmt.marketCap(v)} />
+                  </>
+                )}
               </tr>
             )
           })}

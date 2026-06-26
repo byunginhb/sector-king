@@ -2,7 +2,8 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import { Trophy, SearchX } from 'lucide-react'
+import { Trophy, SearchX, SlidersHorizontal } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useRankings, type RankingSortKey } from '@/hooks/use-rankings'
 import { useRegion } from '@/hooks/use-region'
 import type { RankingHorizon, RankingSortDir } from '@/lib/api-helpers'
@@ -37,6 +38,7 @@ export function RankingsPage({ industryId }: RankingsPageProps) {
   const [sortKey, setSortKey] = useState<RankingSortKey>(horizon)
   const [sortDir, setSortDir] = useState<RankingSortDir>('desc')
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   const { data, isLoading, isError } = useRankings({
     industryId,
@@ -133,12 +135,51 @@ export function RankingsPage({ industryId }: RankingsPageProps) {
                 : '수익성·성장·규모가 단단한 순서입니다. 길게 묵힐 종목을 고를 때 참고하세요.'}
             </p>
           </div>
-          {data?.date && (
-            <p className="shrink-0 num-mono text-xs text-muted-foreground tabular-nums">
-              {data.date} 기준
-            </p>
-          )}
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((s) => !s)}
+              aria-pressed={showAdvanced}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors',
+                showAdvanced
+                  ? 'border-primary/50 bg-primary/10 text-primary'
+                  : 'border-border-subtle text-muted-foreground hover:bg-surface-2 hover:text-foreground'
+              )}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
+              추가 지표
+            </button>
+            {data?.date && (
+              <p className="num-mono text-xs text-muted-foreground tabular-nums">
+                {data.date} 기준
+              </p>
+            )}
+          </div>
         </div>
+
+        {/* 점수 산출 방식 안내 — 초보자용, 기본 접힘 */}
+        <details className="mb-5 rounded-md border border-border-subtle bg-surface-1/50 px-4 py-3 text-sm">
+          <summary className="cursor-pointer select-none font-medium text-foreground">
+            단기·장기 점수는 어떻게 매기나요?
+          </summary>
+          <div className="mt-3 space-y-2 text-foreground/80">
+            <p>
+              <span className="font-semibold text-foreground">단기 점수</span>는 &lsquo;지금
+              분위기·흐름&rsquo;을 봅니다. 최근 점수가 오르고 있는지, 52주 가격 범위에서 지금
+              어디쯤인지, 시장 심리는 어떤지를 모아 0~100점으로 매깁니다.
+            </p>
+            <p>
+              <span className="font-semibold text-foreground">장기 점수</span>는 &lsquo;오래 묵힐
+              가치&rsquo;를 봅니다. 얼마나 잘 버는지(수익성), 얼마나 성장하는지, 회사 규모는 큰지,
+              목표가까지 오를 여력은 있는지를 모아 0~100점으로 매깁니다.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              두 점수는 종목 상세 화면에서도 똑같은 기준으로 보여요. 투자 권유가 아니라 참고용
+              정보입니다.
+            </p>
+          </div>
+        </details>
 
         {isError && (
           <div className="sk-card flex flex-col items-center gap-2 py-10 text-center">
@@ -182,6 +223,7 @@ export function RankingsPage({ industryId }: RankingsPageProps) {
                 sortDir={sortDir}
                 onSort={handleSort}
                 onRowClick={setSelectedTicker}
+                showAdvanced={showAdvanced}
               />
             </div>
             {/* 모바일 카드 */}

@@ -101,6 +101,12 @@ export function RankingCardList({ items, horizon, onCardClick }: RankingCardList
                   </span>
                 </span>
                 <span className="text-muted-foreground">
+                  현재가{' '}
+                  <span className="num-mono text-foreground">
+                    {item.priceUsd != null ? fmt.price(item.priceUsd) : 'N/A'}
+                  </span>
+                </span>
+                <span className="text-muted-foreground">
                   상승여력{' '}
                   <span className={cn('num-mono', upTone)}>
                     {item.upsidePct != null ? formatPercent(item.upsidePct) : 'N/A'}

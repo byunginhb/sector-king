@@ -42,6 +42,11 @@ export interface RankingItem {
   operatingMargin: number | null
   revenueGrowth: number | null
   peRatio: number | null
+  // 추가 지표(고급 보기 — 전부 비율·무차원, marketCap 만 USD)
+  pegRatio: number | null
+  earningsGrowth: number | null
+  beta: number | null
+  debtToEquity: number | null
   /** 0~1 데이터 커버리지. */
   dataQuality: number
 }
@@ -161,12 +166,16 @@ export async function GET(
         returnOnEquity: companyScores.returnOnEquity,
         operatingMargin: companyScores.operatingMargin,
         revenueGrowth: companyScores.revenueGrowth,
+        earningsGrowth: companyScores.earningsGrowth,
+        beta: companyScores.beta,
+        debtToEquity: companyScores.debtToEquity,
         dataQuality: companyScores.dataQuality,
         price: dailySnapshots.price,
         marketCap: dailySnapshots.marketCap,
         week52High: dailySnapshots.week52High,
         week52Low: dailySnapshots.week52Low,
         peRatio: dailySnapshots.peRatio,
+        pegRatio: dailySnapshots.pegRatio,
       })
       .from(companyScores)
       .leftJoin(companies, eq(companyScores.ticker, companies.ticker))
@@ -245,6 +254,10 @@ export async function GET(
         operatingMargin: row.operatingMargin ?? null,
         revenueGrowth: row.revenueGrowth ?? null,
         peRatio: row.peRatio ?? null,
+        pegRatio: row.pegRatio ?? null,
+        earningsGrowth: row.earningsGrowth ?? null,
+        beta: row.beta ?? null,
+        debtToEquity: row.debtToEquity ?? null,
         dataQuality: row.dataQuality ?? 0,
         // 정렬 보조(응답에는 미노출): smoothedScore, marketCapUsd 는 타이브레이커로 보관
         _smoothedScore: row.smoothedScore ?? null,
