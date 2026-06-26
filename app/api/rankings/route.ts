@@ -25,6 +25,8 @@ export interface RankingItem {
   longScore: number | null
   /** 모멘텀(추세) 데이터 결손(신규상장) — "추세 데이터 부족" 표기용. */
   momentumPartial: boolean
+  /** 단기·장기 종합 점수(둘의 평균, 0~100). 상단 탑픽 선정용. 둘 다 결손 시 null. */
+  combinedScore: number | null
   // 애널리스트
   recommendationKey: string | null
   analystCount: number | null
@@ -53,6 +55,8 @@ export interface RankingItem {
 
 export interface RankingsResponse {
   items: RankingItem[]
+  /** 단기·장기 종합 점수 상위 5종(현재 정렬·limit 과 무관, 필터 적용 후 전체에서 선정). */
+  topPicks: RankingItem[]
   horizon: RankingHorizon
   sort: RankingSortDir
   appliedRegion: RegionFilter
@@ -237,6 +241,12 @@ export async function GET(
           priceUsd,
         })
 
+      // 종합 점수: 단기·장기 평균(둘 중 하나만 있으면 그 값, 둘 다 없으면 null)
+      const combinedScore =
+        shortScore != null && longScore != null
+          ? (shortScore + longScore) / 2
+          : (shortScore ?? longScore ?? null)
+
       return {
         ticker,
         name: row.name ?? null,
@@ -244,6 +254,7 @@ export async function GET(
         shortScore,
         longScore,
         momentumPartial,
+        combinedScore,
         recommendationKey: row.recommendationKey ?? null,
         analystCount: row.analystCount ?? null,
         targetMeanPriceUsd: targetUsd,
@@ -276,10 +287,17 @@ export async function GET(
       return rest
     })
 
+    // 종합(단기·장기 평균) 상위 5 — 현재 정렬·limit 과 무관, 필터 적용 후 전체에서 선정
+    const topPicks = [...cleaned]
+      .filter((i) => i.combinedScore != null)
+      .sort((a, b) => (b.combinedScore ?? 0) - (a.combinedScore ?? 0))
+      .slice(0, 5)
+
     return NextResponse.json({
       success: true,
       data: {
         items: cleaned.slice(0, limit),
+        topPicks,
         horizon,
         sort: sortDir,
         appliedRegion: region,
@@ -323,6 +341,7 @@ function emptyResponse(
 ): RankingsResponse {
   return {
     items: [],
+    topPicks: [],
     horizon,
     sort,
     appliedRegion: region,

@@ -15,6 +15,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { CompanyDetail } from '@/components/company-detail'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScoreSortToggle } from './score-sort-toggle'
+import { TopPicks } from './top-picks'
 import { RankingTable } from './ranking-table'
 import { RankingCardList } from './ranking-card-list'
 import { InfoTip } from './info-tip'
@@ -157,6 +158,9 @@ export function RankingsPage({ industryId }: RankingsPageProps) {
             )}
           </div>
         </div>
+
+        {/* 단기·장기 종합 점수 상위 5 — 상단 하이라이트 */}
+        <TopPicks items={data?.topPicks ?? []} onSelect={setSelectedTicker} />
 
         {/* 점수 산출 방식 안내 — 초보자용, 기본 접힘 */}
         <details className="mb-5 rounded-md border border-border-subtle bg-surface-1/50 px-4 py-3 text-sm">
