@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Globe, SearchX } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
+import { IndicesComparisonChart } from './indices-comparison-chart'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { ApiResponse } from '@/types'
@@ -131,6 +132,9 @@ export function IndicesPage() {
             <p className="shrink-0 num-mono text-xs text-muted-foreground tabular-nums">{asOf} 기준</p>
           )}
         </div>
+
+        {/* 국가별 정규화 비교 그래프 (1주/1개월/1년/5년) */}
+        <IndicesComparisonChart />
 
         {isError && (
           <div className="sk-card flex flex-col items-center gap-2 py-10 text-center">

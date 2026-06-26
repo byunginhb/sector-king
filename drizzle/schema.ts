@@ -195,3 +195,20 @@ export const marketIndices = sqliteTable('market_indices', {
 
 export type MarketIndex = typeof marketIndices.$inferSelect
 export type NewMarketIndex = typeof marketIndices.$inferInsert
+
+// 지수 일별 종가 시계열 — 차트(1주/1개월/1년/5년) 용. 적재: scripts/update_indices.py.
+export const marketIndexHistory = sqliteTable(
+  'market_index_history',
+  {
+    symbol: text('symbol').notNull(),
+    date: text('date').notNull(),
+    close: real('close').notNull(),
+  },
+  (table) => [
+    unique('market_index_history_symbol_date').on(table.symbol, table.date),
+    index('idx_index_history_symbol').on(table.symbol),
+  ]
+)
+
+export type MarketIndexHistory = typeof marketIndexHistory.$inferSelect
+export type NewMarketIndexHistory = typeof marketIndexHistory.$inferInsert
