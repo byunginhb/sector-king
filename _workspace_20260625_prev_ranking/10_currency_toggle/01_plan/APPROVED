@@ -1,0 +1,11 @@
+승인일: 2026-06-14
+승인자: 사용자 (byunginhb)
+범위: integrated-plan.md 단계 1~5 전체
+결정:
+- D1 이중표기: 선택 통화 단일 표기 (병기 제거)
+- D2 OG 이미지: KRW 고정
+- D3 JSON-LD: USD 유지(무변경)
+- D4 flash: inline script로 data-currency 선반영 + 가격 문자열 1프레임 수용
+- D5 토글: 세그먼트 [₩][$], GlobalTopBar ThemeToggle 인접
+- 양방향 환산 확정: $ 모드=한국주도 USD, ₩ 모드=미국주도 원화. 선택 통화로 전 종목 통일.
+- 상태: Context+localStorage, queryKey 미포함(표시 전용). 기본 KRW.

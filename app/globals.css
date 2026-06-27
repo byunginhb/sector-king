@@ -279,26 +279,10 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
-    /* 마켓 티커는 느린 가로 스크롤 — OS 동작 줄이기(모바일 저전력 등)에도 흐르게 둔다.
-     * 사용자가 직접 끄면(html.reduce-motion, 아래) 그때만 멈춘다. */
+    /* 마켓 티커는 느린 가로 스크롤이라 OS 동작 줄이기(모바일 저전력 등)에도 흐르게 둔다. */
     .ticker-tape .ticker-track {
       animation: ticker-marquee var(--ticker-duration) linear infinite !important;
     }
-  }
-
-  /* 사용자가 직접 끈 모션(애니메이션 토글 off) — OS 설정과 무관하게 정지.
-   * prefers-reduced-motion 과 동일 규칙 + 마켓 티커 마퀴를 제자리에 멈춘다. */
-  html.reduce-motion *,
-  html.reduce-motion *::before,
-  html.reduce-motion *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-  html.reduce-motion .ticker-tape .ticker-track {
-    animation: none !important;
-    transform: translateX(0) !important;
   }
 }
 

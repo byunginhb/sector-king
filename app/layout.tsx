@@ -137,13 +137,6 @@ export default function RootLayout({
             __html: `(function(){try{var c=localStorage.getItem('sector-king-currency');document.documentElement.setAttribute('data-currency',(c==='USD'||c==='KRW')?c:'KRW');}catch(e){document.documentElement.setAttribute('data-currency','KRW');}})();`,
           }}
         />
-        <script
-          // 첫 페인트 전: 모션 토글 설정을 <html class="reduce-motion"> 로 선반영(flash 방지).
-          // 키('sector-king-motion')는 components/motion-toggle.tsx 와 일치시킬 것.
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(localStorage.getItem('sector-king-motion')==='off')document.documentElement.classList.add('reduce-motion');}catch(e){}})();`,
-          }}
-        />
         <WebSiteJsonLd />
       </head>
       <body

@@ -1,0 +1,8 @@
+승인일: 2026-06-10
+승인자: 사용자 (byunginhb)
+범위: P0 + P1 전부 (S1·S2·S3·S4·S5·S6·S7·S8 + API base 확장 + /insights 엔드포인트)
+결정:
+- API: base /api/company/[ticker] 가산 확장 + 신규 /api/company/[ticker]/insights 분리 (모달 무손상)
+- 시그널: 룰 기반 + 근거 병기, percentile 룰 포함(P1까지 전부)
+- 통화: 시총점유율·median·FCF·목표가 toUsd, 혼합통화 메모리 집계
+- 모달(company-detail.tsx) 무변경

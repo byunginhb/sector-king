@@ -1,0 +1,7 @@
+승인일: 2026-06-11
+근거: 사용자 지시 "문제가 있다면 수정해주고" + 메모리(권장안 자동 진행)
+범위: integrated-plan.md Lane A(A1~A6) + Lane B(B1~B8) 전체
+핵심 결정:
+- 자금흐름 정의 = 기간 시총 변화액 (메인이 코드 직접 검증, guide 기획의 "거래대금" 주장 기각)
+- score_history backfill 채택(주말행 제거 + scale 재계산 + EMA 재체인), 입력 부족 시 forward-only 폴백
+- KR volume=0 심각도 HIGH 조정(MFI/표시/vol_ratio 영향, flowAmount 무영향)

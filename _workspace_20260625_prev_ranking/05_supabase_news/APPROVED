@@ -1,0 +1,15 @@
+approved_at: 2026-05-09
+approved_by: user
+plan_version: v3
+env_loaded: true (.env)
+phase_strategy: A1 (auth foundation) → A2 (admin + news) → B (data migration, separate PR)
+decisions:
+  scope: phase_a_only_for_now (auth + news on Postgres, industry/ticker stays SQLite)
+  auth_provider: google_oauth_only
+  news_storage: jsonb_single_table
+  role_storage: text_with_check_constraint
+  login_entry: dedicated_route (/login)
+  main_news_card: below_market_pulse_strip
+  admin_protection: middleware + layout + api triple gate
+  cron_phase_b: github_actions_psycopg2
+  samplenews_seed: yes (first published report)

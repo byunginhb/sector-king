@@ -1,0 +1,10 @@
+승인일: 2026-06-10
+승인자: 사용자 (byunginhb)
+결정:
+- D1 섹터붕괴: 재정의/확장 (aircraft_mfg→항공·방산 BA+LMT+RTX+GD+047810.KS / luxury_fashion→미국 럭셔리 TPR+CPRI+EL+RL / luxury_auto→TSLA+RACE 유지)
+- D2 신규페이지: /stock/[ticker] 종목 상세 확정
+- D3 최소시총: US≥$2B, KR≥₩1조 (권장안)
+- D4 region라벨: "미국" + DollarSign 아이콘
+- D5 ADR: 정식 미국상장만(MUFG, JD), OTC 배제
+- region 모델: 옵션 A (식별자 global/INTL 유지, 라벨만 변경)
+범위: integrated-plan.md 단계 1~4 전체

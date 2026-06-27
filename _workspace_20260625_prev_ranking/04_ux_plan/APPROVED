@@ -1,0 +1,9 @@
+approved_at: 2026-05-09
+approved_by: user
+plan_version: v2
+decisions:
+  page_deprecation: yes (delete /money-flow, /price-changes, /statistics roots; redirect /industry-money-flow → /money-flow canonical)
+  market_pulse_kpis: market_macro (total_market_cap, day_change_pct, hot_sector_by_flow, biggest_flow_movement)
+  design_tone: bloomberg_linear (slate-950 dark + stone-50 light + amber accent)
+  industry_card_sparkline: yes (14d sparkline + 1-line mini-insight)
+  phase_strategy: phase_1_first (5~7 days then re-evaluate)

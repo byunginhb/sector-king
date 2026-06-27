@@ -1,0 +1,9 @@
+approved_at: 2026-05-09
+approved_by: user
+plan_version: 1
+decisions:
+  region_source: hybrid (companies.region column + getRegionFromTicker fallback)
+  ticker_addition: bulk (~200 tickers in single migration)
+  rank_check: relax to <=10
+  empty_industry_card: hide
+  adr_classification: exchange-based (CPNG/BABA = INTL)

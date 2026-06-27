@@ -7,7 +7,6 @@ import { Menu, Newspaper, BookOpen, Trophy, Globe, type LucideIcon } from 'lucid
 import { SectorKingLogo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { CurrencyToggle } from '@/components/currency-toggle'
-import { MotionToggle } from '@/components/motion-toggle'
 import { useCurrency } from '@/hooks/use-currency'
 import { SearchTrigger } from '@/components/search-trigger'
 import { HelpButton } from '@/components/onboarding/help-button'
@@ -158,7 +157,6 @@ export function GlobalTopBar({
               <SearchTrigger />
               {pageId && <HelpButton pageId={pageId} />}
               <CurrencyToggleConnected />
-              <MotionToggle />
               <ThemeToggle />
               <AuthButtonClient />
             </div>
@@ -236,7 +234,6 @@ export function GlobalTopBar({
                       <ShareButton title={shareTitle} description={shareDescription} />
                       <ThemeToggle />
                       <CurrencyToggleConnected />
-                      <MotionToggle />
                     </div>
                   </section>
 
