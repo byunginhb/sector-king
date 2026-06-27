@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { IndicesPage } from '@/components/indices/indices-page'
+import { FaqJsonLd, BreadcrumbJsonLd, DatasetJsonLd } from '@/components/json-ld'
+import { INDICES_FAQ } from '@/lib/seo-faq'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
@@ -24,5 +26,31 @@ export const metadata: Metadata = {
 }
 
 export default function IndicesRoute() {
-  return <IndicesPage />
+  return (
+    <>
+      <DatasetJsonLd
+        name="세계 주요 국가 대표 주가지수"
+        description={description}
+        url={`${BASE_URL}/indices`}
+        creditText="Yahoo Finance"
+        sourceUrl="https://finance.yahoo.com"
+        variableMeasured={[
+          '현재 지수',
+          '1일 등락률',
+          '1주 등락률',
+          '1달 등락률',
+          '1년 등락률',
+          '52주 위치',
+        ]}
+      />
+      <FaqJsonLd items={INDICES_FAQ} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: '홈', url: BASE_URL },
+          { name: '세계 지수', url: `${BASE_URL}/indices` },
+        ]}
+      />
+      <IndicesPage />
+    </>
+  )
 }

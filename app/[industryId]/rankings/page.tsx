@@ -2,6 +2,8 @@ import { Suspense, cache } from 'react'
 import type { Metadata } from 'next'
 import { getAllIndustries } from '@/lib/industry'
 import { RankingsPage } from '@/components/rankings/rankings-page'
+import { FaqJsonLd, BreadcrumbJsonLd } from '@/components/json-ld'
+import { RANKINGS_FAQ } from '@/lib/seo-faq'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 const getCachedIndustries = cache(() => getAllIndustries())
@@ -47,9 +49,23 @@ export default async function RankingsPageRoute({
   params: Promise<{ industryId: string }>
 }) {
   const { industryId } = await params
+  const industries = await getCachedIndustries()
+  const industry = industries.find((i) => i.id === industryId)
   return (
-    <Suspense fallback={null}>
-      <RankingsPage industryId={industryId} />
-    </Suspense>
+    <>
+      <FaqJsonLd items={RANKINGS_FAQ} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: '홈', url: BASE_URL },
+          ...(industry
+            ? [{ name: industry.name, url: `${BASE_URL}/${industryId}` }]
+            : []),
+          { name: '점수 랭킹', url: `${BASE_URL}/${industryId}/rankings` },
+        ]}
+      />
+      <Suspense fallback={null}>
+        <RankingsPage industryId={industryId} />
+      </Suspense>
+    </>
   )
 }

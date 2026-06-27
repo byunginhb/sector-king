@@ -24,6 +24,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.7,
     },
+    {
+      url: `${BASE_URL}/rankings`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/indices`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/news`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
   ]
 
   const industryPages: MetadataRoute.Sitemap = industries.flatMap((industry) => [
@@ -47,6 +65,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${BASE_URL}/${industry.id}/statistics`,
+      lastModified: now,
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/${industry.id}/rankings`,
       lastModified: now,
       changeFrequency: 'daily' as const,
       priority: 0.8,

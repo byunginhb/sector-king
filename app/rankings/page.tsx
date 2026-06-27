@@ -1,6 +1,8 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { RankingsPage } from '@/components/rankings/rankings-page'
+import { FaqJsonLd, BreadcrumbJsonLd } from '@/components/json-ld'
+import { RANKINGS_FAQ } from '@/lib/seo-faq'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
@@ -28,8 +30,17 @@ export const metadata: Metadata = {
 
 export default function GlobalRankingsRoute() {
   return (
-    <Suspense fallback={null}>
-      <RankingsPage />
-    </Suspense>
+    <>
+      <FaqJsonLd items={RANKINGS_FAQ} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: '홈', url: BASE_URL },
+          { name: '섹터킹 픽', url: `${BASE_URL}/rankings` },
+        ]}
+      />
+      <Suspense fallback={null}>
+        <RankingsPage />
+      </Suspense>
+    </>
   )
 }

@@ -175,3 +175,77 @@ export function BreadcrumbJsonLd({ items }: BreadcrumbJsonLdProps) {
     />
   )
 }
+
+/**
+ * FAQPage JSON-LD — AI 검색(AI Overviews/AI Mode)·Google FAQ 리치결과에서
+ * 질문-답변을 직접 인용하도록 한다. 답변 텍스트는 페이지 본문과 일치해야 한다.
+ */
+interface FaqJsonLdProps {
+  items: { question: string; answer: string }[]
+}
+
+export function FaqJsonLd({ items }: FaqJsonLdProps) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((it) => ({
+      '@type': 'Question',
+      name: it.question,
+      acceptedAnswer: { '@type': 'Answer', text: it.answer },
+    })),
+  }
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  )
+}
+
+/**
+ * Dataset JSON-LD — 세계 지수 같은 데이터셋 페이지를 AI/검색이
+ * "출처 있는 데이터"로 인식하게 한다. 출처(creditText)·측정 변수를 명시.
+ */
+interface DatasetJsonLdProps {
+  name: string
+  description: string
+  url: string
+  /** 데이터 출처명 (예: Yahoo Finance) */
+  creditText?: string
+  /** 출처 URL */
+  sourceUrl?: string
+  /** 측정 변수 목록 (예: 현재 지수, 1일 등락률 …) */
+  variableMeasured?: string[]
+}
+
+export function DatasetJsonLd({
+  name,
+  description,
+  url,
+  creditText,
+  sourceUrl,
+  variableMeasured,
+}: DatasetJsonLdProps) {
+  const jsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Dataset',
+    name,
+    description,
+    url,
+    inLanguage: 'ko-KR',
+    isAccessibleForFree: true,
+    creator: { '@type': 'Organization', name: 'Sector King', url: BASE_URL },
+    publisher: { '@type': 'Organization', name: 'Sector King', url: BASE_URL },
+  }
+  if (creditText) jsonLd.creditText = creditText
+  if (sourceUrl) jsonLd.isBasedOn = sourceUrl
+  if (variableMeasured && variableMeasured.length > 0) {
+    jsonLd.variableMeasured = variableMeasured
+  }
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  )
+}
