@@ -196,6 +196,19 @@ export function IndicesPage() {
             <p className="text-sm font-medium text-foreground">표시할 지수가 없습니다</p>
           </div>
         )}
+
+        <p className="mt-4 border-t border-border-subtle pt-3 text-[11px] text-muted-foreground">
+          데이터 출처:{' '}
+          <a
+            href="https://finance.yahoo.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-foreground"
+          >
+            Yahoo Finance
+          </a>
+          {' '}— 각국 대표 주가지수 종가 기준, 매 거래일 갱신. 투자 판단의 참고용 정보입니다.
+        </p>
       </main>
     </div>
   )
