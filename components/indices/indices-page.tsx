@@ -9,10 +9,12 @@ import { cn } from '@/lib/utils'
 import type { ApiResponse } from '@/types'
 import type { IndicesResponse, MarketIndexItem } from '@/app/api/indices/route'
 
-function useIndices() {
+function useIndices(initialItems?: MarketIndexItem[]) {
   return useQuery<IndicesResponse>({
     queryKey: ['indices'],
     staleTime: 1000 * 60 * 10,
+    // SSR 로 받은 초기 데이터 → 첫 렌더(서버 HTML)부터 표가 채워진다(AEO/크롤러 대응).
+    initialData: initialItems ? { items: initialItems } : undefined,
     queryFn: async () => {
       const res = await fetch('/api/indices')
       if (!res.ok) throw new Error('Failed to fetch indices')
@@ -107,8 +109,8 @@ function IndexRow({ item }: { item: MarketIndexItem }) {
   )
 }
 
-export function IndicesPage() {
-  const { data, isLoading, isError } = useIndices()
+export function IndicesPage({ initialItems }: { initialItems?: MarketIndexItem[] }) {
+  const { data, isLoading, isError } = useIndices(initialItems)
   const items = data?.items ?? []
   const asOf = items.find((i) => i.asOfDate)?.asOfDate ?? null
 

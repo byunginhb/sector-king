@@ -177,6 +177,39 @@ export function BreadcrumbJsonLd({ items }: BreadcrumbJsonLdProps) {
 }
 
 /**
+ * ItemList JSON-LD — 순위 목록(종목 랭킹·국가 지수)을 AI/검색이
+ * 순서 있는 리스트로 인식해 답변에 인용하게 한다.
+ */
+interface ItemListJsonLdProps {
+  name: string
+  description?: string
+  items: { name: string; url?: string }[]
+}
+
+export function ItemListJsonLd({ name, description, items }: ItemListJsonLdProps) {
+  const jsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name,
+    inLanguage: 'ko-KR',
+    numberOfItems: items.length,
+    itemListElement: items.map((it, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: it.name,
+      ...(it.url ? { url: it.url } : {}),
+    })),
+  }
+  if (description) jsonLd.description = description
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  )
+}
+
+/**
  * FAQPage JSON-LD — AI 검색(AI Overviews/AI Mode)·Google FAQ 리치결과에서
  * 질문-답변을 직접 인용하도록 한다. 답변 텍스트는 페이지 본문과 일치해야 한다.
  */

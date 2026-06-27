@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
 import { IndicesPage } from '@/components/indices/indices-page'
-import { FaqJsonLd, BreadcrumbJsonLd, DatasetJsonLd } from '@/components/json-ld'
+import { FaqJsonLd, BreadcrumbJsonLd, DatasetJsonLd, ItemListJsonLd } from '@/components/json-ld'
 import { INDICES_FAQ } from '@/lib/seo-faq'
+import { getMarketIndices } from '@/lib/indices-server'
+
+export const revalidate = 3600
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
@@ -25,7 +28,10 @@ export const metadata: Metadata = {
   alternates: { canonical: `${BASE_URL}/indices` },
 }
 
-export default function IndicesRoute() {
+export default async function IndicesRoute() {
+  // SSR: 표 데이터를 서버에서 미리 받아 크롤러·AI 가 본문을 읽을 수 있게 한다.
+  const items = await getMarketIndices()
+
   return (
     <>
       <DatasetJsonLd
@@ -43,6 +49,11 @@ export default function IndicesRoute() {
           '52주 위치',
         ]}
       />
+      <ItemListJsonLd
+        name="세계 주요 국가 대표 주가지수"
+        description={description}
+        items={items.map((it) => ({ name: `${it.country} ${it.name}` }))}
+      />
       <FaqJsonLd items={INDICES_FAQ} />
       <BreadcrumbJsonLd
         items={[
@@ -50,7 +61,7 @@ export default function IndicesRoute() {
           { name: '세계 지수', url: `${BASE_URL}/indices` },
         ]}
       />
-      <IndicesPage />
+      <IndicesPage initialItems={items} />
     </>
   )
 }
