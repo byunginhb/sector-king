@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown } from 'lucide-react'
 import type { SectorMoneyFlow } from '@/types'
 import { cn } from '@/lib/utils'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
 
 interface FlowCardProps {
   flow: SectorMoneyFlow
@@ -17,19 +18,33 @@ interface FlowCardProps {
 /* ─── Rising / Falling Arrow Animations ─── */
 
 function RisingArrow({ index, delay, total }: { index: number; delay: number; total: number }) {
+  const { reduced } = useReducedMotion()
   const x = 5 + (index / total) * 80 + Math.random() * 10
   const size = 20 + Math.random() * 12
+  const icon = (
+    <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
+      <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="rgba(16, 185, 129, 0.7)" />
+    </svg>
+  )
+
+  // 모션 끔: 움직이지 않되 화살표는 그대로 보이게(카드 안 고정 위치).
+  if (reduced) {
+    return (
+      <div
+        className="absolute pointer-events-none z-10"
+        style={{ left: `${x}%`, top: `${18 + (index / total) * 52}%`, opacity: 0.5 }}
+      >
+        {icon}
+      </div>
+    )
+  }
 
   return (
     <motion.div
-      data-motion-decor
       className="absolute pointer-events-none z-10"
       style={{ left: `${x}%`, bottom: -10 }}
       initial={{ y: 30, opacity: 0 }}
-      animate={{
-        y: -120,
-        opacity: [0, 0.85, 0.85, 0],
-      }}
+      animate={{ y: -120, opacity: [0, 0.85, 0.85, 0] }}
       transition={{
         duration: 1.1 + Math.random() * 0.4,
         delay: delay + index * 0.3,
@@ -37,27 +52,38 @@ function RisingArrow({ index, delay, total }: { index: number; delay: number; to
         ease: 'linear',
       }}
     >
-      <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
-        <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="rgba(16, 185, 129, 0.7)" />
-      </svg>
+      {icon}
     </motion.div>
   )
 }
 
 function FallingArrow({ index, delay, total }: { index: number; delay: number; total: number }) {
+  const { reduced } = useReducedMotion()
   const x = 5 + (index / total) * 80 + Math.random() * 10
   const size = 20 + Math.random() * 12
+  const icon = (
+    <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
+      <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="rgba(244, 63, 94, 0.7)" />
+    </svg>
+  )
+
+  if (reduced) {
+    return (
+      <div
+        className="absolute pointer-events-none z-10"
+        style={{ left: `${x}%`, top: `${18 + (index / total) * 52}%`, opacity: 0.5 }}
+      >
+        {icon}
+      </div>
+    )
+  }
 
   return (
     <motion.div
-      data-motion-decor
       className="absolute pointer-events-none z-10"
       style={{ left: `${x}%`, top: -10 }}
       initial={{ y: -30, opacity: 0 }}
-      animate={{
-        y: 120,
-        opacity: [0, 0.85, 0.85, 0],
-      }}
+      animate={{ y: 120, opacity: [0, 0.85, 0.85, 0] }}
       transition={{
         duration: 1.1 + Math.random() * 0.4,
         delay: delay + index * 0.3,
@@ -65,9 +91,7 @@ function FallingArrow({ index, delay, total }: { index: number; delay: number; t
         ease: 'linear',
       }}
     >
-      <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
-        <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="rgba(244, 63, 94, 0.7)" />
-      </svg>
+      {icon}
     </motion.div>
   )
 }

@@ -295,10 +295,6 @@
     animation: none !important;
     transform: translateX(0) !important;
   }
-  /* 무한 반복 장식 파티클(자금흐름 화살표 등)은 모션 끄면 아예 숨긴다(잔여 깜빡임 제거). */
-  html.reduce-motion [data-motion-decor] {
-    display: none !important;
-  }
 }
 
 @layer components {
