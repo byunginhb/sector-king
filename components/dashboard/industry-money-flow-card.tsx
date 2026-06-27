@@ -22,6 +22,7 @@ function RisingArrow({ index, delay, total }: { index: number; delay: number; to
 
   return (
     <motion.div
+      data-motion-decor
       className="absolute pointer-events-none z-10"
       style={{ left: `${x}%`, bottom: -10 }}
       initial={{ y: 30, opacity: 0 }}
@@ -49,6 +50,7 @@ function FallingArrow({ index, delay, total }: { index: number; delay: number; t
 
   return (
     <motion.div
+      data-motion-decor
       className="absolute pointer-events-none z-10"
       style={{ left: `${x}%`, top: -10 }}
       initial={{ y: -30, opacity: 0 }}
