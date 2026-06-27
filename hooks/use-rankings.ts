@@ -26,6 +26,8 @@ interface UseRankingsOptions {
   sortKey?: RankingSortKey
   sort?: RankingSortDir
   limit?: number
+  /** SSR 초기 데이터 — 기본 뷰일 때만 전달(첫 HTML 부터 표가 채워짐, 크롤러·AI 대응). */
+  initialData?: RankingsResponse
 }
 
 /**
@@ -42,6 +44,7 @@ export function useRankings(options: UseRankingsOptions = {}) {
     sortKey,
     sort = 'desc',
     limit = 50,
+    initialData,
   } = options
 
   return useQuery<RankingsResponse>({
@@ -54,6 +57,7 @@ export function useRankings(options: UseRankingsOptions = {}) {
       sort,
       limit,
     ],
+    initialData,
     staleTime: 1000 * 60 * 5,
     queryFn: async () => {
       const params = new URLSearchParams()

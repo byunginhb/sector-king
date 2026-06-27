@@ -5,6 +5,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { Trophy, SearchX, SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRankings, type RankingSortKey } from '@/hooks/use-rankings'
+import type { RankingsResponse } from '@/app/api/rankings/route'
 import { useRegion } from '@/hooks/use-region'
 import type { RankingHorizon, RankingSortDir } from '@/lib/api-helpers'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
@@ -23,9 +24,11 @@ import { InfoTip } from './info-tip'
 interface RankingsPageProps {
   /** 산업 스코프. 생략하면 전 종목(섹터킹 픽 전역 랭킹). */
   industryId?: string
+  /** SSR 초기 데이터(기본 뷰 = region all·장기 점수 desc). 크롤러·AI 가 본문을 읽게 한다. */
+  initialData?: RankingsResponse
 }
 
-export function RankingsPage({ industryId }: RankingsPageProps) {
+export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
   const { region, setRegion } = useRegion()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -41,6 +44,11 @@ export function RankingsPage({ industryId }: RankingsPageProps) {
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
   const [showAdvanced, setShowAdvanced] = useState(false)
 
+  // SSR 초기 데이터는 "기본 뷰"(전체 지역·장기 점수 desc·limit 100)에만 적용한다.
+  // 사용자가 지역/점수축/정렬을 바꾸면 queryKey 가 달라져 정상적으로 재요청된다.
+  const isDefaultView =
+    region === 'all' && horizon === 'long' && sortKey === 'long' && sortDir === 'desc'
+
   const { data, isLoading, isError } = useRankings({
     industryId,
     region,
@@ -48,6 +56,7 @@ export function RankingsPage({ industryId }: RankingsPageProps) {
     sortKey,
     sort: sortDir,
     limit: 100,
+    initialData: isDefaultView ? initialData : undefined,
   })
 
   const setHorizon = useCallback(

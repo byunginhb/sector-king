@@ -108,6 +108,17 @@ function recommendationRank(key: string | null): number | null {
  * 점수는 lib/ranking-score.ts 로 **메모리 계산**, 가격성은 toUsd 후 메모리 정렬·slice.
  * (혼합통화 SQL ORDER BY 함정 회피 — 후보집합만 SQL 로 좁힌다.)
  */
+export interface RankingsQuery {
+  /** 산업 필터 결과 ticker 목록. null = 전 종목. */
+  industryTickers: string[] | null
+  region: RegionFilter
+  horizon: RankingHorizon
+  sortKey: SortKey
+  sortDir: RankingSortDir
+  limit: number
+  appliedIndustryId: string | null
+}
+
 export async function GET(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<RankingsResponse>>> {
@@ -125,11 +136,42 @@ export async function GET(
       min: 1,
       max: 200,
     })
-
-    // 정렬 키: 명시 sortKey 우선, 없으면 horizon 점수
     const rawSortKey = searchParams.get('sortKey')
     const sortKey: SortKey = isSortKey(rawSortKey) ? rawSortKey : horizon
 
+    const data = await getRankings({
+      industryTickers: filter?.tickers ?? null,
+      region,
+      horizon,
+      sortKey,
+      sortDir,
+      limit,
+      appliedIndustryId: searchParams.get('industry'),
+    })
+    return NextResponse.json({ success: true, data })
+  } catch (error) {
+    console.error('Rankings API error:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch rankings' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * 랭킹 데이터 산출 — API 라우트와 페이지(SSR)가 공유하는 단일 함수.
+ * 파라미터 파싱은 호출부가 담당하고, 여기선 정규화된 옵션을 받는다.
+ * 점수는 lib/ranking-score.ts 로 메모리 계산, 가격성은 toUsd 후 메모리 정렬·slice.
+ */
+export async function getRankings({
+  industryTickers,
+  region,
+  horizon,
+  sortKey,
+  sortDir,
+  limit,
+  appliedIndustryId,
+}: RankingsQuery): Promise<RankingsResponse> {
     const db = getDb()
 
     // 최신 거래일
@@ -141,18 +183,11 @@ export async function GET(
     const latestDate = latestDateRow?.date ?? null
 
     if (!latestDate) {
-      return NextResponse.json({
-        success: true,
-        data: emptyResponse(horizon, sortDir, region, filter ? null : null, null, limit),
-      })
+      return emptyResponse(horizon, sortDir, region, appliedIndustryId, null, limit)
     }
 
-    const appliedIndustryId = searchParams.get('industry')
-
-    // 후보집합(industry∩region)만 좁힌다.
-    // industry 미지정이면 전 종목. region 은 메모리 마스크(matchesRegion).
-    const industryTickers = filter?.tickers ?? null
-
+    // 후보집합(industry∩region)만 좁힌다. industryTickers 는 호출부가 넘긴 필터 결과(null=전 종목),
+    // region 은 메모리 마스크(matchesRegion).
     // companyScores + 최신 dailySnapshots + companies 조인 (상관 서브쿼리로 N+1 금지)
     const baseRows = await db
       .select({
@@ -204,10 +239,7 @@ export async function GET(
     )
 
     if (candidates.length === 0) {
-      return NextResponse.json({
-        success: true,
-        data: emptyResponse(horizon, sortDir, region, appliedIndustryId, latestDate, limit),
-      })
+      return emptyResponse(horizon, sortDir, region, appliedIndustryId, latestDate, limit)
     }
 
     // 모멘텀 lookback: 후보 ticker 의 score_history 에서 (최신, 15거래일 전) smoothedScore Δ
@@ -293,27 +325,17 @@ export async function GET(
       .sort((a, b) => (b.combinedScore ?? 0) - (a.combinedScore ?? 0))
       .slice(0, 5)
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        items: cleaned.slice(0, limit),
-        topPicks,
-        horizon,
-        sort: sortDir,
-        appliedRegion: region,
-        appliedIndustryId,
-        date: latestDate,
-        limit,
-        total: cleaned.length,
-      },
-    })
-  } catch (error) {
-    console.error('Rankings API error:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch rankings' },
-      { status: 500 }
-    )
-  }
+    return {
+      items: cleaned.slice(0, limit),
+      topPicks,
+      horizon,
+      sort: sortDir,
+      appliedRegion: region,
+      appliedIndustryId,
+      date: latestDate,
+      limit,
+      total: cleaned.length,
+    }
 }
 
 function isSortKey(value: string | null): value is SortKey {
