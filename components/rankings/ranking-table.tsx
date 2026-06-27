@@ -246,6 +246,10 @@ export function RankingTable({
   return (
     <div className="overflow-x-auto rounded-md border border-border-subtle">
       <table className="w-full min-w-[760px] border-collapse text-sm">
+        <caption className="sr-only">
+          종목 단기·장기 점수 랭킹 — 순위, 종목명, 단기 점수, 장기 점수, 투자의견, 목표주가,
+          현재가, 상승여력, 재무 지표를 함께 표시합니다.
+        </caption>
         <thead>
           <tr className="border-b border-border bg-surface-1">
             {columns.map((col, idx) => (

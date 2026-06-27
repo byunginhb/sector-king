@@ -171,6 +171,10 @@ export function IndicesPage({ initialItems }: { initialItems?: MarketIndexItem[]
         {data && items.length > 0 && (
           <div className="overflow-x-auto rounded-md border border-border-subtle">
             <table className="w-full min-w-[760px] border-collapse text-sm">
+              <caption className="sr-only">
+                세계 주요 국가 대표 주가지수 — 현재 지수, 1일·1주·1달·1년 등락률, 52주 위치.
+                출처 Yahoo Finance.
+              </caption>
               <thead>
                 <tr className="border-b border-border bg-surface-1 text-xs font-medium text-muted-foreground">
                   <th scope="col" className="px-3 py-2.5 text-left">국가</th>
