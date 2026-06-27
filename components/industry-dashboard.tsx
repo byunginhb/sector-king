@@ -30,6 +30,7 @@ import { MarketPulseStrip } from '@/components/dashboard/market-pulse-strip'
 import { TickerTape } from '@/components/dashboard/ticker-tape'
 import { NewsHomeCardSlot } from '@/components/news/news-home-card-slot'
 import { KoreanPicksCard } from '@/components/dashboard/korean-picks-card'
+import { QuickNavCards } from '@/components/dashboard/quick-nav-cards'
 import type { IndustryOverview } from '@/types'
 
 export function IndustryDashboard() {
@@ -102,6 +103,11 @@ export function IndustryDashboard() {
             </Link>
           </div>
         </section>
+
+        {/* 모바일 바로가기 카드 — 햄버거에 숨는 메뉴를 대시보드에서 바로 이동 */}
+        <div className="mb-8 md:hidden">
+          <QuickNavCards />
+        </div>
 
         {/* Onboarding hint strip (자동 투어 폐기 후 신규 진입 안내) */}
         <section className="mb-6">
