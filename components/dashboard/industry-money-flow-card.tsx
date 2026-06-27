@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { TrendingUp as TrendingUpIcon } from 'lucide-react'
+import { TrendingUp as TrendingUpIcon, Zap, ZapOff } from 'lucide-react'
 import { useIndustryMoneyFlow } from '@/hooks/use-industry-money-flow'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
@@ -16,9 +16,33 @@ type PeriodType = 1 | 3 | 7 | 14 | 30
 
 /* ─── Rising / Falling Arrow Animations ─── */
 
-function RisingArrow({ index, delay, total }: { index: number; delay: number; total: number }) {
+interface ArrowProps {
+  index: number
+  delay: number
+  total: number
+  /** 이 카드만의 애니메이션 정지 — 멈춰도 화살표는 고정 위치에 그대로 보인다. */
+  paused: boolean
+}
+
+function RisingArrow({ index, delay, total, paused }: ArrowProps) {
   const x = 5 + (index / total) * 80 + Math.random() * 10
   const size = 20 + Math.random() * 12
+  const icon = (
+    <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
+      <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="rgba(16, 185, 129, 0.7)" />
+    </svg>
+  )
+
+  if (paused) {
+    return (
+      <div
+        className="absolute pointer-events-none z-10"
+        style={{ left: `${x}%`, top: `${18 + (index / total) * 52}%`, opacity: 0.5 }}
+      >
+        {icon}
+      </div>
+    )
+  }
 
   return (
     <motion.div
@@ -33,16 +57,30 @@ function RisingArrow({ index, delay, total }: { index: number; delay: number; to
         ease: 'linear',
       }}
     >
-      <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
-        <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="rgba(16, 185, 129, 0.7)" />
-      </svg>
+      {icon}
     </motion.div>
   )
 }
 
-function FallingArrow({ index, delay, total }: { index: number; delay: number; total: number }) {
+function FallingArrow({ index, delay, total, paused }: ArrowProps) {
   const x = 5 + (index / total) * 80 + Math.random() * 10
   const size = 20 + Math.random() * 12
+  const icon = (
+    <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
+      <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="rgba(244, 63, 94, 0.7)" />
+    </svg>
+  )
+
+  if (paused) {
+    return (
+      <div
+        className="absolute pointer-events-none z-10"
+        style={{ left: `${x}%`, top: `${18 + (index / total) * 52}%`, opacity: 0.5 }}
+      >
+        {icon}
+      </div>
+    )
+  }
 
   return (
     <motion.div
@@ -57,9 +95,7 @@ function FallingArrow({ index, delay, total }: { index: number; delay: number; t
         ease: 'linear',
       }}
     >
-      <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
-        <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="rgba(244, 63, 94, 0.7)" />
-      </svg>
+      {icon}
     </motion.div>
   )
 }
@@ -72,6 +108,8 @@ interface IndustryMoneyFlowCardProps {
 
 export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardProps = {}) {
   const [period, setPeriod] = useState<PeriodType>(14)
+  // 이 카드만의 애니메이션 정지(전역 아님 — 마켓 티커 등 다른 곳에는 영향 없음).
+  const [paused, setPaused] = useState(false)
   const { data, isLoading, error } = useIndustryMoneyFlow({ period, region })
 
   if (isLoading) return <IndustryMoneyFlowCardSkeleton />
@@ -114,6 +152,21 @@ export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardP
                 </button>
               ))}
             </div>
+            {/* 이 카드 애니메이션만 끄고 켜는 토글 (멈춰도 화살표는 그대로 보임) */}
+            <button
+              type="button"
+              onClick={() => setPaused((prev) => !prev)}
+              aria-pressed={paused}
+              title={paused ? '애니메이션 켜기' : '애니메이션 끄기'}
+              aria-label={paused ? '애니메이션 켜기' : '애니메이션 끄기'}
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border-subtle text-muted-foreground transition-colors hover:bg-surface-2 hover:text-foreground"
+            >
+              {paused ? (
+                <ZapOff className="h-3.5 w-3.5" aria-hidden />
+              ) : (
+                <Zap className="h-3.5 w-3.5" aria-hidden />
+              )}
+            </button>
           </div>
         </div>
         <p className="num-mono text-[10px] text-muted-foreground mt-1">
@@ -124,7 +177,12 @@ export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardP
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5">
         {data.industries.map((industry, i) => (
-          <IndustryFlowItem key={industry.industryId} industry={industry} index={i} />
+          <IndustryFlowItem
+            key={industry.industryId}
+            industry={industry}
+            index={i}
+            paused={paused}
+          />
         ))}
       </div>
     </div>
@@ -136,9 +194,11 @@ export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardP
 function IndustryFlowItem({
   industry,
   index,
+  paused,
 }: {
   industry: IndustryMoneyFlowSummary
   index: number
+  paused: boolean
 }) {
   const isInflow = industry.flowDirection === 'in'
   const fmt = useCurrencyFormat()
@@ -163,8 +223,8 @@ function IndustryFlowItem({
             'absolute inset-0 rounded-lg',
             isInflow ? 'bg-success/10' : 'bg-danger/10'
           )}
-          animate={{ opacity: isInflow ? [0.2, 0.7, 0.2] : [0.3, 0.6, 0.3] }}
-          transition={{ duration: isInflow ? 1.8 : 2, repeat: Infinity, ease: 'easeInOut' }}
+          animate={paused ? { opacity: 0.45 } : { opacity: isInflow ? [0.2, 0.7, 0.2] : [0.3, 0.6, 0.3] }}
+          transition={paused ? { duration: 0 } : { duration: isInflow ? 1.8 : 2, repeat: Infinity, ease: 'easeInOut' }}
         />
 
         {/* Inflow glow border effect */}
@@ -174,24 +234,28 @@ function IndustryFlowItem({
             style={{
               boxShadow: 'inset 0 0 20px rgba(16, 185, 129, 0.15), 0 0 15px rgba(16, 185, 129, 0.1)',
             }}
-            animate={{
-              boxShadow: [
-                'inset 0 0 20px rgba(16, 185, 129, 0.1), 0 0 10px rgba(16, 185, 129, 0.05)',
-                'inset 0 0 25px rgba(16, 185, 129, 0.25), 0 0 20px rgba(16, 185, 129, 0.15)',
-                'inset 0 0 20px rgba(16, 185, 129, 0.1), 0 0 10px rgba(16, 185, 129, 0.05)',
-              ],
-            }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            animate={
+              paused
+                ? undefined
+                : {
+                    boxShadow: [
+                      'inset 0 0 20px rgba(16, 185, 129, 0.1), 0 0 10px rgba(16, 185, 129, 0.05)',
+                      'inset 0 0 25px rgba(16, 185, 129, 0.25), 0 0 20px rgba(16, 185, 129, 0.15)',
+                      'inset 0 0 20px rgba(16, 185, 129, 0.1), 0 0 10px rgba(16, 185, 129, 0.05)',
+                    ],
+                  }
+            }
+            transition={paused ? { duration: 0 } : { duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
           />
         )}
 
         {/* Rising / Falling arrows (5~7 random) */}
         {isInflow
           ? Array.from({ length: 5 + (index % 3) }).map((_, i, arr) => (
-              <RisingArrow key={`a-${i}`} index={i} delay={index * 0.1} total={arr.length} />
+              <RisingArrow key={`a-${i}`} index={i} delay={index * 0.1} total={arr.length} paused={paused} />
             ))
           : Array.from({ length: 5 + (index % 3) }).map((_, i, arr) => (
-              <FallingArrow key={`a-${i}`} index={i} delay={index * 0.1} total={arr.length} />
+              <FallingArrow key={`a-${i}`} index={i} delay={index * 0.1} total={arr.length} paused={paused} />
             ))}
 
         {/* Content */}
