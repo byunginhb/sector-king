@@ -137,6 +137,10 @@ function migrate(): void {
       .all()
     if (orphan.length > 0) throw new Error(`orphan 섹터 발견: ${JSON.stringify(orphan)}`)
 
+    // prod(Vercel readonly FS)에서 better-sqlite3 readonly 오픈이 가능하려면 DB 가 WAL 이 아니어야 한다.
+    // WAL DB 는 -wal/-shm 쓰기를 요구해 readonly FS 에서 열기 실패(500)한다. 작업 후 delete 모드로 복구.
+    sqlite.pragma('wal_checkpoint(TRUNCATE)')
+    sqlite.pragma('journal_mode = DELETE')
     console.log('마이그레이션 완료.')
   } finally {
     sqlite.close()
