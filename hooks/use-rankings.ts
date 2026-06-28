@@ -16,6 +16,8 @@ export type RankingSortKey =
   | 'margin'
   | 'pe'
   | 'marketcap'
+  | 'dcf'
+  | 'dcfUpside'
 
 interface UseRankingsOptions {
   industryId?: string

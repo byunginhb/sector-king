@@ -1,6 +1,14 @@
 import type { Metadata } from 'next'
 import { AlertTriangle } from 'lucide-react'
 import { SCORING } from '@/lib/scoring-methodology'
+import {
+  FORECAST_YEARS,
+  TERMINAL_GROWTH,
+  R_MIN,
+  R_MAX,
+  INITIAL_GROWTH_CAP_LOW,
+  INITIAL_GROWTH_CAP_HIGH,
+} from '@/lib/dcf'
 import { ScoringDiagram } from '@/components/methodology/scoring-diagram'
 import { DataPipeline } from '@/components/methodology/data-pipeline'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
@@ -227,9 +235,57 @@ export default function MethodologyPage() {
             </Card>
           </section>
 
-          {/* Section 6: Disclaimer */}
+          {/* Section 6: DCF Score */}
           <section>
-            <SectionHeading id="disclaimer">6. 한계점 및 면책</SectionHeading>
+            <SectionHeading id="dcf">6. DCF 점수 (참고 지표)</SectionHeading>
+            <Card>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <p>
+                  점수 랭킹의 <strong className="text-foreground">DCF 점수·상승예측</strong>은
+                  패권 점수와 별개의 <strong className="text-foreground">독립 보조 지표</strong>입니다.
+                  회사가 앞으로 벌어들일 잉여현금흐름(FCF)을 추정해 적정 가치(내재가치)를 환산하고,
+                  현재가가 그보다 싼지를 0~100점과 상승예측 %로 나타냅니다.
+                </p>
+                <p>
+                  표준 2단계 DCF를 사용합니다. 예측기간{' '}
+                  <strong className="text-foreground">{FORECAST_YEARS}년</strong> 동안의 현금흐름
+                  현재가치 합에, 그 이후의 잔존가치(영구 성장률{' '}
+                  {(TERMINAL_GROWTH * 100).toFixed(1)}%)를 더해 내재가치를 구합니다. 할인율은
+                  베타·부채비율·기업 규모에 따라{' '}
+                  <strong className="text-foreground">
+                    {(R_MIN * 100).toFixed(0)}%~{(R_MAX * 100).toFixed(0)}%
+                  </strong>{' '}
+                  범위에서 도출됩니다.
+                </p>
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-foreground">주요 가정</p>
+                  <ul className="space-y-1 text-xs list-disc pl-4">
+                    <li>
+                      초기 성장률은 매출 성장률을 {(INITIAL_GROWTH_CAP_LOW * 100).toFixed(0)}%~
+                      {(INITIAL_GROWTH_CAP_HIGH * 100).toFixed(0)}% 로 제한해 사용하고, 예측기간에
+                      걸쳐 영구 성장률로 선형 수렴시킵니다.
+                    </li>
+                    <li>주식 수는 시가총액 ÷ 현재가로 역산합니다.</li>
+                    <li>
+                      현금흐름이 마이너스이거나 자료가 부족한 종목, 은행·보험 등 현금흐름 정의가 다른
+                      업종은 제외됩니다.
+                    </li>
+                  </ul>
+                </div>
+                <div className="flex items-center gap-3 rounded-lg bg-warning-bg border border-warning/30 p-3">
+                  <AlertTriangle className="h-5 w-5 text-warning shrink-0" aria-hidden />
+                  <p className="text-xs text-warning">
+                    미래 성장·할인율 가정이 들어가 가정이 바뀌면 결과가 크게 달라집니다. 상승예측
+                    %는 미래 주가를 약속하지 않는 참고용 추정치입니다.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </section>
+
+          {/* Section 7: Disclaimer */}
+          <section>
+            <SectionHeading id="disclaimer">7. 한계점 및 면책</SectionHeading>
             <Card>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <ul className="space-y-2">

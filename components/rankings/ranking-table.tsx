@@ -12,6 +12,18 @@ import { ScoreBar } from './score-bar'
 import { RecommendationBadge } from './recommendation-badge'
 import { InfoTip } from './info-tip'
 
+/** DCF 빈값 사유별 초보자 친화 캡션. */
+function dcfReasonCaption(reason: string | null): string {
+  switch (reason) {
+    case 'negativeFcf':
+      return '현금흐름 마이너스라 제외'
+    case 'finance':
+      return '현금흐름으로 보기 어려운 업종'
+    default:
+      return '자료 부족'
+  }
+}
+
 interface RankingTableProps {
   items: RankingItem[]
   horizon: RankingHorizon
@@ -52,6 +64,12 @@ const BASE_COLUMNS: ColumnDef[] = [
     key: 'long',
     label: '장기 점수',
     tip: '오래 묵힐 만한 가치가 있는지 0~100으로 나타낸 값.',
+    align: 'left',
+  },
+  {
+    key: 'dcf',
+    label: 'DCF 점수',
+    tip: '회사가 앞으로 벌 현금을 가정해 적정 가치를 추산한 점수예요. 가정에 따라 크게 달라질 수 있어 참고용입니다. 미래 수익을 보장하지 않아요.',
     align: 'left',
   },
   {
@@ -247,8 +265,8 @@ export function RankingTable({
     <div className="overflow-x-auto rounded-md border border-border-subtle">
       <table className="w-full min-w-[760px] border-collapse text-sm">
         <caption className="sr-only">
-          종목 단기·장기 점수 랭킹 — 순위, 종목명, 단기 점수, 장기 점수, 투자의견, 목표주가,
-          현재가, 상승여력, 재무 지표를 함께 표시합니다.
+          종목 단기·장기 점수 랭킹 — 순위, 종목명, 단기 점수, 장기 점수, DCF 점수, 투자의견,
+          목표주가, 현재가, 상승여력, 재무 지표를 함께 표시합니다.
         </caption>
         <thead>
           <tr className="border-b border-border bg-surface-1">
@@ -273,6 +291,12 @@ export function RankingTable({
               item.upsidePct == null
                 ? 'text-muted-foreground'
                 : item.upsidePct >= 0
+                  ? 'text-success'
+                  : 'text-danger'
+            const dcfTone =
+              item.dcfUpsidePct == null
+                ? 'text-muted-foreground'
+                : item.dcfUpsidePct >= 0
                   ? 'text-success'
                   : 'text-danger'
 
@@ -342,6 +366,27 @@ export function RankingTable({
                     emphasized={horizon === 'long'}
                     label="장기 점수"
                   />
+                </td>
+
+                {/* DCF 점수 + 상승예측 % */}
+                <td className="px-3 py-2.5">
+                  <ScoreBar score={item.dcfScore} label="DCF 점수" />
+                  {item.dcfScore === null ? (
+                    <span className="mt-0.5 block text-[10px] text-muted-foreground">
+                      {dcfReasonCaption(item.dcfReason)}
+                    </span>
+                  ) : (
+                    item.dcfUpsidePct != null && (
+                      <span
+                        className={cn(
+                          'num-mono mt-0.5 block text-[10px] tabular-nums',
+                          dcfTone
+                        )}
+                      >
+                        {formatPercent(item.dcfUpsidePct)}
+                      </span>
+                    )
+                  )}
                 </td>
 
                 {/* 투자의견 */}

@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { eq, inArray, sql } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
-import { companies, companyScores, dailySnapshots, scoreHistory } from '@/drizzle/schema'
+import {
+  companies,
+  companyScores,
+  companyProfiles,
+  dailySnapshots,
+  scoreHistory,
+} from '@/drizzle/schema'
 import { matchesRegion } from '@/lib/region'
 import { toUsd } from '@/lib/currency'
 import {
@@ -13,6 +19,7 @@ import {
 } from '@/lib/api-helpers'
 import { resolveIndustryFilter } from '@/lib/api-helpers'
 import { computeRankingScores, computeMomentumDelta } from '@/lib/ranking-score'
+import { computeDcf } from '@/lib/dcf'
 import type { ApiResponse, RegionFilter } from '@/types'
 
 export interface RankingItem {
@@ -34,6 +41,17 @@ export interface RankingItem {
   targetMeanPriceUsd: number | null
   /** (targetUsd - priceUsd) / priceUsd, 비율(소수). */
   upsidePct: number | null
+  // DCF(내재가치 절대평가) — 애널리스트 upsidePct 와 무관한 독립 보조 점수
+  /** DCF 점수 0~100. 미래 현금흐름 가정 기반. 애널리스트 `upsidePct` 와 다름. */
+  dcfScore: number | null
+  /** DCF 상승예측 = (내재가치 - 현재가)/현재가, 비율(소수). 애널리스트 `upsidePct` 와 다름. */
+  dcfUpsidePct: number | null
+  /** DCF 주당 내재가치(USD). 표시 최소화(툴팁용). */
+  dcfIntrinsicUsd: number | null
+  /** DCF 적용 가능 여부. */
+  dcfAvailable: boolean
+  /** DCF 제외 사유('finance'|'negativeFcf'|'missing'|'lowConfidence') 또는 null(적용됨). */
+  dcfReason: string | null
   // 가격 컨텍스트
   /** ★ toUsd(price, ticker) */
   priceUsd: number | null
@@ -80,6 +98,8 @@ type SortKey =
   | 'margin'
   | 'pe'
   | 'marketcap'
+  | 'dcf'
+  | 'dcfUpside'
 
 const RECOMMENDATION_ORDER: Record<string, number> = {
   strong_buy: 5,
@@ -202,6 +222,8 @@ export async function getRankings({
         recommendationKey: companyScores.recommendationKey,
         analystCount: companyScores.analystCount,
         targetMeanPrice: companyScores.targetMeanPrice,
+        // DCF input: keep native, do NOT toUsd (CLAUDE.md 통화 체크리스트 오적용 방지)
+        freeCashflow: companyScores.freeCashflow,
         returnOnEquity: companyScores.returnOnEquity,
         operatingMargin: companyScores.operatingMargin,
         revenueGrowth: companyScores.revenueGrowth,
@@ -215,9 +237,13 @@ export async function getRankings({
         week52Low: dailySnapshots.week52Low,
         peRatio: dailySnapshots.peRatio,
         pegRatio: dailySnapshots.pegRatio,
+        // 금융주 DCF 제외용. company_profiles 는 약 1/3 종목만 보유(sector 다수 NULL) →
+        // sector 기반 제외는 일부만 작동(알려진 한계). 음수 FCF 가드가 주 방어선.
+        sector: companyProfiles.sector,
       })
       .from(companyScores)
       .leftJoin(companies, eq(companyScores.ticker, companies.ticker))
+      .leftJoin(companyProfiles, eq(companyScores.ticker, companyProfiles.ticker))
       .leftJoin(
         dailySnapshots,
         sql`${companyScores.ticker} = ${dailySnapshots.ticker} AND ${dailySnapshots.date} = (
@@ -273,6 +299,20 @@ export async function getRankings({
           priceUsd,
         })
 
+      // DCF(내재가치 절대평가) — 독립 보조 점수. FCF 는 네이티브 유지, 주당 내재가치만 1회 toUsd.
+      const dcf = computeDcf({
+        freeCashflow: row.freeCashflow,
+        revenueGrowth: row.revenueGrowth,
+        beta: row.beta,
+        debtToEquity: row.debtToEquity,
+        marketCapNative: row.marketCap,
+        priceNative: row.price,
+        marketCapUsd,
+        priceUsd,
+        intrinsicToUsd: (nativePerShare) => toUsd(nativePerShare, ticker),
+        sector: row.sector ?? null,
+      })
+
       // 종합 점수: 단기·장기 평균(둘 중 하나만 있으면 그 값, 둘 다 없으면 null)
       const combinedScore =
         shortScore != null && longScore != null
@@ -291,6 +331,11 @@ export async function getRankings({
         analystCount: row.analystCount ?? null,
         targetMeanPriceUsd: targetUsd,
         upsidePct,
+        dcfScore: dcf.dcfScore,
+        dcfUpsidePct: dcf.dcfUpsidePct,
+        dcfIntrinsicUsd: dcf.dcfIntrinsicUsd,
+        dcfAvailable: dcf.dcfAvailable,
+        dcfReason: dcf.dcfReason,
         priceUsd,
         marketCapUsd,
         returnOnEquity: row.returnOnEquity ?? null,
@@ -349,7 +394,9 @@ function isSortKey(value: string | null): value is SortKey {
     value === 'roe' ||
     value === 'margin' ||
     value === 'pe' ||
-    value === 'marketcap'
+    value === 'marketcap' ||
+    value === 'dcf' ||
+    value === 'dcfUpside'
   )
 }
 
@@ -440,6 +487,10 @@ function sortValue(
       return item.peRatio
     case 'marketcap':
       return item.marketCapUsd
+    case 'dcf':
+      return item.dcfScore
+    case 'dcfUpside':
+      return item.dcfUpsidePct
   }
 }
 

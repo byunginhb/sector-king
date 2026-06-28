@@ -187,9 +187,15 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
               가치&rsquo;를 봅니다. 얼마나 잘 버는지(수익성), 얼마나 성장하는지, 회사 규모는 큰지,
               목표가까지 오를 여력은 있는지를 모아 0~100점으로 매깁니다.
             </p>
+            <p>
+              <span className="font-semibold text-foreground">DCF 점수</span>는 회사가 벌어들일
+              현금을 추정해 &lsquo;지금 주가가 적정한지&rsquo;를 봅니다. 미래 성장·할인율 가정이
+              들어가 가정이 바뀌면 결과도 크게 달라집니다. &lsquo;상승예측 %&rsquo;는 미래 주가를
+              약속하지 않는 참고치입니다.
+            </p>
             <p className="text-xs text-muted-foreground">
-              두 점수는 종목 상세 화면에서도 똑같은 기준으로 보여요. 투자 권유가 아니라 참고용
-              정보입니다.
+              단기·장기 점수는 종목 상세 화면에서도 똑같은 기준으로 보여요. 투자 권유가 아니라
+              참고용 정보입니다.
             </p>
           </div>
         </details>

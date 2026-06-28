@@ -33,6 +33,12 @@ export function RankingCardList({ items, horizon, onCardClick }: RankingCardList
             : item.upsidePct >= 0
               ? 'text-success'
               : 'text-danger'
+        const dcfTone =
+          item.dcfUpsidePct == null
+            ? 'text-muted-foreground'
+            : item.dcfUpsidePct >= 0
+              ? 'text-success'
+              : 'text-danger'
 
         // 토글 선택값에 따라 점수 배치 순서 결정
         const primary =
@@ -117,6 +123,24 @@ export function RankingCardList({ items, horizon, onCardClick }: RankingCardList
                   <span className="num-mono text-foreground">
                     {item.returnOnEquity != null ? formatPercent(item.returnOnEquity) : 'N/A'}
                   </span>
+                </span>
+                <span className="text-muted-foreground">
+                  DCF{' '}
+                  {item.dcfScore != null ? (
+                    <>
+                      <span className="num-mono text-foreground">
+                        {Math.round(item.dcfScore)}
+                      </span>
+                      {item.dcfUpsidePct != null && (
+                        <span className={cn('num-mono', dcfTone)}>
+                          {' '}
+                          {formatPercent(item.dcfUpsidePct)}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="num-mono text-muted-foreground">N/A</span>
+                  )}
                 </span>
               </div>
 
