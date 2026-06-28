@@ -69,8 +69,14 @@ const BASE_COLUMNS: ColumnDef[] = [
   {
     key: 'dcf',
     label: 'DCF 점수',
-    tip: '회사가 앞으로 벌 현금을 가정해 적정 가치를 추산한 점수예요. 보수적으로 계산해서, 빠르게 크거나 비싸게 거래되는 인기주는 낮게 나오는 경향이 있어요. 가정에 따라 크게 달라지는 참고용 값이며 미래 수익을 보장하지 않아요.',
+    tip: '회사가 앞으로 벌 현금을 가정해 적정 가치를 추산한 점수예요(0~100). 보수적으로 계산해서, 빠르게 크거나 비싸게 거래되는 인기주는 낮게 나오는 경향이 있어요. 가정에 따라 크게 달라지는 참고용 값이며 미래 수익을 보장하지 않아요.',
     align: 'left',
+  },
+  {
+    key: 'dcfUpside',
+    label: 'DCF 상승예측',
+    tip: 'DCF로 추정한 적정가와 현재가의 차이예요. +면 적정가보다 싸서 오를 여지가 있다는 뜻, −면 적정가보다 비싸다(고평가)는 뜻입니다. 예: −63%는 적정가가 현재가보다 63% 낮다는 의미예요. 애널리스트 목표가 기반 상승여력과는 다른 현금흐름 기준 추정치입니다.',
+    align: 'right',
   },
   {
     key: 'rec',
@@ -265,8 +271,8 @@ export function RankingTable({
     <div className="overflow-x-auto rounded-md border border-border-subtle">
       <table className="w-full min-w-[760px] border-collapse text-sm">
         <caption className="sr-only">
-          종목 단기·장기 점수 랭킹 — 순위, 종목명, 단기 점수, 장기 점수, DCF 점수, 투자의견,
-          목표주가, 현재가, 상승여력, 재무 지표를 함께 표시합니다.
+          종목 단기·장기 점수 랭킹 — 순위, 종목명, 단기 점수, 장기 점수, DCF 점수, DCF 상승예측,
+          투자의견, 목표주가, 현재가, 상승여력, 재무 지표를 함께 표시합니다.
         </caption>
         <thead>
           <tr className="border-b border-border bg-surface-1">
@@ -368,26 +374,22 @@ export function RankingTable({
                   />
                 </td>
 
-                {/* DCF 점수 + 상승예측 % */}
+                {/* DCF 점수 */}
                 <td className="px-3 py-2.5">
                   <ScoreBar score={item.dcfScore} label="DCF 점수" />
-                  {item.dcfScore === null ? (
+                  {item.dcfScore === null && (
                     <span className="mt-0.5 block text-[10px] text-muted-foreground">
                       {dcfReasonCaption(item.dcfReason)}
                     </span>
-                  ) : (
-                    item.dcfUpsidePct != null && (
-                      <span
-                        className={cn(
-                          'num-mono mt-0.5 block text-[10px] tabular-nums',
-                          dcfTone
-                        )}
-                      >
-                        {formatPercent(item.dcfUpsidePct)}
-                      </span>
-                    )
                   )}
                 </td>
+
+                {/* DCF 상승예측 */}
+                <NumCell
+                  value={item.dcfUpsidePct}
+                  render={(v) => formatPercent(v)}
+                  className={dcfTone}
+                />
 
                 {/* 투자의견 */}
                 <td className="px-3 py-2.5">
