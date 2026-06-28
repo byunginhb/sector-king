@@ -46,8 +46,9 @@ interface ColumnDef {
 }
 
 // 좌측 고정 컬럼 — 가로 스크롤 시 순위·종목은 제자리에 고정된다.
-const TH_STICKY_RANK = 'sticky left-0 z-20 w-11 bg-surface-1'
-const TH_STICKY_NAME = 'sticky left-11 z-20 bg-surface-1'
+// 헤더 좌측 고정 셀은 세로(top-0)·가로(left) 동시 고정 → 코너라 z 최상위(z-30).
+const TH_STICKY_RANK = 'sticky left-0 top-0 z-30 w-11 bg-surface-1'
+const TH_STICKY_NAME = 'sticky left-11 top-0 z-30 bg-surface-1'
 const TD_STICKY_RANK = 'sticky left-0 z-10 w-11 bg-background group-hover:bg-surface-2'
 const TD_STICKY_NAME = 'sticky left-11 z-10 bg-background group-hover:bg-surface-2'
 
@@ -180,7 +181,7 @@ function SortHeader({
       <th
         scope="col"
         className={cn(
-          'whitespace-nowrap px-3 py-2.5 text-xs font-medium text-muted-foreground',
+          'sticky top-0 z-20 whitespace-nowrap bg-surface-1 px-3 py-2.5 text-xs font-medium text-muted-foreground',
           alignClass,
           col.headClass
         )}
@@ -205,9 +206,10 @@ function SortHeader({
       scope="col"
       aria-sort={ariaSort}
       className={cn(
-        'whitespace-nowrap px-3 py-2.5 text-xs font-medium',
+        // sticky 헤더는 불투명 배경 필수(스크롤되는 행이 비쳐 보이면 안 됨) → bg-surface-1.
+        // 부각 컬럼 표시는 반투명 bg-primary/5 대신 버튼 텍스트(text-primary)로 유지.
+        'sticky top-0 z-20 whitespace-nowrap bg-surface-1 px-3 py-2.5 text-xs font-medium',
         alignClass,
-        isHorizonCol && 'bg-primary/5',
         col.headClass
       )}
     >
@@ -268,7 +270,7 @@ export function RankingTable({
   const columns = showAdvanced ? [...BASE_COLUMNS, ...ADVANCED_COLUMNS] : BASE_COLUMNS
 
   return (
-    <div className="overflow-x-auto rounded-md border border-border-subtle">
+    <div className="max-h-[calc(100vh-7rem)] overflow-auto rounded-md border border-border-subtle">
       <table className="w-full min-w-[760px] border-collapse text-sm">
         <caption className="sr-only">
           종목 단기·장기 점수 랭킹 — 순위, 종목명, 단기 점수, 장기 점수, DCF 점수, DCF 상승예측,
