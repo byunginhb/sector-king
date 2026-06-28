@@ -5,6 +5,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { Trophy, SearchX, SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRankings, type RankingSortKey } from '@/hooks/use-rankings'
+import type { PickProfile } from '@/lib/pick-profile'
 import type { RankingsResponse } from '@/app/api/rankings/route'
 import { useRegion } from '@/hooks/use-region'
 import type { RankingHorizon, RankingSortDir } from '@/lib/api-helpers'
@@ -43,8 +44,8 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
   const [sortDir, setSortDir] = useState<RankingSortDir>('desc')
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
   const [showAdvanced, setShowAdvanced] = useState(false)
-  /** 종합 픽 TOP 5 에 DCF 점수 합산 여부(클라이언트 토글, 재요청 없음). */
-  const [includeDcfPicks, setIncludeDcfPicks] = useState(false)
+  /** 섹터킹 픽 투자 성향(단기/균형/장기) — 가중치 결정. 클라이언트 전환, 재요청 없음. */
+  const [pickProfile, setPickProfile] = useState<PickProfile>('balanced')
 
   // SSR 초기 데이터는 "기본 뷰"(전체 지역·장기 점수 desc·limit 100)에만 적용한다.
   // 사용자가 지역/점수축/정렬을 바꾸면 queryKey 가 달라져 정상적으로 재요청된다.
@@ -170,12 +171,12 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
           </div>
         </div>
 
-        {/* 단기·장기(·DCF) 종합 점수 상위 5 — 상단 하이라이트 */}
+        {/* 섹터킹 픽 — 성향별 가중 종합 점수 상위 5 */}
         <TopPicks
-          items={(includeDcfPicks ? data?.topPicksWithDcf : data?.topPicks) ?? []}
+          items={data?.topPicksByProfile?.[pickProfile] ?? []}
           onSelect={setSelectedTicker}
-          includeDcf={includeDcfPicks}
-          onToggleDcf={() => setIncludeDcfPicks((v) => !v)}
+          profile={pickProfile}
+          onProfileChange={setPickProfile}
         />
 
         {/* 점수 산출 방식 안내 — 초보자용, 기본 접힘 */}

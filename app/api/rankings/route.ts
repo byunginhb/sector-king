@@ -20,6 +20,11 @@ import {
 import { resolveIndustryFilter } from '@/lib/api-helpers'
 import { computeRankingScores, computeMomentumDelta } from '@/lib/ranking-score'
 import { computeDcf } from '@/lib/dcf'
+import {
+  PICK_PROFILES,
+  weightedPickScore,
+  type PickProfile,
+} from '@/lib/pick-profile'
 import type { ApiResponse, RegionFilter } from '@/types'
 
 export interface RankingItem {
@@ -32,10 +37,8 @@ export interface RankingItem {
   longScore: number | null
   /** 모멘텀(추세) 데이터 결손(신규상장) — "추세 데이터 부족" 표기용. */
   momentumPartial: boolean
-  /** 단기·장기 종합 점수(둘의 평균, 0~100). 상단 탑픽 선정용. 둘 다 결손 시 null. */
-  combinedScore: number | null
-  /** 단기·장기·DCF 종합 점수(있는 값 평균, 0~100). DCF 포함 탑픽 선정용. 셋 다 결손 시 null. */
-  combinedScoreWithDcf: number | null
+  /** 성향별(단기/균형/장기) 가중 종합 점수(0~100). 섹터킹 픽 선정·표시용. 결손 시 null. */
+  pickScores: Record<PickProfile, number | null>
   // 애널리스트
   recommendationKey: string | null
   analystCount: number | null
@@ -75,10 +78,8 @@ export interface RankingItem {
 
 export interface RankingsResponse {
   items: RankingItem[]
-  /** 단기·장기 종합 점수 상위 5종(현재 정렬·limit 과 무관, 필터 적용 후 전체에서 선정). */
-  topPicks: RankingItem[]
-  /** 단기·장기·DCF 종합 점수 상위 5종(DCF 포함 토글용, 동일하게 전체에서 선정). */
-  topPicksWithDcf: RankingItem[]
+  /** 성향별 섹터킹 픽 상위 5종(단기/균형/장기 각각, 필터 적용 후 전체에서 선정). */
+  topPicksByProfile: Record<PickProfile, RankingItem[]>
   horizon: RankingHorizon
   sort: RankingSortDir
   appliedRegion: RegionFilter
@@ -317,20 +318,12 @@ export async function getRankings({
         sector: row.sector ?? null,
       })
 
-      // 종합 점수: 단기·장기 평균(둘 중 하나만 있으면 그 값, 둘 다 없으면 null)
-      const combinedScore =
-        shortScore != null && longScore != null
-          ? (shortScore + longScore) / 2
-          : (shortScore ?? longScore ?? null)
-
-      // DCF 포함 종합: 단기·장기·DCF 중 있는 값의 평균(null 은 평균에서 제외 — graceful).
-      // DCF 결손(음수FCF 등) 종목은 단기·장기 평균과 동일해져 토글에 영향받지 않는다.
-      const dcfBlend = [shortScore, longScore, dcf.dcfScore].filter(
-        (v): v is number => v != null
-      )
-      const combinedScoreWithDcf = dcfBlend.length
-        ? dcfBlend.reduce((a, b) => a + b, 0) / dcfBlend.length
-        : null
+      // 섹터킹 픽 종합점수 — 성향별(단기/균형/장기) 가중평균. null 컴포넌트는 가중치 재분배.
+      const pickScores = {
+        short: weightedPickScore(shortScore, longScore, dcf.dcfScore, 'short'),
+        balanced: weightedPickScore(shortScore, longScore, dcf.dcfScore, 'balanced'),
+        long: weightedPickScore(shortScore, longScore, dcf.dcfScore, 'long'),
+      } as Record<PickProfile, number | null>
 
       return {
         ticker,
@@ -339,8 +332,7 @@ export async function getRankings({
         shortScore,
         longScore,
         momentumPartial,
-        combinedScore,
-        combinedScoreWithDcf,
+        pickScores,
         recommendationKey: row.recommendationKey ?? null,
         analystCount: row.analystCount ?? null,
         targetMeanPriceUsd: targetUsd,
@@ -379,21 +371,20 @@ export async function getRankings({
     })
 
     // 종합(단기·장기 평균) 상위 5 — 현재 정렬·limit 과 무관, 필터 적용 후 전체에서 선정
-    const topPicks = [...cleaned]
-      .filter((i) => i.combinedScore != null)
-      .sort((a, b) => (b.combinedScore ?? 0) - (a.combinedScore ?? 0))
-      .slice(0, 5)
-
-    // DCF 포함 종합(단기·장기·DCF 평균) 상위 5 — 토글 시 즉시 전환되도록 함께 산출
-    const topPicksWithDcf = [...cleaned]
-      .filter((i) => i.combinedScoreWithDcf != null)
-      .sort((a, b) => (b.combinedScoreWithDcf ?? 0) - (a.combinedScoreWithDcf ?? 0))
-      .slice(0, 5)
+    // 성향별 섹터킹 픽 상위 5 — 세 프로필 모두 산출해 클라이언트가 즉시 전환(재요청 0)
+    const topPicksByProfile = Object.fromEntries(
+      PICK_PROFILES.map((p) => [
+        p,
+        [...cleaned]
+          .filter((i) => i.pickScores[p] != null)
+          .sort((a, b) => (b.pickScores[p] ?? 0) - (a.pickScores[p] ?? 0))
+          .slice(0, 5),
+      ])
+    ) as Record<PickProfile, RankingItem[]>
 
     return {
       items: cleaned.slice(0, limit),
-      topPicks,
-      topPicksWithDcf,
+      topPicksByProfile,
       horizon,
       sort: sortDir,
       appliedRegion: region,
@@ -431,8 +422,7 @@ function emptyResponse(
 ): RankingsResponse {
   return {
     items: [],
-    topPicks: [],
-    topPicksWithDcf: [],
+    topPicksByProfile: { short: [], balanced: [], long: [] },
     horizon,
     sort,
     appliedRegion: region,

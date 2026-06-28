@@ -1,131 +1,108 @@
 'use client'
 
-import { Sparkles, Calculator } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import type { RankingItem } from '@/app/api/rankings/route'
-import { formatPercent } from '@/lib/format'
+import { PICK_PROFILE_META, type PickProfile } from '@/lib/pick-profile'
 import { cn } from '@/lib/utils'
 import { RecommendationBadge } from './recommendation-badge'
 import { InfoTip } from './info-tip'
+import { PickProfileToggle } from './pick-profile-toggle'
 
 interface TopPicksProps {
   items: RankingItem[]
   onSelect: (ticker: string) => void
-  /** DCF 점수까지 합산해 선정·표시할지 여부. */
-  includeDcf: boolean
-  /** DCF 포함 토글 핸들러. */
-  onToggleDcf: () => void
+  /** 선택된 투자 성향 — 픽 가중치·표시 점수를 결정. */
+  profile: PickProfile
+  onProfileChange: (next: PickProfile) => void
 }
 
-/** 단기·장기(·DCF) 종합 점수 상위 5종 — 상단 하이라이트 카드 스트립. */
-export function TopPicks({ items, onSelect, includeDcf, onToggleDcf }: TopPicksProps) {
+/**
+ * 섹터킹 픽 TOP 5 — 성향(단기/균형/장기) 가중 종합점수 상위 5종.
+ * 성향 세그먼티드 컨트롤로 가중치를 바꾸면 픽이 즉시 달라진다(서버가 세 프로필 모두 산출).
+ */
+export function TopPicks({ items, onSelect, profile, onProfileChange }: TopPicksProps) {
   if (items.length === 0) return null
 
   return (
-    <section className="mb-6" aria-label="단기·장기 종합 점수 상위 종목">
-      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+    <section className="mb-6" aria-label="섹터킹 픽 — 성향별 종합 점수 상위 종목">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <Sparkles className="h-4 w-4 text-primary" aria-hidden />
-          <h2 className="text-sm font-semibold text-foreground">섹터킹 종합 픽 TOP 5</h2>
+          <h2 className="text-sm font-semibold text-foreground">섹터킹 픽 TOP 5</h2>
           <InfoTip
-            label="종합 픽"
-            text={
-              includeDcf
-                ? '단기·장기 점수에 DCF 점수까지 합쳐 가장 균형 있게 높은 종목 5개입니다. 정렬·필터와 상관없이 전체에서 골라요.'
-                : '단기 점수와 장기 점수를 합쳐 가장 균형 있게 높은 종목 5개입니다. 정렬·필터와 상관없이 전체에서 골라요.'
-            }
+            label="섹터킹 픽"
+            text="단기·장기·DCF 점수를 투자 성향별 가중치로 합쳐 가장 높은 5종이에요. 위 버튼으로 성향을 바꾸면 가중치가 달라집니다. 정렬·필터와 무관하게 전체에서 골라요."
           />
         </div>
-        <button
-          type="button"
-          onClick={onToggleDcf}
-          aria-pressed={includeDcf}
-          className={cn(
-            'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors',
-            includeDcf
-              ? 'border-primary/50 bg-primary/10 text-primary'
-              : 'border-border-subtle text-muted-foreground hover:bg-surface-2 hover:text-foreground'
-          )}
-        >
-          <Calculator className="h-3.5 w-3.5" aria-hidden />
-          DCF 포함
-        </button>
+        <PickProfileToggle value={profile} onChange={onProfileChange} />
       </div>
+
+      {/* 선택한 성향이 어떤 투자자인지 설명 */}
+      <p className="mb-3 text-xs text-muted-foreground">{PICK_PROFILE_META[profile].description}</p>
+
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {items.map((item, idx) => {
-          const rank = idx + 1
-          const name = item.nameKo ?? item.name ?? item.ticker
-          const combinedRaw = includeDcf ? item.combinedScoreWithDcf : item.combinedScore
-          const combined = combinedRaw == null ? null : Math.round(combinedRaw)
-          const upTone =
-            item.upsidePct == null
-              ? 'text-muted-foreground'
-              : item.upsidePct >= 0
-                ? 'text-success'
-                : 'text-danger'
+            const rank = idx + 1
+            const name = item.nameKo ?? item.name ?? item.ticker
+            const pick = item.pickScores[profile]
+            const combined = pick == null ? null : Math.round(pick)
 
-          return (
-            <li key={item.ticker}>
-              <button
-                type="button"
-                onClick={() => onSelect(item.ticker)}
-                className="sk-card sk-card-hover flex h-full w-full flex-col gap-2 text-left"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="num-mono text-xs font-bold text-primary">#{rank}</span>
-                  <RecommendationBadge
-                    recommendationKey={item.recommendationKey}
-                    analystCount={item.analystCount}
-                  />
-                </div>
+            return (
+              <li key={item.ticker}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(item.ticker)}
+                  className="sk-card sk-card-hover flex h-full w-full flex-col gap-2 text-left"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="num-mono text-xs font-bold text-primary">#{rank}</span>
+                    <RecommendationBadge
+                      recommendationKey={item.recommendationKey}
+                      analystCount={item.analystCount}
+                    />
+                  </div>
 
-                <div className="min-w-0">
-                  <span className="block truncate font-semibold leading-tight text-foreground">
-                    {name}
-                  </span>
-                  <span className="num-mono block text-[11px] text-muted-foreground">
-                    {item.ticker}
-                  </span>
-                </div>
-
-                <div className="flex items-baseline gap-1">
-                  <span className="num-mono text-2xl font-bold tabular-nums text-foreground">
-                    {combined ?? '—'}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">
-                    {includeDcf ? '종합점수(DCF 포함)' : '종합점수'}
-                  </span>
-                </div>
-
-                <div className="mt-auto flex items-center justify-between gap-2 border-t border-border-subtle/70 pt-2 num-mono text-[11px]">
-                  <span className="text-muted-foreground">
-                    단기{' '}
-                    <span className="text-foreground">
-                      {item.shortScore == null ? '—' : Math.round(item.shortScore)}
+                  <div className="min-w-0">
+                    <span className="block truncate font-semibold leading-tight text-foreground">
+                      {name}
                     </span>
-                  </span>
-                  <span className="text-muted-foreground">
-                    장기{' '}
-                    <span className="text-foreground">
-                      {item.longScore == null ? '—' : Math.round(item.longScore)}
+                    <span className="num-mono block text-[11px] text-muted-foreground">
+                      {item.ticker}
                     </span>
-                  </span>
-                  {includeDcf ? (
+                  </div>
+
+                  <div className="flex items-baseline gap-1">
+                    <span className="num-mono text-2xl font-bold tabular-nums text-foreground">
+                      {combined ?? '—'}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">종합점수</span>
+                  </div>
+
+                  {/* 픽을 구성하는 세 점수 — 가중치의 출처를 투명하게 */}
+                  <div className="mt-auto flex items-center justify-between gap-1.5 border-t border-border-subtle/70 pt-2 num-mono text-[11px]">
+                    <span className="text-muted-foreground">
+                      단기{' '}
+                      <span className="text-foreground">
+                        {item.shortScore == null ? '—' : Math.round(item.shortScore)}
+                      </span>
+                    </span>
+                    <span className="text-muted-foreground">
+                      장기{' '}
+                      <span className="text-foreground">
+                        {item.longScore == null ? '—' : Math.round(item.longScore)}
+                      </span>
+                    </span>
                     <span className="text-muted-foreground">
                       DCF{' '}
                       <span className="text-foreground">
                         {item.dcfScore == null ? '—' : Math.round(item.dcfScore)}
                       </span>
                     </span>
-                  ) : (
-                    <span className={cn(upTone)}>
-                      {item.upsidePct != null ? formatPercent(item.upsidePct) : 'N/A'}
-                    </span>
-                  )}
-                </div>
-              </button>
-            </li>
-          )
-        })}
+                  </div>
+                </button>
+              </li>
+            )
+          })}
       </ul>
     </section>
   )
