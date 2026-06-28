@@ -60,8 +60,8 @@ export function TopPicks({ items, onSelect, profile, onProfileChange }: TopPicks
               <th scope="col" className="px-3 py-2 text-left">
                 장기
               </th>
-              <th scope="col" className="px-3 py-2 text-left">
-                가치
+              <th scope="col" className="whitespace-nowrap px-3 py-2 text-left">
+                가치(DCF)
               </th>
               <th scope="col" className="bg-primary/5 px-3 py-2 text-left">
                 종합점수
@@ -157,7 +157,7 @@ export function TopPicks({ items, onSelect, profile, onProfileChange }: TopPicks
                 <div className="mt-3 space-y-1.5 border-t border-border-subtle/70 pt-2.5">
                   <MobileScoreRow label="단기" score={item.shortScore} />
                   <MobileScoreRow label="장기" score={item.longScore} />
-                  <MobileScoreRow label="가치" score={item.dcfScore} />
+                  <MobileScoreRow label="가치(DCF)" score={item.dcfScore} />
                 </div>
               </button>
             </li>
@@ -172,7 +172,7 @@ export function TopPicks({ items, onSelect, profile, onProfileChange }: TopPicks
 function MobileScoreRow({ label, score }: { label: string; score: number | null }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-8 shrink-0 text-[11px] text-muted-foreground">{label}</span>
+      <span className="w-16 shrink-0 text-[11px] text-muted-foreground">{label}</span>
       <ScoreBar score={score} label={`${label} 점수`} className={cn('flex-1')} />
     </div>
   )

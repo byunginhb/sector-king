@@ -125,7 +125,7 @@ export function RankingCardList({ items, horizon, onCardClick }: RankingCardList
                   </span>
                 </span>
                 <span className="text-muted-foreground">
-                  가치{' '}
+                  가치(DCF){' '}
                   {item.dcfScore != null ? (
                     <>
                       <span className="num-mono text-foreground">

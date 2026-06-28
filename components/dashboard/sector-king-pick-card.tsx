@@ -1,11 +1,14 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
 import { useRankings } from '@/hooks/use-rankings'
 import { SectionHeader } from '@/components/ui/section-header'
 import { ScoreBar } from '@/components/rankings/score-bar'
+import { PickProfileToggle } from '@/components/rankings/pick-profile-toggle'
+import { PICK_PROFILE_META, type PickProfile } from '@/lib/pick-profile'
 import type { RegionFilter } from '@/types'
 
 interface SectorKingPickCardProps {
@@ -20,10 +23,11 @@ interface SectorKingPickCardProps {
  */
 export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
   const router = useRouter()
+  const [profile, setProfile] = useState<PickProfile>('balanced')
   const { data, isLoading } = useRankings({ region, limit: 5 })
 
   if (isLoading) return null
-  const picks = data?.topPicksByProfile?.balanced ?? []
+  const picks = data?.topPicksByProfile?.[profile] ?? []
   if (picks.length === 0) return null
 
   return (
@@ -31,7 +35,8 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
       <SectionHeader
         eyebrow="Sector King Picks"
         title="섹터킹 픽 TOP 5"
-        description="단기·장기·가치를 종합한 균형 추천 — 종목을 누르면 상세로 이동"
+        description={PICK_PROFILE_META[profile].description}
+        actions={<PickProfileToggle value={profile} onChange={setProfile} />}
       />
 
       <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-1">
@@ -55,8 +60,8 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
                 <th scope="col" className="px-4 py-2.5 text-left">
                   장기
                 </th>
-                <th scope="col" className="px-4 py-2.5 text-left">
-                  가치
+                <th scope="col" className="whitespace-nowrap px-4 py-2.5 text-left">
+                  가치(DCF)
                 </th>
                 <th scope="col" className="bg-primary/5 px-4 py-2.5 text-left">
                   종합점수
@@ -101,7 +106,7 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
                       <ScoreBar score={item.dcfScore} label="가치 점수" />
                     </td>
                     <td className="bg-primary/5 px-4 py-3">
-                      <ScoreBar score={item.pickScores.balanced} emphasized label="종합점수" />
+                      <ScoreBar score={item.pickScores[profile]} emphasized label="종합점수" />
                     </td>
                   </tr>
                 )
@@ -114,7 +119,7 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
         <ul className="divide-y divide-border-subtle sm:hidden">
           {picks.map((item, idx) => {
             const name = item.nameKo ?? item.name ?? item.ticker
-            const pick = item.pickScores.balanced
+            const pick = item.pickScores[profile]
             return (
               <li key={item.ticker}>
                 <Link
@@ -146,7 +151,7 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
                   <div className="mt-3 space-y-1.5">
                     <MobileScoreRow label="단기" score={item.shortScore} />
                     <MobileScoreRow label="장기" score={item.longScore} />
-                    <MobileScoreRow label="가치" score={item.dcfScore} />
+                    <MobileScoreRow label="가치(DCF)" score={item.dcfScore} />
                   </div>
                 </Link>
               </li>
@@ -155,7 +160,7 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
         </ul>
 
         <div className="flex items-center justify-between gap-3 border-t border-border-subtle bg-surface-2/40 px-4 py-3 sm:px-5">
-          <p className="text-[11px] text-muted-foreground">성향(단기·균형·장기)별로 더 볼 수 있어요</p>
+          <p className="text-[11px] text-muted-foreground">전체 순위·정렬·재무 지표는 랭킹에서</p>
           <Link
             href="/rankings"
             className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
@@ -173,7 +178,7 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
 function MobileScoreRow({ label, score }: { label: string; score: number | null }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-8 shrink-0 text-[11px] text-muted-foreground">{label}</span>
+      <span className="w-16 shrink-0 text-[11px] text-muted-foreground">{label}</span>
       <ScoreBar score={score} label={`${label} 점수`} className="flex-1" />
     </div>
   )

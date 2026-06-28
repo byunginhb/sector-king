@@ -69,7 +69,7 @@ const BASE_COLUMNS: ColumnDef[] = [
   },
   {
     key: 'dcf',
-    label: '가치 점수',
+    label: '가치 점수(DCF)',
     tip: '현재 주가가 회사의 적정 가치 대비 싼지를 0~100으로 나타낸 점수예요(높을수록 저평가). 미래 현금흐름을 보수적으로 가정해 계산(DCF)하므로, 빠르게 크거나 비싸게 거래되는 인기주는 낮게 나오는 경향이 있어요. 가정에 따라 크게 달라지는 참고용 값이며 미래 수익을 보장하지 않아요.',
     align: 'left',
   },
@@ -273,7 +273,7 @@ export function RankingTable({
     <div className="max-h-[calc(100vh-7rem)] overflow-auto rounded-md border border-border-subtle">
       <table className="w-full min-w-[760px] border-collapse text-sm">
         <caption className="sr-only">
-          종목 단기·장기 점수 랭킹 — 순위, 종목명, 단기 점수, 장기 점수, 가치 점수, 적정가 대비,
+          종목 단기·장기 점수 랭킹 — 순위, 종목명, 단기 점수, 장기 점수, 가치 점수(DCF), 적정가 대비,
           투자의견, 목표주가, 현재가, 상승여력, 재무 지표를 함께 표시합니다.
         </caption>
         <thead>
