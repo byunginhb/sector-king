@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { Trophy, SearchX, SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -211,6 +212,12 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
               단기·장기 점수는 종목 상세 화면에서도 똑같은 기준으로 보여요. 투자 권유가 아니라
               참고용 정보입니다.
             </p>
+            <Link
+              href="/methodology#ranking-scores"
+              className="inline-flex text-xs font-medium text-info hover:underline"
+            >
+              점수 계산 방법 자세히 보기 →
+            </Link>
           </div>
         </details>
 

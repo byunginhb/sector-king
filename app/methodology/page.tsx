@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { AlertTriangle } from 'lucide-react'
 import { SCORING } from '@/lib/scoring-methodology'
+import { SHORT_WEIGHTS, LONG_WEIGHTS } from '@/lib/ranking-score'
 import {
   FORECAST_YEARS,
   TERMINAL_GROWTH,
@@ -235,9 +236,90 @@ export default function MethodologyPage() {
             </Card>
           </section>
 
-          {/* Section 6: DCF Score */}
+          {/* Section 6: Ranking Scores (Short/Long) */}
           <section>
-            <SectionHeading id="dcf">6. DCF 점수 (참고 지표)</SectionHeading>
+            <SectionHeading id="ranking-scores">6. 단기·장기 점수 (랭킹)</SectionHeading>
+            <Card>
+              <div className="space-y-4 text-sm text-muted-foreground">
+                <p>
+                  점수 랭킹(<strong className="text-foreground">/rankings</strong>)의{' '}
+                  <strong className="text-foreground">단기·장기 점수</strong>는 패권 점수와 같은
+                  데이터를 서로 다른 관점으로 가중평균한 0~100 점수입니다. 종목 상세 화면과 동일한
+                  산식으로 계산되어 두 화면에서 같은 값을 보여줍니다.
+                </p>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-foreground">
+                    단기 점수 — &lsquo;지금 흐름&rsquo;
+                  </p>
+                  <p>최근 분위기·타이밍을 봅니다. 세 가지를 가중평균합니다.</p>
+                  <ul className="space-y-1 text-xs list-disc pl-4">
+                    <li>
+                      <strong className="text-foreground">
+                        모멘텀 {Math.round(SHORT_WEIGHTS.momentum * 100)}%
+                      </strong>{' '}
+                      — 최근 15거래일 점수 변화(추세)
+                    </li>
+                    <li>
+                      <strong className="text-foreground">
+                        52주 위치 {Math.round(SHORT_WEIGHTS.week52Position * 100)}%
+                      </strong>{' '}
+                      — 1년 최고·최저 범위에서 현재가의 위치
+                    </li>
+                    <li>
+                      <strong className="text-foreground">
+                        시장 심리 {Math.round(SHORT_WEIGHTS.sentiment * 100)}%
+                      </strong>{' '}
+                      — 애널리스트 투자의견·목표주가 기대
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-foreground">
+                    장기 점수 — &lsquo;오래 묵힐 가치&rsquo;
+                  </p>
+                  <p>사업의 펀더멘털을 봅니다. 네 가지를 가중평균합니다.</p>
+                  <ul className="space-y-1 text-xs list-disc pl-4">
+                    <li>
+                      <strong className="text-foreground">
+                        수익성 {Math.round(LONG_WEIGHTS.profitability * 100)}%
+                      </strong>{' '}
+                      — 영업이익률·자기자본이익률(ROE)
+                    </li>
+                    <li>
+                      <strong className="text-foreground">
+                        성장성 {Math.round(LONG_WEIGHTS.growth * 100)}%
+                      </strong>{' '}
+                      — 매출·이익 성장률
+                    </li>
+                    <li>
+                      <strong className="text-foreground">
+                        규모 {Math.round(LONG_WEIGHTS.scale * 100)}%
+                      </strong>{' '}
+                      — 섹터 내 시가총액 비중·거래 활성도
+                    </li>
+                    <li>
+                      <strong className="text-foreground">
+                        목표주가 상승여력 {Math.round(LONG_WEIGHTS.upside * 100)}%
+                      </strong>{' '}
+                      — 애널리스트 목표가 대비 현재가
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="text-xs">
+                  ※ 일부 지표가 없는 종목은 나머지 지표로 가중치를 다시 나눠(재배분) 점수를 매깁니다.
+                  신규 상장 등으로 추세 데이터가 짧으면 &lsquo;추세 데이터 짧음&rsquo;으로 표시됩니다.
+                  섹터킹 픽은 이 단기·장기 점수에 가치(DCF) 점수를 더해 성향별 가중치로 합산합니다.
+                </p>
+              </div>
+            </Card>
+          </section>
+
+          {/* Section 7: Value Score (DCF) */}
+          <section>
+            <SectionHeading id="dcf">7. 가치 점수(DCF) (참고 지표)</SectionHeading>
             <Card>
               <div className="space-y-3 text-sm text-muted-foreground">
                 <p>
@@ -283,9 +365,9 @@ export default function MethodologyPage() {
             </Card>
           </section>
 
-          {/* Section 7: Disclaimer */}
+          {/* Section 8: Disclaimer */}
           <section>
-            <SectionHeading id="disclaimer">7. 한계점 및 면책</SectionHeading>
+            <SectionHeading id="disclaimer">8. 한계점 및 면책</SectionHeading>
             <Card>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <ul className="space-y-2">
