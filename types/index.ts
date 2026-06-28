@@ -170,6 +170,15 @@ export interface CompanyDetailResponse {
     topRankCount: number // rank===1 인 섹터 수
     bestRank: number | null // min(rank)
   } | null
+  // 12_dcf_score 가산 확장 (옵셔널 → 모달 무손상). 랭킹과 동일 lib/dcf 엔진 산출.
+  dcf?: {
+    score: number | null // 0~100
+    upsidePct: number | null // (내재가치-현재가)/현재가, 비율(소수)
+    intrinsicUsd: number | null // 주당 내재가치(USD)
+    available: boolean
+    reason: string | null // 'finance'|'negativeFcf'|'missing'|'lowConfidence'|null
+    discountRate: number | null // 도출된 할인율 r
+  } | null
 }
 
 export interface SectorDetailResponse {

@@ -10,6 +10,7 @@ import {
 } from '@/drizzle/schema'
 import { eq, desc } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
+import { computeDcf } from '@/lib/dcf'
 import { resolveRange } from '@/lib/api-helpers'
 import type { ApiResponse, CompanyDetailResponse } from '@/types'
 
@@ -121,6 +122,29 @@ export async function GET(
         ? { targetMeanPriceUsd, currentPriceUsd, upsidePct }
         : null
 
+    // DCF(내재가치 절대평가) — 랭킹과 동일 lib/dcf 엔진. FCF 는 네이티브(DB값) 유지,
+    // 주당 내재가치만 1회 toUsd. 규모가산·현재가는 USD 환산값 전달.
+    const dcfRes = computeDcf({
+      freeCashflow: scoreRow?.freeCashflow ?? null, // native — do NOT toUsd
+      revenueGrowth: scoreRow?.revenueGrowth ?? null,
+      beta: scoreRow?.beta ?? null,
+      debtToEquity: scoreRow?.debtToEquity ?? null,
+      marketCapNative: snap?.marketCap ?? null,
+      priceNative: snap?.price ?? null,
+      marketCapUsd: snap?.marketCap != null ? toUsd(snap.marketCap, ticker) : null,
+      priceUsd: currentPriceUsd,
+      intrinsicToUsd: (nativePerShare) => toUsd(nativePerShare, ticker),
+      sector: profile[0]?.sector ?? null,
+    })
+    const dcf = {
+      score: dcfRes.dcfScore,
+      upsidePct: dcfRes.dcfUpsidePct,
+      intrinsicUsd: dcfRes.dcfIntrinsicUsd,
+      available: dcfRes.dcfAvailable,
+      reason: dcfRes.dcfReason,
+      discountRate: dcfRes.dcfDiscountRate,
+    }
+
     // 멀티섹터 패권 요약 (전 섹터 대상, 기존 sectors 결과로 집계 — 추가 쿼리 0)
     const validRanks = companySectors
       .map((s) => s.rank)
@@ -222,6 +246,8 @@ export async function GET(
         // 08_stock_insights 가산 확장 (옵셔널 → 모달 무손상)
         analystUpside,
         dominance,
+        // 12_dcf_score 가산 확장
+        dcf,
       },
     })
   } catch (error) {

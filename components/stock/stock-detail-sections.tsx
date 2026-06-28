@@ -6,6 +6,7 @@ import { PriceChart } from '@/components/price-chart'
 import { StockPriceBanner } from './stock-price-banner'
 import { StockHegemonyBadges } from './stock-hegemony-badges'
 import { StockScoreAnalysis } from './stock-score-analysis'
+import { StockDcfSection } from './stock-dcf-section'
 import type { CompanyDetailResponse } from '@/types'
 
 interface StockDetailSectionsProps {
@@ -42,6 +43,8 @@ export function StockDetailSections({ ticker, data, showChart = false }: StockDe
           패권 점수를 산출 중입니다. 데이터가 모이면 표시됩니다.
         </p>
       )}
+
+      <StockDcfSection dcf={data.dcf} currentPriceUsd={snapshot?.price ?? null} />
     </>
   )
 }
