@@ -196,15 +196,15 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
               목표가까지 오를 여력은 있는지를 모아 0~100점으로 매깁니다.
             </p>
             <p>
-              <span className="font-semibold text-foreground">DCF 점수</span>는 회사가 벌어들일
+              <span className="font-semibold text-foreground">가치 점수</span>는 회사가 벌어들일
               현금을 추정해 &lsquo;지금 주가가 적정한지&rsquo;를 봅니다. 미래 성장·할인율 가정이
               들어가 가정이 바뀌면 결과도 크게 달라집니다. &lsquo;상승예측 %&rsquo;는 미래 주가를
               약속하지 않는 참고치입니다.
             </p>
             <p className="text-xs text-muted-foreground">
               빠르게 성장하거나 인기가 많아 현재 이익 대비 비싸게 거래되는 종목(예: 대표
-              AI·반도체주)은 DCF 점수가 낮게 나오는 경향이 있습니다. 보수적으로 계산하기
-              때문이며, <span className="text-foreground">장기 점수는 높은데 DCF 점수가 낮다면</span>{' '}
+              AI·반도체주)은 가치 점수가 낮게 나오는 경향이 있습니다. 보수적으로 계산하기
+              때문이며, <span className="text-foreground">장기 점수는 높은데 가치 점수가 낮다면</span>{' '}
               &lsquo;좋은 기업이지만 성장 기대가 주가에 이미 반영된 상태&rsquo;로 읽으면 됩니다.
             </p>
             <p className="text-xs text-muted-foreground">

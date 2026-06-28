@@ -52,18 +52,33 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
                       </span>
                       <span className="num-mono text-[11px] text-muted-foreground">{p.ticker}</span>
                     </div>
-                    <p className="num-mono mt-0.5 text-[11px] text-muted-foreground">
-                      단 {p.shortScore == null ? '—' : Math.round(p.shortScore)} · 장{' '}
-                      {p.longScore == null ? '—' : Math.round(p.longScore)} · DCF{' '}
-                      {p.dcfScore == null ? '—' : Math.round(p.dcfScore)}
-                    </p>
+                    <div className="num-mono mt-1 flex items-center gap-2.5 text-[11px]">
+                      <span className="text-muted-foreground">
+                        단기{' '}
+                        <span className="font-medium text-foreground">
+                          {p.shortScore == null ? '—' : Math.round(p.shortScore)}
+                        </span>
+                      </span>
+                      <span className="text-muted-foreground">
+                        장기{' '}
+                        <span className="font-medium text-foreground">
+                          {p.longScore == null ? '—' : Math.round(p.longScore)}
+                        </span>
+                      </span>
+                      <span className="text-muted-foreground">
+                        가치{' '}
+                        <span className="font-medium text-foreground">
+                          {p.dcfScore == null ? '—' : Math.round(p.dcfScore)}
+                        </span>
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex shrink-0 items-baseline gap-1">
-                    <span className="num-mono text-xl font-bold tabular-nums text-foreground">
+                  <div className="flex shrink-0 flex-col items-end">
+                    <span className="num-mono text-xl font-bold leading-none tabular-nums text-foreground">
                       {score == null ? '—' : Math.round(score)}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">점</span>
+                    <span className="mt-0.5 text-[10px] text-muted-foreground">종합점수</span>
                   </div>
                 </Link>
               </li>

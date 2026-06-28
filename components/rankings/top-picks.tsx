@@ -93,7 +93,7 @@ export function TopPicks({ items, onSelect, profile, onProfileChange }: TopPicks
                       </span>
                     </span>
                     <span className="text-muted-foreground">
-                      DCF{' '}
+                      가치{' '}
                       <span className="text-foreground">
                         {item.dcfScore == null ? '—' : Math.round(item.dcfScore)}
                       </span>

@@ -48,7 +48,7 @@ export function StockDcfSection({ dcf, currentPriceUsd }: StockDcfSectionProps) 
     <div>
       <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
         <Calculator className="w-4 h-4" aria-hidden />
-        DCF 가치 평가
+        가치 점수 (DCF)
       </h3>
 
       <div className="rounded-xl border border-border p-4 space-y-4">
@@ -70,7 +70,7 @@ export function StockDcfSection({ dcf, currentPriceUsd }: StockDcfSectionProps) 
             <div
               className="bg-muted h-1.5 rounded-sm overflow-hidden"
               role="progressbar"
-              aria-label="DCF 점수"
+              aria-label="가치 점수"
               aria-valuenow={Math.round(score)}
               aria-valuemin={0}
               aria-valuemax={100}
@@ -104,7 +104,7 @@ export function StockDcfSection({ dcf, currentPriceUsd }: StockDcfSectionProps) 
 
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               회사가 앞으로 벌 현금을 보수적으로 가정해 적정가를 추산한 값이에요. 빠르게 크거나
-              비싸게 거래되는 인기주는 낮게 나오는 경향이 있어, 장기 점수는 높은데 DCF가 낮다면
+              비싸게 거래되는 인기주는 낮게 나오는 경향이 있어, 장기 점수는 높은데 가치 점수가 낮다면
               &lsquo;좋은 기업이지만 성장 기대가 주가에 이미 반영된 상태&rsquo;로 읽으면 됩니다.
               가정에 민감한 참고용 값이며 미래 수익을 보장하지 않아요.
             </p>
@@ -115,7 +115,7 @@ export function StockDcfSection({ dcf, currentPriceUsd }: StockDcfSectionProps) 
 
         <div className="pt-2 border-t border-border flex items-center justify-between">
           <Link href="/methodology#dcf" className="text-[11px] text-info hover:underline">
-            DCF 방법론 보기 →
+계산 방법(DCF) 보기 →
           </Link>
           <span className="text-[11px] text-muted-foreground">참고용 · 투자 권유 아님</span>
         </div>
