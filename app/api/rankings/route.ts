@@ -34,6 +34,8 @@ export interface RankingItem {
   momentumPartial: boolean
   /** 단기·장기 종합 점수(둘의 평균, 0~100). 상단 탑픽 선정용. 둘 다 결손 시 null. */
   combinedScore: number | null
+  /** 단기·장기·DCF 종합 점수(있는 값 평균, 0~100). DCF 포함 탑픽 선정용. 셋 다 결손 시 null. */
+  combinedScoreWithDcf: number | null
   // 애널리스트
   recommendationKey: string | null
   analystCount: number | null
@@ -75,6 +77,8 @@ export interface RankingsResponse {
   items: RankingItem[]
   /** 단기·장기 종합 점수 상위 5종(현재 정렬·limit 과 무관, 필터 적용 후 전체에서 선정). */
   topPicks: RankingItem[]
+  /** 단기·장기·DCF 종합 점수 상위 5종(DCF 포함 토글용, 동일하게 전체에서 선정). */
+  topPicksWithDcf: RankingItem[]
   horizon: RankingHorizon
   sort: RankingSortDir
   appliedRegion: RegionFilter
@@ -319,6 +323,15 @@ export async function getRankings({
           ? (shortScore + longScore) / 2
           : (shortScore ?? longScore ?? null)
 
+      // DCF 포함 종합: 단기·장기·DCF 중 있는 값의 평균(null 은 평균에서 제외 — graceful).
+      // DCF 결손(음수FCF 등) 종목은 단기·장기 평균과 동일해져 토글에 영향받지 않는다.
+      const dcfBlend = [shortScore, longScore, dcf.dcfScore].filter(
+        (v): v is number => v != null
+      )
+      const combinedScoreWithDcf = dcfBlend.length
+        ? dcfBlend.reduce((a, b) => a + b, 0) / dcfBlend.length
+        : null
+
       return {
         ticker,
         name: row.name ?? null,
@@ -327,6 +340,7 @@ export async function getRankings({
         longScore,
         momentumPartial,
         combinedScore,
+        combinedScoreWithDcf,
         recommendationKey: row.recommendationKey ?? null,
         analystCount: row.analystCount ?? null,
         targetMeanPriceUsd: targetUsd,
@@ -370,9 +384,16 @@ export async function getRankings({
       .sort((a, b) => (b.combinedScore ?? 0) - (a.combinedScore ?? 0))
       .slice(0, 5)
 
+    // DCF 포함 종합(단기·장기·DCF 평균) 상위 5 — 토글 시 즉시 전환되도록 함께 산출
+    const topPicksWithDcf = [...cleaned]
+      .filter((i) => i.combinedScoreWithDcf != null)
+      .sort((a, b) => (b.combinedScoreWithDcf ?? 0) - (a.combinedScoreWithDcf ?? 0))
+      .slice(0, 5)
+
     return {
       items: cleaned.slice(0, limit),
       topPicks,
+      topPicksWithDcf,
       horizon,
       sort: sortDir,
       appliedRegion: region,
@@ -411,6 +432,7 @@ function emptyResponse(
   return {
     items: [],
     topPicks: [],
+    topPicksWithDcf: [],
     horizon,
     sort,
     appliedRegion: region,

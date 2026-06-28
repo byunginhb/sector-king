@@ -43,6 +43,8 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
   const [sortDir, setSortDir] = useState<RankingSortDir>('desc')
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
   const [showAdvanced, setShowAdvanced] = useState(false)
+  /** 종합 픽 TOP 5 에 DCF 점수 합산 여부(클라이언트 토글, 재요청 없음). */
+  const [includeDcfPicks, setIncludeDcfPicks] = useState(false)
 
   // SSR 초기 데이터는 "기본 뷰"(전체 지역·장기 점수 desc·limit 100)에만 적용한다.
   // 사용자가 지역/점수축/정렬을 바꾸면 queryKey 가 달라져 정상적으로 재요청된다.
@@ -168,8 +170,13 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
           </div>
         </div>
 
-        {/* 단기·장기 종합 점수 상위 5 — 상단 하이라이트 */}
-        <TopPicks items={data?.topPicks ?? []} onSelect={setSelectedTicker} />
+        {/* 단기·장기(·DCF) 종합 점수 상위 5 — 상단 하이라이트 */}
+        <TopPicks
+          items={(includeDcfPicks ? data?.topPicksWithDcf : data?.topPicks) ?? []}
+          onSelect={setSelectedTicker}
+          includeDcf={includeDcfPicks}
+          onToggleDcf={() => setIncludeDcfPicks((v) => !v)}
+        />
 
         {/* 점수 산출 방식 안내 — 초보자용, 기본 접힘 */}
         <details className="mb-5 rounded-md border border-border-subtle bg-surface-1/50 px-4 py-3 text-sm">
