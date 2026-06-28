@@ -194,6 +194,12 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
               약속하지 않는 참고치입니다.
             </p>
             <p className="text-xs text-muted-foreground">
+              빠르게 성장하거나 인기가 많아 현재 이익 대비 비싸게 거래되는 종목(예: 대표
+              AI·반도체주)은 DCF 점수가 낮게 나오는 경향이 있습니다. 보수적으로 계산하기
+              때문이며, <span className="text-foreground">장기 점수는 높은데 DCF 점수가 낮다면</span>{' '}
+              &lsquo;좋은 기업이지만 성장 기대가 주가에 이미 반영된 상태&rsquo;로 읽으면 됩니다.
+            </p>
+            <p className="text-xs text-muted-foreground">
               단기·장기 점수는 종목 상세 화면에서도 똑같은 기준으로 보여요. 투자 권유가 아니라
               참고용 정보입니다.
             </p>
