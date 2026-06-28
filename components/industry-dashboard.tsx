@@ -30,6 +30,7 @@ import { MarketPulseStrip } from '@/components/dashboard/market-pulse-strip'
 import { TickerTape } from '@/components/dashboard/ticker-tape'
 import { NewsHomeCardSlot } from '@/components/news/news-home-card-slot'
 import { KoreanPicksCard } from '@/components/dashboard/korean-picks-card'
+import { SectorKingPickCard } from '@/components/dashboard/sector-king-pick-card'
 import { QuickNavCards } from '@/components/dashboard/quick-nav-cards'
 import type { IndustryOverview } from '@/types'
 
@@ -133,6 +134,9 @@ export function IndustryDashboard() {
 
         {/* 오늘의 한국 추천 종목 — 메일과 동일 콘텐츠 노출 + 이유 보러가기 CTA */}
         <KoreanPicksCard />
+
+        {/* 섹터킹 픽 — 단기·장기·DCF 종합 균형 TOP5 + 전체 보기 */}
+        <SectorKingPickCard region={region} />
 
         {/* Industry Money Flow */}
         <section className="mt-12">
