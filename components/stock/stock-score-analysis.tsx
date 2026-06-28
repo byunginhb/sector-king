@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { BarChart3 } from 'lucide-react'
+import { BarChart3, ExternalLink } from 'lucide-react'
 import { formatPercent, formatRecommendation, formatScore } from '@/lib/format'
 import { SCORING } from '@/lib/scoring-methodology'
 import { cn } from '@/lib/utils'
@@ -22,13 +22,15 @@ interface ScoreDimension {
 interface StockScoreAnalysisProps {
   score: Score
   snapshot: Snapshot
+  /** 출처 링크용 티커(Yahoo Finance 종목 분석 페이지). */
+  ticker: string
 }
 
 /**
  * 패권 점수 분석 — 총점 + 4개 차원(규모/성장성/수익성/시장평가) 브레이크다운.
  * 각 진행 바는 `role="progressbar"` + aria-valuenow/min/max 로 접근성 노출.
  */
-export function StockScoreAnalysis({ score, snapshot }: StockScoreAnalysisProps) {
+export function StockScoreAnalysis({ score, snapshot, ticker }: StockScoreAnalysisProps) {
   const totalPercent = Math.min((score.total / SCORING.totalMaxScore) * 100, 100)
 
   const dimensions: ScoreDimension[] = [
@@ -172,7 +174,16 @@ export function StockScoreAnalysis({ score, snapshot }: StockScoreAnalysisProps)
           <Link href="/methodology" className="text-[11px] text-info hover:underline">
             방법론 상세 보기 →
           </Link>
-          <span className="text-[11px] text-muted-foreground">데이터 출처: Yahoo Finance</span>
+          <a
+            href={`https://finance.yahoo.com/quote/${encodeURIComponent(ticker)}/analysis`}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="데이터 출처: Yahoo Finance (새 탭에서 열림)"
+            className="inline-flex items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground hover:underline"
+          >
+            데이터 출처: Yahoo Finance
+            <ExternalLink className="h-3 w-3" aria-hidden />
+          </a>
         </div>
       </div>
     </div>

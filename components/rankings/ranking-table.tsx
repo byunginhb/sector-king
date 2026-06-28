@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
 import type { RankingItem } from '@/app/api/rankings/route'
 import type { RankingHorizon, RankingSortDir } from '@/lib/api-helpers'
 import type { RankingSortKey } from '@/hooks/use-rankings'
@@ -270,7 +270,8 @@ export function RankingTable({
   const columns = showAdvanced ? [...BASE_COLUMNS, ...ADVANCED_COLUMNS] : BASE_COLUMNS
 
   return (
-    <div className="max-h-[calc(100vh-7rem)] overflow-auto rounded-md border border-border-subtle">
+    <div>
+      <div className="max-h-[calc(100vh-7rem)] overflow-auto rounded-md border border-border-subtle">
       <table className="w-full min-w-[760px] border-collapse text-sm">
         <caption className="sr-only">
           종목 단기·장기 점수 랭킹 — 순위, 종목명, 단기 점수, 장기 점수, 가치 점수(DCF), 적정가 대비,
@@ -436,6 +437,20 @@ export function RankingTable({
           })}
         </tbody>
       </table>
+      </div>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        투자의견·목표주가 출처:{' '}
+        <a
+          href="https://finance.yahoo.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="투자의견·목표주가 데이터 출처: Yahoo Finance (새 탭에서 열림)"
+          className="inline-flex items-center gap-0.5 transition-colors hover:text-foreground hover:underline"
+        >
+          Yahoo Finance
+          <ExternalLink className="h-3 w-3" aria-hidden />
+        </a>
+      </p>
     </div>
   )
 }

@@ -37,7 +37,7 @@ export function StockDetailSections({ ticker, data, showChart = false }: StockDe
       <StockHegemonyBadges sectors={sectors} />
 
       {score ? (
-        <StockScoreAnalysis score={score} snapshot={snapshot} />
+        <StockScoreAnalysis score={score} snapshot={snapshot} ticker={ticker} />
       ) : (
         <p className="text-sm text-muted-foreground rounded-md border border-dashed border-border-subtle p-4">
           패권 점수를 산출 중입니다. 데이터가 모이면 표시됩니다.

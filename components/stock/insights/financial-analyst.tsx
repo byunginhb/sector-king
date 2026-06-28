@@ -1,6 +1,6 @@
 'use client'
 
-import { Landmark } from 'lucide-react'
+import { Landmark, ExternalLink } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { formatPercent, formatRecommendation } from '@/lib/format'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
@@ -119,6 +119,17 @@ export function FinancialAnalyst({ data }: FinancialAnalystProps) {
                   </span>
                 </div>
               )}
+              {/* 애널리스트 데이터 출처 — Yahoo Finance 종목 분석 페이지 */}
+              <a
+                href={`https://finance.yahoo.com/quote/${encodeURIComponent(data.company.ticker)}/analysis`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="애널리스트 데이터 출처: Yahoo Finance (새 탭에서 열림)"
+                className="inline-flex items-center gap-1 pt-0.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground hover:underline"
+              >
+                출처: Yahoo Finance
+                <ExternalLink className="h-3 w-3" aria-hidden />
+              </a>
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">
