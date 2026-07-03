@@ -9,16 +9,18 @@ interface ValuationCompareProps {
 }
 
 interface MetricSpec {
-  key: 'peRatio' | 'pegRatio' | 'returnOnEquity'
+  key: 'peRatio' | 'pegRatio' | 'returnOnEquity' | 'priceToBook' | 'evToEbitda'
   label: string
-  /** 표시 포맷 (ROE 는 %, PER/PEG 는 배수). */
+  /** 표시 포맷 (ROE 는 %, 배수 지표는 x배). */
   format: (v: number) => string
-  /** true면 높을수록 우위(ROE), false면 낮을수록 우위(PER/PEG)로 톤 결정. */
+  /** true면 높을수록 우위(ROE), false면 낮을수록 우위(PER/PEG/PBR/EV·EBITDA)로 톤 결정. */
   higherIsBetter: boolean
 }
 
 const METRICS: MetricSpec[] = [
   { key: 'peRatio', label: 'PER', format: (v) => v.toFixed(1), higherIsBetter: false },
+  { key: 'priceToBook', label: 'PBR', format: (v) => v.toFixed(2), higherIsBetter: false },
+  { key: 'evToEbitda', label: 'EV/EBITDA', format: (v) => v.toFixed(1), higherIsBetter: false },
   { key: 'pegRatio', label: 'PEG', format: (v) => v.toFixed(2), higherIsBetter: false },
   {
     key: 'returnOnEquity',
@@ -49,14 +51,29 @@ export function ValuationCompare({ insights }: ValuationCompareProps) {
     )
   }
 
+  const keyMetric = insights.keyValuationMetric
+
   return (
     <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
       <Header />
       <div className="space-y-4">
         {METRICS.map((spec) => (
-          <MetricRow key={spec.key} spec={spec} metric={valuation[spec.key]} />
+          <MetricRow
+            key={spec.key}
+            spec={spec}
+            metric={valuation[spec.key]}
+            isKey={spec.key === keyMetric?.key}
+          />
         ))}
       </div>
+      {keyMetric && (
+        <p className="mt-3 rounded-md border border-dashed border-border-subtle p-2.5 text-[11px] leading-relaxed text-muted-foreground">
+          이 기업 유형의 핵심 지표는{' '}
+          <span className="font-medium text-foreground">{keyMetric.label}</span> — {keyMetric.reason}
+          <br />
+          함께 볼 지표: {keyMetric.companion}
+        </p>
+      )}
       <p className="mt-3 border-t border-border pt-2 text-[11px] text-muted-foreground">
         {sectorContext.sectorName} 섹터 {sectorContext.peerCount}개 종목 분포 기준.
       </p>
@@ -64,12 +81,27 @@ export function ValuationCompare({ insights }: ValuationCompareProps) {
   )
 }
 
-function MetricRow({ spec, metric }: { spec: MetricSpec; metric: ValuationMetric }) {
+function MetricRow({
+  spec,
+  metric,
+  isKey,
+}: {
+  spec: MetricSpec
+  metric: ValuationMetric
+  isKey: boolean
+}) {
   if (metric.value == null || metric.median == null) {
     return (
       <div>
         <div className="mb-1 flex items-center justify-between text-xs">
-          <span className="font-medium text-foreground">{spec.label}</span>
+          <span className="flex items-center gap-1.5 font-medium text-foreground">
+            {spec.label}
+            {isKey && (
+              <span className="rounded-full bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium text-accent">
+                핵심
+              </span>
+            )}
+          </span>
           <span className="text-muted-foreground">비교 데이터 부족</span>
         </div>
         <div className="h-2 w-full rounded-full bg-muted opacity-50" aria-hidden />

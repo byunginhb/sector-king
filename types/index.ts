@@ -246,6 +246,35 @@ export interface InsightValuation {
   peRatio: ValuationMetric
   pegRatio: ValuationMetric
   returnOnEquity: ValuationMetric
+  priceToBook: ValuationMetric
+  evToEbitda: ValuationMetric
+}
+
+export interface PeBandPoint {
+  date: string
+  pe: number
+}
+
+/**
+ * PER 밴드 — 종목 자체 PER 이력 대비 현재 위치.
+ * low/high 는 25/75 백분위(정상 밴드), percentile 은 current 의 이력 내 위치(0~100).
+ */
+export interface PeBand {
+  history: PeBandPoint[]
+  min: number
+  low: number
+  median: number
+  high: number
+  max: number
+  current: number
+  percentile: number
+}
+
+export interface KeyValuationMetric {
+  key: 'peRatio' | 'priceToBook' | 'evToEbitda'
+  label: string
+  reason: string
+  companion: string
 }
 
 export interface CompanyInsightsResponse {
@@ -256,6 +285,8 @@ export interface CompanyInsightsResponse {
   peers: InsightPeer[]
   sectorContext: InsightSectorContext | null
   valuation: InsightValuation | null
+  peBand: PeBand | null
+  keyValuationMetric: KeyValuationMetric | null
   /** peer 표본이 min-peer(N≥4) 미만이면 true → median/percentile null */
   insufficientPeerSample: boolean
   appliedRange: number // 실제 적용된 일수

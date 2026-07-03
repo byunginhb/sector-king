@@ -65,6 +65,9 @@ export const dailySnapshots = sqliteTable(
     avgVolume: integer('avg_volume'),
     peRatio: real('pe_ratio'),
     pegRatio: real('peg_ratio'),
+    forwardPe: real('forward_pe'), // 선행 PER (info.forwardPE)
+    priceToBook: real('price_to_book'), // PBR (info.priceToBook)
+    evToEbitda: real('ev_to_ebitda'), // EV/EBITDA (info.enterpriseToEbitda)
     updatedAt: text('updated_at'),
   },
   (table) => [

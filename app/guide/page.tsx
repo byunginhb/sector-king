@@ -4,6 +4,7 @@ import { GuideToc } from '@/components/guide/guide-toc'
 import { ServiceIntro } from '@/components/guide/service-intro'
 import { NumberGlossary } from '@/components/guide/number-glossary'
 import { ScreenGuide } from '@/components/guide/screen-guide'
+import { ValuationMetricGuide } from '@/components/guide/valuation-metric-guide'
 import { HonestLimits } from '@/components/guide/honest-limits'
 import { toFaqEntries } from '@/components/guide/number-glossary-data'
 
@@ -64,6 +65,7 @@ export default function GuidePage() {
           <ServiceIntro />
           <NumberGlossary />
           <ScreenGuide />
+          <ValuationMetricGuide />
           <HonestLimits />
         </div>
       </main>

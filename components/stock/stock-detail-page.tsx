@@ -22,6 +22,7 @@ import { ScoreTrendChart } from '@/components/stock/insights/score-trend-chart'
 import { SectorPosition } from '@/components/stock/insights/sector-position'
 import { FinancialAnalyst } from '@/components/stock/insights/financial-analyst'
 import { PriceChartSection } from '@/components/stock/insights/price-chart-section'
+import { PeBandChart } from '@/components/stock/insights/pe-band-chart'
 import { ValuationCompare } from '@/components/stock/insights/valuation-compare'
 import type { CompanyDetailResponse } from '@/types'
 
@@ -133,6 +134,7 @@ function StockInsights({
           />
         )}
         {insights && <SectorPosition insights={insights} />}
+        {insights?.peBand && <PeBandChart band={insights.peBand} />}
         <PriceChartSection ticker={ticker} initialHistory={data.history} />
       </div>
 

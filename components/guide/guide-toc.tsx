@@ -7,7 +7,8 @@ const TOC_ITEMS: TocItem[] = [
   { href: '#what', label: 'A. 이게 뭔가요' },
   { href: '#numbers', label: 'B. 숫자 사전' },
   { href: '#screens', label: 'C. 화면별 읽는 법' },
-  { href: '#limits', label: 'D. 주의사항' },
+  { href: '#valuation', label: 'D. 밸류에이션 지표' },
+  { href: '#limits', label: 'E. 주의사항' },
 ]
 
 /** /guide 앵커 목차. methodology 의 nav 패턴 재사용. */

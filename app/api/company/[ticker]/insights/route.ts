@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import {
   companies,
+  companyProfiles,
   companyScores,
   dailySnapshots,
   scoreHistory,
@@ -11,11 +12,13 @@ import {
 import { asc, eq, sql } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
 import { resolveRange } from '@/lib/api-helpers'
+import { keyMetricForSector } from '@/lib/valuation-guide'
 import type {
   ApiResponse,
   CompanyInsightsResponse,
   InsightPeer,
   InsightValuation,
+  PeBand,
   ScoreHistoryPoint,
   ScoreMomentum,
   ValuationMetric,
@@ -32,6 +35,8 @@ const ALLOWED_RANGES = [30, 60, 74, 120] as const
 const DEFAULT_RANGE = 74
 /** percentile/median 산출 최소 표본 (소형 섹터 보호). */
 const MIN_PEER_SAMPLE = 4
+/** PER 밴드 최소 이력 포인트 (미만이면 밴드 null). */
+const MIN_BAND_POINTS = 5
 /** 모멘텀 trend 판정 임계 (점/range). */
 const TREND_DELTA_THRESHOLD = 1.0
 
@@ -184,6 +189,8 @@ export async function GET(
           marketCap: dailySnapshots.marketCap,
           peRatio: dailySnapshots.peRatio,
           pegRatio: dailySnapshots.pegRatio,
+          priceToBook: dailySnapshots.priceToBook,
+          evToEbitda: dailySnapshots.evToEbitda,
           smoothedScore: companyScores.smoothedScore,
           returnOnEquity: companyScores.returnOnEquity,
         })
@@ -217,6 +224,8 @@ export async function GET(
           score: p.smoothedScore ?? null,
           peRatio: p.peRatio ?? null,
           pegRatio: p.pegRatio ?? null,
+          priceToBook: p.priceToBook ?? null,
+          evToEbitda: p.evToEbitda ?? null,
           returnOnEquity: p.returnOnEquity ?? null,
         }
       })
@@ -278,6 +287,12 @@ export async function GET(
       const roeValues = normalized
         .map((p) => p.returnOnEquity)
         .filter((v): v is number => v != null)
+      const pbrValues = normalized
+        .map((p) => p.priceToBook)
+        .filter((v): v is number => v != null)
+      const evValues = normalized
+        .map((p) => p.evToEbitda)
+        .filter((v): v is number => v != null)
 
       valuation = {
         peRatio: buildValuationMetric(self?.peRatio ?? null, peValues, hasSample),
@@ -287,8 +302,54 @@ export async function GET(
           roeValues,
           hasSample
         ),
+        priceToBook: buildValuationMetric(
+          self?.priceToBook ?? null,
+          pbrValues,
+          hasSample
+        ),
+        evToEbitda: buildValuationMetric(
+          self?.evToEbitda ?? null,
+          evValues,
+          hasSample
+        ),
       }
     }
+
+    // 5) PER 밴드 — 종목 자체 PER 이력(양수만) 분포 대비 현재 위치. 무차원 → toUsd 불요.
+    const peRows = await db
+      .select({ date: dailySnapshots.date, pe: dailySnapshots.peRatio })
+      .from(dailySnapshots)
+      .where(eq(dailySnapshots.ticker, ticker))
+      .orderBy(asc(dailySnapshots.date))
+
+    const peHistory = peRows
+      .filter((r): r is { date: string; pe: number } => r.pe != null && r.pe > 0)
+      .map((r) => ({ date: r.date, pe: r.pe }))
+
+    let peBand: PeBand | null = null
+    if (peHistory.length >= MIN_BAND_POINTS) {
+      const values = peHistory.map((p) => p.pe)
+      const sorted = [...values].sort((a, b) => a - b)
+      const current = values[values.length - 1]
+      peBand = {
+        history: peHistory,
+        min: sorted[0],
+        low: sorted[Math.floor(sorted.length * 0.25)],
+        median: median(sorted)!,
+        high: sorted[Math.floor(sorted.length * 0.75)],
+        max: sorted[sorted.length - 1],
+        current,
+        percentile: percentileOf(current, values)!,
+      }
+    }
+
+    // 6) 핵심 밸류에이션 지표 — company_profiles.sector(GICS) 기반. 미보유 시 PER 기본값.
+    const [profile] = await db
+      .select({ sector: companyProfiles.sector })
+      .from(companyProfiles)
+      .where(eq(companyProfiles.ticker, ticker))
+      .limit(1)
+    const keyValuationMetric = keyMetricForSector(profile?.sector ?? null)
 
     return NextResponse.json({
       success: true,
@@ -300,6 +361,8 @@ export async function GET(
         peers,
         sectorContext,
         valuation,
+        peBand,
+        keyValuationMetric,
         insufficientPeerSample,
         appliedRange,
       },

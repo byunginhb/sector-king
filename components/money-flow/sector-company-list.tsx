@@ -164,65 +164,70 @@ export function SectorCompanyList({
               </div>
 
               {data.companies.map((company, idx) => (
-                <motion.div
+                // 행 전체 클릭 시 종목 상세 모달. 이 모달이 z-[60] 이라 위로 띄우려고 z-[70].
+                // ponytail: DialogOverlay 는 z-50 고정이라 중첩 시 dim 이 살짝 약함(기능엔 무영향).
+                <CompanyDialog
                   key={company.ticker}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.03 }}
-                  className="grid grid-cols-[1.5rem_1fr_4.5rem_4rem_4.5rem] sm:grid-cols-[2rem_1fr_7rem_6rem_6rem_6rem] gap-2 px-3 py-2.5 rounded-lg hover:bg-white/60 dark:hover:bg-slate-800/40 transition-colors items-center"
+                  ticker={company.ticker}
+                  contentClassName="z-[70]"
                 >
-                  {/* Rank */}
-                  <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">
-                    {idx + 1}
-                  </span>
+                  <motion.button
+                    type="button"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.03 }}
+                    className="group grid w-full grid-cols-[1.5rem_1fr_4.5rem_4rem_4.5rem] sm:grid-cols-[2rem_1fr_7rem_6rem_6rem_6rem] gap-2 px-3 py-2.5 rounded-lg text-left hover:bg-white/60 dark:hover:bg-slate-800/40 transition-colors items-center cursor-pointer"
+                  >
+                    {/* Rank */}
+                    <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">
+                      {idx + 1}
+                    </span>
 
-                  {/* Company Name — 클릭 시 종목 상세 모달. 이 모달이 z-[60] 이라 위로 띄우려고 z-[70]. */}
-                  {/* ponytail: DialogOverlay 는 z-50 고정이라 중첩 시 dim 이 살짝 약함(기능엔 무영향). */}
-                  <CompanyDialog ticker={company.ticker} contentClassName="z-[70]">
-                    <button type="button" className="group min-w-0 text-left">
+                    {/* Company Name */}
+                    <div className="min-w-0">
                       <div className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate group-hover:underline">
                         {company.nameKo || company.name}
                       </div>
                       <div className="text-xs text-gray-400 dark:text-slate-500 truncate">
                         {company.ticker}
                       </div>
-                    </button>
-                  </CompanyDialog>
+                    </div>
 
-                  {/* Price */}
-                  <span className="text-sm text-right text-gray-900 dark:text-slate-100 font-mono">
-                    {fmt.price(company.endPrice)}
-                  </span>
+                    {/* Price */}
+                    <span className="text-sm text-right text-gray-900 dark:text-slate-100 font-mono">
+                      {fmt.price(company.endPrice)}
+                    </span>
 
-                  {/* Change % */}
-                  <span
-                    className={cn(
-                      'text-sm text-right font-medium font-mono',
-                      company.priceChangePercent === null
-                        ? 'text-gray-400'
-                        : company.priceChangePercent >= 0
-                          ? 'text-success'
-                          : 'text-danger'
-                    )}
-                  >
-                    {company.priceChangePercent !== null
-                      ? `${company.priceChangePercent >= 0 ? '+' : ''}${company.priceChangePercent.toFixed(2)}%`
-                      : '-'}
-                  </span>
+                    {/* Change % */}
+                    <span
+                      className={cn(
+                        'text-sm text-right font-medium font-mono',
+                        company.priceChangePercent === null
+                          ? 'text-gray-400'
+                          : company.priceChangePercent >= 0
+                            ? 'text-success'
+                            : 'text-danger'
+                      )}
+                    >
+                      {company.priceChangePercent !== null
+                        ? `${company.priceChangePercent >= 0 ? '+' : ''}${company.priceChangePercent.toFixed(2)}%`
+                        : '-'}
+                    </span>
 
-                  {/* Market Cap (hidden on mobile) */}
-                  <span className="hidden sm:block text-xs text-right text-gray-500 dark:text-slate-400 font-mono">
-                    {fmt.marketCap(company.marketCap)}
-                  </span>
+                    {/* Market Cap (hidden on mobile) */}
+                    <span className="hidden sm:block text-xs text-right text-gray-500 dark:text-slate-400 font-mono">
+                      {fmt.marketCap(company.marketCap)}
+                    </span>
 
-                  {/* Sparkline */}
-                  <div className="flex justify-end">
-                    <SparklineChart
-                      data={company.priceHistory}
-                      ticker={company.ticker}
-                    />
-                  </div>
-                </motion.div>
+                    {/* Sparkline */}
+                    <div className="flex justify-end">
+                      <SparklineChart
+                        data={company.priceHistory}
+                        ticker={company.ticker}
+                      />
+                    </div>
+                  </motion.button>
+                </CompanyDialog>
               ))}
             </div>
           )}

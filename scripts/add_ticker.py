@@ -249,8 +249,9 @@ def add_ticker(
             """
             INSERT OR REPLACE INTO daily_snapshots
             (ticker, date, market_cap, price, price_change, week_52_high,
-             week_52_low, day_high, day_low, volume, avg_volume, pe_ratio, peg_ratio, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+             week_52_low, day_high, day_low, volume, avg_volume, pe_ratio, peg_ratio,
+             forward_pe, price_to_book, ev_to_ebitda, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
         """,
             (
                 ticker,
@@ -268,6 +269,9 @@ def add_ticker(
                 info.get("averageVolume"),
                 info.get("trailingPE"),
                 info.get("pegRatio"),
+                info.get("forwardPE"),
+                info.get("priceToBook"),
+                info.get("enterpriseToEbitda"),
             ),
         )
         print(f"  Today's snapshot saved ({today})")

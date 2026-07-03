@@ -51,7 +51,7 @@ export function HonestLimits() {
   return (
     <GuideSection
       id="limits"
-      title="D. 정직한 주의사항"
+      title="E. 정직한 주의사항"
       description="유료 신뢰의 핵심입니다. 이 서비스의 숫자가 가진 한계를 숨기지 않고 알려드립니다."
     >
       <div className="rounded-xl border border-warning/30 bg-warning/10 p-5">

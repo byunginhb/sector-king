@@ -71,6 +71,9 @@ def fetch_stock_data(ticker: str, target_date: str) -> dict | None:
             "avg_volume": info.get("averageVolume"),
             "pe_ratio": info.get("trailingPE"),
             "peg_ratio": info.get("pegRatio"),
+            "forward_pe": info.get("forwardPE"),
+            "price_to_book": info.get("priceToBook"),
+            "ev_to_ebitda": info.get("enterpriseToEbitda"),
             # Fundamental metrics (from same .info dict, no extra API call)
             "revenue_growth": info.get("revenueGrowth"),
             "earnings_growth": info.get("earningsGrowth"),
@@ -101,8 +104,9 @@ def upsert_snapshot(conn: sqlite3.Connection, data: dict):
         """
         INSERT INTO daily_snapshots
         (ticker, date, market_cap, price, price_change, week_52_high,
-         week_52_low, day_high, day_low, volume, avg_volume, pe_ratio, peg_ratio, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+         week_52_low, day_high, day_low, volume, avg_volume, pe_ratio, peg_ratio,
+         forward_pe, price_to_book, ev_to_ebitda, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
         ON CONFLICT(ticker, date) DO UPDATE SET
             market_cap = excluded.market_cap,
             price = excluded.price,
@@ -115,6 +119,9 @@ def upsert_snapshot(conn: sqlite3.Connection, data: dict):
             avg_volume = COALESCE(excluded.avg_volume, daily_snapshots.avg_volume),
             pe_ratio = excluded.pe_ratio,
             peg_ratio = excluded.peg_ratio,
+            forward_pe = excluded.forward_pe,
+            price_to_book = excluded.price_to_book,
+            ev_to_ebitda = excluded.ev_to_ebitda,
             updated_at = datetime('now')
     """,
         (
@@ -133,6 +140,9 @@ def upsert_snapshot(conn: sqlite3.Connection, data: dict):
             data["avg_volume"],
             data["pe_ratio"],
             data["peg_ratio"],
+            data["forward_pe"],
+            data["price_to_book"],
+            data["ev_to_ebitda"],
         ),
     )
 
