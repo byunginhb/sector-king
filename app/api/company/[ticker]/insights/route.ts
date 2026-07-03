@@ -326,11 +326,14 @@ export async function GET(
       .filter((r): r is { date: string; pe: number } => r.pe != null && r.pe > 0)
       .map((r) => ({ date: r.date, pe: r.pe }))
 
+    // current 는 "최신 스냅샷의 PER" 이어야 ValuationCompare(self.peRatio)와 일치한다.
+    // 최신 PER 이 null/음수(적자)면 밴드를 숨겨 과거값을 "현재"로 오표기하는 걸 막는다.
+    const latestPe = peRows.length ? peRows[peRows.length - 1].pe : null
     let peBand: PeBand | null = null
-    if (peHistory.length >= MIN_BAND_POINTS) {
+    if (peHistory.length >= MIN_BAND_POINTS && latestPe != null && latestPe > 0) {
       const values = peHistory.map((p) => p.pe)
       const sorted = [...values].sort((a, b) => a - b)
-      const current = values[values.length - 1]
+      const current = latestPe
       peBand = {
         history: peHistory,
         min: sorted[0],

@@ -60,7 +60,7 @@ export function PeBandChart({ band }: PeBandChartProps) {
           <Gauge className="h-4 w-4" aria-hidden />
           PER 밴드
           <span className="text-xs font-normal text-muted-foreground">
-            최근 {band.history.length}거래일
+            누적 {band.history.length}거래일
           </span>
         </h2>
         <p className="num-mono text-xs text-muted-foreground">

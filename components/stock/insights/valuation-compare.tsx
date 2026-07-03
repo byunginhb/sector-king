@@ -121,7 +121,14 @@ function MetricRow({
   return (
     <div>
       <div className="mb-1 flex items-center justify-between text-xs">
-        <span className="font-medium text-foreground">{spec.label}</span>
+        <span className="flex items-center gap-1.5 font-medium text-foreground">
+          {spec.label}
+          {isKey && (
+            <span className="rounded-full bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium text-accent">
+              핵심
+            </span>
+          )}
+        </span>
         <span className="num-mono text-muted-foreground">
           <span className={cn('font-medium', tone)}>{spec.format(value)}</span>
           <span className="mx-1">·</span>
