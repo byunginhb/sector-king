@@ -1,0 +1,79 @@
+name: Monthly Market Report
+
+# 매월 1일 KST 08:00 (UTC 23:00 전일) — 전월 마켓 리포트를 draft 로 생성·적재.
+# 관리자가 /admin/news 에서 검토 후 발행. 자동 발행 아님(--publish 미지정).
+on:
+  schedule:
+    - cron: '0 23 1 * *' # UTC 23:00 on the 1st → KST 08:00 on the 1st
+  workflow_dispatch:
+    inputs:
+      month:
+        description: '대상 월 (YYYY-MM). 비우면 전월'
+        required: false
+        type: string
+      publish:
+        description: 'true 면 즉시 발행(status=published). 기본 draft'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: monthly-report
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Validate required secrets
+        run: |
+          if [ -z "${{ secrets.NEWS_INGEST_API_KEY }}" ]; then
+            echo "::error::NEWS_INGEST_API_KEY secret 미등록"; exit 1
+          fi
+          if [ -z "${{ secrets.INGEST_URL }}" ]; then
+            echo "::error::INGEST_URL secret 미등록 (예: https://sector-king.com)"; exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve target month
+        id: month
+        run: |
+          set -euo pipefail
+          INPUT="${{ github.event.inputs.month }}"
+          if [ -n "${INPUT}" ]; then
+            MONTH="${INPUT}"
+          else
+            # 전월 (UTC 기준 이번 달 1일에서 하루 빼면 전월 말일)
+            MONTH=$(date -u -d "$(date -u +%Y-%m-01) -1 day" +%Y-%m)
+          fi
+          echo "month=${MONTH}" >> "$GITHUB_OUTPUT"
+          echo "대상 월: ${MONTH}"
+
+      - name: Generate & ingest monthly report
+        env:
+          NEWS_INGEST_API_KEY: ${{ secrets.NEWS_INGEST_API_KEY }}
+          INGEST_URL: ${{ secrets.INGEST_URL }}
+          # 선택: 없으면 결정론 baseline 산문으로 폴백(파이프라인은 성공)
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL }}
+        run: |
+          set -euo pipefail
+          PUBLISH=""
+          if [ "${{ github.event.inputs.publish }}" = "true" ]; then
+            PUBLISH="--publish"
+          fi
+          pnpm tsx scripts/generate-monthly-report.ts \
+            --month="${{ steps.month.outputs.month }}" \
+            --ingest ${PUBLISH}

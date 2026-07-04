@@ -129,6 +129,68 @@ export interface KoreanStockItem {
   comment: string
 }
 
+// ── 월간 애널리스트 리포트 전용 구조화 데이터(선택) ────────────────────
+// kind=monthly 리포트에만 존재. 차트·전망(forecast) 렌더용 숫자를 발행 시점에
+// 박제한다(라이브 조회 금지 — 재현성). 없으면(일간) 미노출.
+
+export interface MonthlySectorFlow {
+  name: string
+  /** 기간 시총 변화액(USD). 양수=유입, 음수=유출 */
+  flowUsd: number
+  /** 기간 변화율(%) */
+  pct: number
+}
+
+export interface MonthlyMover {
+  code: string
+  name: string
+  pct: number
+}
+
+export interface MonthlyScoreTheme {
+  name: string
+  delta: number
+}
+
+export interface MonthlyCharts {
+  periodStart: string
+  periodEnd: string
+  tradingDays: number
+  marketFirstUsd: number
+  marketLastUsd: number
+  marketPct: number
+  breadthUp: number
+  breadthDown: number
+  /** 유입+유출 합쳐 부호로 구분. 절댓값 큰 순 */
+  sectorFlows: MonthlySectorFlow[]
+  topGainers: MonthlyMover[]
+  topLosers: MonthlyMover[]
+  scoreThemesUp: MonthlyScoreTheme[]
+  scoreThemesDown: MonthlyScoreTheme[]
+}
+
+export interface MonthlyForecastCase {
+  body: string
+  trigger: string
+}
+
+/** 향후 전망(forward-looking). 데이터 접지 조건부 서술. */
+export interface MonthlyOutlook {
+  /** 예: "향후 1~3개월" */
+  horizon: string
+  summary: string
+  base: MonthlyForecastCase
+  bull: MonthlyForecastCase
+  bear: MonthlyForecastCase
+  /** 지켜볼 데이터 포인트 */
+  watchItems: string[]
+}
+
+export interface MonthlyReportData {
+  charts: MonthlyCharts
+  outlook: MonthlyOutlook
+}
+
 export interface ExpertView {
   thirtySecBrief: string
   headlines: HeadlineItem[]
@@ -142,6 +204,8 @@ export interface ExpertView {
   oneLiner: string
   fundFlow: FundFlowMap
   koreanStocks: KoreanStockItem[]
+  /** 월간 리포트 전용(선택). 차트·전망 데이터. */
+  monthly?: MonthlyReportData
 }
 
 export interface NoviceEventItem {

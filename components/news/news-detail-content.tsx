@@ -10,6 +10,8 @@ import { NoviceReportView } from './novice-report-view'
 import { ViewToggle, type ReportView } from './view-toggle'
 import { StickyToc } from './sticky-toc'
 import { NewsSubscribeCta } from './news-subscribe-cta'
+import { MonthlyReportView } from './report/monthly-report-view'
+import { resolveReportKind } from '@/lib/news/report-kind'
 import type { NewsReportDTO } from '@/drizzle/supabase-schema'
 
 interface NewsDetailContentProps {
@@ -44,6 +46,12 @@ export function NewsDetailContent({
   isLoggedIn = true,
 }: NewsDetailContentProps) {
   const [view, setView] = useState<ReportView>(initialView)
+
+  // 월간 리포트 = 애널리스트 포맷(차트·전망·PDF)로 렌더. 일간은 기존 듀얼뷰.
+  if (resolveReportKind(report) === 'monthly' && report.expertView.monthly) {
+    return <MonthlyReportView report={report} />
+  }
+
   const sections = view === 'expert' ? EXPERT_TOC : NOVICE_TOC
 
   return (

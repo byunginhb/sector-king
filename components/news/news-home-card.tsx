@@ -11,7 +11,9 @@ import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import type { NewsReportListItem, NoviceStockAction } from '@/drizzle/supabase-schema'
 import { useLatestKoreanStocks } from '@/hooks/use-latest-korean-stocks'
+import { resolveReportKind, reportKindLabel } from '@/lib/news/report-kind'
 import { NewsSubscribeCta } from './news-subscribe-cta'
+import { ReportKindBadge } from './report-kind-badge'
 
 // action 별 chip 색상 토큰 (시맨틱 — 라이트/다크 자동 대응)
 const PICK_CHIP_CLASS: Record<NoviceStockAction, string> = {
@@ -43,6 +45,7 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
   const dateLabel = report.publishedAt
     ? format(new Date(report.publishedAt), 'yyyy-MM-dd')
     : report.reportDate
+  const kind = resolveReportKind(report)
 
   // 같은 리포트의 한국 추천 종목 (없으면 미노출)
   const { data: koreanPicks } = useLatestKoreanStocks()
@@ -64,10 +67,11 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
               aria-hidden
             />
             <span className="text-xs font-medium text-primary uppercase tracking-wide">
-              오늘의 마켓 리포트
+              {reportKindLabel(kind)}
             </span>
           </div>
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground tabular-nums shrink-0">
+          <span className="inline-flex items-center gap-2 text-xs text-muted-foreground tabular-nums shrink-0">
+            {kind !== 'daily' && <ReportKindBadge kind={kind} />}
             {dateLabel}
           </span>
         </div>

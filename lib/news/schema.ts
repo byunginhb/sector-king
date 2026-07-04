@@ -105,6 +105,64 @@ export const koreanStockItemSchema = z
   })
   .strict()
 
+// ── 월간 애널리스트 전용(선택) ────────────────────────────────────────
+export const monthlySectorFlowSchema = z
+  .object({
+    name: z.string().min(1).max(80),
+    flowUsd: z.number(),
+    pct: z.number(),
+  })
+  .strict()
+
+export const monthlyMoverSchema = z
+  .object({
+    code: z.string().min(1).max(20),
+    name: z.string().min(1).max(80),
+    pct: z.number(),
+  })
+  .strict()
+
+export const monthlyScoreThemeSchema = z
+  .object({ name: z.string().min(1).max(80), delta: z.number() })
+  .strict()
+
+export const monthlyChartsSchema = z
+  .object({
+    periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    tradingDays: z.number().int(),
+    marketFirstUsd: z.number(),
+    marketLastUsd: z.number(),
+    marketPct: z.number(),
+    breadthUp: z.number().int(),
+    breadthDown: z.number().int(),
+    sectorFlows: z.array(monthlySectorFlowSchema).default([]),
+    topGainers: z.array(monthlyMoverSchema).default([]),
+    topLosers: z.array(monthlyMoverSchema).default([]),
+    scoreThemesUp: z.array(monthlyScoreThemeSchema).default([]),
+    scoreThemesDown: z.array(monthlyScoreThemeSchema).default([]),
+  })
+  .strict()
+
+export const monthlyForecastCaseSchema = z
+  .object({ body: z.string().min(1).max(1500), trigger: z.string().min(1).max(800) })
+  .strict()
+
+export const monthlyOutlookSchema = z
+  .object({
+    horizon: z.string().min(1).max(60),
+    summary: z.string().min(1).max(2000),
+    base: monthlyForecastCaseSchema,
+    bull: monthlyForecastCaseSchema,
+    bear: monthlyForecastCaseSchema,
+    watchItems: z.array(z.string().max(300)).default([]),
+  })
+  .strict()
+
+export const monthlyReportDataSchema = z
+  .object({ charts: monthlyChartsSchema, outlook: monthlyOutlookSchema })
+  .strict()
+
 export const expertViewSchema = z
   .object({
     thirtySecBrief: z.string().min(1).max(3000),
@@ -121,6 +179,7 @@ export const expertViewSchema = z
     oneLiner: z.string().min(1).max(500),
     fundFlow: fundFlowMapSchema,
     koreanStocks: z.array(koreanStockItemSchema).default([]),
+    monthly: monthlyReportDataSchema.optional(),
   })
   .strict()
 
