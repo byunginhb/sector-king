@@ -174,6 +174,12 @@ export interface MonthlyForecastCase {
   trigger: string
 }
 
+/** 관찰 신호 → 대응 액션(무엇을 어떻게 볼지). */
+export interface MonthlyPlaybookItem {
+  signal: string
+  action: string
+}
+
 /** 향후 전망(forward-looking). 데이터 접지 조건부 서술. */
 export interface MonthlyOutlook {
   /** 예: "향후 1~3개월" */
@@ -184,6 +190,10 @@ export interface MonthlyOutlook {
   bear: MonthlyForecastCase
   /** 지켜볼 데이터 포인트 */
   watchItems: string[]
+  /** 한 문장 총정리(핵심 관전 포인트) */
+  bottomLine: string
+  /** 신호 → 대응 플레이북 */
+  playbook: MonthlyPlaybookItem[]
 }
 
 export interface MonthlyReportData {

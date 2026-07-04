@@ -18,6 +18,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts'
+import type { CSSProperties } from 'react'
 import { CHART_POSITIVE, CHART_NEGATIVE, CHART_AXIS } from '@/lib/chart-colors'
 import type { MonthlySectorFlow, MonthlyMover } from '@/drizzle/supabase-schema'
 
@@ -30,14 +31,47 @@ function fmtPct(v: number): string {
   return `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}%`
 }
 
-const tooltipStyle = {
-  contentStyle: {
-    background: 'var(--surface-1, #fff)',
-    border: '1px solid var(--border-subtle, #e2e8f0)',
-    borderRadius: 8,
-    fontSize: 12,
-  },
-  labelStyle: { color: 'var(--foreground, #0f172a)', fontWeight: 600 },
+// 고대비 다크 툴팁(라이트/다크 배경 모두 가독). recharts 기본 툴팁의 낮은 대비·raw 키 표기 대체.
+const TT_BOX: CSSProperties = {
+  background: '#0f172a',
+  color: '#f8fafc',
+  border: '1px solid #334155',
+  borderRadius: 8,
+  padding: '8px 10px',
+  fontSize: 12,
+  lineHeight: 1.4,
+  boxShadow: '0 6px 16px rgba(0,0,0,0.35)',
+}
+
+interface TooltipProps {
+  active?: boolean
+  payload?: Array<{ payload: MonthlySectorFlow | MonthlyMover }>
+}
+
+function FlowTooltip({ active, payload }: TooltipProps) {
+  if (!active || !payload?.length) return null
+  const d = payload[0].payload as MonthlySectorFlow
+  return (
+    <div style={TT_BOX}>
+      <div style={{ fontWeight: 600, marginBottom: 2 }}>{d.name}</div>
+      <div style={{ color: d.flowUsd >= 0 ? CHART_POSITIVE : CHART_NEGATIVE }}>
+        {fmtBn(d.flowUsd)} ({fmtPct(d.pct)})
+      </div>
+    </div>
+  )
+}
+
+function MoverTooltip({ active, payload }: TooltipProps) {
+  if (!active || !payload?.length) return null
+  const d = payload[0].payload as MonthlyMover
+  return (
+    <div style={TT_BOX}>
+      <div style={{ fontWeight: 600, marginBottom: 2 }}>{d.name}</div>
+      <div style={{ color: d.pct >= 0 ? CHART_POSITIVE : CHART_NEGATIVE }}>
+        월간 {fmtPct(d.pct)}
+      </div>
+    </div>
+  )
 }
 
 /** 섹터 자금흐름 — 유입(+)/유출(−) 발산 막대. flowUsd 내림차순. */
@@ -70,7 +104,7 @@ export function SectorFlowChart({ data }: { data: MonthlySectorFlow[] }) {
           tickLine={false}
         />
         <ReferenceLine x={0} stroke={CHART_AXIS} />
-        <Tooltip {...tooltipStyle} formatter={(value) => fmtBn(Number(value))} />
+        <Tooltip content={<FlowTooltip />} cursor={{ fill: 'rgba(148,163,184,0.12)' }} />
         <Bar dataKey="flowUsd" radius={4} isAnimationActive={false} barSize={20}>
           {rows.map((r) => (
             <Cell key={r.name} fill={r.flowUsd >= 0 ? CHART_POSITIVE : CHART_NEGATIVE} />
@@ -124,7 +158,7 @@ export function MoversChart({
           tickLine={false}
         />
         <ReferenceLine x={0} stroke={CHART_AXIS} />
-        <Tooltip {...tooltipStyle} formatter={(value) => fmtPct(Number(value))} />
+        <Tooltip content={<MoverTooltip />} cursor={{ fill: 'rgba(148,163,184,0.12)' }} />
         <Bar dataKey="pct" radius={4} isAnimationActive={false} barSize={18}>
           {rows.map((r) => (
             <Cell key={r.code} fill={r.pct >= 0 ? CHART_POSITIVE : CHART_NEGATIVE} />

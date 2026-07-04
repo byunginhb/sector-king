@@ -142,6 +142,8 @@ describe('buildBaseline → newsReportInputSchema (.strict 통과)', () => {
         bull: { body: 'ob', trigger: 'ot' },
         bear: { body: 'ob', trigger: 'ot' },
         watchItems: ['항목1'],
+        bottomLine: 'LLM 총정리.',
+        playbook: [{ signal: '신호1', action: '대응1' }],
       },
       noviceOneLineSummary: '쉬운 요약.',
       noviceClosing: '쉬운 정리.',

@@ -125,7 +125,7 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
 
       <div ref={bodyRef} className="bg-background rounded-xl">
         {/* ── 리포트 헤더 ─────────────────────────────── */}
-        <header className="border-b-2 border-foreground/80 pb-4 mb-6">
+        <header data-pdf-block className="border-b-2 border-foreground/80 pb-4 mb-6">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
               Sector King Research
@@ -150,7 +150,7 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
         </header>
 
         {/* ── 요약 지표 ─────────────────────────────── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+        <div data-pdf-block className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
           <StatTile
             label="추적 종목 시총 변화"
             value={fmtPct(charts.marketPct)}
@@ -176,7 +176,7 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
         </div>
 
         {/* ── 1. 총평 ─────────────────────────────── */}
-        <section className="mb-8">
+        <section data-pdf-block className="mb-8">
           <SectionHeader no="01" title="총평" en="Executive Summary" />
           <p className="text-[15px] leading-relaxed text-foreground/90 whitespace-pre-line">
             {ev.thirtySecBrief.replace(/\s*\[수집방법:[^\]]*\]/g, '')}
@@ -184,7 +184,7 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
         </section>
 
         {/* ── 2. 자금 흐름 ─────────────────────────── */}
-        <section className="mb-8">
+        <section data-pdf-block className="mb-8">
           <SectionHeader no="02" title="섹터 자금 흐름" en="Fund Flows" />
           <div className="rounded-lg border border-border-subtle bg-surface-1 p-3 mb-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
@@ -200,7 +200,7 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
 
         {/* ── 3. 섹터 로테이션 ─────────────────────── */}
         {ev.themeFlows.length > 0 && (
-          <section className="mb-8">
+          <section data-pdf-block className="mb-8">
             <SectionHeader no="03" title="섹터 로테이션" en="Sector Rotation" />
             <div className="space-y-4">
               {ev.themeFlows.map((t) => (
@@ -223,7 +223,7 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
         )}
 
         {/* ── 4. 주요 종목 ─────────────────────────── */}
-        <section className="mb-8">
+        <section data-pdf-block className="mb-8">
           <SectionHeader no="04" title="주요 등락 종목" en="Key Movers" />
           <div className="rounded-lg border border-border-subtle bg-surface-1 p-3 mb-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
@@ -250,7 +250,7 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
 
         {/* ── 5. 한국 주식 ─────────────────────────── */}
         {ev.koreanStocks.length > 0 && (
-          <section className="mb-8">
+          <section data-pdf-block className="mb-8">
             <SectionHeader no="05" title="한국 주식 커버리지" en="Korea Coverage" />
             <div className="overflow-x-auto rounded-lg border border-border-subtle">
               <table className="w-full text-sm">
@@ -295,7 +295,7 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
         )}
 
         {/* ── 6. 전망 (forecast) ───────────────────── */}
-        <section className="mb-8">
+        <section data-pdf-block className="mb-8">
           <SectionHeader no="06" title="전망" en="Outlook" />
           <div className="flex items-center gap-2 mb-3">
             <Telescope className="h-4 w-4 text-primary" aria-hidden />
@@ -303,6 +303,16 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
               {outlook.horizon}
             </span>
           </div>
+          {outlook.bottomLine && (
+            <div className="rounded-lg border border-primary/30 bg-primary/8 p-4 mb-5">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-primary mb-1">
+                핵심 총정리
+              </div>
+              <p className="text-[15px] font-medium leading-relaxed text-foreground">
+                {outlook.bottomLine}
+              </p>
+            </div>
+          )}
           <p className="text-[15px] leading-relaxed text-foreground/90 mb-5">
             {outlook.summary}
           </p>
@@ -347,10 +357,38 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
               </ul>
             </div>
           )}
+          {outlook.playbook && outlook.playbook.length > 0 && (
+            <div className="mt-4 overflow-hidden rounded-lg border border-border-subtle">
+              <div className="bg-surface-1 px-4 py-2 text-xs font-semibold text-foreground/80">
+                대응 플레이북 — 신호를 보고 어떻게 대응할지
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-y border-border-subtle bg-surface-1 text-left text-[11px] text-muted-foreground">
+                    <th className="px-4 py-2 font-medium w-1/2">관찰 신호</th>
+                    <th className="px-4 py-2 font-medium">대응</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {outlook.playbook.map((p, i) => (
+                    <tr key={i} className="border-b border-border-subtle/60 last:border-0 align-top">
+                      <td className="px-4 py-2.5 text-foreground/90 leading-relaxed">
+                        <span className="mr-1.5 text-primary font-bold">→</span>
+                        {p.signal}
+                      </td>
+                      <td className="px-4 py-2.5 text-foreground/75 leading-relaxed">
+                        {p.action}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         {/* ── 면책 ─────────────────────────────── */}
-        <footer className="border-t border-border-subtle pt-4 mt-8">
+        <footer data-pdf-block className="border-t border-border-subtle pt-4 mt-8">
           <div className="flex gap-2 text-[11px] text-muted-foreground leading-relaxed">
             <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" aria-hidden />
             <p>

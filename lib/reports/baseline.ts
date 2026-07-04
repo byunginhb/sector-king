@@ -140,6 +140,33 @@ function buildMonthly(
         `상승/하락 종목 비율(현재 ${facts.breadthUp}:${facts.breadthDown}) 개선 여부`,
         facts.gainers[0] ? `${facts.gainers[0].name} 등 급등주 과열·되돌림` : '급등주 과열',
       ],
+      bottomLine: inTop
+        ? `${month}은 ${inTop.name} 유입·${outTop ? `${outTop.name} 이탈` : '일부 약세'}의 로테이션 장세였다. 다음 국면은 이 흐름의 지속 vs 반전 여부가 관건이며, 지수 방향보다 섹터·종목 선택이 수익을 가른다.`
+        : `${month} 흐름의 지속 여부가 관건이다.`,
+      playbook: [
+        {
+          signal: inTop
+            ? `${inTop.name} 섹터 시총 유입이 다음 달에도 (+)를 유지`
+            : '주도 섹터 형성',
+          action: '유입 지속 시 주도 테마 비중 유지, 신규 진입은 과열도 점검 후 분할',
+        },
+        {
+          signal: outTop
+            ? `${outTop.name} 등 이탈 섹터의 월간 변화율이 (−)→(+)로 전환`
+            : '이탈 섹터 반등',
+          action: '반전 초기 신호이므로 소액 관찰 진입, 추세 확인 후 확대',
+        },
+        {
+          signal: `상승/하락 종목 비율(현재 ${facts.breadthUp}:${facts.breadthDown})이 상승 우위로 개선`,
+          action: '시장 폭 개선은 위험선호 신호 — 지수·경기민감주 비중 확대 검토',
+        },
+        {
+          signal: facts.gainers[0]
+            ? `${facts.gainers[0].name} 등 급등주 점수(모멘텀)가 하락 전환`
+            : '급등주 모멘텀 둔화',
+          action: '가격만 오른 종목은 차익실현 우선순위 — 점수 동반 상승 종목으로 교체',
+        },
+      ],
     },
   }
 }

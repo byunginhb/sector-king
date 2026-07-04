@@ -148,14 +148,20 @@ export const monthlyForecastCaseSchema = z
   .object({ body: z.string().min(1).max(1500), trigger: z.string().min(1).max(800) })
   .strict()
 
+export const monthlyPlaybookItemSchema = z
+  .object({ signal: z.string().min(1).max(400), action: z.string().min(1).max(400) })
+  .strict()
+
 export const monthlyOutlookSchema = z
   .object({
     horizon: z.string().min(1).max(60),
-    summary: z.string().min(1).max(2000),
+    summary: z.string().min(1).max(2500),
     base: monthlyForecastCaseSchema,
     bull: monthlyForecastCaseSchema,
     bear: monthlyForecastCaseSchema,
     watchItems: z.array(z.string().max(300)).default([]),
+    bottomLine: z.string().min(1).max(600),
+    playbook: z.array(monthlyPlaybookItemSchema).default([]),
   })
   .strict()
 
