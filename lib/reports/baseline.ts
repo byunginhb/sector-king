@@ -42,6 +42,25 @@ const OPINION_KO: Record<KrOpinion, string> = {
   reduce: '비중 축소',
 }
 
+/** USD 금액을 쉬운 한글 단위로(조/억 달러). v 는 달러 단위. */
+function usdKo(v: number): string {
+  if (v >= 1e12) return `약 ${(v / 1e12).toFixed(1)}조 달러`
+  return `약 ${Math.round(v / 1e8).toLocaleString()}억 달러`
+}
+
+/** recommendation_key 를 쉬운 한글로. */
+function recKo(key: string): string {
+  const m: Record<string, string> = {
+    strong_buy: '강력 매수',
+    buy: '매수',
+    hold: '중립',
+    none: '의견 없음',
+    underperform: '매도 우위',
+    sell: '매도',
+  }
+  return m[key] ?? key
+}
+
 export interface ReportMeta {
   title: string
   reportDate: string
@@ -198,8 +217,8 @@ export function buildBaseline(
       core: moverCore(mv, month),
       point:
         mv.scoreDelta >= 0
-          ? '가격과 점수가 동반 상승 — 모멘텀 지속 구간.'
-          : '가격은 올랐으나 점수는 하락 — 되돌림 여지 관찰.',
+          ? '주가도 오르고 회사 점수도 좋아져서 오름세가 이어질 만합니다.'
+          : '주가는 올랐지만 회사 점수는 나빠져서, 다시 내려올 수 있으니 지켜보세요.',
       keywords: [mv.sectorName ?? '', '상승'].filter(Boolean),
       sources: src,
     })),
@@ -211,8 +230,8 @@ export function buildBaseline(
       core: moverCore(mv, month),
       point:
         mv.scoreDelta <= 0
-          ? '가격과 점수가 동반 하락 — 약세 지속 관찰.'
-          : '가격은 내렸으나 점수는 견조 — 낙폭 과대 여부 점검.',
+          ? '주가도 내리고 회사 점수도 나빠져서 약세가 이어질 수 있습니다.'
+          : '주가는 내렸지만 회사 점수는 괜찮아서, 너무 많이 빠진 건 아닌지 살펴볼 만합니다.',
       keywords: [mv.sectorName ?? '', '하락'].filter(Boolean),
       sources: src,
     })),
@@ -221,31 +240,31 @@ export function buildBaseline(
   const themeFlows = [
     facts.themeUp.length > 0 && {
       index: 1,
-      title: `점수 개선 리더: ${facts.themeUp.slice(0, 3).map((t) => t.name).join('·')}`,
+      title: `실적 점수가 좋아진 업종: ${facts.themeUp.slice(0, 3).map((t) => t.name).join('·')}`,
       evidence: facts.themeUp
         .slice(0, 3)
-        .map((t) => `${t.name} 평균 점수 +${t.scoreDelta.toFixed(1)}(${t.members}종목)`)
+        .map((t) => `${t.name} 실적 점수 평균 +${t.scoreDelta.toFixed(1)} (${t.members}개 종목)`)
         .join(', '),
-      interpretation: '펀더멘털 점수가 개선된 섹터 — 가격 반영 지연 여부를 자금흐름과 교차 확인.',
-      nextCheckpoint: '다음 기간 해당 섹터 시총 변화가 점수 개선을 따라가는지 확인.',
+      interpretation: '회사 실적 점수가 좋아진 업종입니다. 점수는 올랐는데 아직 돈이 덜 들어왔는지 자금 흐름과 함께 보세요.',
+      nextCheckpoint: '다음 달에 이 업종으로 실제 돈이 들어오는지 확인.',
     },
     facts.themeDown.length > 0 && {
       index: 2,
-      title: `점수 하락 래거드: ${facts.themeDown.slice(0, 3).map((t) => t.name).join('·')}`,
+      title: `실적 점수가 나빠진 업종: ${facts.themeDown.slice(0, 3).map((t) => t.name).join('·')}`,
       evidence: facts.themeDown
         .slice(0, 3)
-        .map((t) => `${t.name} 평균 점수 ${t.scoreDelta.toFixed(1)}(${t.members}종목)`)
+        .map((t) => `${t.name} 실적 점수 평균 ${t.scoreDelta.toFixed(1)} (${t.members}개 종목)`)
         .join(', '),
-      interpretation: '펀더멘털 점수가 약화된 섹터 — 가격 약세와 동조하는지 관찰.',
-      nextCheckpoint: '다음 기간 점수 추세 반전 여부 확인.',
+      interpretation: '회사 실적 점수가 나빠진 업종입니다. 주가 약세와 같이 가는지 지켜보세요.',
+      nextCheckpoint: '다음 달에 점수가 다시 좋아지는지 확인.',
     },
     inTop &&
       outTop && {
         index: 3,
-        title: `자금 로테이션: ${inTop.name} 유입 ↔ ${outTop.name} 이탈`,
-        evidence: `${inTop.name} ${fmtUsd(inTop.flowUsd)}(${fmtPct(inTop.pct)}) 유입, ${outTop.name} ${fmtUsd(outTop.flowUsd)}(${fmtPct(outTop.pct)}) 이탈`,
-        interpretation: `${month} 자금은 ${inTop.name} 쪽으로 이동했다. 지수 전체는 ${fmtPct(facts.marketPct)}로 내부 로테이션이 본질.`,
-        nextCheckpoint: `${inTop.name} 유입 지속 및 ${outTop.name} 이탈 진정 여부.`,
+        title: `돈이 ${inTop.name}로 몰리고 ${outTop.name}에서 빠짐`,
+        evidence: `${inTop.name}에 ${fmtUsd(inTop.flowUsd)}(${fmtPct(inTop.pct)}) 들어오고, ${outTop.name}에서 ${fmtUsd(outTop.flowUsd)}(${fmtPct(outTop.pct)}) 빠졌습니다`,
+        interpretation: `${month}엔 돈이 ${inTop.name} 쪽으로 옮겨갔습니다. 시장 전체는 ${fmtPct(facts.marketPct)}로 큰 변화가 없었고, 안에서 돈이 이동한 게 핵심입니다.`,
+        nextCheckpoint: `${inTop.name}로 돈이 계속 들어오는지, ${outTop.name}에서 빠지는 속도가 줄어드는지 확인.`,
       },
   ].filter(Boolean) as NewsReportInput['expertView']['themeFlows']
 
@@ -267,15 +286,16 @@ export function buildBaseline(
     code: k.code,
     opinion: k.opinion,
     rationale:
-      `${month} ${fmtPct(k.pct)}, 종가 시총 $${(k.mcapLastUsd / 1e9).toFixed(0)}bn` +
-      (k.recommendationKey ? `, 컨센서스 ${k.recommendationKey}` : '') +
-      (k.upsidePct != null ? `, 목표가 대비 ${fmtPct(k.upsidePct)}` : '') +
-      '.',
+      `${month} 주가는 ${fmtPct(k.pct)} 움직였고, 시가총액은 ${usdKo(k.mcapLastUsd)}입니다.` +
+      (k.recommendationKey ? ` 증권가 평균 의견은 '${recKo(k.recommendationKey)}'` : '') +
+      (k.upsidePct != null
+        ? `, 증권가가 본 적정 주가까지 ${fmtPct(k.upsidePct)} ${k.upsidePct >= 0 ? '남았습니다' : '넘어섰습니다'}.`
+        : '.'),
     risk:
       k.upsidePct != null && k.upsidePct < 0
-        ? '현재가가 목표가를 상회 — 밸류에이션 부담.'
-        : '섹터 변동성 및 컨센서스 하향 가능성 점검.',
-    comment: `${OPINION_KO[k.opinion]} 관점(룰 기반).`,
+        ? '지금 주가가 증권가 목표가보다 높아, 다소 비싼 편입니다.'
+        : '업종 변동성과 증권가 의견이 낮아질 가능성을 살펴보세요.',
+    comment: `지표상 ${OPINION_KO[k.opinion]} 우위입니다.`,
   }))
 
   // 데이터 접지형 시나리오(조건부). 외생 사건 창작 금지.
