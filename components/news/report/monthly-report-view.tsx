@@ -352,6 +352,57 @@ export function MonthlyReportView({
         {ev.koreanStocks.length > 0 && (
           <section data-pdf-block className="mb-8">
             <SectionHeader no="05" title="한국 주식 커버리지" en="Korea Coverage" />
+            {/* 비로그인 시 상위 3위: 블러 + 중앙 로그인 버튼 */}
+            {locked && (
+              <div className="relative mb-3 overflow-hidden rounded-lg border border-border-subtle">
+                <table
+                  aria-hidden
+                  className="w-full text-sm select-none pointer-events-none"
+                  style={{ filter: 'blur(6px)' }}
+                >
+                  <tbody>
+                    {ev.koreanStocks.slice(0, 3).map((k) => {
+                      const op = OPINION[k.opinion]
+                      return (
+                        <tr
+                          key={k.code}
+                          className="border-b border-border-subtle/60 last:border-0"
+                        >
+                          <td className="px-3 py-2.5 align-top whitespace-nowrap">
+                            <div className="font-medium text-foreground">{k.name}</div>
+                            <div className="text-[11px] text-muted-foreground tabular-nums">
+                              {k.code}
+                            </div>
+                          </td>
+                          <td className="px-3 py-2.5 align-top">
+                            <span
+                              className={cn(
+                                'inline-block rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
+                                op.cls
+                              )}
+                            >
+                              {op.label}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2.5 align-top text-xs text-foreground/80 leading-relaxed min-w-[200px]">
+                            {k.rationale}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+                <div className="absolute inset-0 flex items-center justify-center bg-background/30 px-4">
+                  <Link
+                    href={loginHref}
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg hover:opacity-90"
+                  >
+                    <LogIn className="h-4 w-4" aria-hidden />
+                    로그인 하시고 종목과 의견 확인해보세요
+                  </Link>
+                </div>
+              </div>
+            )}
             <div className="overflow-x-auto rounded-lg border border-border-subtle">
               <table className="w-full text-sm">
                 <thead>
@@ -362,69 +413,28 @@ export function MonthlyReportView({
                   </tr>
                 </thead>
                 <tbody>
-                  {ev.koreanStocks.map((k, i) => {
+                  {(locked ? ev.koreanStocks.slice(3) : ev.koreanStocks).map((k) => {
                     const op = OPINION[k.opinion]
-                    const hidden = locked && i < 3 // 비로그인 시 상위 3위 가림
                     return (
                       <tr key={k.code} className="border-b border-border-subtle/60 last:border-0">
                         <td className="px-3 py-2.5 align-top whitespace-nowrap">
-                          <div
-                            className={cn(
-                              'font-medium text-foreground',
-                              hidden && 'blur-sm select-none'
-                            )}
-                          >
-                            {k.name}
-                          </div>
-                          <div
-                            className={cn(
-                              'text-[11px] text-muted-foreground tabular-nums',
-                              hidden && 'blur-sm select-none'
-                            )}
-                          >
+                          <div className="font-medium text-foreground">{k.name}</div>
+                          <div className="text-[11px] text-muted-foreground tabular-nums">
                             {k.code}
                           </div>
                         </td>
                         <td className="px-3 py-2.5 align-top">
-                          {hidden ? (
-                            <span className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface-2 px-2 py-0.5 text-xs text-muted-foreground whitespace-nowrap">
-                              <Lock className="h-3 w-3" aria-hidden />
-                              잠김
-                            </span>
-                          ) : (
-                            <span
-                              className={cn(
-                                'inline-block rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
-                                op.cls
-                              )}
-                            >
-                              {op.label}
-                            </span>
-                          )}
+                          <span
+                            className={cn(
+                              'inline-block rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
+                              op.cls
+                            )}
+                          >
+                            {op.label}
+                          </span>
                         </td>
                         <td className="px-3 py-2.5 align-top text-xs text-foreground/80 leading-relaxed min-w-[200px]">
-                          {hidden ? (
-                            i === 0 ? (
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-foreground/70">
-                                  로그인하면 시총 상위 3개 종목의 의견·코멘트가 열립니다.
-                                </span>
-                                <Link
-                                  href={loginHref}
-                                  className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90"
-                                >
-                                  <LogIn className="h-3 w-3" aria-hidden />
-                                  로그인
-                                </Link>
-                              </div>
-                            ) : (
-                              <span className="text-muted-foreground">
-                                로그인 후 공개
-                              </span>
-                            )
-                          ) : (
-                            k.rationale
-                          )}
+                          {k.rationale}
                         </td>
                       </tr>
                     )
