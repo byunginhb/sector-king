@@ -56,6 +56,8 @@ interface KstNow {
   hour: number
   /** YYYY-MM-DD (KST 기준 오늘) */
   today: string
+  /** 요일: 0=일 ~ 6=토 */
+  dow: number
 }
 
 function getKstNow(): KstNow {
@@ -65,7 +67,7 @@ function getKstNow(): KstNow {
   const yyyy = kst.getUTCFullYear()
   const mm = String(kst.getUTCMonth() + 1).padStart(2, '0')
   const dd = String(kst.getUTCDate()).padStart(2, '0')
-  return { hour, today: `${yyyy}-${mm}-${dd}` }
+  return { hour, today: `${yyyy}-${mm}-${dd}`, dow: kst.getUTCDay() }
 }
 
 interface SubscriptionTarget {
@@ -126,6 +128,22 @@ export async function POST(req: Request) {
 
   const kstNow = getKstNow()
   const targetHour = parsedHour ?? kstNow.hour
+
+  // 미장 휴장 반영: KST 일(0)·월(1) 아침엔 미국장 금요일 종가 이후 새 시장
+  // 데이터가 없어(토·일 휴장) 발송 스킵. 조회 전에 걸어 불필요한 DB 쿼리도 절약.
+  // ponytail: 주말만 하드코딩. 공휴일은 관리자 리포트 미발행(report_date 게이트)으로 방어.
+  if (kstNow.dow === 0 || kstNow.dow === 1) {
+    return NextResponse.json({
+      success: true,
+      sent: 0,
+      skipped: 0,
+      failed: 0,
+      reason: 'market_closed_weekend',
+      reportDateKst: kstNow.today,
+      hourKst: targetHour,
+      processedAt: new Date().toISOString(),
+    })
+  }
 
   const admin = createAdminClient()
 
