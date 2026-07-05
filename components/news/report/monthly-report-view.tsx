@@ -4,7 +4,9 @@
  * 월간 마켓 리포트 — 금융사/애널리스트 리포트 포맷.
  * 차트(recharts) + 전망(forecast) + PDF 다운로드. 발행 시점 박제 데이터만 사용.
  */
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
+import { usePathname, useSearchParams } from 'next/navigation'
 import {
   Download,
   Loader2,
@@ -13,10 +15,13 @@ import {
   ArrowRightLeft,
   Telescope,
   AlertTriangle,
+  Lock,
+  LogIn,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { NewsReportDTO, KoreanStockOpinion } from '@/drizzle/supabase-schema'
 import { downloadReportPdf } from '@/lib/reports/download-pdf'
+import { LockedSection } from '../locked-section'
 import { SectorFlowChart, MoversChart } from './monthly-charts'
 
 const OPINION: Record<KoreanStockOpinion, { label: string; cls: string }> = {
@@ -79,14 +84,28 @@ const FORECAST_META = {
   bear: { label: 'BEAR · 하방', cls: 'border-danger/40', dot: 'bg-danger' },
 } as const
 
-export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
+export function MonthlyReportView({
+  report,
+  isLoggedIn = true,
+}: {
+  report: NewsReportDTO
+  isLoggedIn?: boolean
+}) {
   const ev = report.expertView
   const m = ev.monthly
   const bodyRef = useRef<HTMLDivElement>(null)
   const [pdfBusy, setPdfBusy] = useState(false)
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const loginHref = useMemo(() => {
+    const qs = searchParams?.toString()
+    const here = qs ? `${pathname}?${qs}` : pathname
+    return `/login?redirect=${encodeURIComponent(here ?? '/')}`
+  }, [pathname, searchParams])
 
   if (!m) return null
   const { charts, outlook } = m
+  const locked = !isLoggedIn
 
   async function handlePdf() {
     if (!bodyRef.current) return
@@ -105,22 +124,103 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
 
   const period = `${charts.periodStart} ~ ${charts.periodEnd} · ${charts.tradingDays}거래일`
 
+  // 전망 상세(시나리오·체크리스트·플레이북) — 비로그인 시 잠금 처리
+  const forecastDetail = (
+    <>
+      <div className="grid gap-3 sm:grid-cols-3 mb-5">
+        {(['base', 'bull', 'bear'] as const).map((k) => {
+          const meta = FORECAST_META[k]
+          const c = outlook[k]
+          return (
+            <div
+              key={k}
+              className={cn('rounded-lg border-l-4 border bg-surface-1 p-3', meta.cls)}
+            >
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className={cn('h-2 w-2 rounded-full', meta.dot)} />
+                <span className="text-[11px] font-bold tracking-wide text-foreground/80">
+                  {meta.label}
+                </span>
+              </div>
+              <p className="text-xs text-foreground/85 leading-relaxed mb-2">{c.body}</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                <span className="font-medium">트리거 · </span>
+                {c.trigger}
+              </p>
+            </div>
+          )
+        })}
+      </div>
+      {outlook.watchItems.length > 0 && (
+        <div className="rounded-lg border border-border-subtle bg-surface-1 p-4">
+          <div className="text-xs font-semibold text-foreground/80 mb-2">
+            다음 달 체크리스트
+          </div>
+          <ul className="space-y-1.5">
+            {outlook.watchItems.map((w, i) => (
+              <li key={i} className="flex gap-2 text-sm text-foreground/85">
+                <span className="text-primary font-bold tabular-nums">{i + 1}.</span>
+                {w}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {outlook.playbook && outlook.playbook.length > 0 && (
+        <div className="mt-4 overflow-hidden rounded-lg border border-border-subtle">
+          <div className="bg-surface-1 px-4 py-2 text-xs font-semibold text-foreground/80">
+            대응 플레이북 — 신호를 보고 어떻게 대응할지
+          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-y border-border-subtle bg-surface-1 text-left text-[11px] text-muted-foreground">
+                <th className="px-4 py-2 font-medium w-1/2">관찰 신호</th>
+                <th className="px-4 py-2 font-medium">대응</th>
+              </tr>
+            </thead>
+            <tbody>
+              {outlook.playbook.map((p, i) => (
+                <tr key={i} className="border-b border-border-subtle/60 last:border-0 align-top">
+                  <td className="px-4 py-2.5 text-foreground/90 leading-relaxed">
+                    <span className="mr-1.5 text-primary font-bold">→</span>
+                    {p.signal}
+                  </td>
+                  <td className="px-4 py-2.5 text-foreground/75 leading-relaxed">{p.action}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  )
+
   return (
     <div className="container mx-auto max-w-4xl px-4 py-6 sm:py-10">
       {/* 액션 바 (PDF는 캡처 대상 밖) */}
       <div className="flex justify-end mb-4">
-        <button
-          onClick={handlePdf}
-          disabled={pdfBusy}
-          className="inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-60"
-        >
-          {pdfBusy ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-          ) : (
-            <Download className="h-4 w-4" aria-hidden />
-          )}
-          {pdfBusy ? '생성 중…' : 'PDF 다운로드'}
-        </button>
+        {locked ? (
+          <Link
+            href={loginHref}
+            className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/15"
+          >
+            <Lock className="h-4 w-4" aria-hidden />
+            로그인하고 PDF 다운로드
+          </Link>
+        ) : (
+          <button
+            onClick={handlePdf}
+            disabled={pdfBusy}
+            className="inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-60"
+          >
+            {pdfBusy ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            ) : (
+              <Download className="h-4 w-4" aria-hidden />
+            )}
+            {pdfBusy ? '생성 중…' : 'PDF 다운로드'}
+          </button>
+        )}
       </div>
 
       <div ref={bodyRef} className="bg-background rounded-xl">
@@ -262,27 +362,52 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {ev.koreanStocks.map((k) => {
+                  {ev.koreanStocks.map((k, i) => {
                     const op = OPINION[k.opinion]
+                    const hidden = locked && i < 3 // 비로그인 시 상위 3위 가림
                     return (
                       <tr key={k.code} className="border-b border-border-subtle/60 last:border-0">
                         <td className="px-3 py-2.5 align-top whitespace-nowrap">
-                          <div className="font-medium text-foreground">{k.name}</div>
-                          <div className="text-[11px] text-muted-foreground tabular-nums">
+                          <div
+                            className={cn(
+                              'font-medium text-foreground',
+                              hidden && 'blur-sm select-none'
+                            )}
+                          >
+                            {k.name}
+                          </div>
+                          <div
+                            className={cn(
+                              'text-[11px] text-muted-foreground tabular-nums',
+                              hidden && 'blur-sm select-none'
+                            )}
+                          >
                             {k.code}
                           </div>
                         </td>
                         <td className="px-3 py-2.5 align-top">
-                          <span
-                            className={cn(
-                              'inline-block rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
-                              op.cls
-                            )}
-                          >
-                            {op.label}
-                          </span>
+                          {hidden ? (
+                            <span className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface-2 px-2 py-0.5 text-xs text-muted-foreground whitespace-nowrap">
+                              <Lock className="h-3 w-3" aria-hidden />
+                              잠김
+                            </span>
+                          ) : (
+                            <span
+                              className={cn(
+                                'inline-block rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
+                                op.cls
+                              )}
+                            >
+                              {op.label}
+                            </span>
+                          )}
                         </td>
-                        <td className="px-3 py-2.5 align-top text-xs text-foreground/80 leading-relaxed min-w-[200px]">
+                        <td
+                          className={cn(
+                            'px-3 py-2.5 align-top text-xs text-foreground/80 leading-relaxed min-w-[200px]',
+                            hidden && 'blur-sm select-none'
+                          )}
+                        >
                           {k.rationale}
                         </td>
                       </tr>
@@ -291,6 +416,15 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
                 </tbody>
               </table>
             </div>
+            {locked && (
+              <Link
+                href={loginHref}
+                className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/8 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/12"
+              >
+                <LogIn className="h-4 w-4" aria-hidden />
+                로그인하면 시총 상위 종목까지 모두 볼 수 있어요
+              </Link>
+            )}
           </section>
         )}
 
@@ -316,74 +450,17 @@ export function MonthlyReportView({ report }: { report: NewsReportDTO }) {
           <p className="text-[15px] leading-relaxed text-foreground/90 mb-5">
             {outlook.summary}
           </p>
-          <div className="grid gap-3 sm:grid-cols-3 mb-5">
-            {(['base', 'bull', 'bear'] as const).map((k) => {
-              const meta = FORECAST_META[k]
-              const c = outlook[k]
-              return (
-                <div
-                  key={k}
-                  className={cn('rounded-lg border-l-4 border bg-surface-1 p-3', meta.cls)}
-                >
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <span className={cn('h-2 w-2 rounded-full', meta.dot)} />
-                    <span className="text-[11px] font-bold tracking-wide text-foreground/80">
-                      {meta.label}
-                    </span>
-                  </div>
-                  <p className="text-xs text-foreground/85 leading-relaxed mb-2">
-                    {c.body}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    <span className="font-medium">트리거 · </span>
-                    {c.trigger}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-          {outlook.watchItems.length > 0 && (
-            <div className="rounded-lg border border-border-subtle bg-surface-1 p-4">
-              <div className="text-xs font-semibold text-foreground/80 mb-2">
-                다음 달 체크리스트
-              </div>
-              <ul className="space-y-1.5">
-                {outlook.watchItems.map((w, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-foreground/85">
-                    <span className="text-primary font-bold tabular-nums">{i + 1}.</span>
-                    {w}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {outlook.playbook && outlook.playbook.length > 0 && (
-            <div className="mt-4 overflow-hidden rounded-lg border border-border-subtle">
-              <div className="bg-surface-1 px-4 py-2 text-xs font-semibold text-foreground/80">
-                대응 플레이북 — 신호를 보고 어떻게 대응할지
-              </div>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-y border-border-subtle bg-surface-1 text-left text-[11px] text-muted-foreground">
-                    <th className="px-4 py-2 font-medium w-1/2">관찰 신호</th>
-                    <th className="px-4 py-2 font-medium">대응</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {outlook.playbook.map((p, i) => (
-                    <tr key={i} className="border-b border-border-subtle/60 last:border-0 align-top">
-                      <td className="px-4 py-2.5 text-foreground/90 leading-relaxed">
-                        <span className="mr-1.5 text-primary font-bold">→</span>
-                        {p.signal}
-                      </td>
-                      <td className="px-4 py-2.5 text-foreground/75 leading-relaxed">
-                        {p.action}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          {locked ? (
+            <LockedSection
+              variant="fade"
+              fadeHeight="180px"
+              title="로그인하면 전체 전망을 볼 수 있어요"
+              description="상승·하락 시나리오와 다음 달 체크리스트, 대응 플레이북이 무료로 열립니다."
+            >
+              {forecastDetail}
+            </LockedSection>
+          ) : (
+            forecastDetail
           )}
         </section>
 

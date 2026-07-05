@@ -49,7 +49,7 @@ export function NewsDetailContent({
 
   // 월간 리포트 = 애널리스트 포맷(차트·전망·PDF)로 렌더. 일간은 기존 듀얼뷰.
   if (resolveReportKind(report) === 'monthly' && report.expertView.monthly) {
-    return <MonthlyReportView report={report} />
+    return <MonthlyReportView report={report} isLoggedIn={isLoggedIn} />
   }
 
   const sections = view === 'expert' ? EXPERT_TOC : NOVICE_TOC
