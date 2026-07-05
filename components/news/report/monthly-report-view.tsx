@@ -424,7 +424,7 @@ export function MonthlyReportView({
                       className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg hover:opacity-90"
                     >
                       <LogIn className="h-4 w-4" aria-hidden />
-                      로그인 하시고 종목과 의견 확인해보세요
+                      로그인하시고 1~3위 종목을 확인해보세요
                     </Link>
                   </div>
                 </div>
