@@ -19,7 +19,11 @@ import {
   LogIn,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { NewsReportDTO, KoreanStockOpinion } from '@/drizzle/supabase-schema'
+import type {
+  NewsReportDTO,
+  KoreanStockOpinion,
+  KoreanStockItem,
+} from '@/drizzle/supabase-schema'
 import { downloadReportPdf } from '@/lib/reports/download-pdf'
 import { LockedSection } from '../locked-section'
 import { SectorFlowChart, MoversChart } from './monthly-charts'
@@ -39,6 +43,42 @@ const OPINION: Record<KoreanStockOpinion, { label: string; cls: string }> = {
 
 function fmtPct(v: number): string {
   return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`
+}
+
+/** 한국 주식 테이블 3개(헤더·블러·표본)의 컬럼 폭을 맞춰 하나의 표처럼 보이게. */
+function KrCols() {
+  return (
+    <colgroup>
+      <col style={{ width: '30%' }} />
+      <col style={{ width: '16%' }} />
+      <col />
+    </colgroup>
+  )
+}
+
+function KrRow({ k }: { k: KoreanStockItem }) {
+  const op = OPINION[k.opinion]
+  return (
+    <tr className="border-b border-border-subtle/60 last:border-0">
+      <td className="px-3 py-2.5 align-top">
+        <div className="font-medium text-foreground">{k.name}</div>
+        <div className="text-[11px] text-muted-foreground tabular-nums">{k.code}</div>
+      </td>
+      <td className="px-3 py-2.5 align-top">
+        <span
+          className={cn(
+            'inline-block rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
+            op.cls
+          )}
+        >
+          {op.label}
+        </span>
+      </td>
+      <td className="px-3 py-2.5 align-top text-xs text-foreground/80 leading-relaxed">
+        {k.rationale}
+      </td>
+    </tr>
+  )
 }
 
 function SectionHeader({ no, title, en }: { no: string; title: string; en?: string }) {
@@ -352,59 +392,10 @@ export function MonthlyReportView({
         {ev.koreanStocks.length > 0 && (
           <section data-pdf-block className="mb-8">
             <SectionHeader no="05" title="한국 주식 커버리지" en="Korea Coverage" />
-            {/* 비로그인 시 상위 3위: 블러 + 중앙 로그인 버튼 */}
-            {locked && (
-              <div className="relative mb-3 overflow-hidden rounded-lg border border-border-subtle">
-                <table
-                  aria-hidden
-                  className="w-full text-sm select-none pointer-events-none"
-                  style={{ filter: 'blur(6px)' }}
-                >
-                  <tbody>
-                    {ev.koreanStocks.slice(0, 3).map((k) => {
-                      const op = OPINION[k.opinion]
-                      return (
-                        <tr
-                          key={k.code}
-                          className="border-b border-border-subtle/60 last:border-0"
-                        >
-                          <td className="px-3 py-2.5 align-top whitespace-nowrap">
-                            <div className="font-medium text-foreground">{k.name}</div>
-                            <div className="text-[11px] text-muted-foreground tabular-nums">
-                              {k.code}
-                            </div>
-                          </td>
-                          <td className="px-3 py-2.5 align-top">
-                            <span
-                              className={cn(
-                                'inline-block rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
-                                op.cls
-                              )}
-                            >
-                              {op.label}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2.5 align-top text-xs text-foreground/80 leading-relaxed min-w-[200px]">
-                            {k.rationale}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-                <div className="absolute inset-0 flex items-center justify-center bg-background/30 px-4">
-                  <Link
-                    href={loginHref}
-                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg hover:opacity-90"
-                  >
-                    <LogIn className="h-4 w-4" aria-hidden />
-                    로그인 하시고 종목과 의견 확인해보세요
-                  </Link>
-                </div>
-              </div>
-            )}
-            <div className="overflow-x-auto rounded-lg border border-border-subtle">
-              <table className="w-full text-sm">
+            {/* 헤더 최상단 + 잠금 블러(상위3) + 표본(나머지)을 하나의 컨테이너로 */}
+            <div className="overflow-hidden rounded-lg border border-border-subtle">
+              <table className="w-full table-fixed text-sm">
+                <KrCols />
                 <thead>
                   <tr className="border-b border-border-subtle bg-surface-1 text-left text-xs text-muted-foreground">
                     <th className="px-3 py-2 font-medium">종목</th>
@@ -412,33 +403,38 @@ export function MonthlyReportView({
                     <th className="px-3 py-2 font-medium">코멘트</th>
                   </tr>
                 </thead>
+              </table>
+              {locked && (
+                <div className="relative">
+                  <table
+                    aria-hidden
+                    className="w-full table-fixed text-sm select-none pointer-events-none"
+                    style={{ filter: 'blur(6px)' }}
+                  >
+                    <KrCols />
+                    <tbody>
+                      {ev.koreanStocks.slice(0, 3).map((k) => (
+                        <KrRow key={k.code} k={k} />
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/30 px-4">
+                    <Link
+                      href={loginHref}
+                      className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg hover:opacity-90"
+                    >
+                      <LogIn className="h-4 w-4" aria-hidden />
+                      로그인 하시고 종목과 의견 확인해보세요
+                    </Link>
+                  </div>
+                </div>
+              )}
+              <table className="w-full table-fixed text-sm">
+                <KrCols />
                 <tbody>
-                  {(locked ? ev.koreanStocks.slice(3) : ev.koreanStocks).map((k) => {
-                    const op = OPINION[k.opinion]
-                    return (
-                      <tr key={k.code} className="border-b border-border-subtle/60 last:border-0">
-                        <td className="px-3 py-2.5 align-top whitespace-nowrap">
-                          <div className="font-medium text-foreground">{k.name}</div>
-                          <div className="text-[11px] text-muted-foreground tabular-nums">
-                            {k.code}
-                          </div>
-                        </td>
-                        <td className="px-3 py-2.5 align-top">
-                          <span
-                            className={cn(
-                              'inline-block rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
-                              op.cls
-                            )}
-                          >
-                            {op.label}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2.5 align-top text-xs text-foreground/80 leading-relaxed min-w-[200px]">
-                          {k.rationale}
-                        </td>
-                      </tr>
-                    )
-                  })}
+                  {(locked ? ev.koreanStocks.slice(3) : ev.koreanStocks).map((k) => (
+                    <KrRow key={k.code} k={k} />
+                  ))}
                 </tbody>
               </table>
             </div>
