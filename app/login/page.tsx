@@ -88,7 +88,15 @@ export default async function LoginPage({
             </Suspense>
 
             <p className="text-xs text-muted-foreground text-center mt-6 leading-relaxed">
-              로그인 시 서비스 약관과 개인정보 처리방침에
+              로그인 시{' '}
+              <Link href="/terms" className="text-info hover:underline">
+                이용약관
+              </Link>
+              과{' '}
+              <Link href="/privacy" className="text-info hover:underline">
+                개인정보 처리방침
+              </Link>
+              에
               <br />
               동의한 것으로 간주됩니다.
             </p>

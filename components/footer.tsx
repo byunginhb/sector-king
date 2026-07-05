@@ -38,6 +38,18 @@ export function Footer() {
             >
               문의 / 제보
             </Link>
+            <Link
+              href="/terms"
+              className="text-sm text-info hover:underline"
+            >
+              이용약관
+            </Link>
+            <Link
+              href="/privacy"
+              className="text-sm text-info hover:underline"
+            >
+              개인정보 처리방침
+            </Link>
           </nav>
         </div>
 
