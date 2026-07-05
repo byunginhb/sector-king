@@ -402,13 +402,29 @@ export function MonthlyReportView({
                             </span>
                           )}
                         </td>
-                        <td
-                          className={cn(
-                            'px-3 py-2.5 align-top text-xs text-foreground/80 leading-relaxed min-w-[200px]',
-                            hidden && 'blur-sm select-none'
+                        <td className="px-3 py-2.5 align-top text-xs text-foreground/80 leading-relaxed min-w-[200px]">
+                          {hidden ? (
+                            i === 0 ? (
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-foreground/70">
+                                  로그인하면 시총 상위 3개 종목의 의견·코멘트가 열립니다.
+                                </span>
+                                <Link
+                                  href={loginHref}
+                                  className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90"
+                                >
+                                  <LogIn className="h-3 w-3" aria-hidden />
+                                  로그인
+                                </Link>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">
+                                로그인 후 공개
+                              </span>
+                            )
+                          ) : (
+                            k.rationale
                           )}
-                        >
-                          {k.rationale}
                         </td>
                       </tr>
                     )
@@ -416,15 +432,6 @@ export function MonthlyReportView({
                 </tbody>
               </table>
             </div>
-            {locked && (
-              <Link
-                href={loginHref}
-                className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/8 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/12"
-              >
-                <LogIn className="h-4 w-4" aria-hidden />
-                로그인하면 시총 상위 종목까지 모두 볼 수 있어요
-              </Link>
-            )}
           </section>
         )}
 
