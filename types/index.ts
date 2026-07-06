@@ -359,6 +359,47 @@ export interface SectorGrowth {
   growthRate: number
 }
 
+// Market Size API Types (시장 규모 시각화 — /market-size)
+/** 매출 커버리지 (합산에 실제 반영된 종목 / 전체 추적 종목) */
+export interface RevenueCoverage {
+  withRevenue: number
+  total: number
+}
+
+/** 카테고리 또는 섹터 단위의 시장 규모 집계 노드. 모든 가격성 값은 USD. */
+export interface MarketSizeNode {
+  id: string
+  name: string
+  /** 시총 합 (USD, toUsd 후 집계) */
+  marketCap: number
+  /** 시총 가중 매출 성장률 (소수, 예: 0.16 = 16%). 데이터 없으면 null */
+  revenueGrowth: number | null
+  /** 시총 가중 목표주가 상승여력 (소수). 데이터 없으면 null */
+  targetUpside: number | null
+  /** 매출 합 (USD). 커버리지 0 이면 null */
+  revenueSum: number | null
+  revenueCoverage: RevenueCoverage
+  tickerCount: number
+}
+
+export interface MarketSizeCategory extends MarketSizeNode {
+  /** 대표 산업(첫 매핑) — 버블 색 그룹핑용. 미매핑 시 null */
+  industryId: string | null
+  industryName: string | null
+  /** 드릴다운용 섹터 노드 */
+  sectors: MarketSizeNode[]
+}
+
+export interface MarketSizeResponse {
+  categories: MarketSizeCategory[]
+  /** 집계 기준 거래일 */
+  date: string | null
+  appliedRegion: _RegionFilter
+  appliedIndustryId: string | null
+  /** 표시된 카테고리 시총 총합 (USD) */
+  totalMarketCap: number
+}
+
 // Price Changes API Types
 export interface PriceChangeItem {
   ticker: string
