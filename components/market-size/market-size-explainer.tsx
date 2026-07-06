@@ -18,29 +18,24 @@ export function MarketSizeExplainer() {
 
       <div className="mt-4 space-y-3 text-sm text-muted-foreground leading-relaxed">
         <p>
-          <strong className="text-foreground">버블 차트</strong>는 카테고리(클릭 시 섹터)를
-          세 가지 축으로 배치합니다.
+          <strong className="text-foreground">성장 전망</strong>은 두 지표를 각각 수평 막대로
+          보여줍니다(지표 높은 순, 막대 클릭 시 섹터로 드릴다운).
         </p>
         <ul className="list-disc pl-5 space-y-1">
           <li>
-            <strong className="text-foreground">가로축 = 매출 성장률</strong> — 애널리스트
-            매출 성장 전망. 오른쪽일수록 성장 기대가 큽니다.
+            <strong className="text-foreground">매출 성장률</strong> — 애널리스트 매출 성장
+            전망. 막대가 길수록 성장 기대가 큽니다.
           </li>
           <li>
-            <strong className="text-foreground">세로축 = 목표주가 상승여력</strong> —
-            (목표주가 − 현재가) ÷ 현재가. 위쪽일수록 애널리스트 기대가 높습니다.
-          </li>
-          <li>
-            <strong className="text-foreground">버블 크기 = 시가총액</strong> — 클수록 이미
-            큰 시장. <strong className="text-foreground">색 = 소속 산업</strong>.
+            <strong className="text-foreground">목표주가 상승여력</strong> —
+            (목표주가 − 현재가) ÷ 현재가. 막대가 길수록 애널리스트 기대가 높습니다.
           </li>
         </ul>
         <p>
-          두 축 값은 종목마다 다르므로 <strong className="text-foreground">시가총액 가중
-          평균</strong>으로 묶습니다(소형주 왜곡 방지). 성장률·목표주가 데이터가 없는 항목은
-          위치를 정할 수 없어 버블에서 제외되지만,{' '}
-          <strong className="text-foreground">트리맵(시총 비율)</strong>에는 시총이 있으면
-          포함됩니다.
+          두 지표 값은 종목마다 다르므로 <strong className="text-foreground">시가총액 가중
+          평균</strong>으로 묶습니다(소형주 왜곡 방지). 데이터가 없는 항목은 막대에서
+          제외되지만, <strong className="text-foreground">트리맵(시총 비율)</strong>에는 시총이
+          있으면 포함됩니다. 극단값은 막대를 상한에서 자르되 숫자는 실제값을 표기합니다.
         </p>
         <p>
           <strong className="text-foreground">통화 정규화</strong> — 시총·매출은 모두{' '}

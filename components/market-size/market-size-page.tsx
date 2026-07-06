@@ -1,45 +1,22 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ArrowLeft, PieChart, Layers } from 'lucide-react'
+import { ArrowLeft, PieChart, TrendingUp, Target } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 import { RegionToggle } from '@/components/region-toggle'
 import { useRegion } from '@/hooks/use-region'
 import { useIndustries } from '@/hooks/use-industries'
 import { useMarketSize } from '@/hooks/use-market-size'
-import {
-  MarketSizeBubbleChart,
-  type BubbleGroup,
-  type BubblePoint,
-} from './market-size-bubble-chart'
 import { MarketSizeTreemap, type TreemapItem } from './market-size-treemap'
+import {
+  MarketSizeMetricBars,
+  type MetricNode,
+} from './market-size-metric-bars'
 import { MarketSizeExplainer } from './market-size-explainer'
-import type { MarketSizeCategory, MarketSizeNode } from '@/types'
+import type { MarketSizeCategory } from '@/types'
 
-/** "전체" 뷰에서 버블·트리맵에 표시할 카테고리 상한 (시총 상위). */
+/** "전체" 뷰에서 표시할 카테고리 상한 (시총 상위). */
 const TOP_N = 30
-
-// 산업 색 팔레트 (검정·순빨강 배제 톤). industryId 순서로 배정.
-const INDUSTRY_PALETTE = [
-  '#3b82f6', '#8b5cf6', '#14b8a6', '#f59e0b', '#ec4899',
-  '#06b6d4', '#84cc16', '#a855f7', '#f97316', '#6366f1',
-]
-const FALLBACK_COLOR = '#94a3b8'
-
-function toPoint(n: MarketSizeNode): BubblePoint | null {
-  if (n.revenueGrowth == null || n.targetUpside == null) return null
-  return {
-    id: n.id,
-    name: n.name,
-    x: n.revenueGrowth * 100,
-    y: n.targetUpside * 100,
-    z: n.marketCap,
-    tickerCount: n.tickerCount,
-    revenueSum: n.revenueSum,
-    revenueWith: n.revenueCoverage.withRevenue,
-    revenueTotal: n.revenueCoverage.total,
-  }
-}
 
 export function MarketSizePage() {
   const { region, setRegion } = useRegion()
@@ -48,15 +25,6 @@ export function MarketSizePage() {
 
   const { data: industriesData } = useIndustries({ region })
   const { data, isLoading, isError } = useMarketSize({ region, industryId })
-
-  // industryId → 색
-  const industryColor = useMemo(() => {
-    const map = new Map<string, string>()
-    industriesData?.industries.forEach((ind, i) => {
-      map.set(ind.id, INDUSTRY_PALETTE[i % INDUSTRY_PALETTE.length])
-    })
-    return map
-  }, [industriesData])
 
   const categories = useMemo(() => data?.categories ?? [], [data])
   const selectedCategory: MarketSizeCategory | null = selectedCategoryId
@@ -70,59 +38,21 @@ export function MarketSizePage() {
   }, [categories, industryId])
   const truncated = !industryId && categories.length > TOP_N
 
-  // 버블 그룹 + 트리맵 아이템
-  const { groups, treemapItems, excludedCount } = useMemo(() => {
-    if (selectedCategory) {
-      // 섹터 드릴다운 — 단일 산업색 그룹
-      const color = selectedCategory.industryId
-        ? industryColor.get(selectedCategory.industryId) ?? FALLBACK_COLOR
-        : FALLBACK_COLOR
-      const points = selectedCategory.sectors
-        .map(toPoint)
-        .filter((p): p is BubblePoint => p !== null)
-      const excluded = selectedCategory.sectors.length - points.length
-      const groups: BubbleGroup[] = [
-        { key: 'sectors', label: selectedCategory.name, color, points },
-      ]
-      const treemapItems: TreemapItem[] = selectedCategory.sectors.map((s) => ({
-        id: s.id,
-        name: s.name,
-        marketCap: s.marketCap,
-        revenueGrowth: s.revenueGrowth,
-      }))
-      return { groups, treemapItems, excludedCount: excluded }
-    }
-
-    // 카테고리 뷰 — 산업별 그룹
-    const byIndustry = new Map<string, BubbleGroup>()
-    let excluded = 0
-    for (const c of shownCategories) {
-      const point = toPoint(c)
-      if (!point) {
-        excluded += 1
-        continue
-      }
-      const key = c.industryId ?? 'none'
-      const label = c.industryName ?? '기타'
-      const color = c.industryId
-        ? industryColor.get(c.industryId) ?? FALLBACK_COLOR
-        : FALLBACK_COLOR
-      const g = byIndustry.get(key) ?? { key, label, color, points: [] }
-      g.points.push(point)
-      byIndustry.set(key, g)
-    }
-    const treemapItems: TreemapItem[] = shownCategories.map((c) => ({
-      id: c.id,
-      name: c.name,
-      marketCap: c.marketCap,
-      revenueGrowth: c.revenueGrowth,
-    }))
-    return {
-      groups: Array.from(byIndustry.values()),
-      treemapItems,
-      excludedCount: excluded,
-    }
-  }, [selectedCategory, shownCategories, industryColor])
+  // 막대·트리맵 공용 소스 — 드릴다운이면 섹터, 아니면 카테고리.
+  const metricNodes = useMemo<MetricNode[]>(
+    () => (selectedCategory ? selectedCategory.sectors : shownCategories),
+    [selectedCategory, shownCategories]
+  )
+  const treemapItems = useMemo<TreemapItem[]>(
+    () =>
+      metricNodes.map((n) => ({
+        id: n.id,
+        name: n.name,
+        marketCap: n.marketCap,
+        revenueGrowth: n.revenueGrowth,
+      })),
+    [metricNodes]
+  )
 
   return (
     <div className="min-h-screen bg-background">
@@ -178,11 +108,10 @@ export function MarketSizePage() {
           </div>
         )}
 
-        {/* 버블 차트 */}
+        {/* 성장 전망 — 매출 성장률 / 상승여력 분리 막대 */}
         <div className="sk-card">
           <div className="flex items-center justify-between gap-2 mb-4">
-            <h3 className="text-base font-semibold text-card-foreground flex items-center gap-2">
-              <Layers className="w-5 h-5 text-info" aria-hidden />
+            <h3 className="text-base font-semibold text-card-foreground">
               {selectedCategory
                 ? `${selectedCategory.name} · 섹터별 성장 전망`
                 : '카테고리별 성장 전망'}
@@ -198,22 +127,42 @@ export function MarketSizePage() {
               </button>
             )}
           </div>
-          {isLoading ? (
-            <div className="h-[30rem] bg-muted/30 rounded-lg animate-pulse" />
-          ) : (
-            <MarketSizeBubbleChart
-              groups={groups}
-              onSelect={selectedCategory ? undefined : setSelectedCategoryId}
-            />
-          )}
-          <p className="mt-3 text-xs text-muted-foreground">
-            오른쪽 위일수록 성장률·상승여력이 모두 높습니다(중앙값 기준선 참고).{' '}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            {/* 매출 성장률 */}
+            <div>
+              <h4 className="text-sm font-medium text-card-foreground flex items-center gap-2 mb-3">
+                <TrendingUp className="w-4 h-4 text-primary" aria-hidden />
+                매출 성장률
+              </h4>
+              <MarketSizeMetricBars
+                nodes={metricNodes}
+                metricKey="revenueGrowth"
+                isLoading={isLoading}
+                onSelect={selectedCategory ? undefined : setSelectedCategoryId}
+              />
+            </div>
+
+            {/* 목표주가 상승여력 */}
+            <div>
+              <h4 className="text-sm font-medium text-card-foreground flex items-center gap-2 mb-3">
+                <Target className="w-4 h-4 text-info" aria-hidden />
+                목표주가 상승여력
+              </h4>
+              <MarketSizeMetricBars
+                nodes={metricNodes}
+                metricKey="targetUpside"
+                isLoading={isLoading}
+                onSelect={selectedCategory ? undefined : setSelectedCategoryId}
+              />
+            </div>
+          </div>
+
+          <p className="mt-4 text-xs text-muted-foreground">
             {selectedCategory
-              ? '버블 = 섹터 · 크기: 시총.'
-              : '버블 = 카테고리(클릭 시 섹터로 드릴다운) · 색: 소속 산업.'}{' '}
-            성장률 극단값은 축 오른쪽 끝에 모아 표시(툴팁은 실제값).
-            {excludedCount > 0 &&
-              ` 성장률·상승여력 데이터가 없는 ${excludedCount}개 항목은 제외됨.`}
+              ? '섹터별 · 지표 높은 순.'
+              : '카테고리별 · 지표 높은 순(막대 클릭 시 섹터로 드릴다운).'}{' '}
+            데이터 없는 항목은 제외 · 극단값은 실제 %로 표기(막대는 비교용으로 상한 적용).
           </p>
         </div>
 
