@@ -19,7 +19,9 @@ export function MarketSizeExplainer() {
       <div className="mt-4 space-y-3 text-sm text-muted-foreground leading-relaxed">
         <p>
           <strong className="text-foreground">성장 전망</strong>은 두 지표를 각각 수평 막대로
-          보여줍니다(지표 높은 순, 막대 클릭 시 섹터로 드릴다운).
+          보여줍니다(지표 높은 순, 막대 클릭 시 섹터로 드릴다운). PC에서는 상단 토글로
+          <strong className="text-foreground"> 버블 차트</strong>(가로=성장률, 세로=상승여력,
+          크기=시총, 색=산업)로 전환할 수 있습니다.
         </p>
         <ul className="list-disc pl-5 space-y-1">
           <li>
