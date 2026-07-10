@@ -183,7 +183,8 @@
    * mixed line like "KOSPI 코스피 +1.82%" lands on three different families
    * automatically without manual unicode-range juggling. */
   --font-display:
-    var(--font-fraunces), 'Fraunces', 'Newsreader', ui-serif, Georgia,
+    var(--font-fraunces), 'Fraunces', 'Newsreader',
+    var(--font-nanum-myeongjo), 'Nanum Myeongjo', ui-serif, Georgia,
     'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo',
     'Noto Sans KR', sans-serif;
   --font-sans:

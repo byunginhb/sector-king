@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Geist, Fraunces, JetBrains_Mono } from 'next/font/google'
+import { Geist, Fraunces, JetBrains_Mono, Nanum_Myeongjo } from 'next/font/google'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Providers } from '@/components/providers'
@@ -35,6 +35,17 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   display: 'swap',
   weight: ['400', '500', '600', '700'],
+})
+
+// 한글 디스플레이 헤드라인 — Fraunces(라틴 전용)가 못 그리는 한글 글리프 담당.
+// next/font는 이 폰트의 subset을 'latin'만 노출하지만, 한글 글리프는
+// Google이 unicode-range @font-face로 함께 서빙한다. 대용량이라 preload 비활성.
+const nanumMyeongjo = Nanum_Myeongjo({
+  variable: '--font-nanum-myeongjo',
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['800'],
+  preload: false,
 })
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
@@ -140,7 +151,7 @@ export default function RootLayout({
         <WebSiteJsonLd />
       </head>
       <body
-        className={`${geistSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} antialiased bg-background font-sans`}
+        className={`${geistSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} ${nanumMyeongjo.variable} antialiased bg-background font-sans`}
       >
         <Providers>
           <TooltipProvider delayDuration={0}>

@@ -8,7 +8,6 @@ import {
   Landmark,
   Flame,
   TrendingUp,
-  ArrowDown,
   Mail,
 } from 'lucide-react'
 import { useIndustries } from '@/hooks/use-industries'
@@ -57,52 +56,31 @@ export function IndustryDashboard() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 sm:py-10">
-        {/* Page masthead — 한국어 메인 + 영문 보조 2단 헤로 */}
+        {/* Page masthead — 한 줄 슬로건 + 메일 구독 */}
         <section className="border-b border-foreground/80 pb-6 sm:pb-8 mb-8 sm:mb-10">
-          {/* eyebrow row: amber accent · 마지막 업데이트 KST */}
-          <div className="flex items-baseline justify-between gap-4 flex-wrap mb-3">
-            <p className="text-xs uppercase tracking-wider font-semibold text-amber-700 dark:text-amber-400">
-              The Map of Capital · 자금 흐름 지도
-            </p>
-            {lastUpdated ? (
-              <p className="eyebrow num-mono">{lastUpdated} · KST</p>
-            ) : null}
-          </div>
-
-          {/* h1 한국어 메인 헤드라인 */}
-          <h1 className="display text-3xl sm:text-5xl lg:text-6xl tracking-tight text-foreground">
-            시장의 돈이 어디로 흐르는가.
-            <br className="hidden sm:block" />
-            <span className="display-italic text-foreground/70">산업·섹터·종목 단위로.</span>
-          </h1>
-
-          {/* 영문 보조 카피 */}
-          <p className="mt-3 text-xs uppercase tracking-wider font-medium text-amber-700/85 dark:text-amber-400/70">
-            Where capital sits today, where it moves next.
-          </p>
-
-          {/* 가치 제안 */}
-          <p className="mt-4 max-w-2xl text-sm text-foreground/75">
-            매일 아침, 산업별 자금 흐름과 핵심 마켓 뉴스를 한 통의 메일로 정리해 드립니다.
-          </p>
-
-          {/* CTA row */}
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="#money-flow"
-              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 border-amber-600 bg-amber-500/15 text-amber-900 hover:bg-amber-500/25 dark:border-amber-500/60 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20"
-            >
-              <ArrowDown className="h-4 w-4" aria-hidden />
-              돈의 흐름 보기
-            </Link>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="display text-2xl sm:text-4xl lg:text-5xl leading-tight text-foreground">
+              시장의 돈이 어디로 흐르는가.
+            </h1>
             <Link
               href="/news"
-              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 border-amber-700/70 text-amber-800 hover:bg-amber-500/10 dark:border-amber-500/40 dark:text-amber-300 dark:hover:bg-amber-500/10"
+              className="inline-flex shrink-0 items-center gap-2 self-start rounded-md border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 border-amber-600 bg-amber-500/15 text-amber-900 hover:bg-amber-500/25 dark:border-amber-500/60 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20 sm:self-auto"
             >
               <Mail className="h-4 w-4" aria-hidden />
-              메일로 받기
+              무료 뉴스 이메일 받기
             </Link>
           </div>
+        </section>
+
+        {/* Market Pulse Strip — 히어로 바로 아래 KPI */}
+        <section className="mb-10 sm:mb-12">
+          <p className="eyebrow eyebrow-accent mb-3">Market Pulse</p>
+          <MarketPulseStrip region={region} />
+        </section>
+
+        {/* Industry Money Flow — 카드 자체 헤더(기간 토글 포함) 사용, 외부 헤더 제거 */}
+        <section id="money-flow" className="scroll-mt-24 mb-10 sm:mb-12">
+          <IndustryMoneyFlowCard region={region} />
         </section>
 
         {/* 모바일 바로가기 카드 — 햄버거에 숨는 메뉴를 대시보드에서 바로 이동 */}
@@ -113,12 +91,6 @@ export function IndustryDashboard() {
         {/* Onboarding hint strip (자동 투어 폐기 후 신규 진입 안내) */}
         <section className="mb-6">
           <OnboardingHintStrip />
-        </section>
-
-        {/* Market Pulse Strip — 최상단 KPI 헤로 */}
-        <section>
-          <p className="eyebrow eyebrow-accent mb-3">Market Pulse</p>
-          <MarketPulseStrip region={region} />
         </section>
 
         {/* 핫 종목 TickerTape */}
@@ -137,16 +109,6 @@ export function IndustryDashboard() {
 
         {/* 섹터킹 픽 — 단기·장기·DCF 종합 균형 TOP5 + 전체 보기 */}
         <SectorKingPickCard region={region} />
-
-        {/* Industry Money Flow */}
-        <section id="money-flow" className="mt-12 scroll-mt-24">
-          <SectionHeader
-            eyebrow="14-Day Flow"
-            title="산업별 자금 흐름"
-            description="시가총액 변화로 본 산업 단위 유입·유출"
-          />
-          <IndustryMoneyFlowCard region={region} />
-        </section>
 
         {/* Industry Cards Grid */}
         <section id="industries" className="mt-12 scroll-mt-24">
