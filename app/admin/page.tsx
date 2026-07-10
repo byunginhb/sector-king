@@ -7,6 +7,7 @@ import {
   Mail,
   MessageSquare,
   Users,
+  CalendarClock,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
@@ -53,6 +54,12 @@ export default async function AdminPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <AdminLinkCard
+          href="/admin/economic-calendar"
+          icon={<CalendarClock className="h-4 w-4 text-primary" aria-hidden />}
+          title="경제 캘린더"
+          description="경제 지표·이벤트를 수동 등록하고 자동 수집분을 관리합니다."
+        />
         <AdminLinkCard
           href="/admin/users"
           icon={<Users className="h-4 w-4 text-primary" aria-hidden />}

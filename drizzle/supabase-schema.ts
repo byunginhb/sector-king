@@ -13,7 +13,10 @@ import {
   uuid,
   timestamp,
   index,
+  uniqueIndex,
   date,
+  time,
+  bigint,
   jsonb,
   boolean,
   integer,
@@ -514,3 +517,62 @@ export interface MySummaryDTO {
   /** 워치 종목 평균 변동률 (%) */
   averageChange: number | null
 }
+
+// ----------------------------------------------------------------------------
+// 14_econ_calendar — economic_events (경제 캘린더, MVP=indicator)
+// ----------------------------------------------------------------------------
+// 종목/통화 도메인과 독립. 값(actual/forecast/previous)은 원문 문자열 → toUsd 불요.
+// 일시는 KST 확정값(수집 파이프라인이 현지시간→Asia/Seoul 변환 후 저장).
+// 멱등 upsert 키: (source, external_id). 충돌 정책: is_hidden(소프트삭제) + is_locked(수동고정).
+// 마이그레이션 SoT: supabase/migrations/0008_economic_events.sql
+
+/** DB 컬럼 값 — country */
+export type EconomicEventCountry = 'KR' | 'US'
+/** DB 컬럼 값 — category (MVP 는 'indicator' 만 데이터 존재) */
+export type EconomicEventCategory = 'indicator' | 'earnings' | 'event'
+/** DB 컬럼 값 — importance */
+export type EconomicEventImportance = 'high' | 'medium' | 'low'
+
+export const economicEvents = pgTable(
+  'economic_events',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    source: text('source').notNull(),
+    externalId: text('external_id').notNull(),
+    country: text('country').$type<EconomicEventCountry>().notNull(),
+    category: text('category')
+      .$type<EconomicEventCategory>()
+      .notNull()
+      .default('indicator'),
+    importance: text('importance')
+      .$type<EconomicEventImportance>()
+      .notNull()
+      .default('medium'),
+    title: text('title').notNull(),
+    titleEn: text('title_en'),
+    eventDate: date('event_date').notNull(),
+    eventTime: time('event_time'),
+    actual: text('actual'),
+    forecast: text('forecast'),
+    previous: text('previous'),
+    unit: text('unit'),
+    relatedIndustryId: text('related_industry_id'),
+    isHidden: boolean('is_hidden').notNull().default(false),
+    isLocked: boolean('is_locked').notNull().default(false),
+    createdBy: uuid('created_by'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('economic_events_source_external').on(
+      table.source,
+      table.externalId
+    ),
+    index('idx_econ_events_date').on(table.eventDate),
+    index('idx_econ_events_country_date').on(table.country, table.eventDate),
+    index('idx_econ_events_cat_date').on(table.category, table.eventDate),
+  ]
+)
+
+export type EconomicEventRow = typeof economicEvents.$inferSelect
+export type NewEconomicEventRow = typeof economicEvents.$inferInsert

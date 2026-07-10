@@ -614,3 +614,43 @@ export interface IndustryMoneyFlowResponse {
   dateRange: { start: string; end: string }
   appliedRegion?: _RegionFilter
 }
+
+// ── 경제 캘린더 (14_econ_calendar) ─────────────────────────────
+// 필터 유니온 (UI/쿼리 값). SoT: lib/econ-calendar.ts (Phase C)
+export type CalendarCountry = 'all' | 'kr' | 'us'
+export type CalendarCategory = 'all' | 'indicator' | 'earnings' | 'event'
+
+// DB 컬럼 값 (economic_events.country / .category)
+export type CalendarCountryValue = 'KR' | 'US'
+export type CalendarCategoryValue = 'indicator' | 'earnings' | 'event'
+
+/** 중요도 3단계 (별점/색상 매핑용) */
+export type EconomicImportance = 'low' | 'medium' | 'high'
+
+/** 단일 경제 이벤트 (API DTO). 값은 통화 무관 문자열 원문 */
+export interface EconomicEvent {
+  id: string
+  country: CalendarCountryValue // 'KR' | 'US'
+  category: CalendarCategoryValue // MVP 는 'indicator' 만 데이터 존재
+  title: string // 예: "미국 소비자물가지수(CPI)"
+  titleEn: string | null
+  /** 'YYYY-MM-DD' (KST) — 그리드 range 축 & 그룹핑 키 */
+  dateKst: string
+  /** 'HH:mm' (KST). 시간 미정/종일이면 null */
+  time: string | null
+  importance: EconomicImportance
+  actual: string | null // 발표 전 null (예 "3.2%")
+  forecast: string | null // 컨센서스 (예 "3.1%")
+  previous: string | null // 직전치
+  unit: string | null // 단위 라벨(값에 포함돼 있으면 null)
+  source: string | null // 출처 표기(선택)
+}
+
+/** GET /api/economic-calendar 응답 data */
+export interface EconomicCalendarResponse {
+  events: EconomicEvent[] // flat, dateKst asc → time asc 정렬
+  range: { from: string; to: string } // 실제 적용 범위(클램프 반영)
+  appliedCountry: CalendarCountry
+  appliedCategory: CalendarCategory
+  clamped: boolean // range 상한(62일) 초과로 축소됐는지
+}
