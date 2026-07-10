@@ -7,7 +7,6 @@ import { useEconomicCalendar } from '@/hooks/use-economic-calendar'
 import {
   getCalendarRange,
   buildDateGroups,
-  groupEventsByDate,
   shiftAnchor,
   monthLabel,
   weekRangeLabel,
@@ -18,21 +17,19 @@ import { CalendarMonthGrid } from '@/components/calendar/calendar-month-grid'
 import { CalendarWeekList } from '@/components/calendar/calendar-week-list'
 import { CalendarSkeleton } from '@/components/calendar/calendar-skeleton'
 import { CalendarEmpty } from '@/components/calendar/calendar-empty'
-import { DayDetailModal } from '@/components/calendar/day-detail-modal'
 import type { CalendarCountry, CalendarCategory } from '@/types'
 
 /**
- * 메인에 마운트하는 전체 경제 캘린더(월/주 토글·국가/카테고리 필터·날짜 상세 모달).
+ * 메인에 마운트하는 전체 경제 캘린더(월/주 토글·국가/카테고리 필터).
  * 필터 상태는 전역 useRegion 과 분리된 캘린더 로컬 상태(국가 축이 다름).
  * 데스크탑=월 그리드, 모바일=주별 리스트. 값은 문자열 원문 표시(toUsd 무관).
+ * 이벤트 항목 클릭 시 출처(sourceUrl)로 이동 — 날짜 상세 팝업은 없다.
  */
 export function EconomicCalendarSection() {
   const [view, setView] = useState<'week' | 'month'>('month')
   const [country, setCountry] = useState<CalendarCountry>('all')
   const [category, setCategory] = useState<CalendarCategory>('all')
   const [anchor, setAnchor] = useState<string>(() => kstToday())
-  const [selectedDay, setSelectedDay] = useState<string | null>(null)
-  const [modalOpen, setModalOpen] = useState(false)
 
   const todayKey = kstToday()
   const range = useMemo(() => getCalendarRange(view, anchor), [view, anchor])
@@ -46,7 +43,6 @@ export function EconomicCalendarSection() {
 
   const events = useMemo(() => data?.events ?? [], [data])
   const groups = useMemo(() => buildDateGroups(events, todayKey), [events, todayKey])
-  const eventsByDate = useMemo(() => groupEventsByDate(events), [events])
 
   const periodLabel = view === 'month' ? monthLabel(anchor) : weekRangeLabel(anchor)
   const filtered = country !== 'all' || category !== 'all'
@@ -55,13 +51,6 @@ export function EconomicCalendarSection() {
   function handleShift(dir: -1 | 1) {
     setAnchor((a) => shiftAnchor(view, a, dir))
   }
-
-  function handleSelectDay(dateKey: string) {
-    setSelectedDay(dateKey)
-    setModalOpen(true)
-  }
-
-  const selectedEvents = selectedDay ? (eventsByDate[selectedDay] ?? []) : []
 
   return (
     <div>
@@ -127,25 +116,17 @@ export function EconomicCalendarSection() {
                 anchor={anchor}
                 todayKey={todayKey}
                 events={events}
-                onSelectDay={handleSelectDay}
                 onShiftMonth={handleShift}
               />
             </div>
             <div className="lg:hidden">
-              <CalendarWeekList groups={groups} onSelectDay={handleSelectDay} />
+              <CalendarWeekList groups={groups} />
             </div>
           </>
         ) : (
-          <CalendarWeekList groups={groups} onSelectDay={handleSelectDay} />
+          <CalendarWeekList groups={groups} />
         )}
       </div>
-
-      <DayDetailModal
-        dateKey={selectedDay}
-        events={selectedEvents}
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-      />
     </div>
   )
 }

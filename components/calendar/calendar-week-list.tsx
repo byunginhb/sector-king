@@ -6,15 +6,14 @@ import type { CalendarDateGroup } from '@/lib/econ-calendar'
 
 interface CalendarWeekListProps {
   groups: CalendarDateGroup[]
-  /** 이벤트(행) 클릭 시 해당 날짜 상세 모달 오픈 */
-  onSelectDay: (dateKey: string) => void
 }
 
 /**
  * 주별/어젠다 날짜 그룹 리스트. 모바일 기본 + 데스크탑 리스트 뷰.
  * 각 날짜 헤더는 sticky(오늘/내일 라벨 강조), 그 아래 이벤트 전량 스택.
+ * 이벤트 항목(EventPill)은 출처가 있으면 새 탭 링크가 된다.
  */
-export function CalendarWeekList({ groups, onSelectDay }: CalendarWeekListProps) {
+export function CalendarWeekList({ groups }: CalendarWeekListProps) {
   return (
     <div className="space-y-5">
       {groups.map((g) => (
@@ -37,7 +36,7 @@ export function CalendarWeekList({ groups, onSelectDay }: CalendarWeekListProps)
           <ul className="space-y-1.5">
             {g.events.map((e) => (
               <li key={e.id}>
-                <EventPill event={e} variant="list" onSelect={onSelectDay} />
+                <EventPill event={e} variant="list" />
               </li>
             ))}
           </ul>

@@ -92,45 +92,76 @@ function ValueLine({ event }: { event: EconomicEvent }) {
 
 interface EventPillProps {
   event: EconomicEvent
-  /** grid=셀 내부 콤팩트 span, list=상세 라인(클릭 가능) */
+  /** grid=셀 내부 콤팩트 라인, list=상세 라인 */
   variant: 'grid' | 'list'
-  /** list variant 에서 클릭 시 해당 날짜 상세 모달 오픈 */
-  onSelect?: (dateKey: string) => void
+}
+
+/** 출처가 있을 때 새 탭 링크로 감싸는 aria-label 문구. */
+function sourceAriaLabel(title: string): string {
+  return `${title} — 새 탭에서 출처 열기`
 }
 
 /**
- * 이벤트 한 줄. grid=비상호작용 span(셀이 클릭 처리), list=버튼(모달 오픈).
+ * 이벤트 한 줄. grid=셀 내부 콤팩트 라인, list=상세 라인.
+ *
+ * 출처(sourceUrl)가 있으면 항목 전체가 새 탭 링크(<a>)가 되고 hover 시
+ * 밑줄/색으로 클릭 가능함을 암시한다. 출처가 없으면 비클릭 span/div 로 렌더.
  * 국가 배지·중요도 마커·제목·시각을 이모지 없이 표기.
  */
-export function EventPill({ event, variant, onSelect }: EventPillProps) {
+export function EventPill({ event, variant }: EventPillProps) {
   const bar = IMPORTANCE_BAR[event.importance]
+  // 렌더 측 스킴 가드(심층방어) — http(s) 아닌 URL(javascript: 등)은 링크화하지 않음.
+  const href =
+    event.sourceUrl && /^https?:\/\//i.test(event.sourceUrl) ? event.sourceUrl : null
 
   if (variant === 'grid') {
-    return (
-      <span
-        className={cn(
-          'flex items-center gap-1 border-l-2 pl-1 py-px rounded-sm',
-          bar
-        )}
-      >
+    const base = cn(
+      'group flex items-center gap-1 border-l-2 pl-1 py-px rounded-sm',
+      bar
+    )
+    const inner = (
+      <>
         <CountryBadge country={event.country} />
-        <span className="truncate text-[11px] leading-tight text-foreground/90">
+        <span
+          className={cn(
+            'truncate text-[11px] leading-tight text-foreground/90',
+            href &&
+              'underline-offset-2 decoration-dotted group-hover:underline group-hover:text-primary'
+          )}
+        >
           {event.title}
         </span>
-      </span>
+      </>
     )
+
+    if (href) {
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={sourceAriaLabel(event.title)}
+          // 월 그리드는 로빙 tabindex(셀 단위 방향키 탐색)라 링크를 Tab 순서에서 제외.
+          // 키보드 접근은 주별 리스트 뷰(list variant, 자연 Tab 순서)로 위임.
+          tabIndex={-1}
+          className={cn(
+            base,
+            'transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+          )}
+        >
+          {inner}
+        </a>
+      )
+    }
+    return <span className={base}>{inner}</span>
   }
 
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect?.(event.dateKst)}
-      className={cn(
-        'block w-full border-l-2 pl-3 pr-2 py-2 text-left rounded-sm transition-colors hover:bg-muted/50',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        bar
-      )}
-    >
+  const base = cn(
+    'group block w-full border-l-2 pl-3 pr-2 py-2 text-left rounded-sm',
+    bar
+  )
+  const inner = (
+    <>
       <span className="flex items-center gap-2 flex-wrap">
         <CountryBadge country={event.country} />
         {event.time && (
@@ -145,10 +176,34 @@ export function EventPill({ event, variant, onSelect }: EventPillProps) {
           </span>
         )}
       </span>
-      <span className="mt-1 block text-sm leading-snug text-foreground">
+      <span
+        className={cn(
+          'mt-1 block text-sm leading-snug text-foreground',
+          href &&
+            'underline-offset-2 decoration-dotted group-hover:underline group-hover:text-primary'
+        )}
+      >
         {event.title}
       </span>
       <ValueLine event={event} />
-    </button>
+    </>
   )
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={sourceAriaLabel(event.title)}
+        className={cn(
+          base,
+          'transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+        )}
+      >
+        {inner}
+      </a>
+    )
+  }
+  return <div className={base}>{inner}</div>
 }

@@ -137,6 +137,7 @@ export async function POST(req: Request) {
       forecast: input.forecast ?? null,
       previous: input.previous ?? null,
       unit: input.unit ?? null,
+      source_url: input.sourceUrl ?? null,
       related_industry_id: input.relatedIndustryId ?? null,
       is_hidden: false,
       is_locked: true,

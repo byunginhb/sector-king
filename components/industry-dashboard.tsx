@@ -73,22 +73,6 @@ export function IndustryDashboard() {
           </div>
         </section>
 
-        {/* Market Pulse Strip — 히어로 바로 아래 KPI */}
-        <section className="mb-10 sm:mb-12">
-          <p className="eyebrow eyebrow-accent mb-3">Market Pulse</p>
-          <MarketPulseStrip region={region} />
-        </section>
-
-        {/* Industry Money Flow — 카드 자체 헤더(기간 토글 포함) 사용, 외부 헤더 제거 */}
-        <section id="money-flow" className="scroll-mt-24 mb-10 sm:mb-12">
-          <IndustryMoneyFlowCard region={region} />
-        </section>
-
-        {/* 모바일 바로가기 카드 — 햄버거에 숨는 메뉴를 대시보드에서 바로 이동 */}
-        <div className="mb-8 md:hidden">
-          <QuickNavCards />
-        </div>
-
         {/* Onboarding hint strip (자동 투어 폐기 후 신규 진입 안내) */}
         <section className="mb-6">
           <OnboardingHintStrip />
@@ -105,10 +89,21 @@ export function IndustryDashboard() {
           <NewsHomeCardSlot />
         </section>
 
-        {/* 경제 캘린더 — 주요 경제지표 발표 일정 */}
-        <section className="mt-12">
-          <EconomicCalendarSection />
+        {/* Industry Money Flow — 카드 자체 헤더(기간 토글 포함) 사용, 외부 헤더 제거 */}
+        <section id="money-flow" className="scroll-mt-24 mt-12 mb-10 sm:mb-12">
+          <IndustryMoneyFlowCard region={region} />
         </section>
+
+        {/* Market Pulse Strip */}
+        <section className="mt-12">
+          <p className="eyebrow eyebrow-accent mb-3">Market Pulse</p>
+          <MarketPulseStrip region={region} />
+        </section>
+
+        {/* 모바일 바로가기 카드 — 햄버거에 숨는 메뉴를 대시보드에서 바로 이동 */}
+        <div className="mt-8 md:hidden">
+          <QuickNavCards />
+        </div>
 
         {/* 오늘의 한국 추천 종목 — 메일과 동일 콘텐츠 노출 + 이유 보러가기 CTA */}
         <KoreanPicksCard />
@@ -149,6 +144,11 @@ export function IndustryDashboard() {
             <CompanyStatsCard region={region} />
             <PriceChangesCard region={region} />
           </div>
+        </section>
+
+        {/* 경제 캘린더 — 주요 경제지표 발표 일정 (맨 끝) */}
+        <section className="mt-12">
+          <EconomicCalendarSection />
         </section>
       </main>
     </div>

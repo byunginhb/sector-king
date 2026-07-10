@@ -73,6 +73,7 @@ export function EventEditor({ initial }: EventEditorProps) {
   const [forecast, setForecast] = useState(initial?.forecast ?? '')
   const [previous, setPrevious] = useState(initial?.previous ?? '')
   const [unit, setUnit] = useState(initial?.unit ?? '')
+  const [sourceUrl, setSourceUrl] = useState(initial?.sourceUrl ?? '')
   const [isHidden, setIsHidden] = useState(initial?.isHidden ?? false)
   const [isLocked, setIsLocked] = useState(initial?.isLocked ?? false)
 
@@ -90,6 +91,7 @@ export function EventEditor({ initial }: EventEditorProps) {
       forecast: forecast.trim() || null,
       previous: previous.trim() || null,
       unit: unit.trim() || null,
+      sourceUrl: sourceUrl.trim() || null,
     }
   }
 
@@ -328,6 +330,15 @@ export function EventEditor({ initial }: EventEditorProps) {
             onChange={(e) => setUnit(e.target.value)}
             className="w-full rounded-md border border-border-subtle bg-background px-3 py-2 text-sm text-foreground"
             placeholder="예: %, K"
+          />
+        </Field>
+        <Field label="출처 URL(선택)" full>
+          <input
+            type="url"
+            value={sourceUrl}
+            onChange={(e) => setSourceUrl(e.target.value)}
+            className="w-full rounded-md border border-border-subtle bg-background px-3 py-2 text-sm text-foreground"
+            placeholder="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
           />
         </Field>
       </div>

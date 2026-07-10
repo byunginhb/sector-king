@@ -116,6 +116,8 @@ export interface EconomicEventUpsertRow {
   forecast: null
   previous: null
   unit: null
+  /** FRED 릴리스 페이지 URL — 이벤트 항목 클릭 시 출처로 이동 */
+  source_url: string
   updated_at: string
 }
 
@@ -250,6 +252,7 @@ export function mapReleaseDatesToEvents(
       forecast: null,
       previous: null,
       unit: null,
+      source_url: `https://fred.stlouisfed.org/release?rid=${rd.release_id}`,
       updated_at: nowIso,
     })
   }

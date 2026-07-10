@@ -556,6 +556,7 @@ export const economicEvents = pgTable(
     forecast: text('forecast'),
     previous: text('previous'),
     unit: text('unit'),
+    sourceUrl: text('source_url'),
     relatedIndustryId: text('related_industry_id'),
     isHidden: boolean('is_hidden').notNull().default(false),
     isLocked: boolean('is_locked').notNull().default(false),

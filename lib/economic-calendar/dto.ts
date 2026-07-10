@@ -30,6 +30,7 @@ export interface EconomicEventDTO {
   forecast: string | null
   previous: string | null
   unit: string | null
+  sourceUrl: string | null
   relatedIndustryId: string | null
   isHidden: boolean
   isLocked: boolean
@@ -48,6 +49,7 @@ export interface EconomicEventListItem {
   title: string
   eventDate: string
   eventTime: string | null
+  sourceUrl: string | null
   isHidden: boolean
   isLocked: boolean
   updatedAt: string
@@ -68,6 +70,7 @@ interface RawEconomicEventRow {
   forecast: string | null
   previous: string | null
   unit: string | null
+  source_url: string | null
   related_industry_id: string | null
   is_hidden: boolean
   is_locked: boolean
@@ -85,6 +88,7 @@ interface RawEconomicEventListRow {
   title: string
   event_date: string
   event_time: string | null
+  source_url: string | null
   is_hidden: boolean
   is_locked: boolean
   updated_at: string
@@ -106,6 +110,7 @@ export function rowToDto(row: RawEconomicEventRow): EconomicEventDTO {
     forecast: row.forecast ?? null,
     previous: row.previous ?? null,
     unit: row.unit ?? null,
+    sourceUrl: row.source_url ?? null,
     relatedIndustryId: row.related_industry_id ?? null,
     isHidden: Boolean(row.is_hidden),
     isLocked: Boolean(row.is_locked),
@@ -127,6 +132,7 @@ export function rowToListItem(
     title: row.title,
     eventDate: String(row.event_date).slice(0, 10),
     eventTime: row.event_time ? String(row.event_time).slice(0, 5) : null,
+    sourceUrl: row.source_url ?? null,
     isHidden: Boolean(row.is_hidden),
     isLocked: Boolean(row.is_locked),
     updatedAt: row.updated_at,
@@ -134,7 +140,7 @@ export function rowToListItem(
 }
 
 export const EVENT_LIST_COLUMNS =
-  'id, source, country, category, importance, title, event_date, event_time, is_hidden, is_locked, updated_at'
+  'id, source, country, category, importance, title, event_date, event_time, source_url, is_hidden, is_locked, updated_at'
 
 export const EVENT_FULL_COLUMNS =
-  'id, source, external_id, country, category, importance, title, title_en, event_date, event_time, actual, forecast, previous, unit, related_industry_id, is_hidden, is_locked, created_by, created_at, updated_at'
+  'id, source, external_id, country, category, importance, title, title_en, event_date, event_time, actual, forecast, previous, unit, source_url, related_industry_id, is_hidden, is_locked, created_by, created_at, updated_at'

@@ -89,6 +89,7 @@ function hasValueEdit(input: Record<string, unknown>): boolean {
     'forecast',
     'previous',
     'unit',
+    'sourceUrl',
     'relatedIndustryId',
   ]
   return valueKeys.some((k) => input[k] !== undefined)
@@ -146,6 +147,7 @@ export async function PATCH(
     if (input.forecast !== undefined) updateRow.forecast = input.forecast ?? null
     if (input.previous !== undefined) updateRow.previous = input.previous ?? null
     if (input.unit !== undefined) updateRow.unit = input.unit ?? null
+    if (input.sourceUrl !== undefined) updateRow.source_url = input.sourceUrl ?? null
     if (input.relatedIndustryId !== undefined)
       updateRow.related_industry_id = input.relatedIndustryId ?? null
 

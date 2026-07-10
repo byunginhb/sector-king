@@ -54,6 +54,7 @@ describe('mapReleaseDatesToEvents — 릴리스 매핑', () => {
       actual: null,
       forecast: null,
       previous: null,
+      source_url: 'https://fred.stlouisfed.org/release?rid=10',
       updated_at: now,
     })
   })

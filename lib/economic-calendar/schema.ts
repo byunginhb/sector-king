@@ -36,6 +36,18 @@ export const eventInputSchema = z
     forecast: z.string().max(60).nullable().optional(),
     previous: z.string().max(60).nullable().optional(),
     unit: z.string().max(20).nullable().optional(),
+    // 출처 원문 URL(선택). 빈 문자열은 null 로 정규화 후 url() 검증.
+    // http(s) 화이트리스트로 javascript:/data: 등 스킴 차단(저장형 XSS 심층방어).
+    sourceUrl: z.preprocess(
+      (v) => (v === '' ? null : v),
+      z
+        .string()
+        .url('올바른 URL 형식이어야 합니다')
+        .max(500)
+        .refine((u) => /^https?:\/\//i.test(u), 'http(s) URL만 허용됩니다')
+        .nullable()
+        .optional()
+    ),
     relatedIndustryId: z.string().max(40).nullable().optional(), // MVP null
   })
   .strict()

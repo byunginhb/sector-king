@@ -15,7 +15,6 @@ interface CalendarMonthGridProps {
   anchor: string
   todayKey: string
   events: EconomicEvent[]
-  onSelectDay: (dateKey: string) => void
   /** PageUp/PageDown 로 이전/다음 달 이동 */
   onShiftMonth: (dir: -1 | 1) => void
 }
@@ -36,7 +35,6 @@ export function CalendarMonthGrid({
   anchor,
   todayKey,
   events,
-  onSelectDay,
   onShiftMonth,
 }: CalendarMonthGridProps) {
   const cells = useMemo(() => buildMonthCells(anchor, todayKey), [anchor, todayKey])
@@ -115,16 +113,11 @@ export function CalendarMonthGrid({
           e.preventDefault()
           onShiftMonth(1)
           break
-        case 'Enter':
-        case ' ':
-          e.preventDefault()
-          onSelectDay(dateKey)
-          break
         default:
           break
       }
     },
-    [dateKeys, moveFocus, onSelectDay, onShiftMonth]
+    [dateKeys, moveFocus, onShiftMonth]
   )
 
   return (
@@ -156,7 +149,6 @@ export function CalendarMonthGrid({
                 cell={cell}
                 events={eventsByDate[cell.dateKey] ?? []}
                 isFocusable={cell.dateKey === focusKey}
-                onSelect={onSelectDay}
                 onKeyDown={handleKeyDown}
               />
             ))}

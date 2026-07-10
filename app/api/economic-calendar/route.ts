@@ -29,7 +29,7 @@ import type {
 export const revalidate = 1800
 
 const SELECT_COLUMNS =
-  'id, country, category, title, title_en, event_date, event_time, importance, actual, forecast, previous, unit, source'
+  'id, country, category, title, title_en, event_date, event_time, importance, actual, forecast, previous, unit, source, source_url'
 
 /** Supabase row → API DTO (snake→camel, dateKst/time 서버 파생). */
 function rowToDto(row: {
@@ -46,6 +46,7 @@ function rowToDto(row: {
   previous: string | null
   unit: string | null
   source: string | null
+  source_url: string | null
 }): EconomicEvent {
   return {
     id: String(row.id),
@@ -61,6 +62,7 @@ function rowToDto(row: {
     previous: row.previous ?? null,
     unit: row.unit ?? null,
     source: row.source ?? null,
+    sourceUrl: row.source_url ?? null,
   }
 }
 

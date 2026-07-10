@@ -644,6 +644,7 @@ export interface EconomicEvent {
   previous: string | null // 직전치
   unit: string | null // 단위 라벨(값에 포함돼 있으면 null)
   source: string | null // 출처 표기(선택)
+  sourceUrl: string | null // 출처 원문 URL(선택). 있으면 이벤트 항목이 링크가 됨
 }
 
 /** GET /api/economic-calendar 응답 data */
