@@ -75,7 +75,7 @@ export default function MethodologyPage() {
                     <span className="shrink-0 w-6 h-6 rounded-full bg-info/10 text-info flex items-center justify-center text-xs font-bold">2</span>
                     <div>
                       <p className="text-sm font-medium text-foreground">수집 주기</p>
-                      <p className="text-sm text-muted-foreground">매일 00:00 KST에 GitHub Actions를 통해 자동 수집됩니다.</p>
+                      <p className="text-sm text-muted-foreground">평일 하루 2회(07:00 · 16:30 KST) GitHub Actions를 통해 자동 수집됩니다.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -329,6 +329,13 @@ export default function MethodologyPage() {
                   현재가가 그보다 싼지를 0~100점과 상승예측 %로 나타냅니다.
                 </p>
                 <p>
+                  <strong className="text-foreground">상승예측 %</strong>는{' '}
+                  <strong className="text-foreground">(주당 내재가치 − 현재가) ÷ 현재가</strong>로
+                  계산합니다. 종목마다 내재가치(추정 현금흐름·성장률·할인율)와 현재가가 다르므로 값도
+                  종목별로 달라집니다. 양수면 내재가치보다 싸게(저평가), 음수면 비싸게(고평가) 거래
+                  중이라는 뜻입니다.
+                </p>
+                <p>
                   표준 2단계 DCF를 사용합니다. 예측기간{' '}
                   <strong className="text-foreground">{FORECAST_YEARS}년</strong> 동안의 현금흐름
                   현재가치 합에, 그 이후의 잔존가치(영구 성장률{' '}
@@ -373,7 +380,7 @@ export default function MethodologyPage() {
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 mt-0.5 text-muted-foreground">•</span>
-                    <span><strong className="text-foreground">실시간 데이터가 아닙니다.</strong> 1일 1회(00:00 KST) 수집되며, 장중 변동은 반영되지 않습니다.</span>
+                    <span><strong className="text-foreground">실시간 데이터가 아닙니다.</strong> 평일 하루 2회(07:00 · 16:30 KST) 수집되며, 장중 변동은 반영되지 않습니다.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 mt-0.5 text-muted-foreground">•</span>

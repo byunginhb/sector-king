@@ -31,7 +31,7 @@ const RANGE_OPTIONS: { value: IndexRange; label: string }[] = [
 const DEFAULT_SELECTED = ['^GSPC', '^KS11']
 
 /** 나라별 고정 색(선택 여부와 무관하게 같은 색 유지). */
-const colorFor = (i: number) => `hsl(var(--chart-${(i % 8) + 1}))`
+const colorFor = (i: number) => `hsl(var(--chart-${(i % 12) + 1}))`
 
 function useIndicesHistory(range: IndexRange) {
   return useQuery<IndicesHistoryResponse>({

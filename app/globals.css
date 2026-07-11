@@ -79,6 +79,10 @@
     --chart-6:           28 70% 46%;       /* burnt orange */
     --chart-7:          186 36% 38%;       /* slate cyan */
     --chart-8:          120 18% 36%;       /* moss */
+    --chart-9:           96 42% 36%;       /* olive lime */
+    --chart-10:         300 30% 44%;       /* magenta */
+    --chart-11:         236 42% 50%;       /* indigo */
+    --chart-12:         330 50% 46%;       /* pink */
   }
 
   .dark {
@@ -132,6 +136,10 @@
     --chart-6:           28 80% 58%;
     --chart-7:          186 50% 56%;
     --chart-8:          120 26% 56%;
+    --chart-9:           96 46% 54%;
+    --chart-10:         300 42% 64%;
+    --chart-11:         236 56% 68%;
+    --chart-12:         330 60% 64%;
   }
 }
 
