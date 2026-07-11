@@ -41,7 +41,9 @@ interface GlobalTopBarProps {
   mobileLeading?: React.ReactNode
 }
 
-const MOBILE_BREAKPOINT = '(min-width: 640px)'
+// 인라인 바(메뉴 + 밀도 높은 우측 액션)는 lg(1024px)+에서만. 그 아래는 햄버거 Sheet.
+// 640px(sm)에선 메뉴·토글이 한 줄에 안 들어가 라벨이 글자 단위로 깨졌음.
+const MOBILE_BREAKPOINT = '(min-width: 1024px)'
 
 interface NavItem {
   href: string
@@ -124,7 +126,7 @@ export function GlobalTopBar({
             {/* 데스크탑 inline 메뉴 — 로고 옆에 자리잡는 콘텐츠 진입 */}
             <nav
               aria-label="주요 메뉴"
-              className="hidden md:flex items-center gap-1 ml-2 pl-3 border-l border-border-subtle"
+              className="hidden lg:flex items-center gap-1 ml-2 pl-3 border-l border-border-subtle shrink-0"
             >
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon
@@ -135,7 +137,7 @@ export function GlobalTopBar({
                     href={item.href}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-sm font-medium transition-colors',
+                      'inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm px-2.5 py-1.5 text-sm font-medium transition-colors',
                       active
                         ? 'bg-surface-2 text-foreground'
                         : 'text-foreground/70 hover:bg-surface-2 hover:text-foreground'
@@ -151,7 +153,7 @@ export function GlobalTopBar({
 
           {/* 데스크탑 액션 — 마운트 전에는 기본 노출, 마운트 후 데스크탑에만 노출 */}
           {showDesktop && (
-            <div className="hidden sm:flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+            <div className="hidden lg:flex items-center gap-2 lg:gap-3 flex-wrap justify-end">
               {lastUpdated && <UpdateTimestamp dateStr={lastUpdated} />}
               {extraActions}
               <ShareButton title={shareTitle} description={shareDescription} />
@@ -165,7 +167,7 @@ export function GlobalTopBar({
 
           {/* 모바일 햄버거 — 마운트 후 모바일에서만 노출 */}
           {showMobile && (
-            <div className="sm:hidden flex items-center gap-2">
+            <div className="lg:hidden flex items-center gap-2">
               {mobileLeading}
               {lastUpdated && <UpdateTimestamp dateStr={lastUpdated} />}
               <Sheet open={open} onOpenChange={setOpen}>
