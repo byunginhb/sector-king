@@ -18,7 +18,7 @@ import { GlobalTopBar } from '@/components/layout/global-top-bar'
 import { SectionHeader } from '@/components/ui/section-header'
 import { IndustryIcon } from '@/components/ui/industry-icon'
 import { Skeleton } from '@/components/ui/skeleton'
-import { MiniSparkline } from '@/components/ui/mini-sparkline'
+import { IndustryCapChart } from '@/components/dashboard/industry-cap-chart'
 import { OnboardingHintStrip } from '@/components/onboarding/onboarding-hint-strip'
 import { useCurrencyFormat, type CurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
@@ -201,33 +201,28 @@ function IndustryCard({
           </div>
         </div>
 
-        {/* Market Cap + Sparkline */}
+        {/* Market Cap — 추세 차트를 카드 메인 시각요소로 */}
         <div className="border-t border-border-subtle pt-3 mb-3">
-          <p className="eyebrow mb-1">Market Cap</p>
-          <div className="flex items-end justify-between gap-2">
-            <div className="min-w-0">
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="num-mono text-xl sm:text-2xl text-foreground">
-                  {fmt.marketCap(industry.totalMarketCap)}
-                </span>
-                <span className={cn('num-mono text-xs', changeColor)}>
-                  {industry.marketCapChange > 0 ? '+' : ''}
-                  {industry.marketCapChange.toFixed(2)}%
-                </span>
-              </div>
-            </div>
-            {industry.marketCapHistory && industry.marketCapHistory.length >= 2 && (
-              <MiniSparkline
+          <div className="flex items-baseline justify-between gap-2 mb-1">
+            <p className="eyebrow">Market Cap</p>
+            <span className={cn('num-mono text-xs', changeColor)}>
+              {industry.marketCapChange > 0 ? '+' : ''}
+              {industry.marketCapChange.toFixed(2)}%
+            </span>
+          </div>
+          <div className="num-mono text-xl sm:text-2xl text-foreground">
+            {fmt.marketCap(industry.totalMarketCap)}
+          </div>
+          {industry.marketCapHistory && industry.marketCapHistory.length >= 2 && (
+            <div className="mt-2">
+              <IndustryCapChart
                 data={industry.marketCapHistory}
                 trend={trend}
-                width={72}
-                height={26}
-                fill
-                className="shrink-0"
+                format={(v) => fmt.marketCap(v)}
                 ariaLabel={`${industry.name} 14일 시총 추세`}
               />
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Insight one-liner */}
