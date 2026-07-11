@@ -33,12 +33,20 @@ const DEFAULT_SELECTED = ['^GSPC', '^KS11']
 /** 나라별 고정 색(선택 여부와 무관하게 같은 색 유지). */
 const colorFor = (i: number) => `hsl(var(--chart-${(i % 12) + 1}))`
 
-function useIndicesHistory(range: IndexRange) {
+type CustomRange = { start: string; end: string }
+type HistoryQuery = { range: IndexRange; custom: CustomRange | null }
+
+function useIndicesHistory(q: HistoryQuery, enabled: boolean) {
+  const qs = q.custom
+    ? `start=${q.custom.start}&end=${q.custom.end}`
+    : `range=${q.range}`
+  const key = q.custom ? `${q.custom.start}~${q.custom.end}` : q.range
   return useQuery<IndicesHistoryResponse>({
-    queryKey: ['indices-history', range],
+    queryKey: ['indices-history', key],
+    enabled,
     staleTime: 1000 * 60 * 10,
     queryFn: async () => {
-      const res = await fetch(`/api/indices/history?range=${range}`)
+      const res = await fetch(`/api/indices/history?${qs}`)
       if (!res.ok) throw new Error('Failed to fetch index history')
       const json: ApiResponse<IndicesHistoryResponse> = await res.json()
       if (!json.success || !json.data) throw new Error(json.error || 'Unknown error')
@@ -47,12 +55,38 @@ function useIndicesHistory(range: IndexRange) {
   })
 }
 
+/** 두 날짜(YYYY-MM-DD) 사이 일수. */
+function daysBetween(start: string, end: string): number {
+  return Math.round(
+    (Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 86_400_000
+  )
+}
+
 export function IndicesComparisonChart() {
   const [range, setRange] = useState<IndexRange>('1y')
+  const [mode, setMode] = useState<'preset' | 'custom'>('preset')
+  const [customStart, setCustomStart] = useState('')
+  const [customEnd, setCustomEnd] = useState('')
   const [selected, setSelected] = useState<Set<string>>(new Set(DEFAULT_SELECTED))
-  const { data, isLoading, isError } = useIndicesHistory(range)
+
+  const customValid =
+    mode === 'custom' && customStart !== '' && customEnd !== '' && customStart <= customEnd
+  const { data, isLoading, isError } = useIndicesHistory(
+    customValid ? { range, custom: { start: customStart, end: customEnd } } : { range, custom: null },
+    mode === 'preset' || customValid
+  )
 
   const series = useMemo(() => data?.series ?? [], [data])
+
+  // 커스텀 날짜 입력의 상한(미래 방지) — 로드된 시리즈의 최신 거래일.
+  const dataMaxDate = useMemo(() => {
+    let max: string | null = null
+    for (const s of series) {
+      const last = s.points[s.points.length - 1]?.date
+      if (last && (max === null || last > max)) max = last
+    }
+    return max
+  }, [series])
 
   const toggle = (symbol: string) => {
     setSelected((prev) => {
@@ -102,10 +136,22 @@ export function IndicesComparisonChart() {
 
   const activeSeries = series.filter((s) => selected.has(s.symbol))
 
-  const formatTick = (value: string) => {
-    if (range === '5y' || range === '1y') return value.slice(2, 7).replace('-', '.')
-    return value.slice(5).replace('-', '/')
+  // 직접 지정 모드 진입 — 비어 있으면 로드된 구간(≈현재 프리셋)으로 초기화한다.
+  const enterCustom = () => {
+    setMode('custom')
+    if (customEnd === '' && dataMaxDate) setCustomEnd(dataMaxDate)
+    if (customStart === '' && series[0]?.points[0]?.date) {
+      setCustomStart(series[0].points[0].date)
+    }
   }
+
+  // 긴 구간은 연-월(YY.MM), 짧은 구간은 월/일(MM/DD) 눈금.
+  const wideFormat =
+    mode === 'custom'
+      ? customValid && daysBetween(customStart, customEnd) > 300
+      : range === '5y' || range === '1y'
+  const formatTick = (value: string) =>
+    wideFormat ? value.slice(2, 7).replace('-', '.') : value.slice(5).replace('-', '/')
 
   return (
     <section className="mb-6">
@@ -126,11 +172,14 @@ export function IndicesComparisonChart() {
               key={opt.value}
               type="button"
               role="radio"
-              aria-checked={range === opt.value}
-              onClick={() => setRange(opt.value)}
+              aria-checked={mode === 'preset' && range === opt.value}
+              onClick={() => {
+                setMode('preset')
+                setRange(opt.value)
+              }}
               className={cn(
                 'rounded-md px-2 py-1 text-xs font-medium transition-colors sm:px-3 sm:py-1.5',
-                range === opt.value
+                mode === 'preset' && range === opt.value
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               )}
@@ -138,8 +187,53 @@ export function IndicesComparisonChart() {
               {opt.label}
             </button>
           ))}
+          <button
+            type="button"
+            role="radio"
+            aria-checked={mode === 'custom'}
+            onClick={enterCustom}
+            className={cn(
+              'rounded-md px-2 py-1 text-xs font-medium transition-colors sm:px-3 sm:py-1.5',
+              mode === 'custom'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            직접 지정
+          </button>
         </div>
       </div>
+
+      {/* 직접 지정 구간 입력 */}
+      {mode === 'custom' && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <label className="flex items-center gap-1.5">
+            <span>시작</span>
+            <input
+              type="date"
+              value={customStart}
+              max={customEnd || dataMaxDate || undefined}
+              onChange={(e) => setCustomStart(e.target.value)}
+              className="rounded-md border border-border-subtle bg-surface-1 px-2 py-1 text-foreground"
+            />
+          </label>
+          <span aria-hidden>~</span>
+          <label className="flex items-center gap-1.5">
+            <span>종료</span>
+            <input
+              type="date"
+              value={customEnd}
+              min={customStart || undefined}
+              max={dataMaxDate || undefined}
+              onChange={(e) => setCustomEnd(e.target.value)}
+              className="rounded-md border border-border-subtle bg-surface-1 px-2 py-1 text-foreground"
+            />
+          </label>
+          {mode === 'custom' && !customValid && (
+            <span className="text-danger">시작·종료 날짜를 올바르게 선택하세요.</span>
+          )}
+        </div>
+      )}
 
       {/* 나라 선택 칩 */}
       <div className="mb-3 flex flex-wrap gap-1.5">
@@ -177,6 +271,10 @@ export function IndicesComparisonChart() {
           <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
             그래프를 불러오지 못했어요
           </div>
+        ) : mode === 'custom' && !customValid ? (
+          <div className="flex h-80 items-center justify-center px-6 text-center text-sm text-muted-foreground">
+            조회할 시작·종료 날짜를 선택하세요.
+          </div>
         ) : isLoading && series.length === 0 ? (
           <Skeleton className="h-80 w-full" />
         ) : activeSeries.length === 0 ? (
@@ -188,7 +286,7 @@ export function IndicesComparisonChart() {
             <ResponsiveContainer width="100%" height="100%">
               {/* key: 기간/선택 변경 시 stale 활성 인덱스로 십자선이 어긋나는 것 방지(remount). */}
               <LineChart
-                key={`${range}:${activeSeries.map((s) => s.symbol).join(',')}`}
+                key={`${mode === 'custom' ? `${customStart}~${customEnd}` : range}:${activeSeries.map((s) => s.symbol).join(',')}`}
                 data={chartData}
                 margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
               >
