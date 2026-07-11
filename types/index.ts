@@ -178,6 +178,9 @@ export interface CompanyDetailResponse {
     available: boolean
     reason: string | null // 'finance'|'negativeFcf'|'missing'|'lowConfidence'|null
     discountRate: number | null // 도출된 할인율 r
+    // 연도별 예측 현금흐름(기업 전체 FCF·USD 환산). 제외 시 null. (#24)
+    projections: { year: number; fcf: number; pv: number }[] | null
+    terminalPv: number | null // 잔존가치(TV) 현재가치(USD)
   } | null
 }
 

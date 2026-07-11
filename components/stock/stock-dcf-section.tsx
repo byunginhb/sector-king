@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Calculator } from 'lucide-react'
 import { formatPercent } from '@/lib/format'
+import { FORECAST_YEARS } from '@/lib/dcf'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
 import type { CompanyDetailResponse } from '@/types'
@@ -108,6 +109,64 @@ export function StockDcfSection({ dcf, currentPriceUsd }: StockDcfSectionProps) 
               &lsquo;좋은 기업이지만 성장 기대가 주가에 이미 반영된 상태&rsquo;로 읽으면 됩니다.
               가정에 민감한 참고용 값이며 미래 수익을 보장하지 않아요.
             </p>
+
+            {dcf.projections && dcf.projections.length > 0 && (
+              <details className="group">
+                <summary className="flex cursor-pointer list-none items-center justify-between text-[11px] font-medium text-info">
+                  <span>시점별 예상 현금흐름 보기</span>
+                  <span className="text-muted-foreground transition-transform group-open:rotate-180">
+                    ▾
+                  </span>
+                </summary>
+                <div className="mt-3 overflow-x-auto">
+                  <table className="w-full border-collapse text-xs">
+                    <caption className="sr-only">
+                      연도별 예상 잉여현금흐름과 그 현재가치, 잔존가치를 표로 표시합니다.
+                    </caption>
+                    <thead>
+                      <tr className="border-b border-border text-[10px] text-muted-foreground">
+                        <th scope="col" className="py-1.5 pr-2 text-left font-medium">
+                          시점
+                        </th>
+                        <th scope="col" className="py-1.5 pl-2 text-right font-medium">
+                          예상 FCF
+                        </th>
+                        <th scope="col" className="py-1.5 pl-2 text-right font-medium">
+                          현재가치
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dcf.projections.map((p) => (
+                        <tr key={p.year} className="border-b border-border-subtle/60">
+                          <td className="py-1.5 pr-2 text-muted-foreground">{p.year}년차</td>
+                          <td className="num-mono py-1.5 pl-2 text-right tabular-nums text-foreground">
+                            {fmt.marketCap(p.fcf)}
+                          </td>
+                          <td className="num-mono py-1.5 pl-2 text-right tabular-nums text-muted-foreground">
+                            {fmt.marketCap(p.pv)}
+                          </td>
+                        </tr>
+                      ))}
+                      {dcf.terminalPv != null && (
+                        <tr className="border-b border-border-subtle/60">
+                          <td className="py-1.5 pr-2 text-muted-foreground">이후(잔존가치)</td>
+                          <td className="py-1.5 pl-2 text-right text-muted-foreground">—</td>
+                          <td className="num-mono py-1.5 pl-2 text-right tabular-nums text-muted-foreground">
+                            {fmt.marketCap(dcf.terminalPv)}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                  <p className="mt-2 text-[10px] text-muted-foreground leading-relaxed">
+                    예상 FCF는 초기 성장률이 {FORECAST_YEARS}년에 걸쳐 영구 성장률로 수렴한다고 가정한
+                    기업 전체 잉여현금흐름이며, 현재가치는 적용 할인율로 할인한 값입니다. 이 현재가치의
+                    합(잔존가치 포함)을 주식 수로 나눈 것이 적정가(주당)입니다.
+                  </p>
+                </div>
+              </details>
+            )}
           </>
         ) : (
           <p className="text-sm text-muted-foreground">{reasonCopy(dcf.reason)}</p>

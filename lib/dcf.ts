@@ -89,6 +89,14 @@ export interface DcfResult {
   dcfReason: 'finance' | 'negativeFcf' | 'missing' | 'lowConfidence' | null
   /** 도출된 할인율 r(투명성용). 제외 시 null. */
   dcfDiscountRate: number | null
+  /**
+   * 연도별 예측 현금흐름(네이티브 통화 · 기업 전체 FCF). 표시 전용.
+   * fcf=해당 연도 예측 FCF, pv=그 현재가치. 제외 시 null.
+   * 통화 변환은 호출부가 toUsd(value, ticker) 로 수행한다(dcf.ts 는 통화 무지).
+   */
+  dcfProjections: { year: number; fcf: number; pv: number }[] | null
+  /** 잔존가치(TV)의 현재가치(네이티브). 표시 전용. 제외 시 null. */
+  dcfTerminalPv: number | null
 }
 
 const EXCLUDED: Omit<DcfResult, 'dcfReason'> = {
@@ -97,6 +105,8 @@ const EXCLUDED: Omit<DcfResult, 'dcfReason'> = {
   dcfIntrinsicUsd: null,
   dcfAvailable: false,
   dcfDiscountRate: null,
+  dcfProjections: null,
+  dcfTerminalPv: null,
 }
 
 /**
@@ -177,11 +187,14 @@ export function computeDcf(input: DcfInput): DcfResult {
   let cumFcf = fcf0
   let pvSum = 0
   let fcfN = fcf0
+  const projections: { year: number; fcf: number; pv: number }[] = []
   for (let k = 1; k <= N; k++) {
     const gk = g0 + (gTerm - g0) * (k / N)
     cumFcf = cumFcf * (1 + gk)
-    pvSum += cumFcf / Math.pow(1 + r, k)
+    const pv = cumFcf / Math.pow(1 + r, k)
+    pvSum += pv
     fcfN = cumFcf
+    projections.push({ year: k, fcf: cumFcf, pv })
   }
 
   // 잔존가치(TV) 현가 — r - gTerm 은 불변식상 ≥ 0.035 > 0
@@ -213,5 +226,7 @@ export function computeDcf(input: DcfInput): DcfResult {
     dcfAvailable: true,
     dcfReason: null,
     dcfDiscountRate: r,
+    dcfProjections: projections,
+    dcfTerminalPv: pvTv,
   }
 }

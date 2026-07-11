@@ -118,6 +118,13 @@ describe('computeDcf — 정상 산출', () => {
     expect(res.dcfUpsidePct).toBeCloseTo(expectedUpside, 10)
     expect(res.dcfScore).toBeCloseTo(expectedScore, 8)
     expect(res.dcfDiscountRate).toBeCloseTo(r, 10)
+
+    // 연도별 예측(#24): N개 행 + PV 합(+잔존가치) = 기업 내재가치 = 주당내재가치×주식수
+    expect(res.dcfProjections).toHaveLength(FORECAST_YEARS)
+    expect(res.dcfProjections?.map((p) => p.year)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    const pvTotal =
+      (res.dcfProjections ?? []).reduce((s, p) => s + p.pv, 0) + (res.dcfTerminalPv ?? 0)
+    expect(pvTotal).toBeCloseTo(expectedPerShare * shares, 4)
   })
 
   it('KR(.KS) upside 비율이 환율 상쇄로 USD 와 동일', () => {

@@ -143,6 +143,15 @@ export async function GET(
       available: dcfRes.dcfAvailable,
       reason: dcfRes.dcfReason,
       discountRate: dcfRes.dcfDiscountRate,
+      // 연도별 예측 현금흐름 — 네이티브 FCF·PV 를 표시용 USD 로 변환(#24)
+      projections:
+        dcfRes.dcfProjections?.map((p) => ({
+          year: p.year,
+          fcf: toUsd(p.fcf, ticker),
+          pv: toUsd(p.pv, ticker),
+        })) ?? null,
+      terminalPv:
+        dcfRes.dcfTerminalPv != null ? toUsd(dcfRes.dcfTerminalPv, ticker) : null,
     }
 
     // 멀티섹터 패권 요약 (전 섹터 대상, 기존 sectors 결과로 집계 — 추가 쿼리 0)
