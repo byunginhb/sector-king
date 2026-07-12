@@ -2,7 +2,9 @@
 
 import { Zap, TrendingUp } from 'lucide-react'
 import { computeRankingScores, computeMomentumDelta } from '@/lib/ranking-score'
+import { shortScoreReason, longScoreReason } from '@/lib/score-reason'
 import { InfoTip } from '@/components/rankings/info-tip'
+import { HintPopover } from '@/components/ui/hint-popover'
 import { cn } from '@/lib/utils'
 import type { CompanyDetailResponse, ScoreHistoryPoint } from '@/types'
 
@@ -20,6 +22,7 @@ function ScoreCard({
   score,
   Icon,
   partialNote,
+  reason,
 }: {
   label: string
   caption: string
@@ -27,6 +30,8 @@ function ScoreCard({
   score: number | null
   Icon: typeof Zap
   partialNote?: boolean
+  /** 이 종목이 왜 이 점수인지 한 줄 근거(호버·탭 팝오버). */
+  reason?: string
 }) {
   const rounded = score == null ? null : Math.round(score)
   const fillTone =
@@ -48,9 +53,24 @@ function ScoreCard({
       {rounded != null ? (
         <>
           <div className="flex items-baseline gap-1">
-            <span className="num-mono text-3xl font-bold tabular-nums text-foreground">
-              {rounded}
-            </span>
+            {reason ? (
+              <HintPopover
+                label={`${label} 근거`}
+                content={
+                  <>
+                    <p className="mb-1 font-semibold text-foreground">{label} 근거</p>
+                    <p>{reason}</p>
+                  </>
+                }
+                className="num-mono text-3xl font-bold tabular-nums text-foreground underline decoration-dotted decoration-muted-foreground/50 underline-offset-4 cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+              >
+                {rounded}
+              </HintPopover>
+            ) : (
+              <span className="num-mono text-3xl font-bold tabular-nums text-foreground">
+                {rounded}
+              </span>
+            )}
             <span className="num-mono text-xs text-muted-foreground">/ 100</span>
           </div>
           <div
@@ -106,6 +126,37 @@ export function ShortLongScores({ data, scoreHistory }: ShortLongScoresProps) {
     priceUsd: analystUpside?.currentPriceUsd ?? snapshot?.price ?? null,
   })
 
+  // 52주 밴드 내 위치(0~1) — 단기 근거용. 같은 통화 비율이라 환산 불요.
+  const week52Position =
+    snapshot?.price != null &&
+    snapshot?.week52High != null &&
+    snapshot?.week52Low != null &&
+    snapshot.week52High > snapshot.week52Low
+      ? Math.min(
+          Math.max((snapshot.price - snapshot.week52Low) / (snapshot.week52High - snapshot.week52Low), 0),
+          1
+        )
+      : null
+
+  const shortReason =
+    result.shortScore == null
+      ? undefined
+      : shortScoreReason({
+          week52Position,
+          momentumDelta,
+          momentumPartial: result.momentumPartial,
+          sentimentNorm: score?.sentiment ?? null,
+        })
+  const longReason =
+    result.longScore == null
+      ? undefined
+      : longScoreReason({
+          profitabilityNorm: score?.profitability ?? null,
+          growthNorm: score?.growth ?? null,
+          scaleNorm: score?.scale ?? null,
+          upsidePct: result.upsidePct,
+        })
+
   return (
     <section className="sk-card space-y-4">
       <div className="border-b border-border-subtle pb-3">
@@ -126,6 +177,7 @@ export function ShortLongScores({ data, scoreHistory }: ShortLongScoresProps) {
           score={result.shortScore}
           Icon={Zap}
           partialNote={result.momentumPartial}
+          reason={shortReason}
         />
         <ScoreCard
           label="장기 점수"
@@ -133,6 +185,7 @@ export function ShortLongScores({ data, scoreHistory }: ShortLongScoresProps) {
           tip="얼마나 잘 버는지·성장하는지·규모가 큰지와 목표가까지 남은 폭을 모아 묵힐 가치를 0~100점으로 나타냅니다."
           score={result.longScore}
           Icon={TrendingUp}
+          reason={longReason}
         />
       </div>
     </section>
