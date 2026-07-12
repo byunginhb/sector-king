@@ -598,6 +598,26 @@ export interface IndustryFilterResult {
   tickers: string[]
 }
 
+/** 월간 리포트 일별 시장 흐름 한 점(#28). */
+export interface DailyMarketPoint {
+  date: string
+  /** 기간 시작 대비 누적 % 변화. */
+  pct: number
+  /** 전일 대비 % 변화(급등/급락 판정용). 첫날은 null. */
+  dayPct: number | null
+  /** 그날 발행된 데일리 리포트 id(있으면 링크). */
+  newsId: string | null
+  newsTitle: string | null
+}
+
+export interface DailyMarketResponse {
+  points: DailyMarketPoint[]
+  /** 기간 내 전일대비 최대 상승일. */
+  spikeDate: string | null
+  /** 기간 내 전일대비 최대 하락일. */
+  dropDate: string | null
+}
+
 // Industry Money Flow Summary types
 export interface IndustryMoneyFlowSummary {
   industryId: string

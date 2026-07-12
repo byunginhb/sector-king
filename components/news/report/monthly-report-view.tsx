@@ -27,6 +27,8 @@ import type {
 import { downloadReportPdf } from '@/lib/reports/download-pdf'
 import { LockedSection } from '../locked-section'
 import { SectorFlowChart, MoversChart } from './monthly-charts'
+import { DailyMarketChart } from './daily-market-chart'
+import { useDailyMarket } from '@/hooks/use-daily-market'
 
 const OPINION: Record<KoreanStockOpinion, { label: string; cls: string }> = {
   buy: { label: '매수', cls: 'bg-success/12 text-success border-success/30' },
@@ -142,6 +144,15 @@ export function MonthlyReportView({
     const here = qs ? `${pathname}?${qs}` : pathname
     return `/login?redirect=${encodeURIComponent(here ?? '/')}`
   }, [pathname, searchParams])
+
+  // 일별 시장 흐름(#28) — 발행 시점 박제 데이터엔 없어 기간 기준 라이브 조회.
+  // 과거 월의 일별값은 불변이라 뷰 시점 조회여도 결과가 영구 동일하다.
+  const dailyMarket = useDailyMarket({
+    start: m?.charts.periodStart ?? '',
+    end: m?.charts.periodEnd ?? '',
+    excludeId: report.id,
+    enabled: !!m,
+  })
 
   if (!m) return null
   const { charts, outlook } = m
@@ -314,6 +325,14 @@ export function MonthlyReportView({
             tone="down"
           />
         </div>
+
+        {/* ── 이달의 일별 시장 흐름(#28) — 라이브 조회라 PDF(data-pdf-block) 제외 ── */}
+        {dailyMarket.data && dailyMarket.data.points.length >= 2 && (
+          <section className="mb-8">
+            <SectionHeader no="—" title="이달의 일별 시장 흐름" en="Daily Market Trend" />
+            <DailyMarketChart data={dailyMarket.data} />
+          </section>
+        )}
 
         {/* ── 1. 총평 ─────────────────────────────── */}
         <section data-pdf-block className="mb-8">
