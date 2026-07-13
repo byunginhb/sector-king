@@ -62,3 +62,5 @@ __pycache__/
 .omc
 .codex
 outputs
+# DB 는 db-snapshot 브랜치에서 관리 (git 히스토리 팽창 분리) — pnpm db:pull 로 받음
+data/hegemony.db

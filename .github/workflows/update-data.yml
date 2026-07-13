@@ -2,10 +2,12 @@ name: Daily Data Update
 
 on:
   schedule:
-    # KST 16:30 (UTC 07:30) 월~금 — 한국장 마감 후 (.KS/.KQ 반영 버퍼 30분)
-    - cron: '30 7 * * 1-5'
-    # KST 07:00 (UTC 22:00) 월~금(UTC) = 미국장 월~금 마감 후 (KST 화~토 새벽)
-    - cron: '0 22 * * 1-5'
+    # 하루 4회(평일). DB 는 (ticker,date) UPSERT 라 같은 날 재수집해도 행이 안 늘고
+    # 값만 최신화된다. 커밋은 db-snapshot 브랜치 단일 커밋 force-push 라 히스토리 미보존.
+    - cron: '0 22 * * 1-5'   # KST 07:00 — 미국장 마감 후
+    - cron: '0 3 * * 1-5'    # KST 12:00 — 한국장 오전
+    - cron: '30 7 * * 1-5'   # KST 16:30 — 한국장 마감 후(+30분 버퍼)
+    - cron: '0 13 * * 1-5'   # KST 22:00 — 미국 프리마켓/유럽
   workflow_dispatch:
     inputs:
       date:
@@ -32,9 +34,19 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Install dependencies
         run: |
           pip install -r scripts/requirements.txt
+
+      # DB 는 main 에 없고 db-snapshot 브랜치에만 있다. 현재 DB 를 받아와서 UPSERT 대상으로 삼는다.
+      # 실패 시 fetch-db.mjs 가 종료코드 1 → 잡 중단(빈 DB 로 재생성/덮어쓰기 방지).
+      - name: Fetch current DB from db-snapshot
+        run: node scripts/fetch-db.mjs
 
       - name: Run data update
         run: python scripts/update_data.py ${{ github.event.inputs.date }}
@@ -43,13 +55,22 @@ jobs:
         run: python scripts/update_indices.py
         continue-on-error: true
 
-      - name: Commit and push if changed
+      # db-snapshot 을 단일 커밋으로 force-push (히스토리 미보존 → git 팽창 없음).
+      # 플러밍으로 커밋을 만들어 working tree/HEAD 를 건드리지 않는다.
+      - name: Push DB to db-snapshot
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          # Remove WAL/SHM files and stage all data changes (including deletions)
+          test -f data/hegemony.db || { echo "DB missing — aborting push"; exit 1; }
+          SIZE=$(stat -c%s data/hegemony.db)
+          if [ "$SIZE" -lt 3000000 ]; then
+            echo "DB too small ($SIZE bytes) — aborting push to protect source of truth"
+            exit 1
+          fi
           rm -f data/hegemony.db-wal data/hegemony.db-shm
-          git add data/
-          git diff --staged --quiet || git commit -m "chore: daily data update $(date +'%Y-%m-%d')"
-          git pull --rebase origin main
-          git push
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          BLOB=$(git hash-object -w data/hegemony.db)
+          SUBTREE=$(printf '100644 blob %s\thegemony.db\n' "$BLOB" | git mktree)
+          ROOTTREE=$(printf '040000 tree %s\tdata\n' "$SUBTREE" | git mktree)
+          COMMIT=$(git commit-tree "$ROOTTREE" -m "data: snapshot $(date -u +'%F %T UTC')")
+          git push -f origin "$COMMIT:refs/heads/db-snapshot"
+          echo "Pushed ${SIZE} bytes to db-snapshot"

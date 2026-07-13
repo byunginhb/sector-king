@@ -10,7 +10,8 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/fetch-db.mjs && next build",
+    "db:pull": "node scripts/fetch-db.mjs",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "vitest",
