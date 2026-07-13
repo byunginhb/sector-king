@@ -27,7 +27,7 @@ import type {
 import { downloadReportPdf } from '@/lib/reports/download-pdf'
 import { LockedSection } from '../locked-section'
 import { SectorFlowChart, MoversChart } from './monthly-charts'
-import { DailyMarketChart } from './daily-market-chart'
+import { DailyMarketChart, DailyMarketChartSkeleton } from './daily-market-chart'
 import { useDailyMarket } from '@/hooks/use-daily-market'
 
 const OPINION: Record<KoreanStockOpinion, { label: string; cls: string }> = {
@@ -327,12 +327,18 @@ export function MonthlyReportView({
         </div>
 
         {/* ── 이달의 일별 시장 흐름(#28) — 라이브 조회라 PDF(data-pdf-block) 제외 ── */}
-        {dailyMarket.data && dailyMarket.data.points.length >= 2 && (
+        {/* 로딩 중엔 스켈레톤으로 영역을 잡아 레이아웃 점프 방지. 데이터가 없으면(보관기간 밖) 숨김. */}
+        {dailyMarket.isLoading ? (
+          <section className="mb-8">
+            <SectionHeader no="—" title="이달의 일별 시장 흐름" en="Daily Market Trend" />
+            <DailyMarketChartSkeleton />
+          </section>
+        ) : dailyMarket.data && dailyMarket.data.points.length >= 2 ? (
           <section className="mb-8">
             <SectionHeader no="—" title="이달의 일별 시장 흐름" en="Daily Market Trend" />
             <DailyMarketChart data={dailyMarket.data} />
           </section>
-        )}
+        ) : null}
 
         {/* ── 1. 총평 ─────────────────────────────── */}
         <section data-pdf-block className="mb-8">

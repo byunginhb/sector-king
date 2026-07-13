@@ -20,6 +20,7 @@ import {
 } from 'recharts'
 import { ArrowRight, TrendingUp, TrendingDown } from 'lucide-react'
 import { CHART_POSITIVE, CHART_NEGATIVE, CHART_AXIS } from '@/lib/chart-colors'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { DailyMarketResponse, DailyMarketMover } from '@/types'
 
 const AXIS_TICK = { fill: CHART_AXIS, fontSize: 11 }
@@ -74,6 +75,30 @@ function MoverCard({ kind, mover }: { kind: 'spike' | 'drop'; mover: DailyMarket
       ) : (
         <p className="mt-2 text-[11px] text-muted-foreground">그날 발행된 리포트가 없어요.</p>
       )}
+    </div>
+  )
+}
+
+/** 로딩 중 영역을 잡아두는 스켈레톤 — 실제 차트+카드 레이아웃과 동일 치수. */
+export function DailyMarketChartSkeleton() {
+  return (
+    <div className="space-y-3" aria-hidden>
+      <div className="rounded-lg border border-border-subtle bg-surface-1 p-3">
+        <Skeleton className="h-56 w-full" />
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {[0, 1].map((i) => (
+          <div key={i} className="rounded-lg border border-border-subtle bg-surface-1 p-3">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="mt-2 h-4 w-full" />
+            <Skeleton className="mt-1.5 h-3 w-full" />
+            <Skeleton className="mt-1 h-3 w-5/6" />
+            <Skeleton className="mt-2 h-3 w-28" />
+          </div>
+        ))}
+      </div>
+      <Skeleton className="h-3 w-full" />
+      <Skeleton className="h-3 w-2/3" />
     </div>
   )
 }
