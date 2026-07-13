@@ -4,7 +4,7 @@ import { getDb } from '@/lib/db'
 import { sectorCompanies, dailySnapshots } from '@/drizzle/schema'
 import { toUsd } from '@/lib/currency'
 import { createClient } from '@/lib/supabase/server'
-import type { ApiResponse, DailyMarketResponse } from '@/types'
+import type { ApiResponse, DailyMarketResponse, DailyMarketMover } from '@/types'
 
 export const revalidate = 3600
 
@@ -91,7 +91,7 @@ export async function GET(
     if (datesAsc.length < 2) {
       return NextResponse.json({
         success: true,
-        data: { points: [], spikeDate: null, dropDate: null },
+        data: { points: [], spike: null, drop: null },
       })
     }
 
@@ -105,62 +105,98 @@ export async function GET(
       }
     }
 
-    // 기간 내 발행 데일리 리포트 날짜 → { id, title } (현재 월간 리포트 제외).
-    const newsByDate = new Map<string, { id: string; title: string }>()
-    try {
-      const supabase = await createClient()
-      const { data: reports } = await supabase
-        .from('news_reports')
-        .select('id, report_date, title')
-        .eq('status', 'published')
-        .gte('report_date', start)
-        .lte('report_date', end)
-      for (const r of reports ?? []) {
-        if (excludeId && r.id === excludeId) continue
-        // 같은 날 여러 건이면 먼저 온 것 유지(목록 순서 무관 — 링크 존재 여부만 중요).
-        if (!newsByDate.has(r.report_date)) {
-          newsByDate.set(r.report_date, { id: r.id, title: r.title })
-        }
-      }
-    } catch {
-      // 뉴스 조회 실패는 치명적이지 않음 — 링크 없이 라인만 노출.
-    }
-
+    // 1) 일별 점(누적 pct·전일대비 dayPct) + 급등/급락일 추적
     const firstTotal = totalByDate.get(datesAsc[0]) ?? 0
     let spikeDate: string | null = null
     let dropDate: string | null = null
     let maxDay = -Infinity
     let minDay = Infinity
+    const spikeMeta = { pct: 0, dayPct: 0 }
+    const dropMeta = { pct: 0, dayPct: 0 }
 
     const points = datesAsc.map((date, i) => {
       const total = totalByDate.get(date) ?? 0
-      const pct = firstTotal > 0 ? ((total - firstTotal) / firstTotal) * 100 : 0
+      const pct = Math.round((firstTotal > 0 ? ((total - firstTotal) / firstTotal) * 100 : 0) * 100) / 100
       const prev = i > 0 ? totalByDate.get(datesAsc[i - 1]) : undefined
-      const dayPct =
-        prev && prev > 0 ? ((total - prev) / prev) * 100 : null
-      if (dayPct != null) {
-        if (dayPct > maxDay) {
-          maxDay = dayPct
+      const dayPctRaw = prev && prev > 0 ? ((total - prev) / prev) * 100 : null
+      const dayPct = dayPctRaw == null ? null : Math.round(dayPctRaw * 100) / 100
+      if (dayPctRaw != null) {
+        if (dayPctRaw > maxDay) {
+          maxDay = dayPctRaw
           spikeDate = date
+          spikeMeta.pct = pct
+          spikeMeta.dayPct = dayPct as number
         }
-        if (dayPct < minDay) {
-          minDay = dayPct
+        if (dayPctRaw < minDay) {
+          minDay = dayPctRaw
           dropDate = date
+          dropMeta.pct = pct
+          dropMeta.dayPct = dayPct as number
         }
       }
-      const news = newsByDate.get(date)
+      return { date, pct, dayPct }
+    })
+
+    // 2) 급등/급락일 리포트(요약 포함) — 해당 2일만 조회(현재 월간 리포트 제외).
+    const moverInfo = new Map<
+      string,
+      { id: string; title: string; oneLine: string | null; brief: string | null }
+    >()
+    const moverDates = ([spikeDate, dropDate] as (string | null)[]).filter(
+      (d): d is string => d !== null
+    )
+    if (moverDates.length > 0) {
+      try {
+        const supabase = await createClient()
+        const { data: reports } = await supabase
+          .from('news_reports')
+          .select('id, report_date, title, one_line_conclusion, expert_view')
+          .eq('status', 'published')
+          .in('report_date', moverDates)
+        for (const r of reports ?? []) {
+          if (excludeId && r.id === excludeId) continue
+          if (moverInfo.has(r.report_date)) continue
+          const briefRaw =
+            (r.expert_view as { thirtySecBrief?: string } | null)?.thirtySecBrief ?? null
+          const brief = briefRaw
+            ? briefRaw.replace(/\s*\[수집방법:[^\]]*\]/g, '').trim()
+            : null
+          moverInfo.set(r.report_date, {
+            id: r.id,
+            title: r.title,
+            oneLine: r.one_line_conclusion ?? null,
+            brief,
+          })
+        }
+      } catch {
+        // 뉴스 조회 실패는 치명적이지 않음 — 요약 없이 라인만 노출.
+      }
+    }
+
+    const buildMover = (
+      date: string | null,
+      meta: { pct: number; dayPct: number }
+    ): DailyMarketMover | null => {
+      if (!date) return null
+      const info = moverInfo.get(date) ?? null
       return {
         date,
-        pct: Math.round(pct * 100) / 100,
-        dayPct: dayPct == null ? null : Math.round(dayPct * 100) / 100,
-        newsId: news?.id ?? null,
-        newsTitle: news?.title ?? null,
+        pct: meta.pct,
+        dayPct: meta.dayPct,
+        newsId: info?.id ?? null,
+        newsTitle: info?.title ?? null,
+        oneLine: info?.oneLine ?? null,
+        brief: info?.brief ?? null,
       }
-    })
+    }
 
     return NextResponse.json({
       success: true,
-      data: { points, spikeDate, dropDate },
+      data: {
+        points,
+        spike: buildMover(spikeDate, spikeMeta),
+        drop: buildMover(dropDate, dropMeta),
+      },
     })
   } catch (error) {
     console.error('Daily market API error:', error)

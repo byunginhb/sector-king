@@ -603,19 +603,32 @@ export interface DailyMarketPoint {
   date: string
   /** 기간 시작 대비 누적 % 변화. */
   pct: number
-  /** 전일 대비 % 변화(급등/급락 판정용). 첫날은 null. */
+  /** 전일 대비 % 변화. 첫날은 null. */
   dayPct: number | null
-  /** 그날 발행된 데일리 리포트 id(있으면 링크). */
+}
+
+/** 급등/급락일 + 그날 리포트 요약(인라인 노출용). */
+export interface DailyMarketMover {
+  date: string
+  /** 기간 시작 대비 누적 %(그래프 y 위치). */
+  pct: number
+  /** 전일 대비 % 변화. */
+  dayPct: number
+  /** 그날 발행된 데일리 리포트 id(상세 이동용). */
   newsId: string | null
   newsTitle: string | null
+  /** 한 줄 결론(one_line_conclusion). */
+  oneLine: string | null
+  /** 전문가 30초 브리핑 요약(thirtySecBrief, 수집방법 마커 제거). */
+  brief: string | null
 }
 
 export interface DailyMarketResponse {
   points: DailyMarketPoint[]
-  /** 기간 내 전일대비 최대 상승일. */
-  spikeDate: string | null
-  /** 기간 내 전일대비 최대 하락일. */
-  dropDate: string | null
+  /** 기간 내 전일대비 최대 상승일(요약 포함). */
+  spike: DailyMarketMover | null
+  /** 기간 내 전일대비 최대 하락일(요약 포함). */
+  drop: DailyMarketMover | null
 }
 
 // Industry Money Flow Summary types
