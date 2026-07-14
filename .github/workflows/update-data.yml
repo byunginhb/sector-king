@@ -70,7 +70,10 @@ jobs:
           git config user.name "GitHub Action"
           BLOB=$(git hash-object -w data/hegemony.db)
           SUBTREE=$(printf '100644 blob %s\thegemony.db\n' "$BLOB" | git mktree)
-          ROOTTREE=$(printf '040000 tree %s\tdata\n' "$SUBTREE" | git mktree)
+          # Vercel 이 db-snapshot 브랜치 push 를 배포하지 않도록 커밋에 vercel.json 을 심는다.
+          # (deploymentEnabled 는 push 되는 브랜치 커밋의 vercel.json 을 읽으므로 main 설정만으론 부족.)
+          VERCEL_BLOB=$(printf '{\n  "git": {\n    "deploymentEnabled": {\n      "db-snapshot": false\n    }\n  }\n}\n' | git hash-object -w --stdin)
+          ROOTTREE=$(printf '040000 tree %s\tdata\n100644 blob %s\tvercel.json\n' "$SUBTREE" "$VERCEL_BLOB" | git mktree)
           COMMIT=$(git commit-tree "$ROOTTREE" -m "data: snapshot $(date -u +'%F %T UTC')")
           git push -f origin "$COMMIT:refs/heads/db-snapshot"
           echo "Pushed ${SIZE} bytes to db-snapshot"
