@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Wallet, TrendingDown } from 'lucide-react'
+import { Wallet, TrendingDown, Layers } from 'lucide-react'
 import { useSectorCompanies } from '@/hooks/use-sector-companies'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { SparklineChart } from './sparkline-chart'
@@ -14,10 +14,22 @@ interface SectorCompanyListProps {
   sectorId: string
   sectorName: string
   period: number
-  flowDirection: 'in' | 'out'
+  /** 자금흐름 방향에 따른 색·아이콘. 생략 시 중립(자금흐름 외 맥락용). */
+  flowDirection?: 'in' | 'out'
   region?: RegionFilter
   onClose: () => void
 }
+
+/** 방향별 색·아이콘. 'neutral' = 시장 규모 등 자금흐름과 무관한 호출부. */
+const TONE = {
+  in: { surface: 'bg-danger-bg border-danger/30', text: 'text-danger', Icon: Wallet },
+  out: { surface: 'bg-info-bg border-info/30', text: 'text-info', Icon: TrendingDown },
+  neutral: {
+    surface: 'bg-surface-1 border-border-subtle',
+    text: 'text-foreground',
+    Icon: Layers,
+  },
+} as const
 
 export function SectorCompanyList({
   sectorId,
@@ -34,7 +46,7 @@ export function SectorCompanyList({
   })
   const fmt = useCurrencyFormat()
 
-  const isInflow = flowDirection === 'in'
+  const tone = TONE[flowDirection ?? 'neutral']
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -84,33 +96,20 @@ export function SectorCompanyList({
           'relative w-full overflow-y-auto',
           'max-h-[90vh] rounded-t-2xl',
           'sm:max-w-2xl sm:max-h-[85vh] sm:rounded-xl sm:mx-4',
-          isInflow
-            ? 'bg-danger-bg border-danger/30'
-            : 'bg-info-bg border-info/30',
+          tone.surface,
           'border shadow-2xl'
         )}
       >
         {/* Header */}
         <div className={cn(
           'sticky top-0 z-10 flex items-center justify-between p-4 border-b',
-          isInflow
-            ? 'bg-danger-bg border-danger/30'
-            : 'bg-info-bg border-info/30'
+          tone.surface
         )}>
           <h3
             id="sector-modal-title"
-            className={cn(
-              'text-base font-semibold flex items-center gap-2',
-              isInflow
-                ? 'text-danger'
-                : 'text-info'
-            )}
+            className={cn('text-base font-semibold flex items-center gap-2', tone.text)}
           >
-            {isInflow ? (
-              <Wallet className="h-4 w-4" aria-hidden />
-            ) : (
-              <TrendingDown className="h-4 w-4" aria-hidden />
-            )}
+            <tone.Icon className="h-4 w-4" aria-hidden />
             {sectorName} 포함 종목
             {data?.dateRange && (
               <span className="text-xs font-normal text-gray-500 dark:text-slate-400">
