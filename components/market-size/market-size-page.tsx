@@ -1,17 +1,16 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { AnimatePresence } from 'framer-motion'
 import { ArrowLeft, PieChart, TrendingUp, Target, BarChart2, CircleDot, LayoutGrid } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 import { RegionToggle } from '@/components/region-toggle'
-import { SectorCompanyList } from '@/components/money-flow/sector-company-list'
 import { useRegion } from '@/hooks/use-region'
 import { useIndustries } from '@/hooks/use-industries'
 import { useMarketSize } from '@/hooks/use-market-size'
+import { useSectorCompanies } from '@/hooks/use-sector-companies'
 import {
   MarketSizeIndustryMap,
-  type IndustryGroup,
+  type MapGroup,
 } from './market-size-industry-map'
 import {
   MarketSizeMetricBars,
@@ -58,7 +57,8 @@ export function MarketSizePage() {
   const { region, setRegion } = useRegion()
   const [industryId, setIndustryId] = useState<string | null>(null)
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
-  const [selectedSector, setSelectedSector] = useState<{
+  // 시총 지도 드릴다운 — 설정되면 산업 뷰 대신 이 섹터의 종목 타일을 그린다.
+  const [drillSector, setDrillSector] = useState<{
     id: string
     name: string
   } | null>(null)
@@ -84,32 +84,73 @@ export function MarketSizePage() {
     [selectedCategory, shownCategories]
   )
   // 시총 지도 — 산업(그룹) → 섹터(타일). 카테고리의 대표 산업으로 섹터를 모은다.
-  // (드릴다운 상태와 무관하게 항상 전체를 보여준다. 좁히려면 상단 산업 셀렉트 사용)
-  const industryGroups = useMemo<IndustryGroup[]>(() => {
-    const map = new Map<string, IndustryGroup>()
+  // (막대/버블의 카테고리 드릴다운과 무관. 좁히려면 상단 산업 셀렉트 사용)
+  const industryGroups = useMemo<MapGroup[]>(() => {
+    const map = new Map<string, MapGroup>()
     for (const c of categories) {
       const key = c.industryId ?? 'none'
       const existing = map.get(key)
-      const sectors = [...(existing?.sectors ?? []), ...c.sectors]
+      const tiles = [
+        ...(existing?.tiles ?? []),
+        ...c.sectors.map((s) => ({
+          id: s.id,
+          name: s.name,
+          marketCap: s.marketCap,
+          colorValue: s.revenueGrowth == null ? null : s.revenueGrowth * 100,
+          detail: `종목 ${s.tickerCount}개 · 클릭하면 종목별로 펼쳐집니다`,
+        })),
+      ]
       map.set(key, {
         id: key,
         name: c.industryName ?? '기타',
-        marketCap: sectors.reduce((sum, s) => sum + s.marketCap, 0),
-        sectors,
+        marketCap: tiles.reduce((sum, t) => sum + t.marketCap, 0),
+        tiles,
       })
     }
     return Array.from(map.values())
       .map((g) => ({
         ...g,
-        sectors: [...g.sectors].sort((a, b) => b.marketCap - a.marketCap),
+        tiles: [...g.tiles].sort((a, b) => b.marketCap - a.marketCap),
       }))
       .sort((a, b) => b.marketCap - a.marketCap)
   }, [categories])
 
-  const mapSectorCount = useMemo(
-    () => industryGroups.reduce((sum, g) => sum + g.sectors.length, 0),
-    [industryGroups]
+  // 드릴다운 — 섹터 내 종목. 팝업 대신 지도 자체가 종목 타일로 바뀐다.
+  const { data: drillData, isLoading: drillLoading } = useSectorCompanies({
+    sectorId: drillSector?.id ?? null,
+    period: 14,
+    region,
+  })
+
+  const drillGroups = useMemo<MapGroup[]>(() => {
+    if (!drillSector || !drillData) return []
+    const tiles = drillData.companies
+      .filter((c) => (c.marketCap ?? 0) > 0)
+      .map((c) => ({
+        id: c.ticker,
+        name: c.nameKo || c.name,
+        marketCap: c.marketCap ?? 0,
+        colorValue: c.priceChangePercent,
+        detail: `${c.ticker} · 현재가 기준 · 클릭하면 종목 상세로 이동`,
+        href: `/stock/${encodeURIComponent(c.ticker)}`,
+      }))
+      .sort((a, b) => b.marketCap - a.marketCap)
+    return [
+      {
+        id: drillSector.id,
+        name: drillSector.name,
+        marketCap: tiles.reduce((sum, t) => sum + t.marketCap, 0),
+        tiles,
+      },
+    ]
+  }, [drillSector, drillData])
+
+  const mapGroups = drillSector ? drillGroups : industryGroups
+  const mapTileCount = useMemo(
+    () => mapGroups.reduce((sum, g) => sum + g.tiles.length, 0),
+    [mapGroups]
   )
+  const mapLoading = drillSector ? drillLoading : isLoading
 
   // 버블 뷰(PC 전용) — industryId → 색, 산업별 그룹.
   const industryColor = useMemo(() => {
@@ -337,44 +378,56 @@ export function MarketSizePage() {
 
         {/* 시총 지도 — 산업 그룹 안에 섹터 타일 */}
         <div className="sk-card">
-          <h3 className="text-base font-semibold text-card-foreground flex items-center gap-2 mb-4">
-            <LayoutGrid className="w-5 h-5 text-success" aria-hidden />
-            산업 · 섹터 시총 지도
-            <span className="text-xs font-normal text-muted-foreground">
-              섹터 {mapSectorCount}개
-            </span>
-          </h3>
-          {isLoading ? (
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <h3 className="text-base font-semibold text-card-foreground flex items-center gap-2 min-w-0">
+              <LayoutGrid className="w-5 h-5 text-success shrink-0" aria-hidden />
+              <span className="truncate">
+                {drillSector ? `${drillSector.name} · 종목 시총 지도` : '산업 · 섹터 시총 지도'}
+              </span>
+              <span className="text-xs font-normal text-muted-foreground shrink-0">
+                {drillSector ? '종목' : '섹터'} {mapTileCount}개
+              </span>
+            </h3>
+            {drillSector && (
+              <button
+                type="button"
+                onClick={() => setDrillSector(null)}
+                className="inline-flex items-center gap-1 shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" aria-hidden />
+                전체 산업
+              </button>
+            )}
+          </div>
+          {mapLoading ? (
             <div className="h-[28rem] sm:h-[36rem] bg-muted/30 rounded-lg animate-pulse" />
           ) : (
             <MarketSizeIndustryMap
-              groups={industryGroups}
-              onSelectSector={setSelectedSector}
+              groups={mapGroups}
+              colorScale={drillSector ? 'change' : 'growth'}
+              colorLabel={drillSector ? '14일 등락률' : '매출 성장률'}
+              onSelectTile={(t) => setDrillSector({ id: t.id, name: t.name })}
             />
           )}
           <p className="mt-3 text-xs text-muted-foreground">
-            바깥 묶음 = 산업, 타일 = 소속 섹터. 면적 = 시가총액(USD 정규화 후 합산) ·
-            색: 매출 성장률(청록 낮음 → 보라 높음). 섹터를 클릭하면 포함 종목 표가 열립니다.
+            면적 = 시가총액(USD 정규화 후 합산).{' '}
+            {drillSector ? (
+              <>
+                타일 = 종목 · 색: 최근 14일 등락률(붉을수록 하락 → 푸를수록 상승). 종목을
+                클릭하면 상세 페이지로 이동합니다.
+              </>
+            ) : (
+              <>
+                바깥 묶음 = 산업, 타일 = 소속 섹터 · 색: 매출 성장률(청록 낮음 → 보라 높음).
+                섹터를 클릭하면 그 자리에서 종목별로 펼쳐집니다.
+              </>
+            )}
             <span className="sm:hidden"> 좁은 화면에서는 좌우로 밀어서 볼 수 있습니다.</span>
           </p>
         </div>
 
         <MarketSizeExplainer />
       </main>
-
-      {/* 섹터 → 종목 표 */}
-      <AnimatePresence>
-        {selectedSector && (
-          <SectorCompanyList
-            key={selectedSector.id}
-            sectorId={selectedSector.id}
-            sectorName={selectedSector.name}
-            period={14}
-            region={region}
-            onClose={() => setSelectedSector(null)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   )
 }

@@ -1,52 +1,84 @@
 'use client'
 
 import { useLayoutEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { squarify, textUnits } from '@/lib/treemap'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
-import type { MarketSizeNode } from '@/types'
 
-/** 산업 = 바깥 그룹, 그 안에 소속 섹터 타일. */
-export interface IndustryGroup {
+/** 지도의 최소 단위. 산업 뷰에선 섹터, 드릴다운 뷰에선 종목. */
+export interface MapTile {
   id: string
   name: string
-  /** 소속 섹터 시총 합 (USD) */
+  /** 면적 기준 (USD) */
   marketCap: number
-  sectors: MarketSizeNode[]
+  /** 색 기준값. null 이면 중립 회색 */
+  colorValue: number | null
+  /** 툴팁 마지막 줄에 덧붙일 설명 */
+  detail?: string
+  /** 있으면 링크로, 없으면 버튼(onSelectTile)으로 렌더 */
+  href?: string
 }
+
+/** 바깥 묶음. 산업 뷰에선 산업, 드릴다운 뷰에선 섹터 하나. */
+export interface MapGroup {
+  id: string
+  name: string
+  marketCap: number
+  tiles: MapTile[]
+}
+
+/**
+ * growth = 매출 성장률: 순서만 있는 값이라 시퀀셜(청록 → 보라).
+ * change = 등락률: 0 을 기준으로 부호가 의미를 가지므로 발산(적 ← 회 → 녹).
+ */
+export type ColorScale = 'growth' | 'change'
 
 interface Props {
-  groups: IndustryGroup[]
-  onSelectSector: (sector: { id: string; name: string }) => void
+  groups: MapGroup[]
+  colorScale: ColorScale
+  /** href 없는 타일 클릭 시 호출 */
+  onSelectTile?: (tile: MapTile) => void
+  /** 툴팁의 색 기준값 라벨 (예: '매출 성장률') */
+  colorLabel: string
 }
 
-// 성장률 시퀀셜 팔레트 — 저(청록) → 고(보라). 검정·순빨강 배제.
+// 시퀀셜 팔레트 — 저(청록) → 고(보라). 검정·순빨강 배제.
 const LOW = { r: 0x14, g: 0xb8, b: 0xa6 } // teal-500
 const HIGH = { r: 0x8b, g: 0x5c, b: 0xf6 } // violet-500
-const NEUTRAL = '#94a3b8' // slate-400 (성장률 데이터 없음)
+// 발산 팔레트 — 하락(rose-500) ← 중립(slate-400) → 상승(emerald-500).
+const DOWN = { r: 0xf4, g: 0x3f, b: 0x5e }
+const MID = { r: 0x94, g: 0xa3, b: 0xb8 }
+const UP = { r: 0x10, g: 0xb9, b: 0x81 }
+const NEUTRAL = '#94a3b8' // slate-400 (데이터 없음)
 
-function lerpColor(t: number): string {
+type Rgb = { r: number; g: number; b: number }
+
+function mix(a: Rgb, b: Rgb, t: number): string {
   const c = Math.max(0, Math.min(1, t))
-  const r = Math.round(LOW.r + (HIGH.r - LOW.r) * c)
-  const g = Math.round(LOW.g + (HIGH.g - LOW.g) * c)
-  const b = Math.round(LOW.b + (HIGH.b - LOW.b) * c)
-  return `rgb(${r}, ${g}, ${b})`
+  return `rgb(${Math.round(a.r + (b.r - a.r) * c)}, ${Math.round(
+    a.g + (b.g - a.g) * c
+  )}, ${Math.round(a.b + (b.b - a.b) * c)})`
 }
 
-const HEADER_H = 20 // 산업 이름 띠 높이(px)
-const GROUP_GAP = 3 // 산업 그룹 간 여백(px)
-const TILE_GAP = 1 // 섹터 타일 간 여백(px)
+/** 분포의 p 분위수 (0~1). 극단값 하나가 스케일을 잡아먹지 않게 캡 산정에 쓴다. */
+function quantile(sorted: number[], p: number): number {
+  if (sorted.length === 0) return 0
+  const i = (sorted.length - 1) * p
+  const lo = Math.floor(i)
+  const hi = Math.ceil(i)
+  return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo)
+}
 
-interface PlacedSector {
-  id: string
-  name: string
+const HEADER_H = 20 // 그룹 이름 띠 높이(px)
+const GROUP_GAP = 3 // 그룹 간 여백(px)
+const TILE_GAP = 1 // 타일 간 여백(px)
+
+interface PlacedTile extends MapTile {
   x: number
   y: number
   w: number
   h: number
   color: string
-  marketCap: number
-  revenueGrowth: number | null
-  tickerCount: number
 }
 
 interface PlacedGroup {
@@ -58,15 +90,20 @@ interface PlacedGroup {
   w: number
   h: number
   showHeader: boolean
-  sectors: PlacedSector[]
+  tiles: PlacedTile[]
 }
 
-function formatGrowth(g: number | null): string {
-  if (g == null) return '—'
-  return `${g >= 0 ? '+' : ''}${(g * 100).toFixed(1)}%`
+function formatPercent(v: number | null): string {
+  if (v == null) return '—'
+  return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`
 }
 
-export function MarketSizeIndustryMap({ groups, onSelectSector }: Props) {
+export function MarketSizeIndustryMap({
+  groups,
+  colorScale,
+  onSelectTile,
+  colorLabel,
+}: Props) {
   const fmt = useCurrencyFormat()
   // 콜백 ref — 컨테이너가 조건부로 마운트되므로 ref.current 를 effect 에서 읽으면
   // 첫 렌더에 null 인 채로 관측을 놓친다(빈 데이터로 마운트 → 데이터 도착 시 영구 공백).
@@ -87,13 +124,26 @@ export function MarketSizeIndustryMap({ groups, onSelectSector }: Props) {
   const placed = useMemo<PlacedGroup[]>(() => {
     if (size.w <= 0 || size.h <= 0) return []
 
-    // 색 스케일은 화면에 보이는 전체 섹터 기준으로 한 번만 계산.
-    const growths = groups
-      .flatMap((g) => g.sectors.map((s) => s.revenueGrowth))
-      .filter((g): g is number => g != null)
-    const min = growths.length > 0 ? Math.min(...growths) : 0
-    const max = growths.length > 0 ? Math.max(...growths) : 1
-    const span = max - min || 1
+    // 색 스케일은 화면에 보이는 전체 타일 기준으로 한 번만 계산.
+    const values = groups
+      .flatMap((g) => g.tiles.map((t) => t.colorValue))
+      .filter((v): v is number => v != null)
+
+    let colorOf: (v: number) => string
+    if (colorScale === 'change') {
+      // 0 대칭 캡. 이상치 하나로 나머지가 전부 회색이 되지 않게 p85 로 자른다.
+      const absSorted = values.map(Math.abs).sort((a, b) => a - b)
+      const cap = Math.max(quantile(absSorted, 0.85), 1)
+      colorOf = (v) => {
+        const t = Math.min(Math.abs(v) / cap, 1)
+        return v >= 0 ? mix(MID, UP, t) : mix(MID, DOWN, t)
+      }
+    } else {
+      const min = values.length > 0 ? Math.min(...values) : 0
+      const max = values.length > 0 ? Math.max(...values) : 1
+      const span = max - min || 1
+      colorOf = (v) => mix(LOW, HIGH, (v - min) / span)
+    }
 
     const groupRects = squarify(
       groups.map((g) => ({ id: g.id, value: g.marketCap })),
@@ -119,33 +169,26 @@ export function MarketSizeIndustryMap({ groups, onSelectSector }: Props) {
       const innerY = showHeader ? gy + HEADER_H : gy
       const innerH = showHeader ? gh - HEADER_H : gh
 
-      const sectorRects = squarify(
-        group.sectors.map((s) => ({ id: s.id, value: s.marketCap })),
+      const tileRects = squarify(
+        group.tiles.map((t) => ({ id: t.id, value: t.marketCap })),
         gx,
         innerY,
         gw,
         innerH
       )
-      const sectorById = new Map(group.sectors.map((s) => [s.id, s]))
+      const tileById = new Map(group.tiles.map((t) => [t.id, t]))
 
-      const sectors = sectorRects.flatMap<PlacedSector>((sr) => {
-        const s = sectorById.get(sr.id)
-        if (!s) return []
+      const tiles = tileRects.flatMap<PlacedTile>((tr) => {
+        const t = tileById.get(tr.id)
+        if (!t) return []
         return [
           {
-            id: s.id,
-            name: s.name,
-            x: sr.x + TILE_GAP / 2,
-            y: sr.y + TILE_GAP / 2,
-            w: Math.max(0, sr.w - TILE_GAP),
-            h: Math.max(0, sr.h - TILE_GAP),
-            color:
-              s.revenueGrowth == null
-                ? NEUTRAL
-                : lerpColor((s.revenueGrowth - min) / span),
-            marketCap: s.marketCap,
-            revenueGrowth: s.revenueGrowth,
-            tickerCount: s.tickerCount,
+            ...t,
+            x: tr.x + TILE_GAP / 2,
+            y: tr.y + TILE_GAP / 2,
+            w: Math.max(0, tr.w - TILE_GAP),
+            h: Math.max(0, tr.h - TILE_GAP),
+            color: t.colorValue == null ? NEUTRAL : colorOf(t.colorValue),
           },
         ]
       })
@@ -160,11 +203,11 @@ export function MarketSizeIndustryMap({ groups, onSelectSector }: Props) {
           w: gw,
           h: gh,
           showHeader,
-          sectors,
+          tiles,
         },
       ]
     })
-  }, [groups, size])
+  }, [groups, size, colorScale])
 
   if (groups.length === 0) {
     return (
@@ -175,7 +218,7 @@ export function MarketSizeIndustryMap({ groups, onSelectSector }: Props) {
   }
 
   return (
-    // 섹터가 100개 넘어 좁은 화면에선 타일이 뭉개진다 → 최소 폭을 두고 가로 스크롤.
+    // 타일이 많아 좁은 화면에선 뭉개진다 → 최소 폭을 두고 가로 스크롤.
     <div className="-mx-1 overflow-x-auto px-1">
       <div
         ref={setContainer}
@@ -183,7 +226,7 @@ export function MarketSizeIndustryMap({ groups, onSelectSector }: Props) {
       >
         {placed.map((group) => (
           <div key={group.id}>
-            {/* 산업 그룹 테두리 + 이름 띠 */}
+            {/* 그룹 테두리 + 이름 띠 */}
             <div
               className="absolute rounded-sm border border-border-subtle bg-surface-2"
               style={{
@@ -216,47 +259,76 @@ export function MarketSizeIndustryMap({ groups, onSelectSector }: Props) {
               </div>
             )}
 
-            {/* 섹터 타일 */}
-            {group.sectors.map((s) => {
-              const units = textUnits(s.name)
+            {group.tiles.map((t) => {
+              const units = textUnits(t.name)
               // 이름이 폭에 딱 맞는 폰트 크기 → 세로·상한으로 클램프.
-              const fs = Math.min((s.w - 6) / units, (s.h - 4) * 0.55, 22)
+              const fs = Math.min((t.w - 6) / units, (t.h - 4) * 0.55, 22)
               const showLabel = fs >= 8
-              const amountFs = Math.max(9, Math.round(fs * 0.5))
-              const showAmount =
-                showLabel && s.h > fs + amountFs + 8 && s.w > 54
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => onSelectSector({ id: s.id, name: s.name })}
-                  title={`${group.name} · ${s.name}\n시총 ${fmt.marketCap(s.marketCap)}\n매출 성장률 ${formatGrowth(s.revenueGrowth)}\n종목 ${s.tickerCount}개`}
-                  aria-label={`${s.name} 섹터 종목 보기`}
-                  className="absolute overflow-hidden rounded-[2px] px-1 text-left leading-tight transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-foreground"
-                  style={{
-                    left: s.x,
-                    top: s.y,
-                    width: s.w,
-                    height: s.h,
-                    backgroundColor: s.color,
-                  }}
-                >
+              const subFs = Math.max(9, Math.round(fs * 0.5))
+              const showSub = showLabel && t.h > fs + subFs + 8 && t.w > 54
+              const title = [
+                `${group.name} · ${t.name}`,
+                `시총 ${fmt.marketCap(t.marketCap)}`,
+                `${colorLabel} ${formatPercent(t.colorValue)}`,
+                t.detail,
+              ]
+                .filter(Boolean)
+                .join('\n')
+
+              const inner = (
+                <>
                   {showLabel && (
                     <span
                       className="block overflow-hidden text-ellipsis whitespace-nowrap font-bold text-white"
                       style={{ fontSize: fs, marginTop: 2 }}
                     >
-                      {s.name}
+                      {t.name}
                     </span>
                   )}
-                  {showAmount && (
+                  {showSub && (
                     <span
                       className="block overflow-hidden text-ellipsis whitespace-nowrap tabular-nums text-white/85"
-                      style={{ fontSize: amountFs }}
+                      style={{ fontSize: subFs }}
                     >
-                      {fmt.marketCap(s.marketCap)}
+                      {colorScale === 'change'
+                        ? formatPercent(t.colorValue)
+                        : fmt.marketCap(t.marketCap)}
                     </span>
                   )}
+                </>
+              )
+              const className =
+                'absolute overflow-hidden rounded-[2px] px-1 text-left leading-tight transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-foreground'
+              const style = {
+                left: t.x,
+                top: t.y,
+                width: t.w,
+                height: t.h,
+                backgroundColor: t.color,
+              }
+
+              // 링크가 있으면 앵커로 — 새 탭/복사 같은 기본 동작을 그대로 살린다.
+              return t.href ? (
+                <Link
+                  key={t.id}
+                  href={t.href}
+                  title={title}
+                  className={className}
+                  style={style}
+                >
+                  {inner}
+                </Link>
+              ) : (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => onSelectTile?.(t)}
+                  title={title}
+                  aria-label={`${t.name} 하위 항목 보기`}
+                  className={className}
+                  style={style}
+                >
+                  {inner}
                 </button>
               )
             })}
