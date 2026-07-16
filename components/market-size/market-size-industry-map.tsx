@@ -266,6 +266,13 @@ export function MarketSizeIndustryMap({
               const showLabel = fs >= 8
               const subFs = Math.max(9, Math.round(fs * 0.5))
               const showSub = showLabel && t.h > fs + subFs + 8 && t.w > 54
+              // 종목 뷰(change)에선 등락률과 시총을 둘 다 표기 — 한 줄 더 들어갈
+              // 세로 여유가 있는 타일만. 섹터 뷰(growth)는 시총 한 줄로 충분.
+              const showMcap =
+                colorScale === 'change' &&
+                showSub &&
+                t.h > fs + subFs * 2 + 10 &&
+                t.w > 54
               const title = [
                 `${group.name} · ${t.name}`,
                 `시총 ${fmt.marketCap(t.marketCap)}`,
@@ -293,6 +300,14 @@ export function MarketSizeIndustryMap({
                       {colorScale === 'change'
                         ? formatPercent(t.colorValue)
                         : fmt.marketCap(t.marketCap)}
+                    </span>
+                  )}
+                  {showMcap && (
+                    <span
+                      className="block overflow-hidden text-ellipsis whitespace-nowrap tabular-nums text-white/70"
+                      style={{ fontSize: subFs }}
+                    >
+                      {fmt.marketCap(t.marketCap)}
                     </span>
                   )}
                 </>

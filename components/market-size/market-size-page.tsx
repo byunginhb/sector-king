@@ -288,6 +288,59 @@ export function MarketSizePage() {
           </div>
         )}
 
+        {/* 시총 지도 — 산업 그룹 안에 섹터 타일 */}
+        <div className="sk-card">
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <h3 className="text-base font-semibold text-card-foreground flex items-center gap-2 min-w-0">
+              <LayoutGrid className="w-5 h-5 text-success shrink-0" aria-hidden />
+              <span className="truncate">
+                {drillSector ? `${drillSector.name} · 종목 시총 지도` : '산업 · 섹터 시총 지도'}
+              </span>
+              <span className="text-xs font-normal text-muted-foreground shrink-0">
+                {drillSector ? '종목' : '섹터'} {mapTileCount}개
+              </span>
+            </h3>
+            {drillSector && (
+              <button
+                type="button"
+                onClick={() => setDrillSector(null)}
+                className="inline-flex items-center gap-1 shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" aria-hidden />
+                전체 산업
+              </button>
+            )}
+          </div>
+          {mapLoading ? (
+            <div className="h-[28rem] sm:h-[36rem] bg-muted/30 rounded-lg animate-pulse" />
+          ) : (
+            <MarketSizeIndustryMap
+              groups={mapGroups}
+              colorScale={drillSector ? 'change' : 'growth'}
+              colorLabel={drillSector ? '14일 등락률' : '매출 성장률'}
+              onSelectTile={(t) => setDrillSector({ id: t.id, name: t.name })}
+            />
+          )}
+          <p className="mt-3 text-xs text-muted-foreground">
+            {drillSector ? (
+              <>
+                면적 = 종목의 전체 시가총액(USD 정규화). 타일 = 종목 · 색: 최근 14일
+                등락률(붉을수록 하락 → 푸를수록 상승). 종목을 클릭하면 상세 페이지로
+                이동합니다. 여기서는 배분 전 전체 시총이라, 위 섹터 타일 크기와는 기준이
+                다릅니다.
+              </>
+            ) : (
+              <>
+                면적 = 시가총액(USD 정규화). 바깥 묶음 = 산업, 타일 = 소속 섹터 · 색: 매출
+                성장률(청록 낮음 → 보라 높음). 섹터를 클릭하면 그 자리에서 종목별로
+                펼쳐집니다. 한 종목이 여러 섹터에 속하면 시총을 섹터 수로 나눠 배분하므로
+                (예: 구글은 10개 섹터에 1/10씩), 전체 합이 실제 추적 시총과 일치합니다.
+              </>
+            )}
+            <span className="sm:hidden"> 좁은 화면에서는 좌우로 밀어서 볼 수 있습니다.</span>
+          </p>
+        </div>
+
         {/* 성장 전망 — 막대(모바일·PC 기본) / 버블(PC 토글) */}
         <div className="sk-card">
           <div className="flex items-center justify-between gap-2 mb-4">
@@ -374,59 +427,6 @@ export function MarketSizePage() {
               </>
             )}
           </div>
-        </div>
-
-        {/* 시총 지도 — 산업 그룹 안에 섹터 타일 */}
-        <div className="sk-card">
-          <div className="flex items-center justify-between gap-2 mb-4">
-            <h3 className="text-base font-semibold text-card-foreground flex items-center gap-2 min-w-0">
-              <LayoutGrid className="w-5 h-5 text-success shrink-0" aria-hidden />
-              <span className="truncate">
-                {drillSector ? `${drillSector.name} · 종목 시총 지도` : '산업 · 섹터 시총 지도'}
-              </span>
-              <span className="text-xs font-normal text-muted-foreground shrink-0">
-                {drillSector ? '종목' : '섹터'} {mapTileCount}개
-              </span>
-            </h3>
-            {drillSector && (
-              <button
-                type="button"
-                onClick={() => setDrillSector(null)}
-                className="inline-flex items-center gap-1 shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" aria-hidden />
-                전체 산업
-              </button>
-            )}
-          </div>
-          {mapLoading ? (
-            <div className="h-[28rem] sm:h-[36rem] bg-muted/30 rounded-lg animate-pulse" />
-          ) : (
-            <MarketSizeIndustryMap
-              groups={mapGroups}
-              colorScale={drillSector ? 'change' : 'growth'}
-              colorLabel={drillSector ? '14일 등락률' : '매출 성장률'}
-              onSelectTile={(t) => setDrillSector({ id: t.id, name: t.name })}
-            />
-          )}
-          <p className="mt-3 text-xs text-muted-foreground">
-            {drillSector ? (
-              <>
-                면적 = 종목의 전체 시가총액(USD 정규화). 타일 = 종목 · 색: 최근 14일
-                등락률(붉을수록 하락 → 푸를수록 상승). 종목을 클릭하면 상세 페이지로
-                이동합니다. 여기서는 배분 전 전체 시총이라, 위 섹터 타일 크기와는 기준이
-                다릅니다.
-              </>
-            ) : (
-              <>
-                면적 = 시가총액(USD 정규화). 바깥 묶음 = 산업, 타일 = 소속 섹터 · 색: 매출
-                성장률(청록 낮음 → 보라 높음). 섹터를 클릭하면 그 자리에서 종목별로
-                펼쳐집니다. 한 종목이 여러 섹터에 속하면 시총을 섹터 수로 나눠 배분하므로
-                (예: 구글은 10개 섹터에 1/10씩), 전체 합이 실제 추적 시총과 일치합니다.
-              </>
-            )}
-            <span className="sm:hidden"> 좁은 화면에서는 좌우로 밀어서 볼 수 있습니다.</span>
-          </p>
         </div>
 
         <MarketSizeExplainer />
