@@ -110,33 +110,32 @@ export async function GET(
       })
     }
 
-    // 대표 산업 매핑 (카테고리 → 첫 산업, order 최소) + 산업 필터용
+    // 대표 산업 매핑 (카테고리 → is_primary 산업) + 산업 필터용
+    //
+    // 이 테이블의 M:N 은 내비게이션용이라 카테고리 하나가 여러 산업에 걸린다.
+    // 지도는 면적을 그리려고 배타적 귀속이 필요한데, 예전엔 order 최소 산업을
+    // 골랐다. 테크가 order=1 이라 다중 연결 카테고리 6개(제약·바이오·의료기기,
+    // 결제, 전기차, 우주 등 전체의 23%)가 전부 테크로 쏠렸다.
+    // 이제 GICS 기준으로 지정한 is_primary 를 쓴다.
     const icRows = await db
       .select({
         categoryId: industryCategories.categoryId,
         industryId: industries.id,
         industryName: industries.name,
-        order: industries.order,
+        isPrimary: industryCategories.isPrimary,
       })
       .from(industryCategories)
       .innerJoin(industries, eq(industryCategories.industryId, industries.id))
-    const primaryIndustry = new Map<
-      string,
-      { id: string; name: string; order: number }
-    >()
+    const primaryIndustry = new Map<string, { id: string; name: string }>()
     const industryCategoryIds = new Set<string>()
     for (const r of icRows) {
       if (!r.categoryId || !r.industryId) continue
+      // 산업 필터는 M:N 그대로 — 대표가 아니어도 그 산업을 볼 때 포함된다.
       if (industryId && r.industryId === industryId) {
         industryCategoryIds.add(r.categoryId)
       }
-      const cur = primaryIndustry.get(r.categoryId)
-      if (!cur || (r.order ?? 0) < cur.order) {
-        primaryIndustry.set(r.categoryId, {
-          id: r.industryId,
-          name: r.industryName,
-          order: r.order ?? 0,
-        })
+      if (r.isPrimary) {
+        primaryIndustry.set(r.categoryId, { id: r.industryId, name: r.industryName })
       }
     }
 

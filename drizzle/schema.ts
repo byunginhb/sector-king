@@ -106,6 +106,16 @@ export const industryCategories = sqliteTable(
     id: integer('id').primaryKey({ autoIncrement: true }),
     industryId: text('industry_id').references(() => industries.id),
     categoryId: text('category_id').references(() => categories.id),
+    /**
+     * 카테고리의 "대표 산업" 여부. 카테고리당 정확히 하나만 1
+     * (부분 유니크 인덱스 idx_ic_primary 로 강제).
+     *
+     * 이 테이블의 M:N 은 내비게이션용("이 산업을 볼 때 이 카테고리도 보여준다")이라
+     * 다대다가 맞지만, 시총 지도처럼 면적을 그리려면 산업 하나에 배타적으로
+     * 귀속시켜야 한다. 그 귀속만 이 플래그로 정한다.
+     * 지정 기준은 GICS. scripts/migrate-add-primary-industry.ts 참고.
+     */
+    isPrimary: integer('is_primary', { mode: 'boolean' }).notNull().default(false),
   },
   (table) => [
     unique().on(table.industryId, table.categoryId),
