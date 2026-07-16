@@ -36,8 +36,17 @@ export function MarketSizeExplainer() {
         <p>
           두 지표 값은 종목마다 다르므로 <strong className="text-foreground">시가총액 가중
           평균</strong>으로 묶습니다(소형주 왜곡 방지). 데이터가 없는 항목은 막대에서
-          제외되지만, <strong className="text-foreground">트리맵(시총 비율)</strong>에는 시총이
+          제외되지만, <strong className="text-foreground">시총 지도</strong>에는 시총이
           있으면 포함됩니다. 극단값은 막대를 상한에서 자르되 숫자는 실제값을 표기합니다.
+        </p>
+        <p>
+          <strong className="text-foreground">시총 배분</strong> — 한 종목이 여러 섹터에
+          속하는 경우(예: 구글은 검색·IaaS·A.I. 모델 등 10개 섹터), 시총을{' '}
+          <strong className="text-foreground">소속 섹터 수로 나눠 배분</strong>합니다. 이렇게
+          해야 섹터 면적의 합이 실제 추적 시총과 일치합니다. 배분하지 않으면 여러 섹터에
+          걸친 대형주가 중복 합산되어 해당 산업이 실제보다 몇 배 크게 보입니다. 다만 섹터
+          드릴다운(종목 타일)은 종목의 전체 시총을 그대로 보여주므로, 섹터 타일 크기와는
+          기준이 다릅니다.
         </p>
         <p>
           <strong className="text-foreground">통화 정규화</strong> — 시총·매출은 모두{' '}

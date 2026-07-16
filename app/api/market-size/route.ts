@@ -30,11 +30,14 @@ interface WeightAccum {
 }
 
 interface NodeAccum {
+  /** 배분 후 시총 합 — 소속 건별로 share 를 더한다. */
   marketCap: number
+  /** 배분 후 매출 합 */
   revenue: number
   revenueHasAny: boolean
-  withRevenue: number
-  tickerCount: number
+  /** 고유 종목 집합. 카테고리는 여러 섹터를 품으므로 건수로 세면 중복된다. */
+  tickers: Set<string>
+  withRevenue: Set<string>
   growth: WeightAccum
   upside: WeightAccum
 }
@@ -44,8 +47,8 @@ function emptyAccum(): NodeAccum {
     marketCap: 0,
     revenue: 0,
     revenueHasAny: false,
-    withRevenue: 0,
-    tickerCount: 0,
+    tickers: new Set(),
+    withRevenue: new Set(),
     growth: { num: 0, den: 0 },
     upside: { num: 0, den: 0 },
   }
@@ -59,8 +62,8 @@ function finalize(id: string, name: string, a: NodeAccum): MarketSizeNode {
     revenueGrowth: a.growth.den > 0 ? a.growth.num / a.growth.den : null,
     targetUpside: a.upside.den > 0 ? a.upside.num / a.upside.den : null,
     revenueSum: a.revenueHasAny ? a.revenue : null,
-    revenueCoverage: { withRevenue: a.withRevenue, total: a.tickerCount },
-    tickerCount: a.tickerCount,
+    revenueCoverage: { withRevenue: a.withRevenue.size, total: a.tickers.size },
+    tickerCount: a.tickers.size,
   }
 }
 
@@ -210,6 +213,25 @@ export async function GET(
       if (p.revenue && p.revenue > 0) revenueMap.set(p.ticker, p.revenue)
     }
 
+    // 종목이 속한 전체 섹터 수 — 시총 균등 배분의 분모.
+    //
+    // 같은 종목이 여러 섹터에 속하면 시총이 그만큼 중복 합산되어, 부모 면적 =
+    // 자식 합을 전제로 하는 트리맵이 거짓말을 한다(구글 10섹터 → $4.5T 가 $44.8T).
+    // 그래서 시총을 소속 섹터 수로 나눠 배분해 전체 합을 실제 추적 시총과 일치시킨다.
+    //
+    // 분모는 필터와 무관하게 "종목의 전체 섹터 수"로 고정한다. 필터 통과분으로
+    // 나누면 같은 산업이 전체 뷰와 산업 필터 뷰에서 다른 값을 갖게 된다.
+    // (모든 섹터가 카테고리·산업에 연결돼 있어 배분분이 새지 않음을 확인함)
+    const sectorCountByTicker = new Map<string, number>()
+    for (const sc of scRows) {
+      if (!sc.ticker || !sc.sectorId) continue
+      if (!sectorToCategory.has(sc.sectorId)) continue
+      sectorCountByTicker.set(
+        sc.ticker,
+        (sectorCountByTicker.get(sc.ticker) ?? 0) + 1
+      )
+    }
+
     // 집계
     const sectorAcc = new Map<string, NodeAccum>()
     const categoryAcc = new Map<string, NodeAccum>()
@@ -230,12 +252,28 @@ export async function GET(
       const mcapUsd = toUsd(s.marketCap, ticker)
       if (mcapUsd <= 0) continue
 
+      const share = 1 / (sectorCountByTicker.get(ticker) || 1)
+
       const sAcc = sectorAcc.get(sectorId) ?? emptyAccum()
       const cAcc = categoryAcc.get(categoryId) ?? emptyAccum()
 
       const apply = (acc: NodeAccum) => {
-        acc.marketCap += mcapUsd
-        acc.tickerCount += 1
+        // 면적성 값은 배분분만 더한다. 카테고리는 한 종목의 여러 섹터를 품을 수
+        // 있으므로 소속 건마다 share 가 쌓여 그 카테고리 몫이 자연히 맞춰진다.
+        acc.marketCap += mcapUsd * share
+        const revNative = revenueMap.get(ticker)
+        if (revNative != null) {
+          acc.revenue += toUsd(revNative, ticker) * share
+          acc.revenueHasAny = true
+        }
+
+        // 아래는 종목당 1회만 — 카테고리에서 같은 종목이 중복 반영되지 않게.
+        if (acc.tickers.has(ticker)) return
+        acc.tickers.add(ticker)
+        if (revNative != null) acc.withRevenue.add(ticker)
+
+        // 가중평균의 가중치는 배분 전 시총(대표성)을 쓴다. 배분값을 쓰면 소속
+        // 섹터가 많은 종목만 영향력이 깎여 지표가 왜곡된다.
         const score = scoreMap.get(ticker)
         if (score?.revenueGrowth != null) {
           acc.growth.num += mcapUsd * score.revenueGrowth
@@ -246,12 +284,6 @@ export async function GET(
           const upside = (score.targetMeanPrice - s.price) / s.price
           acc.upside.num += mcapUsd * upside
           acc.upside.den += mcapUsd
-        }
-        const revNative = revenueMap.get(ticker)
-        if (revNative != null) {
-          acc.revenue += toUsd(revNative, ticker)
-          acc.revenueHasAny = true
-          acc.withRevenue += 1
         }
       }
       apply(sAcc)
