@@ -343,50 +343,48 @@ export function MarketSizePage() {
 
         {/* 성장 전망 — 막대(모바일·PC 기본) / 버블(PC 토글) */}
         <div className="sk-card">
-          <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            {selectedCategory && (
+              <button
+                type="button"
+                onClick={() => setSelectedCategoryId(null)}
+                className="inline-flex items-center gap-1.5 shrink-0 rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
+              >
+                <ArrowLeft className="w-4 h-4" aria-hidden />
+                전체 카테고리
+              </button>
+            )}
             <h3 className="text-base font-semibold text-card-foreground min-w-0 truncate">
               {selectedCategory
                 ? `${selectedCategory.name} · 섹터별 성장 전망`
                 : '카테고리별 성장 전망'}
             </h3>
-            <div className="flex items-center gap-2 shrink-0">
-              {/* 뷰 토글 — PC 전용 */}
-              <div
-                role="group"
-                aria-label="차트 형태 선택"
-                className="hidden lg:inline-flex rounded-lg overflow-hidden border border-border-subtle"
-              >
-                {([
-                  { key: 'bars', label: '막대', Icon: BarChart2 },
-                  { key: 'bubble', label: '버블', Icon: CircleDot },
-                ] as const).map(({ key, label, Icon }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setViewMode(key)}
-                    aria-pressed={viewMode === key}
-                    className={cn(
-                      'inline-flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors',
-                      viewMode === key
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-surface-1 text-muted-foreground hover:bg-surface-2 hover:text-foreground'
-                    )}
-                  >
-                    <Icon className="w-4 h-4" aria-hidden />
-                    {label}
-                  </button>
-                ))}
-              </div>
-              {selectedCategory && (
+            {/* 뷰 토글 — PC 전용, 오른쪽 정렬 */}
+            <div
+              role="group"
+              aria-label="차트 형태 선택"
+              className="ml-auto hidden shrink-0 lg:inline-flex rounded-lg overflow-hidden border border-border-subtle"
+            >
+              {([
+                { key: 'bars', label: '막대', Icon: BarChart2 },
+                { key: 'bubble', label: '버블', Icon: CircleDot },
+              ] as const).map(({ key, label, Icon }) => (
                 <button
+                  key={key}
                   type="button"
-                  onClick={() => setSelectedCategoryId(null)}
-                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setViewMode(key)}
+                  aria-pressed={viewMode === key}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors',
+                    viewMode === key
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-surface-1 text-muted-foreground hover:bg-surface-2 hover:text-foreground'
+                  )}
                 >
-                  <ArrowLeft className="w-3.5 h-3.5" aria-hidden />
-                  전체 카테고리
+                  <Icon className="w-4 h-4" aria-hidden />
+                  {label}
                 </button>
-              )}
+              ))}
             </div>
           </div>
 
