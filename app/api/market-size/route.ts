@@ -11,7 +11,7 @@ import {
   industries,
   industryCategories,
 } from '@/drizzle/schema'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, sql } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
 import { resolveRegion, regionFilterToValue } from '@/lib/region'
 import type {
@@ -117,16 +117,37 @@ export async function GET(
     // 골랐다. 테크가 order=1 이라 다중 연결 카테고리 6개(제약·바이오·의료기기,
     // 결제, 전기차, 우주 등 전체의 23%)가 전부 테크로 쏠렸다.
     // 이제 GICS 기준으로 지정한 is_primary 를 쓴다.
+    //
+    // 스키마 가드: 코드는 main→Vercel 로, DB 는 db-snapshot 브랜치로 각각 배포되므로
+    // is_primary 가 없는 DB 위에서 이 코드가 돌 수 있다(실제로 한 번 500 을 냈다).
+    // 컬럼이 없으면 예전 order 규칙으로 물러난다 — 귀속은 부정확해지지만 지도는 산다.
+    const hasIsPrimary =
+      (
+        db.all(
+          sql`SELECT name FROM pragma_table_info('industry_categories') WHERE name = 'is_primary'`
+        ) as unknown[]
+      ).length > 0
+    if (!hasIsPrimary) {
+      console.warn(
+        '[GET /api/market-size] industry_categories.is_primary 없음 — order 최소 규칙으로 폴백. ' +
+          'scripts/migrate-add-primary-industry.ts 를 적용하고 db-snapshot 에 반영할 것.'
+      )
+    }
+
     const icRows = await db
       .select({
         categoryId: industryCategories.categoryId,
         industryId: industries.id,
         industryName: industries.name,
-        isPrimary: industryCategories.isPrimary,
+        order: industries.order,
+        ...(hasIsPrimary ? { isPrimary: industryCategories.isPrimary } : {}),
       })
       .from(industryCategories)
       .innerJoin(industries, eq(industryCategories.industryId, industries.id))
-    const primaryIndustry = new Map<string, { id: string; name: string }>()
+    const primaryIndustry = new Map<
+      string,
+      { id: string; name: string; order: number }
+    >()
     const industryCategoryIds = new Set<string>()
     for (const r of icRows) {
       if (!r.categoryId || !r.industryId) continue
@@ -134,8 +155,24 @@ export async function GET(
       if (industryId && r.industryId === industryId) {
         industryCategoryIds.add(r.categoryId)
       }
-      if (r.isPrimary) {
-        primaryIndustry.set(r.categoryId, { id: r.industryId, name: r.industryName })
+      const order = r.order ?? 0
+      if (hasIsPrimary) {
+        if ((r as { isPrimary?: boolean }).isPrimary) {
+          primaryIndustry.set(r.categoryId, {
+            id: r.industryId,
+            name: r.industryName,
+            order,
+          })
+        }
+      } else {
+        const cur = primaryIndustry.get(r.categoryId)
+        if (!cur || order < cur.order) {
+          primaryIndustry.set(r.categoryId, {
+            id: r.industryId,
+            name: r.industryName,
+            order,
+          })
+        }
       }
     }
 
