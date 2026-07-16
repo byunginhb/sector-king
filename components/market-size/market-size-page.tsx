@@ -290,7 +290,17 @@ export function MarketSizePage() {
 
         {/* 시총 지도 — 산업 그룹 안에 섹터 타일 */}
         <div className="sk-card">
-          <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            {drillSector && (
+              <button
+                type="button"
+                onClick={() => setDrillSector(null)}
+                className="inline-flex items-center gap-1.5 shrink-0 rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
+              >
+                <ArrowLeft className="w-4 h-4" aria-hidden />
+                전체 산업
+              </button>
+            )}
             <h3 className="text-base font-semibold text-card-foreground flex items-center gap-2 min-w-0">
               <LayoutGrid className="w-5 h-5 text-success shrink-0" aria-hidden />
               <span className="truncate">
@@ -300,16 +310,6 @@ export function MarketSizePage() {
                 {drillSector ? '종목' : '섹터'} {mapTileCount}개
               </span>
             </h3>
-            {drillSector && (
-              <button
-                type="button"
-                onClick={() => setDrillSector(null)}
-                className="inline-flex items-center gap-1 shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" aria-hidden />
-                전체 산업
-              </button>
-            )}
           </div>
           {mapLoading ? (
             <div className="h-[28rem] sm:h-[36rem] bg-muted/30 rounded-lg animate-pulse" />
