@@ -7,6 +7,7 @@ import {
   Mail,
   MessageSquare,
   Users,
+  UserRound,
   CalendarClock,
 } from 'lucide-react'
 import { format } from 'date-fns'
@@ -59,6 +60,12 @@ export default async function AdminPage() {
           icon={<CalendarClock className="h-4 w-4 text-primary" aria-hidden />}
           title="경제 캘린더"
           description="경제 지표·이벤트를 수동 등록하고 자동 수집분을 관리합니다."
+        />
+        <AdminLinkCard
+          href="/admin/contributors"
+          icon={<UserRound className="h-4 w-4 text-primary" aria-hidden />}
+          title="함께하는 사람들"
+          description="소개 페이지(/about)에 노출되는 인물을 등록·관리합니다."
         />
         <AdminLinkCard
           href="/admin/users"

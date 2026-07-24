@@ -577,3 +577,33 @@ export const economicEvents = pgTable(
 
 export type EconomicEventRow = typeof economicEvents.$inferSelect
 export type NewEconomicEventRow = typeof economicEvents.$inferInsert
+
+// ----------------------------------------------------------------------------
+// contributors — 섹터킹 소개 페이지 "함께하는 사람들"
+// ----------------------------------------------------------------------------
+// 순수 표시용 인물 카드(수동 전용). 아바타는 도트 SVG(gender 실루엣 + variant 색상).
+// 마이그레이션 SoT: supabase/migrations/0010_contributors.sql
+
+/** DB 컬럼 값 — gender (아바타 실루엣 구분) */
+export type ContributorGender = 'male' | 'female'
+
+export const contributors = pgTable(
+  'contributors',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    nickname: text('nickname').notNull(),
+    bio: text('bio'),
+    email: text('email'),
+    instagramUrl: text('instagram_url'),
+    threadsUrl: text('threads_url'),
+    gender: text('gender').$type<ContributorGender>().notNull().default('male'),
+    avatarVariant: integer('avatar_variant').notNull().default(0),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('idx_contributors_sort').on(table.sortOrder, table.id)]
+)
+
+export type ContributorRow = typeof contributors.$inferSelect
+export type NewContributorRow = typeof contributors.$inferInsert

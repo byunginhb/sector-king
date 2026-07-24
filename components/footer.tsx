@@ -15,6 +15,12 @@ export function Footer() {
           </div>
           <nav className="flex items-center gap-4 flex-wrap">
             <Link
+              href="/about"
+              className="text-sm text-info hover:underline"
+            >
+              소개
+            </Link>
+            <Link
               href="/guide"
               className="text-sm text-info hover:underline"
             >
