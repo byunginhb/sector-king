@@ -9,6 +9,7 @@ import Link from 'next/link'
 import {
   Instagram,
   AtSign,
+  Globe,
   MessageSquare,
   Compass,
   Users,
@@ -212,6 +213,17 @@ export default async function AboutPage() {
                             className="hover:text-foreground"
                           >
                             <AtSign className="h-4 w-4" aria-hidden />
+                          </a>
+                        )}
+                        {p.blogUrl && (
+                          <a
+                            href={p.blogUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`${p.nickname} 블로그`}
+                            className="hover:text-foreground"
+                          >
+                            <Globe className="h-4 w-4" aria-hidden />
                           </a>
                         )}
                       </div>

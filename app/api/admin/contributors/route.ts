@@ -77,6 +77,7 @@ export async function POST(req: Request) {
       email: input.email ?? null,
       instagram_url: input.instagramUrl ?? null,
       threads_url: input.threadsUrl ?? null,
+      blog_url: input.blogUrl ?? null,
       gender: input.gender,
       avatar_variant: input.avatarVariant,
       sort_order: input.sortOrder,

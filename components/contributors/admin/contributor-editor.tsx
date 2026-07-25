@@ -17,6 +17,8 @@ import { PixelAvatar, AVATAR_PRESETS } from '@/components/contributors/pixel-ava
 
 interface ContributorEditorProps {
   initial: ContributorDTO | null
+  /** 신규 등록 시 표시 순서 기본값(기존 최대 + 1). 편집 시 무시. */
+  nextSortOrder?: number
 }
 
 const GENDER_LABEL: Record<ContributorGender, string> = {
@@ -24,7 +26,19 @@ const GENDER_LABEL: Record<ContributorGender, string> = {
   female: '여성',
 }
 
-export function ContributorEditor({ initial }: ContributorEditorProps) {
+// 아이디만 입력받고 앞의 기본 주소는 자동으로 붙인다.
+const INSTAGRAM_BASE = 'https://www.instagram.com/'
+const THREADS_BASE = 'https://www.threads.com/@'
+
+/** 입력값에서 @·슬래시를 제거해 순수 아이디만 남긴다. */
+const cleanHandle = (raw: string) =>
+  raw.trim().replace(/^@+/, '').replace(/^\/+|\/+$/g, '')
+
+/** 저장된 전체 URL 에서 아이디만 뽑아 편집 폼에 표시. base 로 시작 안 하면 원문 유지. */
+const handleFromUrl = (url: string | null | undefined, base: string) =>
+  url ? (url.startsWith(base) ? url.slice(base.length) : url) : ''
+
+export function ContributorEditor({ initial, nextSortOrder }: ContributorEditorProps) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -33,23 +47,33 @@ export function ContributorEditor({ initial }: ContributorEditorProps) {
   const [nickname, setNickname] = useState(initial?.nickname ?? '')
   const [bio, setBio] = useState(initial?.bio ?? '')
   const [email, setEmail] = useState(initial?.email ?? '')
-  const [instagramUrl, setInstagramUrl] = useState(initial?.instagramUrl ?? '')
-  const [threadsUrl, setThreadsUrl] = useState(initial?.threadsUrl ?? '')
+  const [instagramHandle, setInstagramHandle] = useState(
+    handleFromUrl(initial?.instagramUrl, INSTAGRAM_BASE)
+  )
+  const [threadsHandle, setThreadsHandle] = useState(
+    handleFromUrl(initial?.threadsUrl, THREADS_BASE)
+  )
+  const [blogUrl, setBlogUrl] = useState(initial?.blogUrl ?? '')
   const [gender, setGender] = useState<ContributorGender>(initial?.gender ?? 'male')
   const [avatarVariant, setAvatarVariant] = useState(initial?.avatarVariant ?? 0)
-  const [sortOrder, setSortOrder] = useState(String(initial?.sortOrder ?? 0))
+  const [sortOrder, setSortOrder] = useState(
+    String(initial?.sortOrder ?? nextSortOrder ?? 0)
+  )
 
   const submit = () => {
     setError(null)
     startTransition(async () => {
       try {
         if (!nickname.trim()) throw new Error('닉네임을 입력하세요')
+        const ig = cleanHandle(instagramHandle)
+        const th = cleanHandle(threadsHandle)
         const payload = {
           nickname: nickname.trim(),
           bio: bio.trim() || null,
           email: email.trim() || null,
-          instagramUrl: instagramUrl.trim() || null,
-          threadsUrl: threadsUrl.trim() || null,
+          instagramUrl: ig ? INSTAGRAM_BASE + ig : null,
+          threadsUrl: th ? THREADS_BASE + th : null,
+          blogUrl: blogUrl.trim() || null,
           gender,
           avatarVariant,
           sortOrder: Number(sortOrder) || 0,
@@ -216,22 +240,29 @@ export function ContributorEditor({ initial }: ContributorEditorProps) {
             placeholder="byunginhb@gmail.com"
           />
         </Field>
-        <Field label="인스타그램 URL">
-          <input
-            type="url"
-            value={instagramUrl}
-            onChange={(e) => setInstagramUrl(e.target.value)}
-            className="w-full rounded-md border border-border-subtle bg-background px-3 py-2 text-sm text-foreground"
-            placeholder="https://www.instagram.com/..."
+        <Field label="인스타그램 아이디">
+          <HandleInput
+            base={INSTAGRAM_BASE}
+            value={instagramHandle}
+            onChange={setInstagramHandle}
+            placeholder="ssector.king"
           />
         </Field>
-        <Field label="쓰레드 URL" full>
+        <Field label="쓰레드 아이디">
+          <HandleInput
+            base={THREADS_BASE}
+            value={threadsHandle}
+            onChange={setThreadsHandle}
+            placeholder="ssector.king"
+          />
+        </Field>
+        <Field label="블로그 URL" full>
           <input
             type="url"
-            value={threadsUrl}
-            onChange={(e) => setThreadsUrl(e.target.value)}
+            value={blogUrl}
+            onChange={(e) => setBlogUrl(e.target.value)}
             className="w-full rounded-md border border-border-subtle bg-background px-3 py-2 text-sm text-foreground"
-            placeholder="https://www.threads.com/@ssector.king"
+            placeholder="https://blog.example.com"
           />
         </Field>
       </div>
@@ -260,6 +291,35 @@ export function ContributorEditor({ initial }: ContributorEditorProps) {
           </button>
         )}
       </div>
+    </div>
+  )
+}
+
+/** 앞의 기본 주소를 고정 표기하고 아이디만 입력받는 인풋. */
+function HandleInput({
+  base,
+  value,
+  onChange,
+  placeholder,
+}: {
+  base: string
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+}) {
+  const display = base.replace(/^https?:\/\//, '')
+  return (
+    <div className="flex items-stretch rounded-md border border-border-subtle bg-background overflow-hidden focus-within:ring-1 focus-within:ring-primary">
+      <span className="flex items-center whitespace-nowrap border-r border-border-subtle bg-surface-2 px-2.5 text-xs text-muted-foreground select-none">
+        {display}
+      </span>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="min-w-0 flex-1 bg-background px-3 py-2 text-sm text-foreground outline-none"
+        placeholder={placeholder}
+      />
     </div>
   )
 }

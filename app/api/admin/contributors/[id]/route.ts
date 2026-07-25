@@ -100,6 +100,8 @@ export async function PATCH(
       updateRow.instagram_url = input.instagramUrl ?? null
     if (input.threadsUrl !== undefined)
       updateRow.threads_url = input.threadsUrl ?? null
+    if (input.blogUrl !== undefined)
+      updateRow.blog_url = input.blogUrl ?? null
     if (input.gender !== undefined) updateRow.gender = input.gender
     if (input.avatarVariant !== undefined)
       updateRow.avatar_variant = input.avatarVariant

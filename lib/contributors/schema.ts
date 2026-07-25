@@ -32,6 +32,7 @@ export const contributorInputSchema = z
     ),
     instagramUrl: optionalUrl,
     threadsUrl: optionalUrl,
+    blogUrl: optionalUrl,
     gender: genderSchema.default('male'),
     avatarVariant: z.coerce.number().int().min(0).max(AVATAR_VARIANT_COUNT - 1).default(0),
     sortOrder: z.coerce.number().int().min(0).max(9999).default(0),
