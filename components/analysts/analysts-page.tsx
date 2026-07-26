@@ -205,7 +205,8 @@ function StockTab() {
   const { data, isLoading, error } = useAnalystStocks()
   const [openTicker, setOpenTicker] = useState<string | null>(null)
   const [sort, setSort] = useState<StockSort>('analysts')
-  const toggle = (t: string) => setOpenTicker((cur) => (cur === t ? null : t))
+  // 항상 한 종목은 열려 있게 — 다른 행을 눌러 전환만, 빈 상태로 닫지 않는다.
+  const toggle = (t: string) => setOpenTicker(t)
 
   const stocks = useMemo(() => {
     if (!data) return []
@@ -214,6 +215,9 @@ function StockTab() {
     else if (sort === 'upside') arr.sort((a, b) => (upsideOf(b) ?? -Infinity) - (upsideOf(a) ?? -Infinity))
     return arr // 'analysts' = API 기본 정렬 유지
   }, [data, sort])
+
+  // 선택 전에는 첫 종목이 기본으로 열림.
+  const effectiveOpen = openTicker ?? stocks[0]?.ticker ?? null
 
   if (isLoading)
     return (
@@ -258,7 +262,7 @@ function StockTab() {
       ) : (
         <div>
           {stocks.map((s) => (
-            <StockRow key={s.ticker} stock={s} open={openTicker === s.ticker} onToggle={() => toggle(s.ticker)} />
+            <StockRow key={s.ticker} stock={s} open={effectiveOpen === s.ticker} onToggle={() => toggle(s.ticker)} />
           ))}
         </div>
       )}
@@ -271,12 +275,13 @@ export function AnalystsPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
-  const tab: Tab = searchParams.get('tab') === 'tickers' ? 'tickers' : 'analysts'
+  // 종목 탭이 기본 활성 — 애널리스트 탭만 ?tab=analysts 로 표기.
+  const tab: Tab = searchParams.get('tab') === 'analysts' ? 'analysts' : 'tickers'
 
   const setTab = useCallback(
     (t: Tab) => {
       const params = new URLSearchParams(searchParams.toString())
-      if (t === 'analysts') params.delete('tab')
+      if (t === 'tickers') params.delete('tab')
       else params.set('tab', t)
       router.replace(`${pathname}${params.toString() ? `?${params}` : ''}`, { scroll: false })
     },
@@ -284,8 +289,8 @@ export function AnalystsPage() {
   )
 
   const TABS: { key: Tab; label: string }[] = [
-    { key: 'analysts', label: '애널리스트' },
     { key: 'tickers', label: '종목' },
+    { key: 'analysts', label: '애널리스트' },
   ]
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   function onTabKey(e: React.KeyboardEvent, i: number) {
