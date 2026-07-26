@@ -11,7 +11,7 @@ import { useAnalystStocks, useAnalystStockDetail } from '@/hooks/use-analyst-sto
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { AnalystDetailBody } from './analyst-detail-body'
 import { StockDetailBody } from './stock-detail-body'
-import { pct, hitRateTone, hitRateBar } from './ui'
+import { pct, fmtScore, scoreTone, scoreBar } from './ui'
 import type { AnalystLeaderboardRow, AnalystStockListItem } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -73,7 +73,7 @@ function AnalystRow({
         ref={ref}
         onClick={onToggle}
         aria-expanded={open}
-        className="w-full grid grid-cols-[1.75rem_1fr_auto_1rem] sm:grid-cols-[2.5rem_1fr_9rem_4rem_4rem_4rem_1rem] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
+        className="w-full grid grid-cols-[1.75rem_1fr_auto_1rem] sm:grid-cols-[2.5rem_1fr_9rem_6rem_4rem_4rem_1rem] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
       >
         <span className={cn('text-sm font-semibold tabular-nums text-center', rankTone(rank))}>{rank ?? '—'}</span>
         <span className="min-w-0">
@@ -82,12 +82,12 @@ function AnalystRow({
         </span>
         <span className="hidden sm:flex items-center gap-2">
           <span className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
-            <span className={cn('block h-full rounded-full', hitRateBar(row.hitRate))} style={{ width: `${(row.hitRate ?? 0) * 100}%` }} />
+            <span className={cn('block h-full rounded-full', scoreBar(row.score))} style={{ width: `${row.score}%` }} />
           </span>
-          <span className={cn('text-sm font-semibold tabular-nums w-9 text-right', hitRateTone(row.hitRate))}>{pct(row.hitRate)}</span>
+          <span className={cn('text-sm font-semibold tabular-nums w-10 text-right', scoreTone(row.score))}>{fmtScore(row.score)}</span>
         </span>
-        <span className={cn('sm:hidden text-sm font-semibold tabular-nums text-right', hitRateTone(row.hitRate))}>{pct(row.hitRate)}</span>
-        <span className="hidden sm:block text-sm text-center tabular-nums text-muted-foreground">{row.scored}건</span>
+        <span className={cn('sm:hidden text-sm font-semibold tabular-nums text-right', scoreTone(row.score))}>{fmtScore(row.score)}</span>
+        <span className="hidden sm:block text-xs text-center tabular-nums text-muted-foreground">{pct(row.hitRate)} · {row.scored}건</span>
         <span className="hidden sm:block text-sm text-center tabular-nums text-muted-foreground">{row.tickersCovered}</span>
         <span className="hidden sm:block text-sm text-center tabular-nums text-muted-foreground">{row.reportCount}</span>
         <ChevronDown className={cn('h-4 w-4 text-muted-foreground/60 transition-transform justify-self-end', open && 'rotate-180')} />
@@ -100,7 +100,6 @@ function AnalystRow({
 function AnalystTab() {
   const { data, isLoading, error } = useAnalysts()
   const [openId, setOpenId] = useState<number | null>(null)
-  const [showInsufficient, setShowInsufficient] = useState(false)
   const toggle = (id: number) => setOpenId((cur) => (cur === id ? null : id))
 
   if (isLoading)
@@ -116,11 +115,11 @@ function AnalystTab() {
 
   return (
     <>
-      <div className="hidden sm:grid grid-cols-[2.5rem_1fr_9rem_4rem_4rem_4rem_1rem] gap-3 px-4 pb-2 text-xs font-medium text-muted-foreground border-b">
+      <div className="hidden sm:grid grid-cols-[2.5rem_1fr_9rem_6rem_4rem_4rem_1rem] gap-3 px-4 pb-2 text-xs font-medium text-muted-foreground border-b">
         <span className="text-center">순위</span>
         <span>애널리스트</span>
-        <span className="text-center">적중률</span>
-        <span className="text-center">표본</span>
+        <span className="text-center">예측력</span>
+        <span className="text-center">적중률·표본</span>
         <span className="text-center">종목</span>
         <span className="text-center">리포트</span>
         <span />
@@ -131,22 +130,6 @@ function AnalystTab() {
         ))}
       </div>
       {data.ranked.length === 0 && <p className="text-center text-sm text-muted-foreground py-10">아직 채점 가능한 애널리스트가 없습니다.</p>}
-
-      {data.insufficient.length > 0 && (
-        <div className="mt-6 border-t pt-4">
-          <button onClick={() => setShowInsufficient((v) => !v)} className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-            <ChevronDown className={cn('h-4 w-4 transition-transform', showInsufficient && 'rotate-180')} />
-            표본 부족 ({data.insufficient.length}명) — 채점 {data.minSample}건 미만
-          </button>
-          {showInsufficient && (
-            <div className="mt-2">
-              {data.insufficient.map((row) => (
-                <AnalystRow key={row.analystId} row={row} rank={null} open={openId === row.analystId} onToggle={() => toggle(row.analystId)} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
     </>
   )
 }
@@ -323,8 +306,10 @@ export function AnalystsPage() {
         <div className="flex items-start gap-2 rounded-lg border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground mb-4">
           <Info className="h-4 w-4 shrink-0 mt-0.5" />
           <p>
-            <span className="font-medium text-foreground">방향 적중률</span> = 직전 목표가 대비 상향(상승 예측)·하향(하락 예측)한 뒤
-            다음 리포트까지 실제 주가가 그 방향으로 움직인 비율. 유지·신규 커버 제외, 표본 <span className="font-medium text-foreground">3건 이상</span>만 순위에 반영.
+            <span className="font-medium text-foreground">예측력 점수</span>는 방향 적중률(목표가를 올렸을 때 실제 주가도 올랐는가)에
+            <span className="font-medium text-foreground"> 예측 횟수</span>를 함께 반영한 0~100 점수입니다.
+            소수 예측으로 100% 적중한 경우보다, 수십 건을 쌓으며 꾸준히 맞힌 경우를 더 높게 평가합니다.
+            점수 옆에 원래 적중률·표본 수를 함께 보여줍니다.
           </p>
         </div>
 

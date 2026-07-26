@@ -31,6 +31,23 @@ export function hitRateBar(rate: number | null): string {
   return 'bg-rose-500'
 }
 
+/** 예측력 점수(0~100) 표기·톤·막대. Wilson 하한 기반이라 초기엔 점수대가 낮게 형성됨. */
+export function fmtScore(score: number): string {
+  return `${score}점`
+}
+
+export function scoreTone(score: number): string {
+  if (score >= 60) return 'text-emerald-600 dark:text-emerald-400'
+  if (score >= 45) return 'text-amber-600 dark:text-amber-400'
+  return 'text-rose-600 dark:text-rose-400'
+}
+
+export function scoreBar(score: number): string {
+  if (score >= 60) return 'bg-emerald-500'
+  if (score >= 45) return 'bg-amber-500'
+  return 'bg-rose-500'
+}
+
 export const DIRECTION_META: Record<Direction, { label: string; icon: typeof TrendingUp; tone: string }> = {
   up: { label: '상향', icon: TrendingUp, tone: 'text-emerald-600 dark:text-emerald-400' },
   down: { label: '하향', icon: TrendingDown, tone: 'text-rose-600 dark:text-rose-400' },

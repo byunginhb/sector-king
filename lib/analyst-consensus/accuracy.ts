@@ -164,6 +164,32 @@ export function summarize(predictions: ScoredPrediction[]): AccuracySummary {
   return { hits, misses, scored, hitRate: scored === 0 ? null : hits / scored }
 }
 
+/**
+ * Wilson score 구간 하한(비율의 보수적 추정, [0,1]).
+ * 표본이 적을수록 하한이 크게 낮아져 소표본 고적중률에 자연 벌점을 주고,
+ * 표본이 쌓일수록 실제 적중률로 수렴한다(예측을 많이 한 애널리스트에 가중).
+ * z=1.96 (95% 신뢰). scored===0 → null.
+ */
+export function wilsonLowerBound(hits: number, scored: number, z = 1.96): number | null {
+  if (scored <= 0) return null
+  const p = hits / scored
+  const z2 = z * z
+  const denom = 1 + z2 / scored
+  const center = p + z2 / (2 * scored)
+  const margin = z * Math.sqrt((p * (1 - p) + z2 / (4 * scored)) / scored)
+  return Math.max(0, (center - margin) / denom)
+}
+
+/**
+ * 예측력 점수(0~100 정수) = Wilson 하한 ×100.
+ * 소표본 100%는 낮은 점수, 대표본 고적중률은 높은 점수로 랭킹된다.
+ * scored===0 → null.
+ */
+export function predictionScore(hits: number, scored: number): number | null {
+  const w = wilsonLowerBound(hits, scored)
+  return w == null ? null : Math.round(w * 100)
+}
+
 /** 달성률: (현재가 − 발표일가) / (목표가 − 발표일가). 100%=목표 도달. 계산불가 null. */
 export function achievementRate(
   priceAtReport: number | null,

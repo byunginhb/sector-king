@@ -4,6 +4,8 @@ import {
   scoreSeries,
   summarize,
   achievementRate,
+  wilsonLowerBound,
+  predictionScore,
   type PricePoint,
   type ReportPoint,
 } from '@/lib/analyst-consensus/accuracy'
@@ -67,4 +69,21 @@ describe('achievementRate', () => {
     expect(achievementRate(100, 130, 200)).toBeCloseTo(0.3))
   it('목표=발표일가(분모 0) → null', () => expect(achievementRate(100, 130, 100)).toBeNull())
   it('가격 누락 → null', () => expect(achievementRate(null, 130, 200)).toBeNull())
+})
+
+describe('wilsonLowerBound / predictionScore — 예측력 점수', () => {
+  it('표본 0 → null', () => {
+    expect(wilsonLowerBound(0, 0)).toBeNull()
+    expect(predictionScore(0, 0)).toBeNull()
+  })
+  it('소표본 100%(3/3) 는 크게 벌점 → 44점', () => expect(predictionScore(3, 3)).toBe(44))
+  it('소표본 100%(4/4) → 51점', () => expect(predictionScore(4, 4)).toBe(51))
+  it('대표본 71%(15/21) → 50점', () => expect(predictionScore(15, 21)).toBe(50))
+  it('대표본 100%(50/50) 는 높은 점수 → 93점', () => expect(predictionScore(50, 50)).toBe(93))
+  it('같은 100%라도 표본 많을수록 점수 높다(예측 횟수 가중)', () => {
+    expect(predictionScore(50, 50)!).toBeGreaterThan(predictionScore(3, 3)!)
+  })
+  it('소표본 100%(3/3) 가 대표본 71%(15/21) 보다 낮다(소표본 100% 상위 방지)', () => {
+    expect(predictionScore(3, 3)!).toBeLessThan(predictionScore(15, 21)!)
+  })
 })

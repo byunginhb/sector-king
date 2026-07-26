@@ -16,6 +16,7 @@ import {
   scoreSeries,
   summarize,
   achievementRate,
+  predictionScore,
   type PricePoint,
   type ReportPoint,
 } from './accuracy'
@@ -29,9 +30,6 @@ import type {
   AnalystStockDetailResponse,
   StockAnalystSeries,
 } from '@/types'
-
-/** 랭킹 노출 최소 채점 표본(설계 Q14). 데이터 축적 후 Wilson 하한으로 업그레이드 가능. */
-export const MIN_SAMPLE = 3
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v))
 
@@ -136,6 +134,7 @@ export async function getLeaderboard(): Promise<AnalystLeaderboardResponse> {
       analystId,
       name: a.name,
       firm: a.firm,
+      score: predictionScore(hits, scored) ?? 0,
       hitRate: scored === 0 ? null : hits / scored,
       scored,
       hits,
@@ -144,14 +143,12 @@ export async function getLeaderboard(): Promise<AnalystLeaderboardResponse> {
     })
   }
 
+  // 채점 표본이 있는 애널만 단일 랭킹(예측력 점수 내림차순). Wilson 하한이 소표본을 자연 벌점.
   const ranked = rows
-    .filter((r) => r.scored >= MIN_SAMPLE)
-    .sort((a, b) => (b.hitRate ?? 0) - (a.hitRate ?? 0) || b.scored - a.scored)
-  const insufficient = rows
-    .filter((r) => r.scored < MIN_SAMPLE)
-    .sort((a, b) => b.scored - a.scored || b.reportCount - a.reportCount)
+    .filter((r) => r.scored >= 1)
+    .sort((a, b) => b.score - a.score || b.scored - a.scored)
 
-  return { ranked, insufficient, minSample: MIN_SAMPLE }
+  return { ranked }
 }
 
 /** GET /api/analysts/[id] — 애널리스트 상세(종목별 목표가 vs 실제 + 겹쳐보기). null=없음. */

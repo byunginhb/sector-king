@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { ClipboardCheck, ArrowRight } from 'lucide-react'
 import { useAnalysts } from '@/hooks/use-analysts'
-import { pct, hitRateTone, hitRateBar } from '@/components/analysts/ui'
+import { fmtScore, scoreTone, scoreBar } from '@/components/analysts/ui'
 import { cn } from '@/lib/utils'
 
 /**
@@ -35,7 +35,7 @@ export function AnalystScorecardCard() {
               애널리스트, 예측대로 맞혔나?
             </h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              목표주가를 올렸는지 내렸는지, 그 방향대로 주가가 실제로 움직였는지로 채점한 적중률 순위
+              방향 적중률에 예측 횟수까지 반영한 예측력 점수 순위
             </p>
           </div>
         </div>
@@ -65,12 +65,12 @@ export function AnalystScorecardCard() {
                 </span>
                 <span className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-muted sm:block">
                   <span
-                    className={cn('block h-full rounded-full', hitRateBar(row.hitRate))}
-                    style={{ width: `${(row.hitRate ?? 0) * 100}%` }}
+                    className={cn('block h-full rounded-full', scoreBar(row.score))}
+                    style={{ width: `${row.score}%` }}
                   />
                 </span>
-                <span className={cn('w-10 shrink-0 text-right text-sm font-semibold tabular-nums', hitRateTone(row.hitRate))}>
-                  {pct(row.hitRate)}
+                <span className={cn('w-12 shrink-0 text-right text-sm font-semibold tabular-nums', scoreTone(row.score))}>
+                  {fmtScore(row.score)}
                 </span>
               </Link>
             </li>

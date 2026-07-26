@@ -42,11 +42,12 @@ export interface ApiResponse<T> {
 import type { Direction, PredictionStatus } from '@/lib/analyst-consensus/accuracy'
 export type { Direction, PredictionStatus }
 
-/** 랭킹 한 줄. hitRate 0..1, scored=채점 표본 수. */
+/** 랭킹 한 줄. score=예측력 점수(0~100, Wilson 하한), hitRate 0..1(원 적중률, 보조), scored=채점 표본 수. */
 export interface AnalystLeaderboardRow {
   analystId: number
   name: string
   firm: string
+  score: number // 예측력 점수 0~100 (정렬 주키)
   hitRate: number | null
   scored: number
   hits: number
@@ -55,9 +56,7 @@ export interface AnalystLeaderboardRow {
 }
 
 export interface AnalystLeaderboardResponse {
-  ranked: AnalystLeaderboardRow[] // scored>=minSample, 적중률 내림차순
-  insufficient: AnalystLeaderboardRow[] // scored<minSample (표본 부족)
-  minSample: number
+  ranked: AnalystLeaderboardRow[] // 예측력 점수 내림차순 (표본 부족 별도 분리 없음)
 }
 
 /** 목표가 포인트(USD). */
