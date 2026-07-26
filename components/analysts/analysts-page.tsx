@@ -162,17 +162,20 @@ function StockRow({ stock, open, onToggle }: { stock: AnalystStockListItem; open
         ref={ref}
         onClick={onToggle}
         aria-expanded={open}
-        className="w-full grid grid-cols-[1fr_auto_1rem] sm:grid-cols-[1fr_5rem_6rem_6rem_5rem_1rem] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
+        className="w-full grid grid-cols-[1fr_auto_1rem] sm:grid-cols-[1fr_6rem_6rem_6rem_5rem_1rem] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
       >
         <span className="min-w-0">
           <span className="block font-medium truncate">{stock.businessName}</span>
           <span className="block text-xs text-muted-foreground truncate">{stock.ticker}</span>
         </span>
-        <span className="hidden sm:block text-sm text-center tabular-nums">{stock.analystCount}명</span>
+        <span className="hidden sm:flex flex-col items-center leading-tight tabular-nums">
+          <span className="text-sm">{stock.analystCount}명</span>
+          <span className="text-[10px] text-muted-foreground">리포트 {stock.reportCount}</span>
+        </span>
         <span className="hidden sm:block text-sm text-right tabular-nums text-muted-foreground">{fmt.price(stock.consensusTarget)}</span>
         <span className="hidden sm:block text-sm text-right tabular-nums text-muted-foreground">{fmt.price(stock.latestPrice)}</span>
         <span className="flex items-center justify-end gap-2">
-          <span className="sm:hidden text-xs text-muted-foreground tabular-nums">{stock.analystCount}명</span>
+          <span className="sm:hidden text-xs text-muted-foreground tabular-nums">{stock.analystCount}명 · 리포트 {stock.reportCount}</span>
           <span className={cn('text-sm font-semibold tabular-nums text-right', up == null ? 'text-muted-foreground' : up >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
             {up == null ? '—' : `${up >= 0 ? '+' : ''}${Math.round(up * 100)}%`}
           </span>
@@ -234,9 +237,9 @@ function StockTab() {
           </button>
         ))}
       </div>
-      <div className="hidden sm:grid grid-cols-[1fr_5rem_6rem_6rem_5rem_1rem] gap-3 px-4 pb-2 text-xs font-medium text-muted-foreground border-b">
+      <div className="hidden sm:grid grid-cols-[1fr_6rem_6rem_6rem_5rem_1rem] gap-3 px-4 pb-2 text-xs font-medium text-muted-foreground border-b">
         <span>종목</span>
-        <span className="text-center">애널</span>
+        <span className="text-center">애널·리포트</span>
         <span className="text-right">컨센서스</span>
         <span className="text-right">현재가</span>
         <span className="text-right">상승여력</span>
