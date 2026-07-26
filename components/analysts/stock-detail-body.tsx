@@ -1,6 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import { ChevronRight } from 'lucide-react'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { TargetLinesChart, type TargetSeries } from './target-lines-chart'
 import { PALETTE, CONSENSUS_COLOR, pct, hitRateTone } from './ui'
@@ -106,10 +108,14 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
         })}
       </div>
 
-      {/* 요약 표 — 리포트 수·적중·빗나감·적중률·최신 목표가 */}
+      {/* 요약 표 — 리포트 수·적중·빗나감·적중률·최신 목표가. 클릭 시 애널리스트 상세로 이동. */}
       <div className="divide-y divide-border/50 border-t pt-1">
         {data.analysts.map((a) => (
-          <div key={a.analystId} className="flex items-start gap-2 py-2 text-sm">
+          <Link
+            key={a.analystId}
+            href={`/analysts/${a.analystId}`}
+            className="flex items-start gap-2 py-2 -mx-2 px-2 rounded-md text-sm hover:bg-muted/50 transition-colors"
+          >
             <span
               className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full"
               style={{ backgroundColor: colorByAnalyst.get(a.analystId) }}
@@ -135,9 +141,11 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
                 <span>최신 목표 <span className="font-medium text-foreground">{fmt.price(a.latestTarget)}</span></span>
               </div>
             </div>
-          </div>
+            <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground/50" aria-hidden />
+          </Link>
         ))}
       </div>
+      <p className="text-[11px] text-muted-foreground">애널리스트를 누르면 상세(종목별 목표가 vs 실제)로 이동합니다.</p>
     </div>
   )
 }
