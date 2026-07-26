@@ -189,10 +189,8 @@ function StockRow({ stock, open, onToggle }: { stock: AnalystStockListItem; open
 
 function StockTab() {
   const { data, isLoading, error } = useAnalystStocks()
-  const [openTicker, setOpenTicker] = useState<string | null>(null)
+  const [openTickers, setOpenTickers] = useState<Set<string> | null>(null)
   const [sort, setSort] = useState<StockSort>('analysts')
-  // 항상 한 종목은 열려 있게 — 다른 행을 눌러 전환만, 빈 상태로 닫지 않는다.
-  const toggle = (t: string) => setOpenTicker(t)
 
   const stocks = useMemo(() => {
     if (!data) return []
@@ -203,8 +201,16 @@ function StockTab() {
     return arr // 'analysts' = API 기본 정렬 유지
   }, [data, sort])
 
-  // 선택 전에는 첫 종목이 기본으로 열림.
-  const effectiveOpen = openTicker ?? stocks[0]?.ticker ?? null
+  // 미토글 상태(null)면 첫 종목만 기본 열림. 이후엔 각 종목 독립 토글(여러 개 동시 가능).
+  const defaultOpen = useMemo(() => new Set(stocks[0] ? [stocks[0].ticker] : []), [stocks])
+  const openSet = openTickers ?? defaultOpen
+  const toggle = (t: string) =>
+    setOpenTickers((prev) => {
+      const next = new Set(prev ?? defaultOpen)
+      if (next.has(t)) next.delete(t)
+      else next.add(t)
+      return next
+    })
 
   if (isLoading)
     return (
@@ -250,7 +256,7 @@ function StockTab() {
       ) : (
         <div>
           {stocks.map((s) => (
-            <StockRow key={s.ticker} stock={s} open={effectiveOpen === s.ticker} onToggle={() => toggle(s.ticker)} />
+            <StockRow key={s.ticker} stock={s} open={openSet.has(s.ticker)} onToggle={() => toggle(s.ticker)} />
           ))}
         </div>
       )}
