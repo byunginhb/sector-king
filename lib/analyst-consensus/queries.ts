@@ -445,6 +445,9 @@ export async function getStockDetail(ticker: string): Promise<AnalystStockDetail
       firm: info.firm,
       hitRate: s.hitRate,
       scored: s.scored,
+      hits: s.hits,
+      misses: s.misses,
+      reportCount: sorted.length,
       latestTarget: toUsd(sorted[sorted.length - 1].target, ticker),
       points: sorted.map((p) => ({ date: p.date, target: toUsd(p.target, ticker) })),
     })

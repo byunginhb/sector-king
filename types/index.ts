@@ -131,6 +131,9 @@ export interface StockAnalystSeries {
   firm: string
   hitRate: number | null
   scored: number
+  hits: number
+  misses: number
+  reportCount: number // 목표가 리포트 수
   latestTarget: number | null // USD
   points: { date: string; target: number }[] // USD
 }

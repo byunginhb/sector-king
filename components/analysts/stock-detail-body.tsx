@@ -106,26 +106,35 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
         })}
       </div>
 
-      {/* 요약 표 */}
+      {/* 요약 표 — 리포트 수·적중·빗나감·적중률·최신 목표가 */}
       <div className="divide-y divide-border/50 border-t pt-1">
         {data.analysts.map((a) => (
-          <div key={a.analystId} className="flex items-center gap-2 py-1.5 text-sm">
+          <div key={a.analystId} className="flex items-start gap-2 py-2 text-sm">
             <span
-              className="h-2.5 w-2.5 shrink-0 rounded-full"
+              className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full"
               style={{ backgroundColor: colorByAnalyst.get(a.analystId) }}
               aria-hidden
             />
-            <span className="min-w-0 flex-1 truncate">
-              <span className="font-medium">{a.name}</span>
-              <span className="ml-1.5 text-xs text-muted-foreground">{a.firm}</span>
-            </span>
-            <span className="shrink-0 text-right tabular-nums text-xs">
-              <span className="text-muted-foreground">최신 목표 </span>
-              <span className="font-medium text-foreground">{fmt.price(a.latestTarget)}</span>
-            </span>
-            <span className={cn('w-14 shrink-0 text-right text-xs font-semibold tabular-nums', hitRateTone(a.hitRate))}>
-              {pct(a.hitRate)}
-            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="min-w-0 truncate">
+                  <span className="font-medium">{a.name}</span>
+                  <span className="ml-1.5 text-xs text-muted-foreground">{a.firm}</span>
+                </span>
+                <span className={cn('shrink-0 text-right text-xs font-semibold tabular-nums', hitRateTone(a.hitRate))}>
+                  적중률 {pct(a.hitRate)}
+                </span>
+              </div>
+              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground tabular-nums">
+                <span>리포트 {a.reportCount}</span>
+                <span aria-hidden>·</span>
+                <span className="text-emerald-600 dark:text-emerald-400">적중 {a.hits}</span>
+                <span aria-hidden>·</span>
+                <span className="text-rose-600 dark:text-rose-400">빗나감 {a.misses}</span>
+                <span aria-hidden>·</span>
+                <span>최신 목표 <span className="font-medium text-foreground">{fmt.price(a.latestTarget)}</span></span>
+              </div>
+            </div>
           </div>
         ))}
       </div>

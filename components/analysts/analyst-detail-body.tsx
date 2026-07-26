@@ -138,6 +138,23 @@ function TickerPanel({ series }: { series: AnalystTickerSeries }) {
           <TargetRow key={p.date + p.target} p={p} />
         ))}
       </div>
+
+      {/* 적중·빗나감·평가 전 쉬운 설명 */}
+      <div className="rounded-lg bg-muted/40 px-3 py-2.5 text-[11px] leading-relaxed text-muted-foreground space-y-1.5">
+        <p className="flex items-start gap-1.5">
+          <span className={cn('shrink-0 rounded px-1.5 py-0.5 font-medium', STATUS_META.hit!.tone)}>적중</span>
+          <span>목표가를 이전보다 <span className="font-medium text-foreground">올린 뒤(상향) 주가도 올랐거나</span>, <span className="font-medium text-foreground">내린 뒤(하향) 주가도 내린</span> 경우</span>
+        </p>
+        <p className="flex items-start gap-1.5">
+          <span className={cn('shrink-0 rounded px-1.5 py-0.5 font-medium', STATUS_META.miss!.tone)}>빗나감</span>
+          <span>예측한 방향과 <span className="font-medium text-foreground">반대로</span> 주가가 움직인 경우</span>
+        </p>
+        <p className="flex items-start gap-1.5">
+          <span className={cn('shrink-0 rounded px-1.5 py-0.5 font-medium', STATUS_META.unscorable!.tone)}>평가 전</span>
+          <span>그 시점의 주가 데이터가 없어 <span className="font-medium text-foreground">아직 채점하지 못한</span> 리포트. 신규·유지는 방향 예측이 아니라 채점에서 제외됩니다.</span>
+        </p>
+      </div>
+
       <p className="text-[11px] text-muted-foreground">
         최신가 {fmt.price(series.prices.at(-1)?.price ?? null)} · 진한 선=실제 주가, 파란 굵은 선=이 애널리스트 목표가.
       </p>
