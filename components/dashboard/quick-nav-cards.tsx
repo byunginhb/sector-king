@@ -1,15 +1,23 @@
 import Link from 'next/link'
-import { Newspaper, Trophy, Globe, BookOpen, ChevronRight, type LucideIcon } from 'lucide-react'
+import { Newspaper, Trophy, Globe, BookOpen, ClipboardCheck, ChevronRight, type LucideIcon } from 'lucide-react'
 
 interface QuickNavItem {
   href: string
   label: string
   description: string
   icon: LucideIcon
+  badge?: string
 }
 
 // 헤더 NAV_ITEMS 와 동일 목적지 — 모바일에서 햄버거에 숨는 메뉴를 카드로 노출한다.
 const ITEMS: readonly QuickNavItem[] = [
+  {
+    href: '/analysts',
+    label: '애널리스트 성적표',
+    description: '목표주가 방향 적중률로 채점',
+    icon: ClipboardCheck,
+    badge: 'NEW',
+  },
   {
     href: '/news',
     label: '뉴스',
@@ -59,7 +67,14 @@ export function QuickNavCards() {
                   <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold leading-tight text-foreground">{item.label}</p>
+                  <p className="flex items-center gap-1.5 font-semibold leading-tight text-foreground">
+                    <span className="min-w-0 truncate">{item.label}</span>
+                    {item.badge && (
+                      <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold leading-none text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+                        {item.badge}
+                      </span>
+                    )}
+                  </p>
                   <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
                     {item.description}
                   </p>

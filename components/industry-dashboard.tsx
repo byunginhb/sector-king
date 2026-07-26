@@ -31,6 +31,7 @@ import { NewsHomeCardSlot } from '@/components/news/news-home-card-slot'
 import { EconomicCalendarSection } from '@/components/dashboard/economic-calendar-section'
 import { KoreanPicksCard } from '@/components/dashboard/korean-picks-card'
 import { SectorKingPickCard } from '@/components/dashboard/sector-king-pick-card'
+import { AnalystScorecardCard } from '@/components/dashboard/analyst-scorecard-card'
 import { QuickNavCards } from '@/components/dashboard/quick-nav-cards'
 import type { IndustryOverview } from '@/types'
 
@@ -110,6 +111,9 @@ export function IndustryDashboard() {
 
         {/* 섹터킹 픽 — 단기·장기·DCF 종합 균형 TOP5 + 전체 보기 */}
         <SectorKingPickCard region={region} />
+
+        {/* 애널리스트 성적표 티저 — 신규 기능 홍보 진입점 */}
+        <AnalystScorecardCard />
 
         {/* Industry Cards Grid */}
         <section id="industries" className="mt-12 scroll-mt-24">

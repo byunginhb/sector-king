@@ -1,0 +1,52 @@
+name: Update Analyst Consensus
+
+# 한경 컨센서스(기업 리포트) 일 증분 크롤.
+# Actions 는 얇은 스케줄러 — 실제 크롤·upsert 는 서버 크론 엔드포인트가 수행.
+# 리포트는 장 마감·확정 후 저녁에 안정 → 평일 KST 19:00 (= UTC 10:00) 하루 1회.
+# 크론은 최근 10일 롤링 재조회(멱등)라 하루 놓쳐도 자가치유.
+
+on:
+  schedule:
+    - cron: '0 10 * * 1-5'
+  workflow_dispatch:
+
+concurrency:
+  group: update-analyst-consensus
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate required secrets
+        run: |
+          if [ -z "${{ secrets.CRON_SECRET }}" ]; then
+            echo "::error::CRON_SECRET secret 이 등록되지 않았습니다"
+            exit 1
+          fi
+          if [ -z "${{ secrets.CRON_TARGET_URL }}" ]; then
+            echo "::error::CRON_TARGET_URL secret 이 등록되지 않았습니다 (예: https://sector-king.com)"
+            exit 1
+          fi
+
+      - name: Call analysts-sync endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          CRON_TARGET_URL: ${{ secrets.CRON_TARGET_URL }}
+        run: |
+          set -euo pipefail
+          echo "POST ${CRON_TARGET_URL}/api/cron/analysts-sync"
+          HTTP_CODE=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            "${CRON_TARGET_URL}/api/cron/analysts-sync" \
+            -d '{}')
+          echo "HTTP ${HTTP_CODE}"
+          cat /tmp/resp.json || true
+          echo
+          if [ "${HTTP_CODE}" -ge 400 ]; then
+            echo "::error::analysts-sync endpoint 호출 실패 (HTTP ${HTTP_CODE})"
+            exit 1
+          fi

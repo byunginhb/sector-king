@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Menu, Newspaper, Info, Trophy, Globe, PieChart, type LucideIcon } from 'lucide-react'
+import { Menu, Newspaper, Info, Trophy, Globe, PieChart, ClipboardCheck, type LucideIcon } from 'lucide-react'
 import { SectorKingLogo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { CurrencyToggle } from '@/components/currency-toggle'
@@ -49,6 +49,8 @@ interface NavItem {
   href: string
   label: string
   icon: LucideIcon
+  /** 신규 기능 강조 배지 */
+  badge?: string
 }
 
 /** 헤더에 항상 노출되는 주요 콘텐츠 진입 메뉴. */
@@ -57,8 +59,18 @@ const NAV_ITEMS: readonly NavItem[] = [
   { href: '/news', label: '뉴스', icon: Newspaper },
   { href: '/market-size', label: '시장 규모', icon: PieChart },
   { href: '/rankings', label: '섹터킹 픽', icon: Trophy },
+  { href: '/analysts', label: '애널리스트 성적표', icon: ClipboardCheck, badge: 'NEW' },
   { href: '/indices', label: '세계 지수', icon: Globe },
 ] as const
+
+/** 신규 기능 강조용 작은 배지. */
+function NewBadge() {
+  return (
+    <span className="ml-1 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold leading-none tracking-wide text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+      NEW
+    </span>
+  )
+}
 
 /**
  * 모든 페이지 공통 글로벌 헤더
@@ -145,6 +157,7 @@ export function GlobalTopBar({
                   >
                     <Icon className="h-4 w-4" aria-hidden />
                     {item.label}
+                    {item.badge && <NewBadge />}
                   </Link>
                 )
               })}
@@ -216,6 +229,7 @@ export function GlobalTopBar({
                           >
                             <Icon className="h-4 w-4" aria-hidden />
                             {item.label}
+                            {item.badge && <NewBadge />}
                           </Link>
                         )
                       })}

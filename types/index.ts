@@ -38,6 +38,112 @@ export interface ApiResponse<T> {
   error?: string
 }
 
+// ── 애널리스트 성적표 (analyst report card) ─────────────────────────────
+import type { Direction, PredictionStatus } from '@/lib/analyst-consensus/accuracy'
+export type { Direction, PredictionStatus }
+
+/** 랭킹 한 줄. hitRate 0..1, scored=채점 표본 수. */
+export interface AnalystLeaderboardRow {
+  analystId: number
+  name: string
+  firm: string
+  hitRate: number | null
+  scored: number
+  hits: number
+  tickersCovered: number
+  reportCount: number
+}
+
+export interface AnalystLeaderboardResponse {
+  ranked: AnalystLeaderboardRow[] // scored>=minSample, 적중률 내림차순
+  insufficient: AnalystLeaderboardRow[] // scored<minSample (표본 부족)
+  minSample: number
+}
+
+/** 목표가 포인트(USD). */
+export interface AnalystTargetPoint {
+  date: string
+  target: number
+  direction: Direction
+  status: PredictionStatus
+  actualReturn: number | null
+  inProgress: boolean
+  grade: string | null
+  reportTitle: string | null
+  pdfUrl: string | null
+  thumbnailUrl: string | null
+}
+
+/** 실제 주가 포인트(USD). */
+export interface AnalystPricePoint {
+  date: string
+  price: number
+}
+
+/** 겹쳐보기용 다른 애널리스트 목표가선(USD). */
+export interface AnalystOverlaySeries {
+  analystId: number
+  name: string
+  firm: string
+  points: { date: string; target: number }[]
+}
+
+export interface AnalystTickerSeries {
+  ticker: string
+  businessName: string
+  hitRate: number | null
+  scored: number
+  latestTarget: number | null
+  latestAchievement: number | null
+  targets: AnalystTargetPoint[]
+  prices: AnalystPricePoint[]
+  others: AnalystOverlaySeries[]
+}
+
+export interface AnalystDetailResponse {
+  analystId: number
+  name: string
+  firm: string
+  hitRate: number | null
+  scored: number
+  hits: number
+  reportCount: number
+  tickers: AnalystTickerSeries[]
+}
+
+// ── 종목 탭 (종목 → 예측 애널리스트 비교) ────────────────────────────────
+export interface AnalystStockListItem {
+  ticker: string
+  businessName: string
+  analystCount: number
+  reportCount: number
+  latestPrice: number | null // USD
+  consensusTarget: number | null // USD, 애널별 최신 목표가 평균
+}
+
+export interface AnalystStockListResponse {
+  stocks: AnalystStockListItem[]
+}
+
+/** 한 종목을 예측한 한 애널리스트의 목표가선(USD). */
+export interface StockAnalystSeries {
+  analystId: number
+  name: string
+  firm: string
+  hitRate: number | null
+  scored: number
+  latestTarget: number | null // USD
+  points: { date: string; target: number }[] // USD
+}
+
+export interface AnalystStockDetailResponse {
+  ticker: string
+  businessName: string
+  latestPrice: number | null // USD
+  prices: AnalystPricePoint[] // USD
+  analysts: StockAnalystSeries[]
+}
+
 // Score types
 export interface ScoreSummary {
   total: number

@@ -1,0 +1,359 @@
+'use client'
+
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ClipboardCheck, Info, ChevronDown } from 'lucide-react'
+import { GlobalTopBar } from '@/components/layout/global-top-bar'
+import { useAnalysts } from '@/hooks/use-analysts'
+import { useAnalystDetail } from '@/hooks/use-analyst-detail'
+import { useAnalystStocks, useAnalystStockDetail } from '@/hooks/use-analyst-stocks'
+import { useCurrencyFormat } from '@/hooks/use-currency-format'
+import { AnalystDetailBody } from './analyst-detail-body'
+import { StockDetailBody } from './stock-detail-body'
+import { pct, hitRateTone, hitRateBar } from './ui'
+import type { AnalystLeaderboardRow, AnalystStockListItem } from '@/types'
+import { cn } from '@/lib/utils'
+
+type Tab = 'analysts' | 'tickers'
+
+/** 상위 3위만 메달 색으로 강조(성적표 가독성). 그 외·표본부족(null)은 은은하게. */
+function rankTone(rank: number | null): string {
+  if (rank === 1) return 'text-amber-600 dark:text-amber-400'
+  if (rank === 2) return 'text-slate-500 dark:text-slate-300'
+  if (rank === 3) return 'text-orange-700 dark:text-orange-400'
+  return 'text-muted-foreground'
+}
+
+/** 열림 시 부드럽게 높이 확장 + 행 헤더를 화면에 유지. */
+function Expandable({ open, children }: { open: boolean; children: React.ReactNode }) {
+  return (
+    <AnimatePresence initial={false}>
+      {open && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="overflow-hidden"
+        >
+          <div className="px-3 sm:px-4 pb-4 pt-1">{children}</div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+// ── 애널리스트 탭 ────────────────────────────────────────────────
+function AnalystExpanded({ analystId }: { analystId: number }) {
+  const { data, isLoading, error } = useAnalystDetail(analystId)
+  if (isLoading) return <div className="h-40 rounded-lg bg-muted/40 animate-pulse" />
+  if (error || !data) return <p className="text-sm text-rose-500 py-4">상세를 불러오지 못했습니다.</p>
+  return <AnalystDetailBody data={data} />
+}
+
+function AnalystRow({
+  row,
+  rank,
+  open,
+  onToggle,
+}: {
+  row: AnalystLeaderboardRow
+  rank: number | null
+  open: boolean
+  onToggle: () => void
+}) {
+  const ref = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (open) ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [open])
+  return (
+    <div className={cn('rounded-lg', open && 'bg-muted/30')}>
+      <button
+        ref={ref}
+        onClick={onToggle}
+        aria-expanded={open}
+        className="w-full grid grid-cols-[1.75rem_1fr_auto_1rem] sm:grid-cols-[2.5rem_1fr_9rem_4rem_4rem_4rem_1rem] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
+      >
+        <span className={cn('text-sm font-semibold tabular-nums text-center', rankTone(rank))}>{rank ?? '—'}</span>
+        <span className="min-w-0">
+          <span className="block font-medium truncate">{row.name}</span>
+          <span className="block text-xs text-muted-foreground truncate">{row.firm}</span>
+        </span>
+        <span className="hidden sm:flex items-center gap-2">
+          <span className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+            <span className={cn('block h-full rounded-full', hitRateBar(row.hitRate))} style={{ width: `${(row.hitRate ?? 0) * 100}%` }} />
+          </span>
+          <span className={cn('text-sm font-semibold tabular-nums w-9 text-right', hitRateTone(row.hitRate))}>{pct(row.hitRate)}</span>
+        </span>
+        <span className={cn('sm:hidden text-sm font-semibold tabular-nums text-right', hitRateTone(row.hitRate))}>{pct(row.hitRate)}</span>
+        <span className="hidden sm:block text-sm text-center tabular-nums text-muted-foreground">{row.scored}건</span>
+        <span className="hidden sm:block text-sm text-center tabular-nums text-muted-foreground">{row.tickersCovered}</span>
+        <span className="hidden sm:block text-sm text-center tabular-nums text-muted-foreground">{row.reportCount}</span>
+        <ChevronDown className={cn('h-4 w-4 text-muted-foreground/60 transition-transform justify-self-end', open && 'rotate-180')} />
+      </button>
+      <Expandable open={open}>{open && <AnalystExpanded analystId={row.analystId} />}</Expandable>
+    </div>
+  )
+}
+
+function AnalystTab() {
+  const { data, isLoading, error } = useAnalysts()
+  const [openId, setOpenId] = useState<number | null>(null)
+  const [showInsufficient, setShowInsufficient] = useState(false)
+  const toggle = (id: number) => setOpenId((cur) => (cur === id ? null : id))
+
+  if (isLoading)
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-14 rounded-lg bg-muted/40 animate-pulse" />
+        ))}
+      </div>
+    )
+  if (error || !data)
+    return <p className="text-center text-sm text-rose-500 py-10">랭킹을 불러오지 못했습니다.</p>
+
+  return (
+    <>
+      <div className="hidden sm:grid grid-cols-[2.5rem_1fr_9rem_4rem_4rem_4rem_1rem] gap-3 px-4 pb-2 text-xs font-medium text-muted-foreground border-b">
+        <span className="text-center">순위</span>
+        <span>애널리스트</span>
+        <span className="text-center">적중률</span>
+        <span className="text-center">표본</span>
+        <span className="text-center">종목</span>
+        <span className="text-center">리포트</span>
+        <span />
+      </div>
+      <div>
+        {data.ranked.map((row, i) => (
+          <AnalystRow key={row.analystId} row={row} rank={i + 1} open={openId === row.analystId} onToggle={() => toggle(row.analystId)} />
+        ))}
+      </div>
+      {data.ranked.length === 0 && <p className="text-center text-sm text-muted-foreground py-10">아직 채점 가능한 애널리스트가 없습니다.</p>}
+
+      {data.insufficient.length > 0 && (
+        <div className="mt-6 border-t pt-4">
+          <button onClick={() => setShowInsufficient((v) => !v)} className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+            <ChevronDown className={cn('h-4 w-4 transition-transform', showInsufficient && 'rotate-180')} />
+            표본 부족 ({data.insufficient.length}명) — 채점 {data.minSample}건 미만
+          </button>
+          {showInsufficient && (
+            <div className="mt-2">
+              {data.insufficient.map((row) => (
+                <AnalystRow key={row.analystId} row={row} rank={null} open={openId === row.analystId} onToggle={() => toggle(row.analystId)} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  )
+}
+
+// ── 종목 탭 ──────────────────────────────────────────────────────
+type StockSort = 'analysts' | 'upside' | 'name'
+
+function upsideOf(s: AnalystStockListItem): number | null {
+  if (s.latestPrice == null || s.consensusTarget == null || s.latestPrice === 0) return null
+  return (s.consensusTarget - s.latestPrice) / s.latestPrice
+}
+
+function StockExpanded({ ticker }: { ticker: string }) {
+  const { data, isLoading, error } = useAnalystStockDetail(ticker)
+  if (isLoading) return <div className="h-48 rounded-lg bg-muted/40 animate-pulse" />
+  if (error || !data) return <p className="text-sm text-rose-500 py-4">종목 상세를 불러오지 못했습니다.</p>
+  return <StockDetailBody data={data} />
+}
+
+function StockRow({ stock, open, onToggle }: { stock: AnalystStockListItem; open: boolean; onToggle: () => void }) {
+  const fmt = useCurrencyFormat()
+  const ref = useRef<HTMLButtonElement>(null)
+  const up = upsideOf(stock)
+  useEffect(() => {
+    if (open) ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [open])
+  return (
+    <div className={cn('rounded-lg', open && 'bg-muted/30')}>
+      <button
+        ref={ref}
+        onClick={onToggle}
+        aria-expanded={open}
+        className="w-full grid grid-cols-[1fr_auto_1rem] sm:grid-cols-[1fr_5rem_6rem_6rem_5rem_1rem] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
+      >
+        <span className="min-w-0">
+          <span className="block font-medium truncate">{stock.businessName}</span>
+          <span className="block text-xs text-muted-foreground truncate">{stock.ticker}</span>
+        </span>
+        <span className="hidden sm:block text-sm text-center tabular-nums">{stock.analystCount}명</span>
+        <span className="hidden sm:block text-sm text-right tabular-nums text-muted-foreground">{fmt.price(stock.consensusTarget)}</span>
+        <span className="hidden sm:block text-sm text-right tabular-nums text-muted-foreground">{fmt.price(stock.latestPrice)}</span>
+        <span className="flex items-center justify-end gap-2">
+          <span className="sm:hidden text-xs text-muted-foreground tabular-nums">{stock.analystCount}명</span>
+          <span className={cn('text-sm font-semibold tabular-nums text-right', up == null ? 'text-muted-foreground' : up >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+            {up == null ? '—' : `${up >= 0 ? '+' : ''}${Math.round(up * 100)}%`}
+          </span>
+        </span>
+        <ChevronDown className={cn('h-4 w-4 text-muted-foreground/60 transition-transform justify-self-end', open && 'rotate-180')} />
+      </button>
+      <Expandable open={open}>{open && <StockExpanded ticker={stock.ticker} />}</Expandable>
+    </div>
+  )
+}
+
+function StockTab() {
+  const { data, isLoading, error } = useAnalystStocks()
+  const [openTicker, setOpenTicker] = useState<string | null>(null)
+  const [sort, setSort] = useState<StockSort>('analysts')
+  const toggle = (t: string) => setOpenTicker((cur) => (cur === t ? null : t))
+
+  const stocks = useMemo(() => {
+    if (!data) return []
+    const arr = [...data.stocks]
+    if (sort === 'name') arr.sort((a, b) => a.businessName.localeCompare(b.businessName, 'ko'))
+    else if (sort === 'upside') arr.sort((a, b) => (upsideOf(b) ?? -Infinity) - (upsideOf(a) ?? -Infinity))
+    return arr // 'analysts' = API 기본 정렬 유지
+  }, [data, sort])
+
+  if (isLoading)
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-14 rounded-lg bg-muted/40 animate-pulse" />
+        ))}
+      </div>
+    )
+  if (error || !data) return <p className="text-center text-sm text-rose-500 py-10">종목 목록을 불러오지 못했습니다.</p>
+
+  const SORTS: { key: StockSort; label: string }[] = [
+    { key: 'analysts', label: '커버 애널 수' },
+    { key: 'upside', label: '상승여력' },
+    { key: 'name', label: '종목명' },
+  ]
+
+  return (
+    <>
+      <div className="flex items-center gap-1.5 mb-2 text-xs">
+        <span className="text-muted-foreground">정렬</span>
+        {SORTS.map((s) => (
+          <button
+            key={s.key}
+            onClick={() => setSort(s.key)}
+            className={cn('rounded-full px-2.5 py-1 transition-colors', sort === s.key ? 'bg-primary text-primary-foreground' : 'hover:bg-muted text-muted-foreground')}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      <div className="hidden sm:grid grid-cols-[1fr_5rem_6rem_6rem_5rem_1rem] gap-3 px-4 pb-2 text-xs font-medium text-muted-foreground border-b">
+        <span>종목</span>
+        <span className="text-center">애널</span>
+        <span className="text-right">컨센서스</span>
+        <span className="text-right">현재가</span>
+        <span className="text-right">상승여력</span>
+        <span />
+      </div>
+      {stocks.length === 0 ? (
+        <p className="text-center text-sm text-muted-foreground py-10">표시할 종목이 없습니다.</p>
+      ) : (
+        <div>
+          {stocks.map((s) => (
+            <StockRow key={s.ticker} stock={s} open={openTicker === s.ticker} onToggle={() => toggle(s.ticker)} />
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
+
+// ── 페이지 ────────────────────────────────────────────────────────
+export function AnalystsPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const tab: Tab = searchParams.get('tab') === 'tickers' ? 'tickers' : 'analysts'
+
+  const setTab = useCallback(
+    (t: Tab) => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (t === 'analysts') params.delete('tab')
+      else params.set('tab', t)
+      router.replace(`${pathname}${params.toString() ? `?${params}` : ''}`, { scroll: false })
+    },
+    [searchParams, router, pathname]
+  )
+
+  const TABS: { key: Tab; label: string }[] = [
+    { key: 'analysts', label: '애널리스트' },
+    { key: 'tickers', label: '종목' },
+  ]
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
+  function onTabKey(e: React.KeyboardEvent, i: number) {
+    let next = -1
+    if (e.key === 'ArrowRight') next = (i + 1) % TABS.length
+    else if (e.key === 'ArrowLeft') next = (i - 1 + TABS.length) % TABS.length
+    else if (e.key === 'Home') next = 0
+    else if (e.key === 'End') next = TABS.length - 1
+    if (next >= 0) {
+      e.preventDefault()
+      setTab(TABS[next].key)
+      tabRefs.current[next]?.focus()
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <GlobalTopBar />
+      <main className="mx-auto max-w-4xl px-4 py-6 sm:py-8">
+        <div className="flex items-start gap-3 mb-2">
+          <ClipboardCheck className="h-7 w-7 text-primary shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">애널리스트 성적표</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              애널리스트가 목표주가를 올렸는지 내렸는지, 그 방향대로 주가가 실제로 움직였는지로 예측력을 채점합니다.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-2 rounded-lg border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground mb-4">
+          <Info className="h-4 w-4 shrink-0 mt-0.5" />
+          <p>
+            <span className="font-medium text-foreground">방향 적중률</span> = 직전 목표가 대비 상향(상승 예측)·하향(하락 예측)한 뒤
+            다음 리포트까지 실제 주가가 그 방향으로 움직인 비율. 유지·신규 커버 제외, 표본 <span className="font-medium text-foreground">3건 이상</span>만 순위에 반영.
+          </p>
+        </div>
+
+        {/* 언더라인 탭 */}
+        <div role="tablist" aria-label="애널리스트 성적표 보기" className="grid grid-cols-2 sm:flex sm:gap-1 border-b mb-4">
+          {TABS.map((t, i) => (
+            <button
+              key={t.key}
+              ref={(el) => {
+                tabRefs.current[i] = el
+              }}
+              role="tab"
+              id={`analysts-tab-${t.key}`}
+              aria-selected={tab === t.key}
+              aria-controls={`analysts-panel-${t.key}`}
+              tabIndex={tab === t.key ? 0 : -1}
+              onClick={() => setTab(t.key)}
+              onKeyDown={(e) => onTabKey(e, i)}
+              className={cn(
+                'relative px-4 py-2.5 text-sm transition-colors -mb-px border-b-2',
+                tab === t.key
+                  ? 'border-primary font-semibold text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div role="tabpanel" id={`analysts-panel-${tab}`} aria-labelledby={`analysts-tab-${tab}`}>
+          {tab === 'analysts' ? <AnalystTab /> : <StockTab />}
+        </div>
+      </main>
+    </div>
+  )
+}
