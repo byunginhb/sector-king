@@ -135,7 +135,7 @@ function AnalystTab() {
 }
 
 // ── 종목 탭 ──────────────────────────────────────────────────────
-type StockSort = 'analysts' | 'upside' | 'name'
+type StockSort = 'analysts' | 'reports' | 'upside' | 'name'
 
 function upsideOf(s: AnalystStockListItem): number | null {
   if (s.latestPrice == null || s.consensusTarget == null || s.latestPrice === 0) return null
@@ -196,6 +196,7 @@ function StockTab() {
     const arr = [...data.stocks]
     if (sort === 'name') arr.sort((a, b) => a.businessName.localeCompare(b.businessName, 'ko'))
     else if (sort === 'upside') arr.sort((a, b) => (upsideOf(b) ?? -Infinity) - (upsideOf(a) ?? -Infinity))
+    else if (sort === 'reports') arr.sort((a, b) => b.reportCount - a.reportCount || b.analystCount - a.analystCount)
     return arr // 'analysts' = API 기본 정렬 유지
   }, [data, sort])
 
@@ -214,6 +215,7 @@ function StockTab() {
 
   const SORTS: { key: StockSort; label: string }[] = [
     { key: 'analysts', label: '커버 애널 수' },
+    { key: 'reports', label: '리포트 수' },
     { key: 'upside', label: '상승여력' },
     { key: 'name', label: '종목명' },
   ]
