@@ -32,7 +32,8 @@ function consensusMedian(analysts: StockAnalystSeries[]): { date: string; target
 /** 한 종목을 예측한 애널리스트들 비교(아코디언 본문). */
 export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) {
   const fmt = useCurrencyFormat()
-  const [selected, setSelected] = useState<Set<number>>(new Set())
+  // 기본: 모든 애널리스트 예측선 표시(칩으로 개별 끄고 켜기).
+  const [selected, setSelected] = useState<Set<number>>(() => new Set(data.analysts.map((a) => a.analystId)))
 
   const colorByAnalyst = useMemo(() => {
     const m = new Map<number, string>()
@@ -67,9 +68,10 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
         최신가 <span className="font-medium text-foreground">{fmt.price(data.latestPrice)}</span> ·{' '}
-        {data.analysts.length}명이 예측. 기본은 <span className="font-medium text-foreground">실제 주가</span>와{' '}
-        <span className="font-medium" style={{ color: CONSENSUS_COLOR }}>컨센서스(중앙값)</span> 두 선만 보이고,
-        아래 애널리스트를 누르면 그 목표가선이 겹쳐집니다.
+        {data.analysts.length}명이 예측. <span className="font-medium text-foreground">실제 주가</span>(굵은 선),{' '}
+        <span className="font-medium" style={{ color: CONSENSUS_COLOR }}>컨센서스(중앙값)</span>, 그리고 각 애널리스트의
+        목표가(<span className="font-medium text-foreground">색깔별 점선</span>)를 모두 함께 표시합니다.
+        아래 칩을 눌러 개별로 끄고 켤 수 있습니다.
       </p>
 
       <TargetLinesChart prices={data.prices} series={series} height={320} showLegend={false} />

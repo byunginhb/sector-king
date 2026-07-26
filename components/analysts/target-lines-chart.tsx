@@ -26,8 +26,8 @@ const TOOLTIP_STYLE = {
   borderRadius: 8,
 } as const
 const PRICE_KEY = '__price'
-// 비강조 선 대시 다양화(색맹·다선 구분 보조)
-const DASHES = ['5 3', '10 4', '2 3', '8 3 2 3', '4 2']
+// 애널리스트 예측선은 전부 동일 점선 — 색상으로만 구분(사용자 요청).
+const DASH = '5 3'
 
 export interface TargetSeries {
   key: string
@@ -136,7 +136,7 @@ export function TargetLinesChart({
               name={s.label}
               stroke={s.color ?? colorOf(i)}
               strokeWidth={s.emphasis ? 2.5 : 1.5}
-              strokeDasharray={s.emphasis ? undefined : DASHES[i % DASHES.length]}
+              strokeDasharray={s.emphasis ? undefined : DASH}
               dot={{ r: s.emphasis ? 3 : 2 }}
               connectNulls
               hide={hidden.has(s.key)}
