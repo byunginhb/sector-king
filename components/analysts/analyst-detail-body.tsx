@@ -139,7 +139,7 @@ function TickerPanel({ series }: { series: AnalystTickerSeries }) {
         ))}
       </div>
 
-      {/* 적중·빗나감·평가 전 쉬운 설명 */}
+      {/* 적중·빗나감·평가 불가 쉬운 설명 */}
       <div className="rounded-lg bg-muted/40 px-3 py-2.5 text-[11px] leading-relaxed text-muted-foreground space-y-1.5">
         <p className="flex items-start gap-1.5">
           <span className={cn('shrink-0 rounded px-1.5 py-0.5 font-medium', STATUS_META.hit!.tone)}>적중</span>
@@ -150,8 +150,8 @@ function TickerPanel({ series }: { series: AnalystTickerSeries }) {
           <span>예측한 방향과 <span className="font-medium text-foreground">반대로</span> 주가가 움직인 경우</span>
         </p>
         <p className="flex items-start gap-1.5">
-          <span className={cn('shrink-0 rounded px-1.5 py-0.5 font-medium', STATUS_META.unscorable!.tone)}>평가 전</span>
-          <span>그 시점의 주가 데이터가 없어 <span className="font-medium text-foreground">아직 채점하지 못한</span> 리포트. 신규·유지는 방향 예측이 아니라 채점에서 제외됩니다.</span>
+          <span className={cn('shrink-0 rounded px-1.5 py-0.5 font-medium', STATUS_META.unscorable!.tone)}>평가 불가</span>
+          <span>보유한 주가 데이터 기간(위 차트 시작일) 이전이라 <span className="font-medium text-foreground">채점할 수 없는</span> 리포트. 신규·유지는 방향 예측이 아니라 채점에서 제외됩니다.</span>
         </p>
       </div>
 

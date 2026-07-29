@@ -59,7 +59,7 @@ export const DIRECTION_META: Record<Direction, { label: string; icon: typeof Tre
 export const STATUS_META: Record<PredictionStatus, { label: string; tone: string } | null> = {
   hit: { label: '적중', tone: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400' },
   miss: { label: '빗나감', tone: 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400' },
-  unscorable: { label: '평가 전', tone: 'bg-muted text-muted-foreground' },
+  unscorable: { label: '평가 불가', tone: 'bg-muted text-muted-foreground' },
   hold: null,
   new: null,
 }
