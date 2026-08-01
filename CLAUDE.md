@@ -2,6 +2,12 @@
 
 Next.js 15 + TypeScript + Drizzle/SQLite + React Query + framer-motion + recharts 기반의 멀티 산업 주식 대시보드.
 
+## 작업 시작 전 `git pull` (필수)
+
+**모든 작업은 `git pull` 로 시작한다.** GitHub Actions(`update-data.yml`, 하루 4회)가 `db-snapshot` 브랜치를 갱신하고 그 결과가 main 에 `data: sync db-snapshot` 커밋으로 들어오기 때문에, 로컬이 뒤처진 채 작업하면 `data/hegemony.db`(바이너리) 충돌로 푸시가 막히거나 낡은 DB로 되돌리게 된다.
+
+- 커밋 직전 `git status` 에 의도치 않은 `data/hegemony.db` 변경이 보이면 빌드/스크립트가 DB를 연 부수효과다. 데이터 작업이 아니라면 `git checkout -- data/hegemony.db` 로 되돌리고 소스만 커밋한다.
+
 ## 패키지 매니저
 
 `pnpm`만 사용. `pnpm-lock.yaml` 외 lockfile 생성 금지.
