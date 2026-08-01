@@ -57,6 +57,13 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
 
   const consensus = useMemo(() => consensusMedian(data.analysts), [data.analysts])
 
+  // 점수 순과 별개의 두 번째 랭킹 — 이 종목을 가장 많이 다룬 애널리스트.
+  // 응답에 전원이 들어있어 클라이언트 정렬로 충분(API 무변경).
+  const topByReports = useMemo(
+    () => [...data.analysts].sort((a, b) => b.reportCount - a.reportCount || (b.score ?? -1) - (a.score ?? -1)).slice(0, 3),
+    [data.analysts]
+  )
+
   const series: TargetSeries[] = useMemo(() => {
     const base: TargetSeries[] = [
       { key: 'consensus', label: '컨센서스(중앙값)', points: consensus, emphasis: true, color: CONSENSUS_COLOR },
@@ -177,6 +184,42 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
           {expanded ? '상위 5명만 보기' : `애널리스트 ${rest}명 더 보기`}
           <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', expanded && 'rotate-180')} aria-hidden />
         </button>
+      )}
+
+      {/* 두 번째 랭킹 — 리포트 최다 3인(점수 순 목록과 다른 관점). 전원이 3명 이하면 위 목록과 같아 생략. */}
+      {data.analysts.length > 3 && (
+        <div className="rounded-lg border bg-muted/20 p-3">
+          <p className="mb-1.5 text-xs font-medium text-foreground">
+            이 종목 리포트 최다 <span className="text-muted-foreground">TOP 3</span>
+          </p>
+          <div className="divide-y divide-border/50">
+            {topByReports.map((a, i) => (
+              <Link
+                key={a.analystId}
+                href={`/analysts/${a.analystId}`}
+                className="flex items-center gap-2 py-1.5 -mx-1 px-1 rounded-md text-sm hover:bg-muted/50 transition-colors"
+              >
+                <span className="w-4 shrink-0 text-center text-xs font-semibold tabular-nums text-muted-foreground">{i + 1}</span>
+                <span className="min-w-0 flex-1 truncate">
+                  <span className="font-medium">{a.name}</span>
+                  <span className="ml-1.5 text-xs text-muted-foreground">{a.firm}</span>
+                </span>
+                <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                  리포트 <span className="font-semibold text-foreground">{a.reportCount}</span>
+                </span>
+                <span
+                  className={cn(
+                    'shrink-0 w-14 text-right text-xs tabular-nums',
+                    a.score == null ? 'text-muted-foreground' : scoreTone(a.score)
+                  )}
+                >
+                  {a.score == null ? '—' : fmtScore(a.score)}
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50" aria-hidden />
+              </Link>
+            ))}
+          </div>
+        </div>
       )}
 
       <p className="text-[11px] text-muted-foreground">애널리스트를 누르면 상세(종목별 목표가 vs 실제)로 이동합니다.</p>
