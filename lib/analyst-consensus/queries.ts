@@ -148,7 +148,10 @@ export async function getLeaderboard(): Promise<AnalystLeaderboardResponse> {
     .filter((r) => r.scored >= 1)
     .sort((a, b) => b.score - a.score || b.scored - a.scored)
 
-  return { ranked }
+  // 리포트 최다 랭킹 — 채점 표본이 아직 없는 애널(전량 유지·신규)도 포함해야 "가장 많이 쓴 순"이 맞다.
+  const byReports = [...rows].sort((a, b) => b.reportCount - a.reportCount || b.score - a.score)
+
+  return { ranked, byReports }
 }
 
 /** GET /api/analysts/[id] — 애널리스트 상세(종목별 목표가 vs 실제 + 겹쳐보기). null=없음. */
@@ -443,6 +446,7 @@ export async function getStockDetail(ticker: string): Promise<AnalystStockDetail
       analystId,
       name: info.name,
       firm: info.firm,
+      score: predictionScore(s.hits, s.scored),
       hitRate: s.hitRate,
       scored: s.scored,
       hits: s.hits,
@@ -452,8 +456,11 @@ export async function getStockDetail(ticker: string): Promise<AnalystStockDetail
       points: sorted.map((p) => ({ date: p.date, target: toUsd(p.target, ticker) })),
     })
   }
-  // 데이터 많은 순(리포트 수) → 비교 주도 애널 상단
-  analysts.sort((a, b) => b.points.length - a.points.length || (b.hitRate ?? 0) - (a.hitRate ?? 0))
+  // 예측력 점수 높은 순 → 상위 5명이 기본 노출(소표본 100%가 위로 오지 않도록 raw 적중률 대신 점수 기준).
+  // 채점 표본 없는(전량 유지·신규) 애널은 점수 null → 리포트 수로 뒤에 정렬.
+  analysts.sort(
+    (a, b) => (b.score ?? -1) - (a.score ?? -1) || b.reportCount - a.reportCount
+  )
 
   return {
     ticker,

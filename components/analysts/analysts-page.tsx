@@ -11,7 +11,7 @@ import { useAnalystStocks, useAnalystStockDetail } from '@/hooks/use-analyst-sto
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { AnalystDetailBody } from './analyst-detail-body'
 import { StockDetailBody } from './stock-detail-body'
-import { pct, fmtScore, scoreTone, scoreBar } from './ui'
+import { pct, fmtScore, scoreTone, scoreBar, ScoreHint } from './ui'
 import type { AnalystLeaderboardRow, AnalystStockListItem } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -64,6 +64,7 @@ function AnalystRow({
   onToggle: () => void
 }) {
   const ref = useRef<HTMLButtonElement>(null)
+  const scored = row.scored > 0 // 채점 표본 0 → 점수는 0이 아니라 '—'
   useEffect(() => {
     if (open) ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [open])
@@ -82,11 +83,15 @@ function AnalystRow({
         </span>
         <span className="hidden sm:flex items-center gap-2">
           <span className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
-            <span className={cn('block h-full rounded-full', scoreBar(row.score))} style={{ width: `${row.score}%` }} />
+            <span className={cn('block h-full rounded-full', scoreBar(row.score))} style={{ width: `${scored ? row.score : 0}%` }} />
           </span>
-          <span className={cn('text-sm font-semibold tabular-nums w-10 text-right', scoreTone(row.score))}>{fmtScore(row.score)}</span>
+          <span className={cn('text-sm font-semibold tabular-nums w-10 text-right', scored ? scoreTone(row.score) : 'text-muted-foreground')}>
+            {scored ? fmtScore(row.score) : '—'}
+          </span>
         </span>
-        <span className={cn('sm:hidden text-sm font-semibold tabular-nums text-right', scoreTone(row.score))}>{fmtScore(row.score)}</span>
+        <span className={cn('sm:hidden text-sm font-semibold tabular-nums text-right', scored ? scoreTone(row.score) : 'text-muted-foreground')}>
+          {scored ? fmtScore(row.score) : '—'}
+        </span>
         <span className="hidden sm:block text-xs text-center tabular-nums text-muted-foreground">{pct(row.hitRate)} · {row.scored}건</span>
         <span className="hidden sm:block text-sm text-center tabular-nums text-muted-foreground">{row.tickersCovered}</span>
         <span className="hidden sm:block text-sm text-center tabular-nums text-muted-foreground">{row.reportCount}</span>
@@ -97,9 +102,12 @@ function AnalystRow({
   )
 }
 
+type AnalystRank = 'score' | 'reports'
+
 function AnalystTab() {
   const { data, isLoading, error } = useAnalysts()
   const [openId, setOpenId] = useState<number | null>(null)
+  const [rankBy, setRankBy] = useState<AnalystRank>('score')
   const toggle = (id: number) => setOpenId((cur) => (cur === id ? null : id))
 
   if (isLoading)
@@ -113,23 +121,50 @@ function AnalystTab() {
   if (error || !data)
     return <p className="text-center text-sm text-rose-500 py-10">랭킹을 불러오지 못했습니다.</p>
 
+  const rows = rankBy === 'score' ? data.ranked : (data.byReports ?? data.ranked)
+  const RANKS: { key: AnalystRank; label: string }[] = [
+    { key: 'score', label: '예측력 점수' },
+    { key: 'reports', label: '리포트 최다' },
+  ]
+
   return (
     <>
+      <div className="flex items-center gap-1.5 mb-2 text-xs">
+        <span className="text-muted-foreground">순위 기준</span>
+        {RANKS.map((r) => (
+          <button
+            key={r.key}
+            onClick={() => setRankBy(r.key)}
+            className={cn('rounded-full px-2.5 py-1 transition-colors', rankBy === r.key ? 'bg-primary text-primary-foreground' : 'hover:bg-muted text-muted-foreground')}
+          >
+            {r.label}
+          </button>
+        ))}
+      </div>
+      <p className="mb-2 flex items-center gap-1 text-[11px] text-muted-foreground">
+        {rankBy === 'score'
+          ? '적중률에 예측 횟수를 반영한 예측력 점수 순. 채점 표본이 있는 애널리스트만 포함합니다.'
+          : '목표주가를 제시한 리포트를 가장 많이 낸 순. 아직 채점 표본이 없는 애널리스트도 포함합니다.'}
+        <ScoreHint />
+      </p>
       <div className="hidden sm:grid grid-cols-[2.5rem_1fr_9rem_6rem_4rem_4rem_1rem] gap-3 px-4 pb-2 text-xs font-medium text-muted-foreground border-b">
         <span className="text-center">순위</span>
         <span>애널리스트</span>
-        <span className="text-center">예측력</span>
+        <span className="flex items-center justify-center gap-1">
+          예측력
+          <ScoreHint />
+        </span>
         <span className="text-center">적중률·표본</span>
         <span className="text-center">종목</span>
         <span className="text-center">리포트</span>
         <span />
       </div>
       <div>
-        {data.ranked.map((row, i) => (
+        {rows.map((row, i) => (
           <AnalystRow key={row.analystId} row={row} rank={i + 1} open={openId === row.analystId} onToggle={() => toggle(row.analystId)} />
         ))}
       </div>
-      {data.ranked.length === 0 && <p className="text-center text-sm text-muted-foreground py-10">아직 채점 가능한 애널리스트가 없습니다.</p>}
+      {rows.length === 0 && <p className="text-center text-sm text-muted-foreground py-10">아직 채점 가능한 애널리스트가 없습니다.</p>}
     </>
   )
 }

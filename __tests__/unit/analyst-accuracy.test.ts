@@ -86,4 +86,9 @@ describe('wilsonLowerBound / predictionScore — 예측력 점수', () => {
   it('소표본 100%(3/3) 가 대표본 71%(15/21) 보다 낮다(소표본 100% 상위 방지)', () => {
     expect(predictionScore(3, 3)!).toBeLessThan(predictionScore(15, 21)!)
   })
+  // 종목 상세 정렬 기준 — 리포트 10건 88%(7/8)가 리포트 2건 100%(1/1)보다 위여야 한다.
+  it('다수 리포트 88%(7/8) 가 1~2건 100%(1/1) 보다 높다', () => {
+    expect(predictionScore(7, 8)!).toBeGreaterThan(predictionScore(1, 1)!)
+    expect(predictionScore(7, 8)!).toBeGreaterThan(predictionScore(2, 2)!)
+  })
 })

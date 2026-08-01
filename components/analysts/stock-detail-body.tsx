@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { TargetLinesChart, type TargetSeries } from './target-lines-chart'
-import { PALETTE, CONSENSUS_COLOR, pct, hitRateTone } from './ui'
+import { PALETTE, CONSENSUS_COLOR, pct, hitRateTone, fmtScore, scoreTone, ScoreHint } from './ui'
 import type { AnalystStockDetailResponse, StockAnalystSeries } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -31,11 +31,23 @@ function consensusMedian(analysts: StockAnalystSeries[]): { date: string; target
   return out
 }
 
+/** 기본 노출 인원 — 예측력 점수 상위 N명(API 정렬 순). 나머지는 펼치기. */
+const TOP_N = 5
+
 /** 한 종목을 예측한 애널리스트들 비교(아코디언 본문). */
 export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) {
   const fmt = useCurrencyFormat()
-  // 기본: 모든 애널리스트 예측선 표시(칩으로 개별 끄고 켜기).
-  const [selected, setSelected] = useState<Set<number>>(() => new Set(data.analysts.map((a) => a.analystId)))
+  const [expanded, setExpanded] = useState(false)
+  // 매 렌더 새 배열이면 아래 series useMemo 가 무력화 → 메모.
+  const shown = useMemo(
+    () => (expanded ? data.analysts : data.analysts.slice(0, TOP_N)),
+    [expanded, data.analysts]
+  )
+  const rest = data.analysts.length - TOP_N
+  // 기본: 상위 N명만 예측선 표시(칩으로 개별 끄고 켜기).
+  const [selected, setSelected] = useState<Set<number>>(
+    () => new Set(data.analysts.slice(0, TOP_N).map((a) => a.analystId))
+  )
 
   const colorByAnalyst = useMemo(() => {
     const m = new Map<number, string>()
@@ -49,13 +61,14 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
     const base: TargetSeries[] = [
       { key: 'consensus', label: '컨센서스(중앙값)', points: consensus, emphasis: true, color: CONSENSUS_COLOR },
     ]
-    for (const a of data.analysts) {
+    // 접힌 상태에서 칩 없는 선이 남지 않도록, 노출 중인 애널리스트만 그린다.
+    for (const a of shown) {
       if (selected.has(a.analystId)) {
         base.push({ key: `a${a.analystId}`, label: a.name, points: a.points, color: colorByAnalyst.get(a.analystId) })
       }
     }
     return base
-  }, [consensus, data.analysts, selected, colorByAnalyst])
+  }, [consensus, shown, selected, colorByAnalyst])
 
   function toggle(id: number) {
     setSelected((prev) => {
@@ -71,16 +84,19 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
       <p className="text-xs text-muted-foreground">
         최신가 <span className="font-medium text-foreground">{fmt.price(data.latestPrice)}</span> ·{' '}
         {data.analysts.length}명이 예측. <span className="font-medium text-foreground">실제 주가</span>(굵은 선),{' '}
-        <span className="font-medium" style={{ color: CONSENSUS_COLOR }}>컨센서스(중앙값)</span>, 그리고 각 애널리스트의
-        목표가(<span className="font-medium text-foreground">색깔별 점선</span>)를 모두 함께 표시합니다.
-        아래 칩을 눌러 개별로 끄고 켤 수 있습니다.
+        <span className="font-medium" style={{ color: CONSENSUS_COLOR }}>컨센서스(중앙값, 전원 기준)</span>, 그리고{' '}
+        <span className="font-medium text-foreground">
+          {expanded ? `애널리스트 ${data.analysts.length}명 전체` : `예측력 점수 상위 ${Math.min(TOP_N, data.analysts.length)}명`}
+        </span>
+        의 목표가(<span className="font-medium text-foreground">색깔별 점선</span>)를 표시합니다.
+        아래 칩을 눌러 개별로 끄고 켤 수 있습니다. <ScoreHint />
       </p>
 
       <TargetLinesChart prices={data.prices} series={series} height={320} showLegend={false} />
 
       {/* 애널리스트 선택 칩 (색 = 차트 선 색) */}
       <div className="flex flex-wrap gap-1.5">
-        {data.analysts.map((a) => {
+        {shown.map((a) => {
           const on = selected.has(a.analystId)
           const color = colorByAnalyst.get(a.analystId)!
           return (
@@ -100,17 +116,17 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
                 aria-hidden
               />
               {a.name}
-              <span className={cn('tabular-nums', on ? 'text-white/80' : hitRateTone(a.hitRate))}>
-                {pct(a.hitRate)}
+              <span className={cn('tabular-nums', on ? 'text-white/80' : a.score == null ? 'text-muted-foreground' : scoreTone(a.score))}>
+                {a.score == null ? '—' : fmtScore(a.score)}
               </span>
             </button>
           )
         })}
       </div>
 
-      {/* 요약 표 — 리포트 수·적중·빗나감·적중률·최신 목표가. 클릭 시 애널리스트 상세로 이동. */}
+      {/* 요약 표 — 예측력 점수 순. 리포트 수·적중·빗나감·적중률·최신 목표가. 클릭 시 애널리스트 상세로 이동. */}
       <div className="divide-y divide-border/50 border-t pt-1">
-        {data.analysts.map((a) => (
+        {shown.map((a) => (
           <Link
             key={a.analystId}
             href={`/analysts/${a.analystId}`}
@@ -127,8 +143,13 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
                   <span className="font-medium">{a.name}</span>
                   <span className="ml-1.5 text-xs text-muted-foreground">{a.firm}</span>
                 </span>
-                <span className={cn('shrink-0 text-right text-xs font-semibold tabular-nums', hitRateTone(a.hitRate))}>
-                  적중률 {pct(a.hitRate)}
+                <span
+                  className={cn(
+                    'shrink-0 text-right text-xs font-semibold tabular-nums',
+                    a.score == null ? 'text-muted-foreground' : scoreTone(a.score)
+                  )}
+                >
+                  예측력 {a.score == null ? '—' : fmtScore(a.score)}
                 </span>
               </div>
               <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground tabular-nums">
@@ -138,6 +159,8 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
                 <span aria-hidden>·</span>
                 <span className="text-rose-600 dark:text-rose-400">빗나감 {a.misses}</span>
                 <span aria-hidden>·</span>
+                <span className={hitRateTone(a.hitRate)}>적중률 {pct(a.hitRate)}</span>
+                <span aria-hidden>·</span>
                 <span>최신 목표 <span className="font-medium text-foreground">{fmt.price(a.latestTarget)}</span></span>
               </div>
             </div>
@@ -145,6 +168,17 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
           </Link>
         ))}
       </div>
+      {rest > 0 && (
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className="flex w-full items-center justify-center gap-1.5 rounded-md border py-2 text-xs text-muted-foreground hover:bg-muted/50 transition-colors"
+        >
+          {expanded ? '상위 5명만 보기' : `애널리스트 ${rest}명 더 보기`}
+          <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', expanded && 'rotate-180')} aria-hidden />
+        </button>
+      )}
+
       <p className="text-[11px] text-muted-foreground">애널리스트를 누르면 상세(종목별 목표가 vs 실제)로 이동합니다.</p>
     </div>
   )

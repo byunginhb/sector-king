@@ -1,7 +1,36 @@
 'use client'
 
-import { TrendingUp, TrendingDown, Minus, Sparkles } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Sparkles, Info } from 'lucide-react'
+import { HintPopover } from '@/components/ui/hint-popover'
 import type { Direction, PredictionStatus } from '@/types'
+
+/**
+ * 예측력 점수 개념 설명 툴팁(문구 SoT — 점수가 노출되는 모든 화면에서 재사용).
+ * 계산식(Wilson 하한)은 일부러 감추고 "많이 예측 + 잘 맞힘" 컨셉만 전달한다.
+ */
+export function ScoreHint({ className }: { className?: string }) {
+  return (
+    <HintPopover
+      label="예측력 점수 설명"
+      className={className ?? 'inline-flex align-middle text-muted-foreground/70 hover:text-foreground transition-colors'}
+      content={
+        <span className="block space-y-1.5">
+          <span className="block font-semibold text-foreground">예측력 점수란?</span>
+          <span className="block">
+            <span className="font-medium text-foreground">얼마나 잘 맞혔나(적중률)</span>와{' '}
+            <span className="font-medium text-foreground">얼마나 많이 예측했나(리포트 수)</span>를 함께 본 0~100 점수입니다.
+          </span>
+          <span className="block">
+            리포트 1~2건으로 낸 100%보다, 수십 건을 쌓으면서 꾸준히 맞힌 애널리스트를 더 높게 평가합니다. 물론 적중이 빗나감보다
+            많아야 점수가 올라갑니다.
+          </span>
+        </span>
+      }
+    >
+      <Info className="h-3.5 w-3.5" aria-hidden />
+    </HintPopover>
+  )
+}
 
 /** 다중 시리즈 색 팔레트(칩·차트선 공용 SoT). */
 export const PALETTE = [

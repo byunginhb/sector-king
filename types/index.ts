@@ -57,6 +57,7 @@ export interface AnalystLeaderboardRow {
 
 export interface AnalystLeaderboardResponse {
   ranked: AnalystLeaderboardRow[] // 예측력 점수 내림차순 (표본 부족 별도 분리 없음)
+  byReports: AnalystLeaderboardRow[] // 리포트 수 내림차순 (채점 표본 없는 애널도 포함)
 }
 
 /** 목표가 포인트(USD). */
@@ -129,6 +130,8 @@ export interface StockAnalystSeries {
   analystId: number
   name: string
   firm: string
+  /** 예측력 점수 0~100 (Wilson 하한 — 적중률에 예측 횟수 반영). 채점 표본 0 → null. */
+  score: number | null
   hitRate: number | null
   scored: number
   hits: number
