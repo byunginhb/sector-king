@@ -24,37 +24,50 @@
 
 @layer base {
   :root {
-    /* Light — Newsprint / Editorial paper.
-     * Warm off-white (#F4EFE4) + charcoal ink. Like Bloomberg Businessweek. */
-    --background:        40 32% 95%;       /* #F4EFE4 paper */
-    --surface-1:          0  0% 100%;       /* card */
-    --surface-2:         40 20% 92%;       /* hover / nested */
-    --surface-3:         38 18% 88%;       /* elevated / pressed */
-    --foreground:       222 30% 11%;       /* #131820 charcoal ink */
+    /* Light — Newsprint.
+     *
+     * Cool press gray, not warm cream. 이전 값은 40 32% 95% (#F4EFE4) 로,
+     * 채도 32% 의 따뜻한 크림이었다. 두 가지 이유로 바꾼다.
+     *
+     * 1. 개념 불일치 — 실제 신문 용지는 차가운 회색이다. 따뜻한 크림은
+     *    "세월 먹은 책"이지 갓 인쇄된 신문이 아니다.
+     * 2. cream + serif + amber 조합은 2024년 이후 AI 제품의 하우스 스타일로
+     *    굳었다. 제네릭 SaaS 를 벗어나 다른 제네릭으로 옮겨간 셈이었다.
+     *
+     * 차가운 바탕은 amber 액센트와 보색에 가까워 대비가 커진다 — 액센트가
+     * 장식이 아니라 신호로 읽히는 데 오히려 유리하다.
+     * 중성 램프 전체(배경·표면·보더·muted)를 같은 hue 로 옮겨야 hover 나
+     * 보더에 이전 warm 잔재가 남아 충돌하지 않는다.
+     */
+    --background:       214 15% 93%;       /* cool press gray */
+    --surface-1:          0  0% 100%;       /* card = 흰 종이 */
+    --surface-2:        214 14% 90%;       /* hover / nested */
+    --surface-3:        214 12% 86%;       /* elevated / pressed */
+    --foreground:       215 32% 12%;       /* cool charcoal ink */
     --card:               0  0% 100%;
-    --card-foreground:  222 35%  9%;
+    --card-foreground:  215 35% 10%;
     --popover:            0  0% 100%;
-    --popover-foreground:222 35%  9%;
+    --popover-foreground:215 35% 10%;
 
     /* Single amber signature — used for primary actions and meaning-bearing
      * highlights. Not decorative. */
     --primary:           36 78% 44%;       /* #C68A28 editorial amber */
-    --primary-foreground:40 32% 97%;
+    --primary-foreground:210 20% 98%;
 
-    --secondary:         40 14% 90%;
-    --secondary-foreground:222 35% 12%;
-    --muted:             40 16% 92%;
-    --muted-foreground: 222  9% 36%;
-    --accent:            36 60% 92%;       /* amber tint highlight bg */
-    --accent-foreground: 36 78% 32%;
+    --secondary:        214 14% 89%;
+    --secondary-foreground:215 32% 13%;
+    --muted:            214 14% 91%;
+    --muted-foreground: 215 12% 38%;
+    --accent:            36 58% 90%;       /* amber tint highlight bg */
+    --accent-foreground: 36 78% 30%;
 
     --destructive:        2 68% 46%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Hairlines — warm, low-alpha, newspaper grid */
-    --border:            34 14% 78%;
-    --border-subtle:     34 14% 86%;
-    --input:             34 14% 80%;
+    /* Hairlines — cool, low-alpha, newspaper grid */
+    --border:           214 15% 79%;
+    --border-subtle:    214 15% 86%;
+    --input:            214 15% 81%;
     --ring:              36 78% 44%;
 
     /* Geometry — restrained, almost rectilinear */
