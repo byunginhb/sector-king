@@ -159,6 +159,19 @@ export interface ScoreSummary {
   dataQuality: number
 }
 
+/**
+ * 애널리스트 투자의견 분포 한 기간(Yahoo recommendationTrend).
+ * 인원수라 통화 변환 불요.
+ */
+export interface RecommendationTrendPoint {
+  period: string // '0m'(이번 달) | '-1m' | '-2m' | '-3m'
+  strongBuy: number
+  buy: number
+  hold: number
+  sell: number
+  strongSell: number
+}
+
 export interface ScoreDetail extends ScoreSummary {
   revenueGrowth: number | null
   earningsGrowth: number | null
@@ -293,6 +306,11 @@ export interface CompanyDetailResponse {
     projections: { year: number; fcf: number; pv: number }[] | null
     terminalPv: number | null // 잔존가치(TV) 현재가치(USD)
   } | null
+  /**
+   * issue#33 애널리스트 의견 분포 추이 (옵셔널 → 구버전/미수집 DB 무손상).
+   * 최신순 정렬. 수집 전이거나 커버리지가 없으면 빈 배열.
+   */
+  recommendationTrend?: RecommendationTrendPoint[]
 }
 
 export interface SectorDetailResponse {

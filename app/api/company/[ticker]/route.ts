@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import {
+  analystRecommendationTrend,
   companies,
   companyProfiles,
   companyScores,
@@ -81,6 +82,28 @@ export async function GET(
       .limit(1)
 
     const scoreRow = scoreResult[0] ?? null
+
+    // 투자의견 분포 추이 (issue#33). 인원수라 통화 변환 불요.
+    // 테이블은 update_data.py 가 만든다 → 아직 수집이 한 번도 안 돈 DB(배포 직후)
+    // 에서는 "no such table" 이 난다. 부가 패널이므로 빈 배열로 흡수한다.
+    let recommendationTrend: { period: string; strongBuy: number; buy: number; hold: number; sell: number; strongSell: number }[] = []
+    try {
+      const trendRows = await db
+        .select()
+        .from(analystRecommendationTrend)
+        .where(eq(analystRecommendationTrend.ticker, ticker))
+
+      recommendationTrend = trendRows.map((r) => ({
+        period: r.period,
+        strongBuy: r.strongBuy ?? 0,
+        buy: r.buy ?? 0,
+        hold: r.hold ?? 0,
+        sell: r.sell ?? 0,
+        strongSell: r.strongSell ?? 0,
+      }))
+    } catch (error) {
+      console.warn('recommendation trend unavailable:', error)
+    }
 
     // Get sectors this company belongs to
     const companySectors = await db
@@ -257,6 +280,8 @@ export async function GET(
         dominance,
         // 12_dcf_score 가산 확장
         dcf,
+        // issue#33 애널리스트 의견 분포 추이
+        recommendationTrend,
       },
     })
   } catch (error) {

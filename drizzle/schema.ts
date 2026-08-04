@@ -1,4 +1,12 @@
-import { sqliteTable, text, integer, real, unique, index } from 'drizzle-orm/sqlite-core'
+import {
+  sqliteTable,
+  text,
+  integer,
+  real,
+  unique,
+  index,
+  primaryKey,
+} from 'drizzle-orm/sqlite-core'
 
 export const categories = sqliteTable('categories', {
   id: text('id').primaryKey(),
@@ -147,6 +155,32 @@ export const companyScores = sqliteTable('company_scores', {
   metricsUpdatedAt: text('metrics_updated_at'),
   scoreUpdatedAt: text('score_updated_at'),
 })
+
+/**
+ * 애널리스트 투자의견 분포 추이 (Yahoo quoteSummary.recommendationTrend).
+ *
+ * company_scores.recommendation_key 는 합의 라벨 하나뿐이라 보유·매도 인원이
+ * 보이지 않는다. 여기에 등급별 인원수를 기간(0m ~ -3m)별로 담는다.
+ * Yahoo 가 상대 기간으로 주므로 매 수집마다 같은 (ticker, period) 를 덮어쓰는
+ * 롤링 4개월 뷰다(히스토리 누적 아님).
+ */
+export const analystRecommendationTrend = sqliteTable(
+  'analyst_recommendation_trend',
+  {
+    ticker: text('ticker')
+      .notNull()
+      .references(() => companies.ticker),
+    /** '0m'(이번 달) | '-1m' | '-2m' | '-3m' */
+    period: text('period').notNull(),
+    strongBuy: integer('strong_buy'),
+    buy: integer('buy'),
+    hold: integer('hold'),
+    sell: integer('sell'),
+    strongSell: integer('strong_sell'),
+    updatedAt: text('updated_at'),
+  },
+  (table) => [primaryKey({ columns: [table.ticker, table.period] })]
+)
 
 export const scoreHistory = sqliteTable(
   'score_history',

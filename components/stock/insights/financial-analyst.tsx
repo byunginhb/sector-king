@@ -4,6 +4,7 @@ import { Landmark, ExternalLink } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { formatPercent, formatRecommendation } from '@/lib/format'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
+import { RecommendationTrend } from './recommendation-trend'
 import type { CompanyDetailResponse } from '@/types'
 
 interface FinancialAnalystProps {
@@ -63,8 +64,11 @@ export function FinancialAnalyst({ data }: FinancialAnalystProps) {
     },
   ].filter((r) => r.show)
 
-  const hasCoverage =
+  const hasConsensus =
     score.recommendationKey != null && score.recommendationKey !== 'none'
+  const trendPoints = data.recommendationTrend ?? []
+  // 합의 라벨이 없어도 분포가 있으면 커버리지가 있는 것 (issue#33)
+  const hasCoverage = hasConsensus || trendPoints.length > 0
 
   return (
     <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
@@ -93,19 +97,21 @@ export function FinancialAnalyst({ data }: FinancialAnalystProps) {
           <p className="eyebrow mb-2">애널리스트</p>
           {hasCoverage ? (
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">투자의견</span>
-                <span className="flex items-center gap-1.5">
-                  <Badge className="border font-medium">
-                    {formatRecommendation(score.recommendationKey)}
-                  </Badge>
-                  {score.analystCount != null && score.analystCount > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                      ({score.analystCount}명)
-                    </span>
-                  )}
-                </span>
-              </div>
+              {hasConsensus && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">투자의견</span>
+                  <span className="flex items-center gap-1.5">
+                    <Badge className="border font-medium">
+                      {formatRecommendation(score.recommendationKey)}
+                    </Badge>
+                    {score.analystCount != null && score.analystCount > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        ({score.analystCount}명)
+                      </span>
+                    )}
+                  </span>
+                </div>
+              )}
               {analystUpside?.targetMeanPriceUsd != null && (
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">목표주가</span>
@@ -117,6 +123,11 @@ export function FinancialAnalyst({ data }: FinancialAnalystProps) {
                       </span>
                     )}
                   </span>
+                </div>
+              )}
+              {trendPoints.length > 0 && (
+                <div className="pt-1">
+                  <RecommendationTrend points={trendPoints} />
                 </div>
               )}
               {/* 애널리스트 데이터 출처 — Yahoo Finance 종목 분석 페이지 */}

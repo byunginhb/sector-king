@@ -85,10 +85,44 @@ def fetch_stock_data(ticker: str, target_date: str) -> dict | None:
             "free_cashflow": info.get("freeCashflow"),
             "beta": info.get("beta"),
             "debt_to_equity": info.get("debtToEquity"),
+            # 투자의견 분포 추이 (issue#33). quoteSummary 의 별도 모듈이라
+            # .info 에 없다 → 티커당 호출 1회 추가. 실패해도 스냅샷은 살린다.
+            "recommendation_trend": fetch_recommendation_trend(stock, ticker),
         }
     except Exception as e:
         print(f"  Error fetching {ticker}: {e}")
         return None
+
+
+def fetch_recommendation_trend(stock, ticker: str) -> list[dict]:
+    """Fetch analyst recommendation distribution per period (0m ~ -3m).
+
+    Yahoo returns strongBuy/buy/hold/sell/strongSell counts for relative
+    periods. Returns [] on any failure — this is a nice-to-have panel, it must
+    never fail the daily snapshot for a ticker.
+    """
+    try:
+        df = stock.recommendations
+        if df is None or df.empty or "period" not in df.columns:
+            return []
+
+        rows = []
+        for row in df.to_dict("records"):
+            period = row.get("period")
+            if not period:
+                continue
+            counts = {
+                col: int(row.get(col) or 0)
+                for col in ("strongBuy", "buy", "hold", "sell", "strongSell")
+            }
+            # 전 등급 0 = 커버리지 없음. 빈 막대로 저장할 이유가 없다.
+            if sum(counts.values()) == 0:
+                continue
+            rows.append({"period": period, **counts})
+        return rows
+    except Exception as e:
+        print(f"  (recommendation trend unavailable for {ticker}: {e})", end=" ")
+        return []
 
 
 def upsert_snapshot(conn: sqlite3.Connection, data: dict):
@@ -186,6 +220,40 @@ def upsert_company_scores(conn: sqlite3.Connection, data: dict):
     )
 
 
+def upsert_recommendation_trend(conn: sqlite3.Connection, data: dict):
+    """UPSERT analyst recommendation distribution rows for one ticker.
+
+    Yahoo periods are relative ('0m' = current month), so each run overwrites
+    the same (ticker, period) keys — a rolling 4-month view, not a history log.
+    An empty fetch leaves existing rows untouched rather than wiping a panel
+    that was populated by the previous (successful) run.
+    """
+    for row in data.get("recommendation_trend") or []:
+        conn.execute(
+            """
+            INSERT INTO analyst_recommendation_trend
+            (ticker, period, strong_buy, buy, hold, sell, strong_sell, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            ON CONFLICT(ticker, period) DO UPDATE SET
+                strong_buy = excluded.strong_buy,
+                buy = excluded.buy,
+                hold = excluded.hold,
+                sell = excluded.sell,
+                strong_sell = excluded.strong_sell,
+                updated_at = datetime('now')
+        """,
+            (
+                data["ticker"],
+                row["period"],
+                row["strongBuy"],
+                row["buy"],
+                row["hold"],
+                row["sell"],
+                row["strongSell"],
+            ),
+        )
+
+
 def ensure_score_tables(conn: sqlite3.Connection):
     """Create company_scores and score_history tables if they don't exist."""
     try:
@@ -228,6 +296,18 @@ def ensure_score_tables(conn: sqlite3.Connection):
 
         CREATE INDEX IF NOT EXISTS idx_score_history_ticker ON score_history(ticker);
         CREATE INDEX IF NOT EXISTS idx_score_history_date ON score_history(date);
+
+        CREATE TABLE IF NOT EXISTS analyst_recommendation_trend (
+            ticker TEXT NOT NULL REFERENCES companies(ticker),
+            period TEXT NOT NULL,
+            strong_buy INTEGER,
+            buy INTEGER,
+            hold INTEGER,
+            sell INTEGER,
+            strong_sell INTEGER,
+            updated_at TEXT,
+            PRIMARY KEY (ticker, period)
+        );
     """)
     except sqlite3.Error as e:
         print(f"Error: Failed to ensure score tables: {e}")
@@ -289,6 +369,7 @@ def main():
         if data:
             upsert_snapshot(conn, data)
             upsert_company_scores(conn, data)
+            upsert_recommendation_trend(conn, data)
             results.append(ticker)
             print("OK")
         else:
