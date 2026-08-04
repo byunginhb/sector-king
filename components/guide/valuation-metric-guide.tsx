@@ -12,7 +12,7 @@ export function ValuationMetricGuide() {
       title="D. 어떤 밸류에이션 지표를 볼까"
       description="산업 특성에 따라 중요한 지표가 다릅니다. 기업 유형별 중심 지표를 참고하세요."
     >
-      <div className="overflow-x-auto rounded-xl border border-border">
+      <div className="overflow-x-auto rounded-md border border-border">
         <table className="w-full min-w-[32rem] text-sm">
           <thead>
             <tr className="border-b border-border bg-card text-left text-xs text-muted-foreground">

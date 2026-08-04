@@ -58,13 +58,13 @@ export function StockDetailSkeleton({ showChart = false }: { showChart?: boolean
         <Skeleton className="h-6 w-48 mb-2" />
         <Skeleton className="h-4 w-32" />
       </div>
-      <Skeleton className="h-24 w-full rounded-xl" />
+      <Skeleton className="h-24 w-full rounded-md" />
       {showChart && <Skeleton className="h-48 w-full rounded-lg" />}
       <div className="flex gap-2">
         <Skeleton className="h-7 w-24 rounded-full" />
         <Skeleton className="h-7 w-24 rounded-full" />
       </div>
-      <Skeleton className="h-40 w-full rounded-xl" />
+      <Skeleton className="h-40 w-full rounded-md" />
     </div>
   )
 }

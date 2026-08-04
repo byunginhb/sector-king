@@ -48,8 +48,8 @@ export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatis
   }
 
   return (
-    <div data-tour="company-stats" className="bg-white border border-gray-200 rounded-xl p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-card dark:border-border dark:shadow-none">
-      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-200 mb-4 flex items-center gap-2">
+    <div data-tour="company-stats" className="bg-surface-1 border border-border-subtle rounded-md p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-card dark:border-border dark:shadow-none">
+      <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
         <svg
           aria-hidden="true"
           className="w-5 h-5 text-primary"
@@ -73,27 +73,27 @@ export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatis
             key={company.ticker}
             onClick={() => setSelectedTicker(company.ticker)}
             aria-label={`${company.nameKo || company.name} 상세 보기`}
-            className="flex items-center gap-3 w-full text-left cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 -mx-2 px-2 py-1 rounded-lg transition-colors"
+            className="flex items-center gap-3 w-full text-left cursor-pointer hover:bg-surface-2 -mx-2 px-2 py-1 rounded-lg transition-colors"
           >
-            <span className="text-sm font-semibold text-gray-400 dark:text-slate-500 w-5 text-right">
+            <span className="text-sm font-semibold text-muted-foreground w-5 text-right">
               {index + 1}
             </span>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-700 dark:text-slate-200 truncate">
+              <div className="text-sm font-medium text-foreground dark:text-foreground truncate">
                 {company.nameKo || company.name}
               </div>
-              <div className="text-xs text-gray-500 dark:text-slate-400">
+              <div className="text-xs text-muted-foreground">
                 {company.ticker}
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-16 h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-16 h-2 bg-surface-2 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary dark:bg-linear-to-r dark:from-indigo-400 dark:to-purple-400 rounded-full transition-all duration-300"
+                  className="h-full bg-primary rounded-full transition-all duration-300"
                   style={{ width: `${(company.count / maxCount) * 100}%` }}
                 />
               </div>
-              <span className="text-sm font-bold text-slate-800 dark:text-slate-300 w-6 text-right">
+              <span className="text-sm font-bold text-foreground w-6 text-right">
                 {company.count}
               </span>
             </div>
@@ -101,7 +101,7 @@ export function CompanyStatistics({ sectorCompanies, industryId }: CompanyStatis
         ))}
       </div>
       {companyCounts.length > 10 && (
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-border">
+        <div className="mt-3 pt-3 border-t border-border-subtle">
           <Link
             href={industryId ? `/${industryId}/statistics` : '/statistics'}
             className="flex items-center justify-center gap-1 text-sm text-info hover:underline transition-colors"

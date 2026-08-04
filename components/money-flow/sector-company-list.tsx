@@ -83,7 +83,7 @@ export function SectorCompanyList({
         className={cn(
           'relative w-full overflow-y-auto',
           'max-h-[90vh] rounded-t-2xl',
-          'sm:max-w-2xl sm:max-h-[85vh] sm:rounded-xl sm:mx-4',
+          'sm:max-w-2xl sm:max-h-[85vh] sm:rounded-md sm:mx-4',
           isInflow
             ? 'bg-danger-bg border-danger/30'
             : 'bg-info-bg border-info/30',
@@ -113,7 +113,7 @@ export function SectorCompanyList({
             )}
             {sectorName} 포함 종목
             {data?.dateRange && (
-              <span className="text-xs font-normal text-gray-500 dark:text-slate-400">
+              <span className="text-xs font-normal text-muted-foreground">
                 ({data.dateRange.start} ~ {data.dateRange.end})
               </span>
             )}
@@ -121,7 +121,7 @@ export function SectorCompanyList({
           <button
             onClick={onClose}
             aria-label="닫기"
-            className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-gray-500 dark:text-slate-400"
+            className="p-1.5 rounded-lg hover:bg-surface-3 transition-colors text-muted-foreground"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -137,7 +137,7 @@ export function SectorCompanyList({
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-12 bg-gray-200 dark:bg-slate-800 rounded-lg animate-pulse"
+                  className="h-12 bg-muted rounded-lg animate-pulse"
                 />
               ))}
             </div>
@@ -154,7 +154,7 @@ export function SectorCompanyList({
           {data && data.companies.length > 0 && (
             <div className="space-y-1">
               {/* Table Header */}
-              <div className="grid grid-cols-[1.5rem_1fr_4.5rem_4rem_4.5rem] sm:grid-cols-[2rem_1fr_7rem_6rem_6rem_6rem] gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-slate-400">
+              <div className="grid grid-cols-[1.5rem_1fr_4.5rem_4rem_4.5rem] sm:grid-cols-[2rem_1fr_7rem_6rem_6rem_6rem] gap-2 px-3 py-2 text-xs font-medium text-muted-foreground">
                 <span>#</span>
                 <span>종목</span>
                 <span className="text-right">현재가</span>
@@ -176,25 +176,25 @@ export function SectorCompanyList({
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.03 }}
-                    className="group grid w-full grid-cols-[1.5rem_1fr_4.5rem_4rem_4.5rem] sm:grid-cols-[2rem_1fr_7rem_6rem_6rem_6rem] gap-2 px-3 py-2.5 rounded-lg text-left hover:bg-white/60 dark:hover:bg-slate-800/40 transition-colors items-center cursor-pointer"
+                    className="group grid w-full grid-cols-[1.5rem_1fr_4.5rem_4rem_4.5rem] sm:grid-cols-[2rem_1fr_7rem_6rem_6rem_6rem] gap-2 px-3 py-2.5 rounded-lg text-left hover:bg-surface-2 transition-colors items-center cursor-pointer"
                   >
                     {/* Rank */}
-                    <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">
+                    <span className="text-xs text-muted-foreground font-medium">
                       {idx + 1}
                     </span>
 
                     {/* Company Name */}
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate group-hover:underline">
+                      <div className="text-sm font-medium text-foreground truncate group-hover:underline">
                         {company.nameKo || company.name}
                       </div>
-                      <div className="text-xs text-gray-400 dark:text-slate-500 truncate">
+                      <div className="text-xs text-muted-foreground truncate">
                         {company.ticker}
                       </div>
                     </div>
 
                     {/* Price */}
-                    <span className="text-sm text-right text-gray-900 dark:text-slate-100 font-mono">
+                    <span className="text-sm text-right text-foreground font-mono">
                       {fmt.price(company.endPrice)}
                     </span>
 
@@ -203,7 +203,7 @@ export function SectorCompanyList({
                       className={cn(
                         'text-sm text-right font-medium font-mono',
                         company.priceChangePercent === null
-                          ? 'text-gray-400'
+                          ? 'text-muted-foreground'
                           : company.priceChangePercent >= 0
                             ? 'text-success'
                             : 'text-danger'
@@ -215,7 +215,7 @@ export function SectorCompanyList({
                     </span>
 
                     {/* Market Cap (hidden on mobile) */}
-                    <span className="hidden sm:block text-xs text-right text-gray-500 dark:text-slate-400 font-mono">
+                    <span className="hidden sm:block text-xs text-right text-muted-foreground font-mono">
                       {fmt.marketCap(company.marketCap)}
                     </span>
 
@@ -234,7 +234,7 @@ export function SectorCompanyList({
 
           {/* Empty */}
           {data && data.companies.length === 0 && (
-            <div className="text-center py-6 text-gray-500 dark:text-slate-400 text-sm">
+            <div className="text-center py-6 text-muted-foreground text-sm">
               {region !== 'all'
                 ? `선택한 region(${region === 'kr' ? '국내' : '미국'})에 해당하는 종목이 없습니다.`
                 : '해당 기간에 데이터가 없습니다.'}

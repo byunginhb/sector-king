@@ -30,7 +30,7 @@ function SectionHeading({ id, children }: { id: string; children: React.ReactNod
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div className="sk-card p-6">
       {children}
     </div>
   )
@@ -43,7 +43,7 @@ export default function MethodologyPage() {
 
       <main className="container mx-auto px-4 py-8 max-w-3xl">
         {/* Table of Contents */}
-        <nav aria-label="목차" className="mb-8 rounded-xl border border-border bg-card p-4">
+        <nav aria-label="목차" className="mb-8 sk-card p-4">
           <p className="text-sm font-semibold text-foreground mb-2">목차</p>
           <ol className="space-y-1 text-sm text-muted-foreground">
             <li><a href="#data-collection" className="hover:text-foreground transition-colors">1. 데이터 수집</a></li>

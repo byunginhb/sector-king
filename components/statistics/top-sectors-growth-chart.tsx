@@ -75,7 +75,7 @@ export function TopSectorsGrowthChart({ data, isLoading }: TopSectorsGrowthChart
               return [
                 <div key="growth" className="space-y-1">
                   <div className="font-medium">{numValue.toFixed(2)}%</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     {fmt.marketCap(item.startMarketCap)} → {fmt.marketCap(item.endMarketCap)}
                   </div>
                 </div>,

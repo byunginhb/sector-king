@@ -39,7 +39,7 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
         actions={<PickProfileToggle value={profile} onChange={setProfile} />}
       />
 
-      <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-1">
+      <div className="overflow-hidden sk-card">
         {/* 데스크탑: 컬럼 + progressbar 표 */}
         <div className="hidden sm:block">
           <table className="w-full border-collapse text-sm">

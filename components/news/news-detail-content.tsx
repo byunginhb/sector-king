@@ -81,7 +81,7 @@ export function NewsDetailContent({
       </div>
 
       {/* 본문 토글 — 콘텐츠 상단에 명확히 노출 */}
-      <div className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-1 px-4 py-3">
+      <div className="mb-6 flex items-center justify-between gap-3 sk-card px-4 py-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground">읽기 방식 선택</p>
           <p className="text-[11px] text-muted-foreground">

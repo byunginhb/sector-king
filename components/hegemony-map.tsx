@@ -191,7 +191,7 @@ function MapSkeleton() {
       <main className="container mx-auto px-4 py-6">
         <div className="grid lg:grid-cols-3 gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-border bg-card/50 overflow-hidden">
+            <div key={i} className="sk-card/50 overflow-hidden">
               <Skeleton className="h-12 w-full" />
               <div className="p-3 space-y-2">
                 {Array.from({ length: 3 }).map((_, j) => (

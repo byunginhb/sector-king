@@ -71,7 +71,7 @@ export function ContactForm({ defaultEmail, isAuthenticated }: Props) {
 
   if (state.kind === 'success') {
     return (
-      <div className="rounded-2xl border border-success/30 bg-success/5 p-6 text-center">
+      <div className="rounded-lg border border-success/30 bg-success/5 p-6 text-center">
         <CheckCircle2 className="h-10 w-10 text-success mx-auto" aria-hidden />
         <h3 className="mt-3 text-lg font-bold text-foreground">접수되었습니다</h3>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -91,7 +91,7 @@ export function ContactForm({ defaultEmail, isAuthenticated }: Props) {
   const submitting = state.kind === 'submitting'
 
   return (
-    <form onSubmit={onSubmit} className="rounded-2xl border border-border-subtle bg-surface-1 p-5 space-y-4">
+    <form onSubmit={onSubmit} className="sk-card p-5 space-y-4">
       <div>
         <label htmlFor="contact-category" className="block text-xs text-muted-foreground mb-1">
           카테고리

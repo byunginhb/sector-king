@@ -46,7 +46,7 @@ export function CompanyRankingTable({
   }) => (
     <th
       className={cn(
-        'px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors',
+        'px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-surface-2 transition-colors',
         className
       )}
       onClick={() => handleSort(column)}
@@ -69,11 +69,11 @@ export function CompanyRankingTable({
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl overflow-hidden">
+      <div className="bg-surface-1 border border-border-subtle rounded-md overflow-hidden">
         <div className="animate-pulse">
-          <div className="h-12 bg-gray-100 dark:bg-slate-800" />
+          <div className="h-12 bg-surface-2" />
           {[...Array(10)].map((_, i) => (
-            <div key={i} className="h-16 border-t border-gray-100 dark:border-border bg-gray-50 dark:bg-slate-900/50" />
+            <div key={i} className="h-16 border-t border-border-subtle bg-surface-2/50" />
           ))}
         </div>
       </div>
@@ -81,41 +81,41 @@ export function CompanyRankingTable({
   }
 
   return (
-    <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl overflow-hidden">
+    <div className="bg-surface-1 border border-border-subtle rounded-md overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-border">
-          <thead className="bg-gray-50 dark:bg-slate-800/50">
+        <table className="min-w-full divide-y divide-border-subtle">
+          <thead className="bg-surface-2/50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider w-12">
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-12">
                 #
               </th>
               <SortHeader column="name" label="회사" />
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 등장 섹터
               </th>
               <SortHeader column="count" label="횟수" className="text-center" />
               <SortHeader column="marketCap" label="시가총액" className="text-right" />
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 등락
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-card divide-y divide-gray-100 dark:divide-border">
+          <tbody className="bg-surface-1 divide-y divide-border-subtle">
             {companies.map((company, index) => (
               <tr
                 key={company.ticker}
                 onClick={() => onCompanyClick?.(company.ticker)}
-                className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                className="hover:bg-surface-2 transition-colors cursor-pointer"
               >
-                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-400 dark:text-slate-500">
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-muted-foreground">
                   {(page - 1) * 20 + index + 1}
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
                   <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-slate-200">
+                    <div className="text-sm font-medium text-foreground">
                       {company.nameKo || company.name}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-slate-400">
+                    <div className="text-xs text-muted-foreground">
                       {company.ticker}
                     </div>
                   </div>
@@ -136,18 +136,18 @@ export function CompanyRankingTable({
                       </span>
                     ))}
                     {company.sectors.length > 3 && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-surface-2 text-muted-foreground">
                         +{company.sectors.length - 3}
                       </span>
                     )}
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-center">
-                  <span className="text-sm font-bold text-gray-900 dark:text-slate-200">
+                  <span className="text-sm font-bold text-foreground">
                     {company.count}
                   </span>
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-slate-200">
+                <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-foreground">
                   {fmt.marketCap(company.latestSnapshot?.marketCap ?? null)}
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right">
@@ -164,7 +164,7 @@ export function CompanyRankingTable({
                       {formatPriceChange(company.latestSnapshot.priceChange)}
                     </span>
                   ) : (
-                    <span className="text-sm text-gray-400 dark:text-slate-500">N/A</span>
+                    <span className="text-sm text-muted-foreground">N/A</span>
                   )}
                 </td>
               </tr>
@@ -174,8 +174,8 @@ export function CompanyRankingTable({
       </div>
 
       {/* Pagination */}
-      <div className="px-4 py-3 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-200 dark:border-border flex items-center justify-between">
-        <div className="text-sm text-gray-500 dark:text-slate-400">
+      <div className="px-4 py-3 bg-surface-2/50 border-t border-border-subtle flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
           총 {total}개 회사 중 {(page - 1) * 20 + 1}-{Math.min(page * 20, total)}
         </div>
         <div className="flex items-center gap-2">
@@ -185,8 +185,8 @@ export function CompanyRankingTable({
             className={cn(
               'px-3 py-1 text-sm rounded-md transition-colors',
               page <= 1
-                ? 'text-gray-400 dark:text-slate-600 cursor-not-allowed'
-                : 'text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                ? 'text-muted-foreground/50 cursor-not-allowed'
+                : 'text-foreground hover:bg-surface-3'
             )}
           >
             이전
@@ -203,7 +203,7 @@ export function CompanyRankingTable({
                     'w-8 h-8 text-sm rounded-md transition-colors',
                     pageNum === page
                       ? 'bg-primary text-primary-foreground'
-                      : 'text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      : 'text-foreground hover:bg-surface-3'
                   )}
                 >
                   {pageNum}
@@ -217,8 +217,8 @@ export function CompanyRankingTable({
             className={cn(
               'px-3 py-1 text-sm rounded-md transition-colors',
               page >= totalPages
-                ? 'text-gray-400 dark:text-slate-600 cursor-not-allowed'
-                : 'text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                ? 'text-muted-foreground/50 cursor-not-allowed'
+                : 'text-foreground hover:bg-surface-3'
             )}
           >
             다음

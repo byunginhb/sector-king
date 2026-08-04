@@ -131,7 +131,7 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
         </div>
 
         {/* Chart */}
-        <div data-tour="price-chart" className="mb-8 sk-card">
+        <div data-tour="price-chart" className="mb-8 sk-card p-5">
           <h2 className="text-base font-semibold text-card-foreground mb-4 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-success" aria-hidden />
             상위 20개 기업 가격 변화율
@@ -143,7 +143,7 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
         </div>
 
         {/* Price Trend Line Chart */}
-        <div data-tour="price-trend" className="mb-8 sk-card">
+        <div data-tour="price-trend" className="mb-8 sk-card p-5">
           <h2 className="text-base font-semibold text-card-foreground mb-4 flex items-center gap-2">
             <LineChartIcon className="w-5 h-5 text-chart-4" aria-hidden />
             상위 20개 기업 등락율 추이

@@ -75,7 +75,7 @@ export function EmailLogFilterBar() {
   }
 
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-1 p-4">
+    <div className="sk-card p-4">
       <div className="flex items-center gap-2 mb-3 text-sm font-medium text-foreground">
         <Filter className="h-4 w-4 text-primary" aria-hidden />
         필터

@@ -139,7 +139,7 @@ export default async function AdminEconomicCalendarPage({
       {/* 필터 바 (GET) */}
       <form
         method="get"
-        className="flex flex-wrap items-end gap-3 rounded-2xl border border-border-subtle bg-surface-1 p-4"
+        className="flex flex-wrap items-end gap-3 sk-card p-4"
       >
         <FilterField label="시작일">
           <input
@@ -190,7 +190,7 @@ export default async function AdminEconomicCalendarPage({
           </button>
           <Link
             href="/admin/economic-calendar"
-            className="rounded-md border border-border-subtle bg-surface-1 px-3 py-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:bg-surface-2"
+            className="sk-card px-3 py-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:bg-surface-2"
           >
             초기화
           </Link>
@@ -198,13 +198,13 @@ export default async function AdminEconomicCalendarPage({
       </form>
 
       {error && (
-        <div className="rounded-2xl border border-danger/40 bg-danger/5 p-4 text-sm text-danger">
+        <div className="rounded-lg border border-danger/40 bg-danger/5 p-4 text-sm text-danger">
           목록을 불러올 수 없습니다: {error.message}
         </div>
       )}
 
       {items.length === 0 ? (
-        <div className="rounded-2xl border border-border-subtle bg-surface-1 p-10 text-center">
+        <div className="sk-card p-10 text-center">
           <p className="text-sm text-muted-foreground">
             조건에 맞는 이벤트가 없습니다.
           </p>
@@ -218,7 +218,7 @@ export default async function AdminEconomicCalendarPage({
               <li key={it.id}>
                 <Link
                   href={`/admin/economic-calendar/${it.id}/edit`}
-                  className="block rounded-2xl border border-border-subtle bg-surface-1 p-4 hover:border-primary/30 hover:bg-surface-2 transition-colors group"
+                  className="block sk-card p-4 hover:border-primary/30 hover:bg-surface-2 transition-colors group"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">

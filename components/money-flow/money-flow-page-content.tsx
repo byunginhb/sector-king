@@ -98,7 +98,7 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-surface-2 rounded-xl animate-pulse"
+                className="h-24 bg-surface-2 rounded-md animate-pulse"
               />
             ))}
           </div>

@@ -111,7 +111,7 @@ export default async function NewsDetailPage({ params, searchParams }: PageProps
           <Link
             href="/news"
             aria-label="목록으로 돌아가기"
-            className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-border-subtle bg-surface-1 text-foreground hover:bg-surface-2 transition-colors"
+            className="inline-flex items-center justify-center h-9 w-9 sk-card text-foreground hover:bg-surface-2 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />
           </Link>

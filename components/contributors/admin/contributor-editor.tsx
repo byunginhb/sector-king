@@ -138,13 +138,13 @@ export function ContributorEditor({ initial, nextSortOrder }: ContributorEditorP
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
+        <div className="rounded-lg border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
           {error}
         </div>
       )}
 
       {/* 아바타 선택 */}
-      <div className="rounded-2xl border border-border-subtle bg-surface-1 p-4 space-y-4">
+      <div className="sk-card p-4 space-y-4">
         <div className="flex items-center gap-4">
           <PixelAvatar gender={gender} variant={avatarVariant} size={72} />
           <div className="text-sm text-muted-foreground">

@@ -86,7 +86,7 @@ export function GlobalSearch() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Search Box */}
-            <div className="rounded-xl border border-border bg-background shadow-2xl overflow-hidden">
+            <div className="rounded-md border border-border bg-background shadow-2xl overflow-hidden">
               {/* Input */}
               <div className="flex items-center border-b border-border px-4">
                 <Search className="h-5 w-5 text-muted-foreground shrink-0" />

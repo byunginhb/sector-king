@@ -42,7 +42,7 @@ function MoverCard({ kind, mover }: { kind: 'spike' | 'drop'; mover: DailyMarket
   const tone = isUp ? 'text-success' : 'text-danger'
 
   return (
-    <div className="rounded-lg border border-border-subtle bg-surface-1 p-3">
+    <div className="sk-card p-3">
       <div className="flex items-center gap-2">
         <Icon className={`h-4 w-4 shrink-0 ${tone}`} aria-hidden />
         <span className="text-xs text-muted-foreground">{isUp ? '급등일' : '급락일'}</span>
@@ -83,12 +83,12 @@ function MoverCard({ kind, mover }: { kind: 'spike' | 'drop'; mover: DailyMarket
 export function DailyMarketChartSkeleton() {
   return (
     <div className="space-y-3" aria-hidden>
-      <div className="rounded-lg border border-border-subtle bg-surface-1 p-3">
+      <div className="sk-card p-3">
         <Skeleton className="h-56 w-full" />
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
         {[0, 1].map((i) => (
-          <div key={i} className="rounded-lg border border-border-subtle bg-surface-1 p-3">
+          <div key={i} className="sk-card p-3">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="mt-2 h-4 w-full" />
             <Skeleton className="mt-1.5 h-3 w-full" />
@@ -113,7 +113,7 @@ export function DailyMarketChart({ data }: { data: DailyMarketResponse }) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-border-subtle bg-surface-1 p-3">
+      <div className="sk-card p-3">
         <div className="h-56 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={points} margin={{ top: 18, right: 16, left: 0, bottom: 0 }}>

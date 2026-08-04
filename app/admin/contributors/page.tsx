@@ -48,7 +48,7 @@ export default async function AdminContributorsPage() {
       </div>
 
       {items.length === 0 ? (
-        <p className="text-sm text-muted-foreground rounded-2xl border border-border-subtle bg-surface-1 p-6">
+        <p className="text-sm text-muted-foreground sk-card p-6">
           아직 등록된 인물이 없습니다.{' '}
           <Link
             href="/admin/contributors/new"
@@ -63,7 +63,7 @@ export default async function AdminContributorsPage() {
             <li key={it.id}>
               <Link
                 href={`/admin/contributors/${it.id}/edit`}
-                className="flex items-center gap-3 rounded-2xl border border-border-subtle bg-surface-1 p-4 hover:bg-surface-2 transition-colors"
+                className="flex items-center gap-3 sk-card p-4 hover:bg-surface-2 transition-colors"
               >
                 <PixelAvatar
                   gender={it.gender}

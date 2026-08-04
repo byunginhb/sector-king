@@ -33,7 +33,7 @@ export function NoteList({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border-subtle bg-surface-1/50 p-8 text-center">
+      <div className="rounded-md border border-dashed border-border-subtle bg-surface-1/50 p-8 text-center">
         <NotebookPen
           className="h-7 w-7 mx-auto text-muted-foreground mb-2"
           aria-hidden
@@ -65,7 +65,7 @@ function NoteItem({
   onDelete: () => void
 }) {
   return (
-    <li className="rounded-xl border border-border-subtle bg-surface-1 p-4">
+    <li className="sk-card p-4">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground bg-surface-2 px-2 py-0.5 rounded">

@@ -108,7 +108,7 @@ function LockedOverlay({
         inline ? 'bottom-6' : 'inset-y-0'
       )}
     >
-      <div className="rounded-2xl border border-border-subtle bg-surface-1/95 backdrop-blur-md shadow-lg p-5 sm:p-6 max-w-md text-center">
+      <div className="sk-card/95 backdrop-blur-md shadow-lg p-5 sm:p-6 max-w-md text-center">
         <div className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-primary/15 text-primary mb-3">
           <Lock className="h-4 w-4" aria-hidden />
         </div>

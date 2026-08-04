@@ -26,12 +26,12 @@ export function PriceChangeCard({ industryId }: PriceChangeCardProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-card dark:border-border dark:shadow-none">
+      <div className="bg-surface-1 border border-border-subtle rounded-md p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-card dark:border-border dark:shadow-none">
         <div className="animate-pulse">
-          <div className="h-5 bg-gray-200 dark:bg-slate-700 rounded w-32 mb-4" />
+          <div className="h-5 bg-surface-3 rounded w-32 mb-4" />
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-10 bg-gray-100 dark:bg-slate-800 rounded" />
+              <div key={i} className="h-10 bg-surface-2 rounded" />
             ))}
           </div>
         </div>
@@ -49,8 +49,8 @@ export function PriceChangeCard({ industryId }: PriceChangeCardProps) {
   )
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-card dark:border-border dark:shadow-none">
-      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-200 mb-4 flex items-center gap-2">
+    <div className="bg-surface-1 border border-border-subtle rounded-md p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:bg-card dark:border-border dark:shadow-none">
+      <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
         <svg
           className="w-5 h-5 text-success"
           fill="none"
@@ -66,7 +66,7 @@ export function PriceChangeCard({ industryId }: PriceChangeCardProps) {
         </svg>
         가격 변화율
       </h3>
-      <p className="text-xs text-gray-500 dark:text-slate-400 mb-3">
+      <p className="text-xs text-muted-foreground mb-3">
         {data.dateRange.start} ~ {data.dateRange.end}
       </p>
       <div className="space-y-2">
@@ -74,21 +74,21 @@ export function PriceChangeCard({ industryId }: PriceChangeCardProps) {
           <div
             key={company.ticker}
             onClick={() => setSelectedTicker(company.ticker)}
-            className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 -mx-2 px-2 py-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-3 cursor-pointer hover:bg-surface-2 -mx-2 px-2 py-1.5 rounded-lg transition-colors"
           >
-            <span className="text-sm font-semibold text-gray-400 dark:text-slate-500 w-5 text-right">
+            <span className="text-sm font-semibold text-muted-foreground w-5 text-right">
               {index + 1}
             </span>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-700 dark:text-slate-200 truncate">
+              <div className="text-sm font-medium text-foreground dark:text-foreground truncate">
                 {company.nameKo || company.name}
               </div>
-              <div className="text-xs text-gray-500 dark:text-slate-400">
+              <div className="text-xs text-muted-foreground">
                 {company.ticker}
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-12 h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-12 h-2 bg-surface-2 rounded-full overflow-hidden">
                 <div
                   className={cn(
                     'h-full rounded-full transition-all duration-300',
@@ -114,7 +114,7 @@ export function PriceChangeCard({ industryId }: PriceChangeCardProps) {
         ))}
       </div>
       {data.total > 10 && (
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-border">
+        <div className="mt-3 pt-3 border-t border-border-subtle">
           <Link
             href={industryId ? `/${industryId}/price-changes` : '/price-changes'}
             className="flex items-center justify-center gap-1 text-sm text-info hover:underline transition-colors"

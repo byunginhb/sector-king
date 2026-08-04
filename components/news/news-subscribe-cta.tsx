@@ -135,7 +135,7 @@ export function NewsSubscribeCta({
     return (
       <div
         className={cn(
-          'relative rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4',
+          'relative rounded-lg border border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4',
           className
         )}
       >
@@ -186,7 +186,7 @@ export function NewsSubscribeCta({
   return (
     <div
       className={cn(
-        'rounded-2xl border border-border-subtle bg-surface-1 p-5 flex flex-col sm:flex-row sm:items-center gap-4',
+        'sk-card p-5 flex flex-col sm:flex-row sm:items-center gap-4',
         className
       )}
     >

@@ -240,15 +240,15 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className={cn('relative rounded-xl p-4 overflow-hidden', colors.bg)}
+      className={cn('relative rounded-md p-4 overflow-hidden', colors.bg)}
     >
       {/* Sector Info */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <span className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+          <span className="text-lg font-semibold text-foreground">
             {flow.name}
           </span>
-          <span className="text-xs text-gray-500 dark:text-slate-400">
+          <span className="text-xs text-muted-foreground">
             {flow.companyCount}개 기업
           </span>
         </div>
@@ -257,7 +257,7 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
             {isInflow ? '+' : '-'}
             {fmt.flowAmount(flow.flowAmount)}
           </div>
-          <div className="text-xs text-gray-500 dark:text-slate-400">
+          <div className="text-xs text-muted-foreground">
             {isInflow ? '+' : ''}
             {flow.flowPercent.toFixed(1)}%
           </div>
@@ -439,8 +439,8 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
       {/* MFI Indicator */}
       {flow.mfi !== null && (
         <div className="flex items-center gap-2 mt-2">
-          <span className="text-xs text-gray-500 dark:text-slate-400">MFI:</span>
-          <div className="flex-1 h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+          <span className="text-xs text-muted-foreground">MFI:</span>
+          <div className="flex-1 h-1.5 bg-surface-3 rounded-full overflow-hidden">
             <motion.div
               className={cn(
                 'h-full rounded-full',

@@ -154,7 +154,7 @@ function DominanceCard({ data }: { data: CompanyDetailResponse }) {
   if (!sectors || sectors.length === 0) return null
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+    <section className="sk-card p-4 sm:p-5">
       {dominance && (
         <p className="mb-3 flex items-center gap-1.5 text-sm text-foreground">
           {dominance.topRankCount > 0 && (

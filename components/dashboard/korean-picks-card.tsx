@@ -50,7 +50,7 @@ export function KoreanPicksCard() {
         description="에디터가 고른 종목 — 메일에서도 매일 받아볼 수 있어요"
       />
 
-      <div className="rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden">
+      <div className="sk-card overflow-hidden">
         <ul className="divide-y divide-border-subtle">
           {data.picks.map((p) => {
             const style = ACTION_STYLE[p.action] ?? ACTION_STYLE['지켜봐']

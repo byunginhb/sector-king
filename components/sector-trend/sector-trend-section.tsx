@@ -115,8 +115,8 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-64 bg-gray-200 dark:bg-slate-800 rounded-xl animate-pulse" />
-        <div className="h-80 bg-gray-200 dark:bg-slate-800 rounded-xl animate-pulse" />
+        <div className="h-64 bg-muted rounded-md animate-pulse" />
+        <div className="h-80 bg-muted rounded-md animate-pulse" />
       </div>
     )
   }
@@ -135,10 +135,10 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
     <div data-tour="sector-trend" className="space-y-8">
       {/* Section Header */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           섹터 추이 종합
         </h2>
-        <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">
+        <p className="text-sm text-muted-foreground mt-0.5">
           {data.dateRange
             ? `${data.dateRange.start} ~ ${data.dateRange.end}`
             : '전 섹터 기간별 변화율 비교'}
@@ -147,14 +147,14 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
 
       {/* Table Section */}
       <section>
-        <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-3">
+        <h3 className="text-base font-semibold text-foreground mb-3">
           섹터별 변화율 (%)
         </h3>
-        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-border">
+        <div className="overflow-x-auto rounded-md border border-border-subtle">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-100 dark:bg-slate-800">
-                <th className="sticky left-0 bg-gray-100 dark:bg-slate-800 px-4 py-3 text-left font-semibold text-gray-700 dark:text-slate-300 min-w-[160px]">
+              <tr className="bg-surface-2">
+                <th className="sticky left-0 bg-surface-2 px-4 py-3 text-left font-semibold text-foreground min-w-[160px]">
                   섹터
                 </th>
                 {PERIODS.map((p) => (
@@ -164,10 +164,10 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
                     aria-sort={sortPeriod === p ? (sortAsc ? 'ascending' : 'descending') : 'none'}
                     onClick={() => handleHeaderClick(p)}
                     className={cn(
-                      'px-4 py-3 text-right font-semibold cursor-pointer select-none whitespace-nowrap transition-colors hover:bg-gray-200 dark:hover:bg-slate-700 min-w-[80px]',
+                      'px-4 py-3 text-right font-semibold cursor-pointer select-none whitespace-nowrap transition-colors hover:bg-surface-3 min-w-[80px]',
                       sortPeriod === p
                         ? 'text-info'
-                        : 'text-gray-700 dark:text-slate-300'
+                        : 'text-foreground'
                     )}
                   >
                     {PERIOD_LABELS[p]}
@@ -182,9 +182,9 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
               {sortedSectors.map((sector) => (
                 <tr
                   key={sector.id}
-                  className="border-t border-gray-100 dark:border-border hover:bg-gray-50 dark:hover:bg-slate-800/50"
+                  className="border-t border-border-subtle hover:bg-surface-2"
                 >
-                  <td className="sticky left-0 bg-white dark:bg-card px-4 py-2.5 font-medium text-gray-900 dark:text-slate-100">
+                  <td className="sticky left-0 bg-surface-1 px-4 py-2.5 font-medium text-foreground">
                     {sector.name}
                   </td>
                   {PERIODS.map((p) => {
@@ -210,7 +210,7 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
           </table>
         </div>
         {sortedSectors.length === 0 && (
-          <p className="text-center py-8 text-gray-500 dark:text-slate-400">
+          <p className="text-center py-8 text-muted-foreground">
             데이터가 없습니다
           </p>
         )}
@@ -219,7 +219,7 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
       {/* Chart Section */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">
+          <h3 className="text-base font-semibold text-foreground">
             기간별 변화율 차트
           </h3>
           {data.sectors.length > DEFAULT_VISIBLE_COUNT && (
@@ -233,7 +233,7 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
             </button>
           )}
         </div>
-        <div className="bg-white dark:bg-card rounded-xl border border-gray-200 dark:border-border p-4">
+        <div className="bg-surface-1 rounded-md border border-border-subtle p-4">
           <div className="h-96 w-full">
             <ResponsiveContainer width="100%" height="100%">
               {/* key: 표시 섹터 집합(전체/상위10) 변경 시 stale 활성 인덱스로 십자선이 어긋나는 것 방지. */}

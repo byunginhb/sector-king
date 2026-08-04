@@ -1,6 +1,5 @@
 'use client'
 
-import { Sparkles } from 'lucide-react'
 import type { RankingItem } from '@/app/api/rankings/route'
 import { PICK_PROFILE_META, type PickProfile } from '@/lib/pick-profile'
 import { cn } from '@/lib/utils'
@@ -27,8 +26,9 @@ export function TopPicks({ items, onSelect, profile, onProfileChange }: TopPicks
     <section className="mb-6" aria-label="섹터킹 픽 — 성향별 종합 점수 상위 종목">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
-          <Sparkles className="h-4 w-4 text-primary" aria-hidden />
-          <h2 className="text-sm font-semibold text-foreground">섹터킹 픽 TOP 5</h2>
+          <h2 className="font-display text-base font-semibold text-foreground">
+            섹터킹 픽 TOP 5
+          </h2>
           <InfoTip
             label="섹터킹 픽"
             text="단기·장기·가치 점수를 투자 성향별 가중치로 합쳐 가장 높은 5종이에요. 위 버튼으로 성향을 바꾸면 가중치가 달라집니다. 정렬·필터와 무관하게 전체에서 골라요."
@@ -41,7 +41,7 @@ export function TopPicks({ items, onSelect, profile, onProfileChange }: TopPicks
       <p className="mb-3 text-xs text-muted-foreground">{PICK_PROFILE_META[profile].description}</p>
 
       {/* 데스크탑: 컬럼 + progressbar 표 */}
-      <div className="hidden overflow-hidden rounded-xl border border-border-subtle sm:block">
+      <div className="hidden overflow-hidden rounded-md border border-border-subtle sm:block">
         <table className="w-full border-collapse text-sm">
           <caption className="sr-only">
             섹터킹 픽 TOP 5 — 순위, 종목, 단기·장기·가치 점수와 종합점수를 막대로 표시합니다.
@@ -130,7 +130,7 @@ export function TopPicks({ items, onSelect, profile, onProfileChange }: TopPicks
               <button
                 type="button"
                 onClick={() => onSelect(item.ticker)}
-                className="sk-card w-full text-left transition-colors hover:bg-surface-2"
+                className="sk-card w-full text-left transition-colors hover:bg-surface-2 p-5"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex min-w-0 items-baseline gap-2">

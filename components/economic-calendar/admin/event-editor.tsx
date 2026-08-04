@@ -172,14 +172,14 @@ export function EventEditor({ initial }: EventEditorProps) {
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
+        <div className="rounded-lg border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
           {error}
         </div>
       )}
 
       {/* 자동분 편집 경고 배너 */}
       {isEdit && !isManual && (
-        <div className="rounded-2xl border border-warning/40 bg-warning/10 p-4 text-sm text-warning flex items-start gap-2">
+        <div className="rounded-lg border border-warning/40 bg-warning/10 p-4 text-sm text-warning flex items-start gap-2">
           <Lock className="h-4 w-4 mt-0.5 shrink-0" aria-hidden />
           <p>
             자동 수집된 이벤트입니다(출처: {initial?.source}). 저장하면 수동
@@ -345,7 +345,7 @@ export function EventEditor({ initial }: EventEditorProps) {
 
       {/* 자동분 플래그 토글 (편집 + 자동분 한정) */}
       {isEdit && !isManual && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-2xl border border-border-subtle bg-surface-1 p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sk-card p-4">
           <label className="flex items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
@@ -372,7 +372,7 @@ export function EventEditor({ initial }: EventEditorProps) {
         <button
           type="button"
           onClick={() => setShowPreview((s) => !s)}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-1 px-3 py-2 text-sm font-medium hover:bg-surface-2"
+          className="inline-flex items-center gap-1.5 sk-card px-3 py-2 text-sm font-medium hover:bg-surface-2"
         >
           <Eye className="h-4 w-4" aria-hidden />
           {showPreview ? '미리보기 닫기' : '미리보기'}
@@ -402,7 +402,7 @@ export function EventEditor({ initial }: EventEditorProps) {
 
       {/* 미리보기 (캘린더 셀 소형 카드) */}
       {showPreview && (
-        <div className="mt-2 rounded-2xl border border-border-subtle bg-surface-1 p-4 sm:p-6">
+        <div className="mt-2 sk-card p-4 sm:p-6">
           <h3 className="text-base font-bold text-foreground mb-3">미리보기</h3>
           <EventPreviewCard
             country={country}
@@ -443,9 +443,9 @@ function EventPreviewCard({
   unit: string | null
 }) {
   return (
-    <div className="rounded-xl border border-border-subtle bg-surface-2 p-3 max-w-sm">
+    <div className="rounded-md border border-border-subtle bg-surface-2 p-3 max-w-sm">
       <div className="flex items-center gap-2 flex-wrap text-[11px]">
-        <span className="font-bold rounded-md border border-border-subtle bg-surface-1 px-2 py-0.5 text-muted-foreground">
+        <span className="font-bold sk-card px-2 py-0.5 text-muted-foreground">
           {COUNTRY_LABEL[country]}
         </span>
         <span

@@ -79,7 +79,7 @@ export function ScreenGuide() {
           return (
             <div
               key={screen.title}
-              className="rounded-xl border border-border bg-card p-5"
+              className="sk-card p-5"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">

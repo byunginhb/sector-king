@@ -305,7 +305,7 @@ function KpiCard({
         onClick={onClick}
         aria-haspopup="dialog"
         aria-label={actionLabel ?? label}
-        className="sk-card sk-card-hover w-full text-left cursor-pointer transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="sk-card sk-card-hover w-full text-left cursor-pointer transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background p-5"
       >
         {header}
         {children}
@@ -314,7 +314,7 @@ function KpiCard({
   }
 
   return (
-    <div className="sk-card sk-card-hover">
+    <div className="sk-card sk-card-hover p-5">
       {header}
       {children}
     </div>
@@ -372,7 +372,7 @@ function MarketPulseStripSkeleton() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="sk-card">
+        <div key={i} className="sk-card p-5">
           <Skeleton className="h-4 w-24 mb-3" />
           <Skeleton className="h-8 w-32 mb-2" />
           <Skeleton className="h-3 w-20" />

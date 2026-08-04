@@ -1,6 +1,6 @@
 'use client'
 
-import { TrendingUp, TrendingDown, Minus, Sparkles, Info } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Plus, Info } from 'lucide-react'
 import { HintPopover } from '@/components/ui/hint-popover'
 import type { Direction, PredictionStatus } from '@/types'
 
@@ -48,16 +48,16 @@ export function pct(rate: number | null): string {
 
 export function hitRateTone(rate: number | null): string {
   if (rate == null) return 'text-muted-foreground'
-  if (rate >= 0.7) return 'text-emerald-600 dark:text-emerald-400'
-  if (rate >= 0.5) return 'text-amber-600 dark:text-amber-400'
-  return 'text-rose-600 dark:text-rose-400'
+  if (rate >= 0.7) return 'text-success'
+  if (rate >= 0.5) return 'text-primary'
+  return 'text-danger'
 }
 
 export function hitRateBar(rate: number | null): string {
   if (rate == null) return 'bg-muted'
-  if (rate >= 0.7) return 'bg-emerald-500'
-  if (rate >= 0.5) return 'bg-amber-500'
-  return 'bg-rose-500'
+  if (rate >= 0.7) return 'bg-success'
+  if (rate >= 0.5) return 'bg-primary'
+  return 'bg-danger'
 }
 
 /** 예측력 점수(0~100) 표기·톤·막대. Wilson 하한 기반이라 초기엔 점수대가 낮게 형성됨. */
@@ -66,28 +66,28 @@ export function fmtScore(score: number): string {
 }
 
 export function scoreTone(score: number): string {
-  if (score >= 60) return 'text-emerald-600 dark:text-emerald-400'
-  if (score >= 45) return 'text-amber-600 dark:text-amber-400'
-  return 'text-rose-600 dark:text-rose-400'
+  if (score >= 60) return 'text-success'
+  if (score >= 45) return 'text-primary'
+  return 'text-danger'
 }
 
 export function scoreBar(score: number): string {
-  if (score >= 60) return 'bg-emerald-500'
-  if (score >= 45) return 'bg-amber-500'
-  return 'bg-rose-500'
+  if (score >= 60) return 'bg-success'
+  if (score >= 45) return 'bg-primary'
+  return 'bg-danger'
 }
 
 export const DIRECTION_META: Record<Direction, { label: string; icon: typeof TrendingUp; tone: string }> = {
-  up: { label: '상향', icon: TrendingUp, tone: 'text-emerald-600 dark:text-emerald-400' },
-  down: { label: '하향', icon: TrendingDown, tone: 'text-rose-600 dark:text-rose-400' },
+  up: { label: '상향', icon: TrendingUp, tone: 'text-success' },
+  down: { label: '하향', icon: TrendingDown, tone: 'text-danger' },
   hold: { label: '유지', icon: Minus, tone: 'text-muted-foreground' },
-  new: { label: '신규', icon: Sparkles, tone: 'text-blue-600 dark:text-blue-400' },
+  new: { label: '신규', icon: Plus, tone: 'text-info' },
 }
 
 /** 적중=●, 빗나감=●(색+텍스트 병기로 색맹 대응). null=지표 없음(유지·신규). */
 export const STATUS_META: Record<PredictionStatus, { label: string; tone: string } | null> = {
-  hit: { label: '적중', tone: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400' },
-  miss: { label: '빗나감', tone: 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400' },
+  hit: { label: '적중', tone: 'bg-success-bg text-success' },
+  miss: { label: '빗나감', tone: 'bg-danger-bg text-danger' },
   unscorable: { label: '평가 불가', tone: 'bg-muted text-muted-foreground' },
   hold: null,
   new: null,

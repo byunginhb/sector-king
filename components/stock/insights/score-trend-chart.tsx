@@ -61,7 +61,7 @@ export function ScoreTrendChart({ history, appliedRange }: ScoreTrendChartProps)
 
   if (history.length < MIN_CHART_POINTS) {
     return (
-      <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+      <section className="sk-card p-4 sm:p-5">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
           <LineChartIcon className="h-4 w-4" aria-hidden />
           패권 점수 추이
@@ -88,7 +88,7 @@ export function ScoreTrendChart({ history, appliedRange }: ScoreTrendChartProps)
   const altText = `최근 ${appliedRange}일 패권 점수 추이: ${first.toFixed(1)}점에서 ${last.toFixed(1)}점으로 ${delta >= 0 ? '+' : ''}${delta.toFixed(1)}점 변화.`
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+    <section className="sk-card p-4 sm:p-5">
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <LineChartIcon className="h-4 w-4" aria-hidden />

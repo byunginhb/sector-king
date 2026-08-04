@@ -22,12 +22,12 @@ export function AnalystScorecardCard() {
     <section className="mt-8" aria-label="애널리스트 성적표">
       <div className="mb-3 flex items-center gap-2">
         <p className="eyebrow eyebrow-accent">Analyst Scorecard</p>
-        <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold leading-none tracking-wide text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+        <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold leading-none tracking-wide text-primary dark:bg-primary/20">
           NEW
         </span>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-1">
+      <div className="overflow-hidden sk-card">
         <div className="flex items-start gap-3 border-b border-border-subtle px-4 py-3.5 sm:px-5">
           <ClipboardCheck className="h-5 w-5 shrink-0 text-primary" aria-hidden />
           <div className="min-w-0">
@@ -51,10 +51,10 @@ export function AnalystScorecardCard() {
                   className={cn(
                     'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums',
                     idx === 0
-                      ? 'bg-amber-400/20 text-amber-700 dark:text-amber-300'
+                      ? 'bg-primary/20 text-primary'
                       : idx === 1
-                        ? 'bg-slate-400/20 text-slate-600 dark:text-slate-300'
-                        : 'bg-orange-400/15 text-orange-700 dark:text-orange-400'
+                        ? 'bg-muted text-muted-foreground'
+                        : 'bg-warning/15 text-warning'
                   )}
                 >
                   {idx + 1}

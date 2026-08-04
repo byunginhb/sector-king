@@ -49,7 +49,7 @@ export function TickerTape({ region = 'all', limit = 20 }: TickerTapeProps) {
 
   if (isLoading || items.length === 0) {
     return (
-      <div className="rounded-md border border-border-subtle bg-surface-1 px-4 py-3 overflow-hidden">
+      <div className="sk-card px-4 py-3 overflow-hidden">
         <div className="text-xs text-muted-foreground num-mono">
           {isLoading ? '핫 종목 불러오는 중…' : '오늘 추적할 핫 종목이 없습니다'}
         </div>
@@ -65,7 +65,7 @@ export function TickerTape({ region = 'all', limit = 20 }: TickerTapeProps) {
   return (
     <>
       <div
-        className="ticker-tape group rounded-md border border-border-subtle bg-surface-1 overflow-hidden"
+        className="ticker-tape group sk-card overflow-hidden"
         aria-label="오늘의 핫 종목"
         aria-live="off"
       >

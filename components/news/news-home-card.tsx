@@ -55,7 +55,7 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
   return (
     <div
       className={cn(
-        'group block rounded-2xl border border-border-subtle bg-surface-1 p-5 transition-[border-color,background-color,transform] duration-200 ease-out hover:border-primary/40 hover:bg-surface-2',
+        'group block sk-card p-5 transition-[border-color,background-color,transform] duration-200 ease-out hover:border-primary/40 hover:bg-surface-2',
         className
       )}
     >

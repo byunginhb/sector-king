@@ -103,8 +103,8 @@ export function DateSelector({
           }}
           modifiersClassNames={{
             available:
-              'font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-900/50 dark:hover:bg-indigo-800/50',
-            latest: 'ring-2 ring-emerald-400 ring-offset-1 dark:ring-offset-background',
+              'font-semibold text-accent-foreground bg-accent hover:bg-accent/80',
+            latest: 'ring-2 ring-success ring-offset-1 dark:ring-offset-background',
           }}
           classNames={{
             day: 'h-8 w-8 p-0 font-normal aria-selected:opacity-100',
@@ -113,7 +113,7 @@ export function DateSelector({
         {latestDate && (
           <div className="p-3 border-t border-border">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="w-3 h-3 rounded ring-2 ring-emerald-400" />
+              <span className="w-3 h-3 rounded ring-2 ring-success" />
               <span>최신 데이터</span>
             </div>
           </div>

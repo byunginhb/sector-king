@@ -87,7 +87,7 @@ export default async function AdminPage() {
         />
       </div>
 
-      <div className="rounded-2xl border border-border-subtle bg-surface-1 p-5">
+      <div className="sk-card p-5">
         <div className="flex items-center justify-between gap-3 mb-3">
           <h3 className="text-base font-bold text-foreground flex items-center gap-2">
             <Newspaper className="h-4 w-4 text-primary" aria-hidden />
@@ -147,7 +147,7 @@ function StatCard({
   value: number
 }) {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-1 p-5">
+    <div className="sk-card p-5">
       <div className="flex items-center gap-2 mb-2">
         {icon}
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -173,7 +173,7 @@ function AdminLinkCard({
   return (
     <Link
       href={href}
-      className="rounded-2xl border border-border-subtle bg-surface-1 p-5 hover:bg-surface-2 transition-colors flex items-start gap-3"
+      className="sk-card p-5 hover:bg-surface-2 transition-colors flex items-start gap-3"
     >
       <span className="mt-0.5">{icon}</span>
       <span className="flex-1 min-w-0">

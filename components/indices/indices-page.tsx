@@ -146,7 +146,7 @@ export function IndicesPage({ initialItems }: { initialItems?: MarketIndexItem[]
         <IndicesComparisonChart />
 
         {isError && (
-          <div className="sk-card flex flex-col items-center gap-2 py-10 text-center">
+          <div className="sk-card flex flex-col items-center gap-2 py-10 text-center p-5">
             <SearchX className="h-7 w-7 text-muted-foreground" aria-hidden />
             <p className="text-sm font-medium text-foreground">지수를 불러오지 못했어요</p>
             <p className="text-xs text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
@@ -197,7 +197,7 @@ export function IndicesPage({ initialItems }: { initialItems?: MarketIndexItem[]
         )}
 
         {data && items.length === 0 && !isLoading && (
-          <div className="sk-card flex flex-col items-center gap-2 py-12 text-center">
+          <div className="sk-card flex flex-col items-center gap-2 py-12 text-center p-5">
             <SearchX className="h-7 w-7 text-muted-foreground" aria-hidden />
             <p className="text-sm font-medium text-foreground">표시할 지수가 없습니다</p>
           </div>

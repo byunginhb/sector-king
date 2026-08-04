@@ -35,7 +35,7 @@ export default function StockNotFound() {
         </p>
 
         {/* 시장 한정으로 제거된 비US/KR 티커 옛 링크 안내 */}
-        <div className="rounded-md border border-border-subtle bg-surface-1 p-4 text-left mb-6 flex gap-2.5">
+        <div className="sk-card p-4 text-left mb-6 flex gap-2.5">
           <Info className="h-4 w-4 text-info shrink-0 mt-0.5" aria-hidden />
           <p className="text-xs text-muted-foreground leading-relaxed">
             Sector King 은 현재 <span className="font-medium text-foreground">미국·한국 종목만</span>{' '}
@@ -62,7 +62,7 @@ export default function StockNotFound() {
                 <Link
                   key={item.ticker}
                   href={`/stock/${item.ticker}`}
-                  className="inline-flex items-center rounded-md border border-border-subtle bg-surface-1 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-2 transition-colors"
+                  className="inline-flex items-center sk-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-2 transition-colors"
                 >
                   {item.label}
                 </Link>

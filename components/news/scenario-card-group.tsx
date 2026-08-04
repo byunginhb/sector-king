@@ -63,7 +63,7 @@ export function ScenarioCardGroup({ scenarios }: ScenarioCardGroupProps) {
             key={kind}
             aria-labelledby={`scenario-${kind}`}
             className={cn(
-              'rounded-2xl border p-4 sm:p-5 flex flex-col',
+              'rounded-lg border p-4 sm:p-5 flex flex-col',
               meta.border,
               meta.bg
             )}

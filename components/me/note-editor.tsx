@@ -75,7 +75,7 @@ export function NoteEditor({
   return (
     <div
       className={cn(
-        'rounded-xl border border-border-subtle bg-surface-1 p-4',
+        'sk-card p-4',
         className
       )}
     >

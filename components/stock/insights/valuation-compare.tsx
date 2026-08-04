@@ -41,7 +41,7 @@ export function ValuationCompare({ insights }: ValuationCompareProps) {
 
   if (insufficientPeerSample) {
     return (
-      <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+      <section className="sk-card p-4 sm:p-5">
         <Header />
         <p className="rounded-md border border-dashed border-border-subtle p-3 text-sm text-muted-foreground">
           비교 데이터 부족 (동종 종목 {sectorContext.peerCount}개). 섹터 표본이 4개 이상일 때
@@ -54,7 +54,7 @@ export function ValuationCompare({ insights }: ValuationCompareProps) {
   const keyMetric = insights.keyValuationMetric
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+    <section className="sk-card p-4 sm:p-5">
       <Header />
       <div className="space-y-4">
         {METRICS.map((spec) => (

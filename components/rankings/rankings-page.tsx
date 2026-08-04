@@ -181,7 +181,7 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
         />
 
         {/* 점수 산출 방식 안내 — 초보자용, 기본 접힘 */}
-        <details className="mb-5 rounded-md border border-border-subtle bg-surface-1/50 px-4 py-3 text-sm">
+        <details className="mb-5 sk-card/50 px-4 py-3 text-sm">
           <summary className="cursor-pointer select-none font-medium text-foreground">
             단기·장기 점수는 어떻게 매기나요?
           </summary>
@@ -222,7 +222,7 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
         </details>
 
         {isError && (
-          <div className="sk-card flex flex-col items-center gap-2 py-10 text-center">
+          <div className="sk-card flex flex-col items-center gap-2 py-10 text-center p-5">
             <SearchX className="h-7 w-7 text-muted-foreground" aria-hidden />
             <p className="text-sm font-medium text-foreground">랭킹을 불러오지 못했어요</p>
             <p className="text-xs text-muted-foreground">
@@ -234,7 +234,7 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
         {isLoading && !data && <RankingsSkeleton />}
 
         {!isLoading && data && items.length === 0 && (
-          <div className="sk-card flex flex-col items-center gap-2 py-12 text-center">
+          <div className="sk-card flex flex-col items-center gap-2 py-12 text-center p-5">
             <SearchX className="h-7 w-7 text-muted-foreground" aria-hidden />
             <p className="text-sm font-medium text-foreground">아직 점수가 매겨진 종목이 없어요</p>
             <p className="max-w-xs text-xs text-muted-foreground">
@@ -314,7 +314,7 @@ function RankingsSkeleton() {
       {/* 모바일 카드 골격 */}
       <div className="space-y-2 sm:hidden">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="sk-card space-y-3">
+          <div key={i} className="sk-card space-y-3 p-5">
             <div className="flex items-center justify-between">
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-5 w-16 rounded-md" />

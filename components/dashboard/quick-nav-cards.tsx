@@ -58,7 +58,7 @@ export function QuickNavCards() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className="sk-card sk-card-hover flex h-full flex-col gap-2"
+                className="sk-card sk-card-hover flex h-full flex-col gap-2 p-5"
               >
                 <div className="flex items-center justify-between">
                   <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
@@ -70,7 +70,7 @@ export function QuickNavCards() {
                   <p className="flex items-center gap-1.5 font-semibold leading-tight text-foreground">
                     <span className="min-w-0 truncate">{item.label}</span>
                     {item.badge && (
-                      <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold leading-none text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+                      <span className="shrink-0 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold leading-none text-primary dark:bg-primary/20">
                         {item.badge}
                       </span>
                     )}

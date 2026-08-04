@@ -68,13 +68,13 @@ export default async function AdminNewsListPage() {
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-danger/40 bg-danger/5 p-4 text-sm text-danger">
+        <div className="rounded-lg border border-danger/40 bg-danger/5 p-4 text-sm text-danger">
           목록을 불러올 수 없습니다: {error.message}
         </div>
       )}
 
       {items.length === 0 ? (
-        <div className="rounded-2xl border border-border-subtle bg-surface-1 p-10 text-center">
+        <div className="sk-card p-10 text-center">
           <p className="text-sm text-muted-foreground">
             아직 작성된 리포트가 없습니다.
           </p>
@@ -86,7 +86,7 @@ export default async function AdminNewsListPage() {
             const Icon = meta.Icon
             return (
               <li key={it.id}>
-                <div className="rounded-2xl border border-border-subtle bg-surface-1 p-4 hover:border-primary/30 hover:bg-surface-2 transition-colors">
+                <div className="sk-card p-4 hover:border-primary/30 hover:bg-surface-2 transition-colors">
                   <div className="flex items-start justify-between gap-3">
                     <Link
                       href={`/admin/news/${it.id}/edit`}

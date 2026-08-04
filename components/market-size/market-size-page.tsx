@@ -269,7 +269,7 @@ export function MarketSizePage() {
                 setIndustryId(e.target.value || null)
                 setSelectedCategoryId(null)
               }}
-              className="h-9 rounded-lg border border-border-subtle bg-surface-1 px-3 text-sm text-foreground"
+              className="h-9 sk-card px-3 text-sm text-foreground"
             >
               <option value="">전체 산업</option>
               {industriesData?.industries.map((ind) => (
@@ -283,19 +283,19 @@ export function MarketSizePage() {
         </div>
 
         {isError && (
-          <div className="sk-card text-sm text-destructive">
+          <div className="sk-card text-sm text-destructive p-5">
             데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
           </div>
         )}
 
         {/* 시총 지도 — 산업 그룹 안에 섹터 타일 */}
-        <div className="sk-card">
+        <div className="sk-card p-5">
           <div className="flex items-center gap-3 mb-4">
             {drillSector && (
               <button
                 type="button"
                 onClick={() => setDrillSector(null)}
-                className="inline-flex items-center gap-1.5 shrink-0 rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
+                className="inline-flex items-center gap-1.5 shrink-0 sk-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
               >
                 <ArrowLeft className="w-4 h-4" aria-hidden />
                 전체 산업
@@ -342,13 +342,13 @@ export function MarketSizePage() {
         </div>
 
         {/* 성장 전망 — 막대(모바일·PC 기본) / 버블(PC 토글) */}
-        <div className="sk-card">
+        <div className="sk-card p-5">
           <div className="flex items-center gap-3 mb-4">
             {selectedCategory && (
               <button
                 type="button"
                 onClick={() => setSelectedCategoryId(null)}
-                className="inline-flex items-center gap-1.5 shrink-0 rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
+                className="inline-flex items-center gap-1.5 shrink-0 sk-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
               >
                 <ArrowLeft className="w-4 h-4" aria-hidden />
                 전체 카테고리

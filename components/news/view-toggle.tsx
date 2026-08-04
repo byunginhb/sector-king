@@ -21,7 +21,7 @@ export function ViewToggle({ value, onChange, className, size = 'md' }: ViewTogg
       role="tablist"
       aria-label="리포트 뷰 선택"
       className={cn(
-        'inline-flex items-center rounded-lg border border-border-subtle bg-surface-1 p-0.5',
+        'inline-flex items-center sk-card p-0.5',
         size === 'lg' ? 'text-sm sm:text-base' : 'text-xs sm:text-sm',
         className
       )}

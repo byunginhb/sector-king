@@ -38,7 +38,7 @@ export default async function PreviewEmailPage({ params }: PageProps) {
         >
           <ArrowLeft className="h-4 w-4" aria-hidden /> 목록으로
         </Link>
-        <div className="rounded-2xl border border-danger/40 bg-danger/5 p-6 text-sm text-danger">
+        <div className="rounded-lg border border-danger/40 bg-danger/5 p-6 text-sm text-danger">
           리포트를 찾을 수 없습니다
         </div>
       </div>

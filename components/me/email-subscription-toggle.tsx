@@ -41,7 +41,7 @@ export function EmailSubscriptionToggle() {
   }
 
   return (
-    <div className="rounded-xl border border-border-subtle bg-surface-1 p-4 space-y-3">
+    <div className="sk-card p-4 space-y-3">
       <div className="flex items-start gap-3">
         <div className="shrink-0 mt-0.5">
           <Mail className="h-5 w-5 text-primary" aria-hidden />
@@ -71,7 +71,7 @@ export function EmailSubscriptionToggle() {
             >
               <span
                 className={cn(
-                  'inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform',
+                  'inline-block h-5 w-5 transform rounded-full bg-surface-1 shadow transition-transform',
                   subscription.dailyReport ? 'translate-x-5' : 'translate-x-0.5'
                 )}
               />

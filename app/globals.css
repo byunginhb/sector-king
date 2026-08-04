@@ -312,9 +312,15 @@
   /* ── sk-card — editorial paper card.
    *    Tight radius, hairline border, no shadow by default.
    *    On hover: amber hairline + faint surface lift. No translate.
+   *
+   *    Padding is deliberately NOT baked in. A card is a surface; density is
+   *    the caller's business (a table card wants p-0, a stat card p-5). When
+   *    p-5 was hardcoded here, 120 call sites bypassed sk-card entirely and
+   *    re-derived the recipe from raw utilities — which is how the border and
+   *    radius drifted apart across the app. Always pass a p-* at the call site.
    * ── */
   .sk-card {
-    @apply rounded-md border border-border-subtle bg-surface-1 p-5
+    @apply rounded-md border border-border-subtle bg-surface-1
       transition-[border-color,background-color] duration-200 ease-out;
   }
   .sk-card-hover {

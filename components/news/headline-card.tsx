@@ -13,7 +13,7 @@ export function HeadlineCard({ item }: HeadlineCardProps) {
   return (
     <article
       aria-labelledby={`headline-${item.index}-title`}
-      className="rounded-2xl border border-border-subtle bg-surface-1 p-4 sm:p-5"
+      className="sk-card p-4 sm:p-5"
     >
       <div className="flex items-start gap-3">
         <span

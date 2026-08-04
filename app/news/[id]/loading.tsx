@@ -17,9 +17,9 @@ export default function NewsDetailLoading() {
           <Skeleton className="h-4 w-5/6" />
           <Skeleton className="h-4 w-4/6" />
           <div className="pt-4 space-y-3">
-            <Skeleton className="h-32 w-full rounded-xl" />
-            <Skeleton className="h-32 w-full rounded-xl" />
-            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-md" />
+            <Skeleton className="h-32 w-full rounded-md" />
+            <Skeleton className="h-32 w-full rounded-md" />
           </div>
         </div>
       </main>

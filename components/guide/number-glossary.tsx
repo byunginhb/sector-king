@@ -17,7 +17,7 @@ export function NumberGlossary() {
           return (
             <div
               key={entry.id}
-              className="flex flex-col rounded-xl border border-border bg-card p-5"
+              className="flex flex-col sk-card p-5"
             >
               <div className="mb-2 flex items-center gap-2">
                 <Icon className="h-5 w-5 shrink-0 text-info" aria-hidden />

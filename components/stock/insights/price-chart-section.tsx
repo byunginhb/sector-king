@@ -38,7 +38,7 @@ export function PriceChartSection({ ticker, initialHistory }: PriceChartSectionP
   const history = needsFetch ? (data?.history ?? []) : initialHistory
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+    <section className="sk-card p-4 sm:p-5">
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <LineChartIcon className="h-4 w-4" aria-hidden />

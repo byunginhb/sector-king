@@ -162,9 +162,9 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
               <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground tabular-nums">
                 <span>리포트 {a.reportCount}</span>
                 <span aria-hidden>·</span>
-                <span className="text-emerald-600 dark:text-emerald-400">적중 {a.hits}</span>
+                <span className="text-success">적중 {a.hits}</span>
                 <span aria-hidden>·</span>
-                <span className="text-rose-600 dark:text-rose-400">빗나감 {a.misses}</span>
+                <span className="text-danger">빗나감 {a.misses}</span>
                 <span aria-hidden>·</span>
                 <span className={hitRateTone(a.hitRate)}>적중률 {pct(a.hitRate)}</span>
                 <span aria-hidden>·</span>

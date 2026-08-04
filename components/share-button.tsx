@@ -132,7 +132,7 @@ export function ShareButton({ title, description }: ShareButtonProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium shadow-lg"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-lg bg-surface-3 text-foreground text-sm font-medium shadow-lg"
           >
             URL이 클립보드에 복사되었습니다
           </motion.div>

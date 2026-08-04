@@ -22,7 +22,7 @@ export function EmailLogTable({ rows, total, limit, offset, searchParams }: Prop
   const end = Math.min(offset + rows.length, total)
 
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-1">
+    <div className="sk-card">
       <div className="px-4 py-3 border-b border-border-subtle flex items-center justify-between">
         <p className="text-sm font-medium text-foreground">
           {total === 0 ? '결과 없음' : `${start}–${end} / 총 ${total}건`}

@@ -42,7 +42,7 @@ export function StickyToc({ sections, className }: StickyTocProps) {
     <nav
       aria-label="리포트 목차"
       className={cn(
-        'rounded-2xl border border-border-subtle bg-surface-1 p-4',
+        'sk-card p-4',
         className
       )}
     >

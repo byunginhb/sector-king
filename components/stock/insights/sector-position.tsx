@@ -27,7 +27,7 @@ export function SectorPosition({ insights }: SectorPositionProps) {
 
   if (peers.length <= 1) {
     return (
-      <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+      <section className="sk-card p-4 sm:p-5">
         <Header sectorName={sectorContext.sectorName} peerCount={sectorContext.peerCount} />
         <p className="rounded-md border border-dashed border-border-subtle p-3 text-sm text-muted-foreground">
           비교 가능한 동종 종목이 없습니다.
@@ -40,7 +40,7 @@ export function SectorPosition({ insights }: SectorPositionProps) {
   const rows = peers.slice(0, MAX_ROWS)
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+    <section className="sk-card p-4 sm:p-5">
       <Header sectorName={sectorContext.sectorName} peerCount={sectorContext.peerCount} />
 
       {sectorContext.marketSharePct != null && (

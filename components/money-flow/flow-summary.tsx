@@ -26,7 +26,7 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
       </p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Total Inflow */}
-      <div className="bg-success-bg/40 border border-success/30 rounded-xl p-4">
+      <div className="bg-success-bg/40 border border-success/30 rounded-md p-4">
         <div className="flex items-center gap-2 mb-2">
           <TrendingUp className="h-5 w-5 text-success" aria-hidden />
           <span className="text-sm text-success font-medium">
@@ -39,7 +39,7 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
       </div>
 
       {/* Total Outflow */}
-      <div className="bg-danger-bg/40 border border-danger/30 rounded-xl p-4">
+      <div className="bg-danger-bg/40 border border-danger/30 rounded-md p-4">
         <div className="flex items-center gap-2 mb-2">
           <TrendingDown className="h-5 w-5 text-danger" aria-hidden />
           <span className="text-sm text-danger font-medium">
@@ -55,8 +55,8 @@ export function FlowSummary({ totalInflow, totalOutflow, netFlow }: FlowSummaryP
       <div
         className={
           isNetPositive
-            ? 'bg-info/10 border border-info/30 rounded-xl p-4'
-            : 'bg-warning/10 border border-warning/30 rounded-xl p-4'
+            ? 'bg-info/10 border border-info/30 rounded-md p-4'
+            : 'bg-warning/10 border border-warning/30 rounded-md p-4'
         }
       >
         <div className="flex items-center gap-2 mb-2">

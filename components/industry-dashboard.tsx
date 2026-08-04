@@ -1,15 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import {
-  Stethoscope,
-  Zap,
-  ShoppingCart,
-  Landmark,
-  Flame,
-  TrendingUp,
-  Mail,
-} from 'lucide-react'
+import { Flame, TrendingUp } from 'lucide-react'
 import { useIndustries } from '@/hooks/use-industries'
 import { useRegion } from '@/hooks/use-region'
 import { usePageTour } from '@/hooks/use-page-tour'
@@ -56,103 +48,85 @@ export function IndustryDashboard() {
         extraActions={<RegionToggle value={region} onChange={setRegion} />}
       />
 
-      {/* Main Content */}
+      {/*
+        레이아웃 위계 — 4단. 1면(LEAD) → 오늘(TODAY) → 지도(MAP) → 자료(BRIEF).
+        단 사이는 sk-rule 한 줄 + 큰 여백(mt-16/24), 단 안쪽은 작은 여백(mt-6/8)
+        으로 벌린다. 전 구획이 같은 mt-12 로 쌓이면 위계 없는 카드 적층으로 읽힌다.
+      */}
       <main className="container mx-auto px-4 py-8 sm:py-10">
-        {/* Page masthead — 한 줄 슬로건 + 메일 구독 */}
-        <section className="border-b border-foreground/80 pb-6 sm:pb-8 mb-8 sm:mb-10">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="display text-2xl sm:text-4xl lg:text-5xl leading-tight text-foreground">
+        {/* ───────── LEAD — 제호 + 오늘의 시세 띠 + 자금 흐름 단독 ───────── */}
+        <section className="border-b border-foreground/80 pb-6 sm:pb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <h1 className="display text-3xl sm:text-5xl lg:text-6xl leading-[1.02] text-foreground">
               시장의 돈이 어디로 흐르는가.
             </h1>
             <Link
               href="/news"
-              className="inline-flex shrink-0 items-center gap-2 self-start rounded-md border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 border-amber-600 bg-amber-500/15 text-amber-900 hover:bg-amber-500/25 dark:border-amber-500/60 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20 sm:self-auto"
+              className="inline-flex shrink-0 items-center gap-2 self-start rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:self-auto"
             >
-              <Mail className="h-4 w-4" aria-hidden />
               무료 뉴스 이메일 받기
             </Link>
           </div>
         </section>
 
-        {/* Onboarding hint strip (자동 투어 폐기 후 신규 진입 안내) */}
-        <section className="mb-6">
-          <OnboardingHintStrip />
-        </section>
-
-        {/* 핫 종목 TickerTape */}
-        <section className="mt-8">
-          <p className="eyebrow mb-2">Hot Tickers · Today</p>
+        {/* 시세 띠 — 제호 바로 아래 붙여 신문 1면 리듬. 자체 라벨 불필요. */}
+        <div className="mt-4">
           <TickerTape region={region} limit={20} />
-        </section>
+        </div>
 
-        {/* 오늘의 마켓 리포트 */}
-        <section className="mt-8">
-          <NewsHomeCardSlot />
-        </section>
+        <div className="mt-4">
+          <OnboardingHintStrip />
+        </div>
 
-        {/* Industry Money Flow — 카드 자체 헤더(기간 토글 포함) 사용, 외부 헤더 제거 */}
-        <section id="money-flow" className="scroll-mt-24 mt-12 mb-10 sm:mb-12">
+        {/* 리드 기사 — 이 서비스가 답하는 질문 그 자체라 단독으로 크게 둔다 */}
+        <section id="money-flow" className="mt-10 scroll-mt-24">
           <IndustryMoneyFlowCard region={region} />
         </section>
 
-        {/* Market Pulse Strip */}
-        <section className="mt-12">
-          <p className="eyebrow eyebrow-accent mb-3">Market Pulse</p>
-          <MarketPulseStrip region={region} />
-        </section>
-
-        {/* 모바일 바로가기 카드 — 햄버거에 숨는 메뉴를 대시보드에서 바로 이동 */}
         <div className="mt-8 md:hidden">
           <QuickNavCards />
         </div>
 
-        {/* 오늘의 한국 추천 종목 — 메일과 동일 콘텐츠 노출 + 이유 보러가기 CTA */}
-        <KoreanPicksCard />
+        <hr className="sk-rule mt-16 sm:mt-24" />
 
-        {/* 섹터킹 픽 — 단기·장기·DCF 종합 균형 TOP5 + 전체 보기 */}
-        <SectorKingPickCard region={region} />
+        {/* ───────── TODAY — 오늘 읽을 것 / 오늘 살 것 ───────── */}
+        <section className="mt-8">
+          <SectionHeader eyebrow="Today" title="오늘의 시장" />
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+            <NewsHomeCardSlot />
+            <SectorKingPickCard region={region} />
+          </div>
+          <div className="mt-6">
+            <KoreanPicksCard />
+          </div>
+        </section>
 
-        {/* 애널리스트 성적표 티저 — 신규 기능 홍보 진입점 */}
-        <AnalystScorecardCard />
+        <hr className="sk-rule mt-16 sm:mt-24" />
 
-        {/* Industry Cards Grid */}
-        <section id="industries" className="mt-12 scroll-mt-24">
-          <SectionHeader
-            eyebrow="Hegemony Map"
-            title="산업 패권 지도"
-            description="산업을 선택해 카테고리·섹터·기업 단위로 드릴다운"
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* ───────── MAP — 산업 인덱스 ───────── */}
+        <section id="industries" className="mt-8 scroll-mt-24">
+          <SectionHeader eyebrow="Hegemony Map" title="산업 패권 지도" />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {industries.map((industry, index) => (
               <IndustryCard key={industry.id} industry={industry} isFirst={index === 0} />
             ))}
-            {industries.length < 5 && (
-              <>
-                <ComingSoonCard name="헬스케어" iconKey="healthcare" />
-                <ComingSoonCard name="에너지/자원" iconKey="energy" />
-                <ComingSoonCard name="소비재" iconKey="consumer" />
-                <ComingSoonCard name="금융" iconKey="finance" />
-              </>
-            )}
           </div>
         </section>
 
-        {/* Summary Stats Cards */}
-        <section className="mt-12">
-          <SectionHeader
-            eyebrow="Market Brief"
-            title="시장 동향 요약"
-            description="회사 통계와 가격 변화를 한눈에"
-          />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <hr className="sk-rule mt-16 sm:mt-24" />
+
+        {/* ───────── BRIEF — 참고 자료. 리드보다 의도적으로 조용하게 ───────── */}
+        <section className="mt-8">
+          <SectionHeader eyebrow="Market Brief" title="시장 동향 요약" />
+          <MarketPulseStrip region={region} />
+          <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
             <CompanyStatsCard region={region} />
             <PriceChangesCard region={region} />
           </div>
-        </section>
-
-        {/* 경제 캘린더 — 주요 경제지표 발표 일정 (맨 끝) */}
-        <section className="mt-12">
-          <EconomicCalendarSection />
+          <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+            <EconomicCalendarSection />
+            <AnalystScorecardCard />
+          </div>
         </section>
       </main>
     </div>
@@ -183,7 +157,7 @@ function IndustryCard({
   return (
     <Link
       href={`/${industry.id}`}
-      className="group block sk-card sk-card-hover"
+      className="group block sk-card sk-card-hover p-5"
       {...(isFirst ? { 'data-tour': 'industry-card' } : {})}
     >
       <div>
@@ -291,39 +265,6 @@ function buildInsight(
   return null
 }
 
-function ComingSoonCard({
-  name,
-  iconKey,
-}: {
-  name: string
-  iconKey: 'healthcare' | 'energy' | 'consumer' | 'finance'
-}) {
-  const Icon =
-    iconKey === 'healthcare'
-      ? Stethoscope
-      : iconKey === 'energy'
-        ? Zap
-        : iconKey === 'consumer'
-          ? ShoppingCart
-          : Landmark
-  return (
-    <div className="rounded-md border border-dashed border-border bg-surface-1/40 p-5 opacity-70">
-      <div className="flex items-center gap-3 mb-3">
-        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center border border-dashed border-border bg-background">
-          <Icon className="h-5 w-5 text-muted-foreground" aria-hidden />
-        </span>
-        <div className="min-w-0">
-          <p className="eyebrow">Coming Soon</p>
-          <h2 className="font-display text-lg font-semibold text-muted-foreground leading-tight truncate">
-            {name}
-          </h2>
-        </div>
-      </div>
-      <p className="text-xs text-muted-foreground">곧 추가될 예정입니다</p>
-    </div>
-  )
-}
-
 function DashboardSkeleton() {
   return (
     <div className="min-h-screen">
@@ -336,7 +277,7 @@ function DashboardSkeleton() {
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="sk-card">
+            <div key={i} className="sk-card p-5">
               <Skeleton className="h-4 w-24 mb-3" />
               <Skeleton className="h-8 w-32 mb-2" />
               <Skeleton className="h-3 w-20" />
@@ -345,7 +286,7 @@ function DashboardSkeleton() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="sk-card">
+            <div key={i} className="sk-card p-5">
               <Skeleton className="h-6 w-32 mb-3" />
               <Skeleton className="h-7 w-40 mb-3" />
               <div className="grid grid-cols-3 gap-2">
@@ -364,9 +305,12 @@ function DashboardSkeleton() {
 function DashboardError({ error }: { error: Error }) {
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center py-12 px-6 max-w-md">
-        <h2 className="text-xl font-semibold text-foreground mb-2">Something went wrong</h2>
-        <p className="text-muted-foreground">{error.message}</p>
+      <div className="max-w-md px-6 py-12 text-center">
+        <p className="eyebrow mb-2">Error</p>
+        <h2 className="font-display mb-2 text-xl font-semibold text-foreground">
+          데이터를 불러오지 못했습니다
+        </h2>
+        <p className="text-sm text-muted-foreground">{error.message}</p>
       </div>
     </div>
   )

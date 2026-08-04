@@ -108,7 +108,7 @@ export default async function NewsListPage({
                 className={
                   active
                     ? 'rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground'
-                    : 'rounded-lg border border-border-subtle bg-surface-1 px-3 py-1.5 text-sm text-muted-foreground hover:bg-surface-2'
+                    : 'sk-card px-3 py-1.5 text-sm text-muted-foreground hover:bg-surface-2'
                 }
               >
                 {f.label}
@@ -118,7 +118,7 @@ export default async function NewsListPage({
         </nav>
 
         {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-border-subtle bg-surface-1 p-10 text-center">
+          <div className="sk-card p-10 text-center">
             <p className="text-sm text-muted-foreground">
               아직 발행된 리포트가 없습니다.
             </p>
@@ -132,7 +132,7 @@ export default async function NewsListPage({
                 <li key={it.id}>
                   <Link
                     href={`/news/${it.id}`}
-                    className="group block rounded-2xl border border-border-subtle bg-surface-1 p-5 transition-[border-color,background-color,transform] duration-200 ease-out hover:-translate-y-px hover:border-primary/40 hover:bg-surface-2 h-full"
+                    className="group block sk-card p-5 transition-[border-color,background-color,transform] duration-200 ease-out hover:-translate-y-px hover:border-primary/40 hover:bg-surface-2 h-full"
                   >
                     <div className="flex items-start justify-between gap-2 mb-3">
                       <time
@@ -140,10 +140,10 @@ export default async function NewsListPage({
                         aria-label={`발행일 ${labels.korean}`}
                         className="flex items-baseline gap-2.5"
                       >
-                        <span className="font-display font-bold tabular-nums tracking-tight text-amber-400 text-2xl sm:text-3xl leading-none">
+                        <span className="font-display font-bold tabular-nums tracking-tight text-primary text-2xl sm:text-3xl leading-none">
                           {labels.monthDay}
                         </span>
-                        <span className="text-amber-400/70 text-xs sm:text-sm font-semibold uppercase tracking-wider">
+                        <span className="text-primary/70 text-xs sm:text-sm font-semibold uppercase tracking-wider">
                           {labels.weekday}
                         </span>
                       </time>

@@ -111,7 +111,7 @@ function StatTile({
   const color =
     tone === 'up' ? 'text-success' : tone === 'down' ? 'text-danger' : 'text-foreground'
   return (
-    <div className="rounded-lg border border-border-subtle bg-surface-1 px-3 py-2.5">
+    <div className="sk-card px-3 py-2.5">
       <div className="text-[11px] text-muted-foreground mb-0.5">{label}</div>
       <div className={cn('text-lg font-bold tabular-nums leading-none', color)}>
         {value}
@@ -203,7 +203,7 @@ export function MonthlyReportView({
         })}
       </div>
       {outlook.watchItems.length > 0 && (
-        <div className="rounded-lg border border-border-subtle bg-surface-1 p-4">
+        <div className="sk-card p-4">
           <div className="text-xs font-semibold text-foreground/80 mb-2">
             다음 달 체크리스트
           </div>
@@ -262,7 +262,7 @@ export function MonthlyReportView({
           <button
             onClick={handlePdf}
             disabled={pdfBusy}
-            className="inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-60"
+            className="inline-flex items-center gap-2 sk-card px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-60"
           >
             {pdfBusy ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -274,7 +274,7 @@ export function MonthlyReportView({
         )}
       </div>
 
-      <div ref={bodyRef} className="bg-background rounded-xl">
+      <div ref={bodyRef} className="bg-background rounded-md">
         {/* ── 리포트 헤더 ─────────────────────────────── */}
         <header data-pdf-block className="border-b-2 border-foreground/80 pb-4 mb-6">
           <div className="flex items-center justify-between mb-3">
@@ -351,7 +351,7 @@ export function MonthlyReportView({
         {/* ── 2. 자금 흐름 ─────────────────────────── */}
         <section data-pdf-block className="mb-8">
           <SectionHeader no="02" title="섹터 자금 흐름" en="Fund Flows" />
-          <div className="rounded-lg border border-border-subtle bg-surface-1 p-3 mb-4">
+          <div className="sk-card p-3 mb-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
               <ArrowRightLeft className="h-3.5 w-3.5" aria-hidden />
               섹터별 시총 변화액 (USD, 유입 + / 유출 −)
@@ -390,7 +390,7 @@ export function MonthlyReportView({
         {/* ── 4. 주요 종목 ─────────────────────────── */}
         <section data-pdf-block className="mb-8">
           <SectionHeader no="04" title="주요 등락 종목" en="Key Movers" />
-          <div className="rounded-lg border border-border-subtle bg-surface-1 p-3 mb-4">
+          <div className="sk-card p-3 mb-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
               <TrendingUp className="h-3.5 w-3.5 text-success" aria-hidden />
               <TrendingDown className="h-3.5 w-3.5 text-danger" aria-hidden />

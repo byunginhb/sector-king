@@ -214,7 +214,7 @@ export function IndicesComparisonChart() {
               value={customStart}
               max={customEnd || dataMaxDate || undefined}
               onChange={(e) => setCustomStart(e.target.value)}
-              className="rounded-md border border-border-subtle bg-surface-1 px-2 py-1 text-foreground"
+              className="sk-card px-2 py-1 text-foreground"
             />
           </label>
           <span aria-hidden>~</span>
@@ -226,7 +226,7 @@ export function IndicesComparisonChart() {
               min={customStart || undefined}
               max={dataMaxDate || undefined}
               onChange={(e) => setCustomEnd(e.target.value)}
-              className="rounded-md border border-border-subtle bg-surface-1 px-2 py-1 text-foreground"
+              className="sk-card px-2 py-1 text-foreground"
             />
           </label>
           {mode === 'custom' && !customValid && (
@@ -266,7 +266,7 @@ export function IndicesComparisonChart() {
         })}
       </div>
 
-      <div className="rounded-md border border-border-subtle bg-surface-1 p-3 sm:p-4">
+      <div className="sk-card p-3 sm:p-4">
         {isError ? (
           <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
             그래프를 불러오지 못했어요

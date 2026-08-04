@@ -84,7 +84,7 @@ export function PreviewEmailClient({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
       {/* 좌측 — iframe 미리보기 */}
-      <div className="rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden">
+      <div className="sk-card overflow-hidden">
         <div className="flex items-center justify-between px-4 py-2 border-b border-border-subtle bg-surface-2">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             미리보기 (HTML)
@@ -102,13 +102,13 @@ export function PreviewEmailClient({
           src={`/api/admin/news/${reportId}/preview-email`}
           title="이메일 미리보기"
           sandbox="allow-same-origin"
-          className="w-full h-[720px] bg-white"
+          className="w-full h-[720px] bg-surface-1"
         />
       </div>
 
       {/* 우측 — 발송 폼 */}
       <aside className="space-y-3">
-        <div className="rounded-2xl border border-border-subtle bg-surface-1 p-4 space-y-3">
+        <div className="sk-card p-4 space-y-3">
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-primary" aria-hidden />
             <p className="text-sm font-semibold text-foreground">

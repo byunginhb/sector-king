@@ -13,7 +13,7 @@ import {
   MessageSquare,
   Compass,
   Users,
-  Sparkles,
+  BookOpen,
   Newspaper,
   LineChart,
 } from 'lucide-react'
@@ -99,7 +99,7 @@ export default async function AboutPage() {
             누구를 위한 서비스인가
           </h2>
 
-          <div className="divide-y divide-border rounded-2xl border border-border bg-card">
+          <div className="divide-y divide-border sk-card">
             <AudienceRow
               icon={<LineChart className="h-5 w-5 text-primary" aria-hidden />}
               title="흐름을 먼저 보고 싶은 분"
@@ -107,7 +107,7 @@ export default async function AboutPage() {
             />
             <AudienceRow
               accent
-              icon={<Sparkles className="h-5 w-5 text-primary" aria-hidden />}
+              icon={<BookOpen className="h-5 w-5 text-primary" aria-hidden />}
               title="경제·금융 초보자"
               body={
                 <>
@@ -138,7 +138,7 @@ export default async function AboutPage() {
         </section>
 
         {/* 함께 참여 권유 + 문의 채널 */}
-        <section className="rounded-2xl border border-border bg-card p-6 space-y-3">
+        <section className="sk-card p-6 space-y-3">
           <h2 className="text-lg font-bold text-foreground">함께 만들어요</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
             섹터킹은 누구나 함께 만들어가길 바랍니다. 아이디어 제안, 데이터 제보,
@@ -156,7 +156,7 @@ export default async function AboutPage() {
               href="https://www.threads.com/@ssector.king"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-1 px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-2"
+              className="inline-flex items-center gap-1.5 sk-card px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-2"
             >
               <AtSign className="h-4 w-4" aria-hidden />
               쓰레드 @ssector.king
@@ -179,7 +179,7 @@ export default async function AboutPage() {
               {people.map((p) => (
                 <li
                   key={p.id}
-                  className="rounded-2xl border border-border bg-card p-5 flex items-start gap-4"
+                  className="sk-card p-5 flex items-start gap-4"
                 >
                   <PixelAvatar
                     gender={p.gender}
@@ -280,7 +280,7 @@ function AudienceRow({
     <div className="flex items-start gap-4 p-4 sm:p-5">
       <div
         className={
-          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ' +
+          'flex h-10 w-10 shrink-0 items-center justify-center rounded-md ' +
           (accent ? 'bg-primary/15' : 'bg-surface-2')
         }
       >

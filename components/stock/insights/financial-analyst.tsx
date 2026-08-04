@@ -27,7 +27,7 @@ export function FinancialAnalyst({ data }: FinancialAnalystProps) {
 
   if (!score) {
     return (
-      <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+      <section className="sk-card p-4 sm:p-5">
         <Header />
         <p className="rounded-md border border-dashed border-border-subtle p-3 text-sm text-muted-foreground">
           재무 지표를 산출 중입니다.
@@ -71,7 +71,7 @@ export function FinancialAnalyst({ data }: FinancialAnalystProps) {
   const hasCoverage = hasConsensus || trendPoints.length > 0
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+    <section className="sk-card p-4 sm:p-5">
       <Header />
 
       <div className="space-y-4">

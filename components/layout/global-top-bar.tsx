@@ -66,7 +66,7 @@ const NAV_ITEMS: readonly NavItem[] = [
 /** 신규 기능 강조용 작은 배지. */
 function NewBadge() {
   return (
-    <span className="ml-1 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold leading-none tracking-wide text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+    <span className="ml-1 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold leading-none tracking-wide text-primary dark:bg-primary/20">
       NEW
     </span>
   )
@@ -190,7 +190,7 @@ export function GlobalTopBar({
                     aria-label="메뉴 열기"
                     aria-expanded={open}
                     aria-controls="global-mobile-menu"
-                    className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-border-subtle bg-surface-1 text-foreground hover:bg-surface-2 transition-colors"
+                    className="inline-flex items-center justify-center h-9 w-9 sk-card text-foreground hover:bg-surface-2 transition-colors"
                   >
                     <Menu className="h-5 w-5" aria-hidden />
                   </button>

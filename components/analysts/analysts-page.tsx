@@ -19,9 +19,9 @@ type Tab = 'analysts' | 'tickers'
 
 /** 상위 3위만 메달 색으로 강조(성적표 가독성). 그 외·표본부족(null)은 은은하게. */
 function rankTone(rank: number | null): string {
-  if (rank === 1) return 'text-amber-600 dark:text-amber-400'
-  if (rank === 2) return 'text-slate-500 dark:text-slate-300'
-  if (rank === 3) return 'text-orange-700 dark:text-orange-400'
+  if (rank === 1) return 'text-primary'
+  if (rank === 2) return 'text-muted-foreground dark:text-foreground'
+  if (rank === 3) return 'text-warning'
   return 'text-muted-foreground'
 }
 
@@ -48,7 +48,7 @@ function Expandable({ open, children }: { open: boolean; children: React.ReactNo
 function AnalystExpanded({ analystId }: { analystId: number }) {
   const { data, isLoading, error } = useAnalystDetail(analystId)
   if (isLoading) return <div className="h-40 rounded-lg bg-muted/40 animate-pulse" />
-  if (error || !data) return <p className="text-sm text-rose-500 py-4">상세를 불러오지 못했습니다.</p>
+  if (error || !data) return <p className="text-sm text-danger py-4">상세를 불러오지 못했습니다.</p>
   return <AnalystDetailBody data={data} />
 }
 
@@ -119,7 +119,7 @@ function AnalystTab() {
       </div>
     )
   if (error || !data)
-    return <p className="text-center text-sm text-rose-500 py-10">랭킹을 불러오지 못했습니다.</p>
+    return <p className="text-center text-sm text-danger py-10">랭킹을 불러오지 못했습니다.</p>
 
   const rows = rankBy === 'score' ? data.ranked : (data.byReports ?? data.ranked)
   const RANKS: { key: AnalystRank; label: string }[] = [
@@ -180,7 +180,7 @@ function upsideOf(s: AnalystStockListItem): number | null {
 function StockExpanded({ ticker }: { ticker: string }) {
   const { data, isLoading, error } = useAnalystStockDetail(ticker)
   if (isLoading) return <div className="h-48 rounded-lg bg-muted/40 animate-pulse" />
-  if (error || !data) return <p className="text-sm text-rose-500 py-4">종목 상세를 불러오지 못했습니다.</p>
+  if (error || !data) return <p className="text-sm text-danger py-4">종목 상세를 불러오지 못했습니다.</p>
   return <StockDetailBody data={data} />
 }
 
@@ -211,7 +211,7 @@ function StockRow({ stock, open, onToggle }: { stock: AnalystStockListItem; open
         <span className="hidden sm:block text-sm text-right tabular-nums text-muted-foreground">{fmt.price(stock.latestPrice)}</span>
         <span className="flex items-center justify-end gap-2">
           <span className="sm:hidden text-xs text-muted-foreground tabular-nums">{stock.analystCount}명 · 리포트 {stock.reportCount}</span>
-          <span className={cn('text-sm font-semibold tabular-nums text-right', up == null ? 'text-muted-foreground' : up >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+          <span className={cn('text-sm font-semibold tabular-nums text-right', up == null ? 'text-muted-foreground' : up >= 0 ? 'text-success' : 'text-danger')}>
             {up == null ? '—' : `${up >= 0 ? '+' : ''}${Math.round(up * 100)}%`}
           </span>
         </span>
@@ -255,7 +255,7 @@ function StockTab() {
         ))}
       </div>
     )
-  if (error || !data) return <p className="text-center text-sm text-rose-500 py-10">종목 목록을 불러오지 못했습니다.</p>
+  if (error || !data) return <p className="text-center text-sm text-danger py-10">종목 목록을 불러오지 못했습니다.</p>
 
   const SORTS: { key: StockSort; label: string }[] = [
     { key: 'analysts', label: '커버 애널 수' },

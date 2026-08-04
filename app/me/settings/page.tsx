@@ -25,7 +25,7 @@ export default async function SettingsPage() {
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
             프로필
           </h2>
-          <div className="rounded-xl border border-border-subtle bg-surface-1 p-4">
+          <div className="sk-card p-4">
             <dl className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <dt className="text-muted-foreground">이름</dt>
@@ -51,7 +51,7 @@ export default async function SettingsPage() {
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
             이메일 구독
           </h2>
-          <Suspense fallback={<div className="h-24 rounded-xl bg-surface-1 animate-pulse" />}>
+          <Suspense fallback={<div className="h-24 rounded-md bg-surface-1 animate-pulse" />}>
             <EmailSubscriptionSection />
           </Suspense>
         </section>

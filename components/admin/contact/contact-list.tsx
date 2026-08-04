@@ -53,14 +53,14 @@ const CATEGORY_LABEL: Record<ContactCategory, string> = {
 export function ContactList({ items }: { items: ContactListItem[] }) {
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border border-border-subtle bg-surface-1 p-10 text-center">
+      <div className="sk-card p-10 text-center">
         <p className="text-sm text-muted-foreground">문의가 없습니다.</p>
       </div>
     )
   }
 
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-1">
+    <div className="sk-card">
       <ul className="divide-y divide-border-subtle">
         {items.map((it) => {
           const meta = STATUS_META[it.status]

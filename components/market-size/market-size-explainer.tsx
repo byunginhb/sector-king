@@ -4,7 +4,7 @@ import Link from 'next/link'
 /** "이 차트 읽는 법" — 기본 접힘 인페이지 패널. native <details> 로 JS 없이 접근성 확보. */
 export function MarketSizeExplainer() {
   return (
-    <details className="sk-card group">
+    <details className="sk-card group p-5">
       <summary className="flex items-center gap-2 cursor-pointer list-none text-sm font-semibold text-card-foreground">
         <HelpCircle className="w-4 h-4 text-info" aria-hidden />
         이 차트 읽는 법

@@ -94,7 +94,7 @@ export function ContactDetailForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="rounded-2xl border border-border-subtle bg-surface-1 p-5 space-y-4"
+      className="sk-card p-5 space-y-4"
     >
       <div>
         <label className="block text-xs text-muted-foreground mb-1" htmlFor="contact-status">

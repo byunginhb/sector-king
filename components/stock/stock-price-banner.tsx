@@ -37,7 +37,7 @@ export function RegionBadge({ ticker }: { ticker: string }) {
   const label = isKr ? '한국' : '미국'
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface-1 px-2 py-0.5 text-xs font-medium text-muted-foreground"
+      className="inline-flex items-center gap-1 sk-card px-2 py-0.5 text-xs font-medium text-muted-foreground"
     >
       <Icon className="h-3 w-3" aria-hidden />
       {label}

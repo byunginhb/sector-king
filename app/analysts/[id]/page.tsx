@@ -33,7 +33,7 @@ export default function AnalystDetailPage() {
         </button>
 
         {!valid || error ? (
-          <p className="text-center text-sm text-rose-500 py-16">애널리스트를 찾을 수 없습니다.</p>
+          <p className="text-center text-sm text-danger py-16">애널리스트를 찾을 수 없습니다.</p>
         ) : isLoading || !data ? (
           <div className="space-y-3">
             <div className="h-8 w-48 rounded bg-muted/40 animate-pulse" />

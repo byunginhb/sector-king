@@ -188,7 +188,7 @@ export function NewsEditor({ initial }: NewsEditorProps) {
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
+        <div className="rounded-lg border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
           {error}
         </div>
       )}
@@ -268,7 +268,7 @@ export function NewsEditor({ initial }: NewsEditorProps) {
         <button
           type="button"
           onClick={() => setShowPreview((s) => !s)}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-1 px-3 py-2 text-sm font-medium hover:bg-surface-2"
+          className="inline-flex items-center gap-1.5 sk-card px-3 py-2 text-sm font-medium hover:bg-surface-2"
         >
           <Eye className="h-4 w-4" aria-hidden />
           {showPreview ? '미리보기 닫기' : '미리보기'}
@@ -278,7 +278,7 @@ export function NewsEditor({ initial }: NewsEditorProps) {
           type="button"
           disabled={pending}
           onClick={() => submit('draft')}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-1 px-3 py-2 text-sm font-medium hover:bg-surface-2 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 sk-card px-3 py-2 text-sm font-medium hover:bg-surface-2 disabled:opacity-60"
         >
           <Save className="h-4 w-4" aria-hidden />
           임시저장
@@ -307,7 +307,7 @@ export function NewsEditor({ initial }: NewsEditorProps) {
 
       {/* 미리보기 */}
       {showPreview && (
-        <div className={cn('mt-6 rounded-2xl border border-border-subtle bg-surface-1 p-4 sm:p-6')}>
+        <div className={cn('mt-6 sk-card p-4 sm:p-6')}>
           <div className="flex items-center justify-between gap-3 mb-4">
             <h3 className="text-base font-bold text-foreground">미리보기</h3>
             <ViewToggle value={previewView} onChange={setPreviewView} />

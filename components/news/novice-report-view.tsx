@@ -52,7 +52,7 @@ export function NoviceReportView({ report, isLoggedIn = true }: NoviceReportView
     <div className="space-y-10">
       {/* N1 */}
       <Section id="section-novice-summary" title="오늘 시장 한 줄 요약" icon={<Quote className="h-4 w-4" />}>
-        <div className="rounded-2xl border border-primary/40 bg-primary/5 p-5">
+        <div className="rounded-lg border border-primary/40 bg-primary/5 p-5">
           <p className="text-base sm:text-lg text-foreground/90 leading-relaxed">
             {report.oneLineSummary}
           </p>
@@ -65,7 +65,7 @@ export function NoviceReportView({ report, isLoggedIn = true }: NoviceReportView
           {report.events.map((e) => (
             <li
               key={e.index}
-              className="rounded-2xl border border-border-subtle bg-surface-1 p-4 sm:p-5"
+              className="sk-card p-4 sm:p-5"
             >
               <div className="flex items-start gap-3">
                 <span
@@ -122,7 +122,7 @@ export function NoviceReportView({ report, isLoggedIn = true }: NoviceReportView
 
       {/* N5 */}
       <Section id="section-novice-closing" title="한 줄 정리" icon={<Quote className="h-4 w-4" />}>
-        <blockquote className="rounded-2xl border border-border-subtle bg-surface-1 border-l-4 border-l-primary p-5">
+        <blockquote className="sk-card border-l-4 border-l-primary p-5">
           <p className="text-sm sm:text-base text-foreground/90 leading-relaxed">
             {report.closing}
           </p>
@@ -173,7 +173,7 @@ function NoviceStockTableView({ table }: { table: NoviceStockTable }) {
         ? 'text-danger'
         : 'text-primary'
   return (
-    <div className={cn('rounded-2xl border p-4', cls)}>
+    <div className={cn('rounded-lg border p-4', cls)}>
       <h3 className={cn('text-sm font-bold uppercase tracking-wide mb-3', accentCls)}>
         {meta.label}
       </h3>
@@ -181,7 +181,7 @@ function NoviceStockTableView({ table }: { table: NoviceStockTable }) {
         {table.rows.map((row, i) => (
           <li
             key={i}
-            className="rounded-md border border-border-subtle bg-surface-1 p-2.5"
+            className="sk-card p-2.5"
           >
             <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
               <TickerChip ticker={row.ticker} />
@@ -199,7 +199,7 @@ function NoviceStockTableView({ table }: { table: NoviceStockTable }) {
 function NoviceKoreanCard({ item }: { item: NoviceKoreanStockItem }) {
   const meta = ACTION_META[item.action]
   return (
-    <article className="rounded-2xl border border-border-subtle bg-surface-1 p-4 sm:p-5">
+    <article className="sk-card p-4 sm:p-5">
       <header className="flex items-center justify-between gap-2 mb-3">
         <div className="min-w-0">
           <h3 className="text-base font-bold text-card-foreground leading-tight">

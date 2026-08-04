@@ -30,7 +30,7 @@ export function CompanyStatsCard({ region = 'all' }: CompanyStatsCardProps = {})
 
   return (
     <>
-      <div data-tour="company-stats-card" className="rounded-md border border-border-subtle bg-surface-1 overflow-hidden">
+      <div data-tour="company-stats-card" className="sk-card overflow-hidden">
         {/* Header */}
         <div className="px-5 py-3 border-b border-border-subtle bg-surface-2/40">
           <p className="eyebrow eyebrow-accent mb-1 flex items-center gap-1.5">
@@ -130,7 +130,7 @@ export function CompanyStatsCard({ region = 'all' }: CompanyStatsCardProps = {})
 
 function CompanyStatsCardSkeleton() {
   return (
-    <div className="rounded-md border border-border-subtle bg-surface-1 overflow-hidden">
+    <div className="sk-card overflow-hidden">
       <div className="px-5 py-3 border-b border-border-subtle bg-surface-2/40">
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-3 w-36 mt-2" />

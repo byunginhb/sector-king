@@ -15,7 +15,7 @@ export function ServiceIntro() {
       title="A. 이 서비스가 뭔가요"
       description="산업 → 섹터 → 종목의 3계층으로 시장의 힘이 어디에 모이는지 보여줍니다."
     >
-      <div className="rounded-xl border border-border bg-card p-5">
+      <div className="sk-card p-5">
         <p className="mb-4 text-sm text-muted-foreground">
           백화점(산업) 안에 매장(섹터)이 있고, 매장 안에 상품(종목)이 있는 구조라고
           생각하면 쉽습니다.
@@ -27,7 +27,7 @@ export function ServiceIntro() {
             const Icon = tier.icon
             return (
               <div key={tier.label} className="flex flex-col items-center gap-3 sm:flex-row">
-                <div className="flex flex-1 items-center gap-3 rounded-lg border border-border-subtle bg-surface-1 px-4 py-3">
+                <div className="flex flex-1 items-center gap-3 sk-card px-4 py-3">
                   <Icon className="h-5 w-5 shrink-0 text-info" aria-hidden />
                   <div>
                     <p className="text-sm font-semibold text-foreground">{tier.label}</p>

@@ -105,7 +105,7 @@ export function StockScoreAnalysis({ score, snapshot, ticker }: StockScoreAnalys
         패권 점수 분석
       </h3>
 
-      <div className="rounded-xl border border-border p-4 space-y-4">
+      <div className="rounded-md border border-border p-4 space-y-4">
         {/* Total Score */}
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-2">

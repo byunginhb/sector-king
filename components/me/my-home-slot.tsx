@@ -36,7 +36,7 @@ export function MyHomeSlot() {
 
   if (isAuthed === null) {
     // 깜빡임 방지를 위해 SSR 직후 짧게 placeholder
-    return <div className="h-32 rounded-2xl border border-border-subtle bg-surface-1 animate-pulse" aria-hidden />
+    return <div className="h-32 sk-card animate-pulse" aria-hidden />
   }
 
   return isAuthed ? <MyWatchlistCard /> : <LoginValuePromptCard redirect="/" />

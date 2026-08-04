@@ -16,7 +16,7 @@ export function GuideToc() {
   return (
     <nav
       aria-label="목차"
-      className="mb-8 rounded-xl border border-border bg-card p-4"
+      className="mb-8 sk-card p-4"
     >
       <p className="mb-2 text-sm font-semibold text-foreground">목차</p>
       <ol className="grid grid-cols-2 gap-1 text-sm text-muted-foreground sm:grid-cols-4">

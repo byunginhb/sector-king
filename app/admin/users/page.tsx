@@ -65,7 +65,7 @@ export default async function AdminUsersPage() {
     return (
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-foreground">사용자 관리</h2>
-        <div className="rounded-2xl border border-danger/30 bg-danger/10 p-5 text-sm text-danger flex items-start gap-2">
+        <div className="rounded-lg border border-danger/30 bg-danger/10 p-5 text-sm text-danger flex items-start gap-2">
           <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden />
           <span>사용자 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</span>
         </div>
@@ -123,7 +123,7 @@ export default async function AdminUsersPage() {
       </div>
 
       {truncated ? (
-        <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning flex items-start gap-2">
+        <div className="rounded-md border border-warning/30 bg-warning/10 p-3 text-xs text-warning flex items-start gap-2">
           <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden />
           <span>
             가입자가 {profilesCount?.toLocaleString()}명으로 표시 상한
@@ -133,7 +133,7 @@ export default async function AdminUsersPage() {
         </div>
       ) : null}
 
-      <div className="rounded-2xl border border-border-subtle bg-surface-1 overflow-hidden">
+      <div className="sk-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-surface-2 text-muted-foreground">
@@ -221,7 +221,7 @@ function StatCard({
   value: number
 }) {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-1 p-5">
+    <div className="sk-card p-5">
       <div className="flex items-center gap-2 mb-2">
         {icon}
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">

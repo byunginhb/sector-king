@@ -82,7 +82,7 @@ function NavCard({
   return (
     <Link
       href={href}
-      className="group rounded-xl border border-border-subtle bg-surface-1 hover:bg-surface-2 transition-colors p-4 flex items-center gap-3"
+      className="group sk-card hover:bg-surface-2 transition-colors p-4 flex items-center gap-3"
     >
       <div className="shrink-0">{icon}</div>
       <div className="flex-1 min-w-0">

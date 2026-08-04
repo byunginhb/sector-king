@@ -158,7 +158,7 @@ export function ShortLongScores({ data, scoreHistory }: ShortLongScoresProps) {
         })
 
   return (
-    <section className="sk-card space-y-4">
+    <section className="sk-card space-y-4 p-5">
       <div className="border-b border-border-subtle pb-3">
         <p className="eyebrow eyebrow-accent mb-1">단기 · 장기</p>
         <div className="flex items-center gap-1.5">

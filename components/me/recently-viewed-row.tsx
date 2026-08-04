@@ -41,13 +41,13 @@ function RecentlyViewedItem({ item }: { item: RecentlyViewedItemDTO }) {
     ? ({ children }: { children: React.ReactNode }) => (
         <Link
           href={href}
-          className="block rounded-lg border border-border-subtle bg-surface-1 hover:bg-surface-2 transition-colors px-3 py-2 min-w-[140px] shrink-0"
+          className="block sk-card hover:bg-surface-2 transition-colors px-3 py-2 min-w-[140px] shrink-0"
         >
           {children}
         </Link>
       )
     : ({ children }: { children: React.ReactNode }) => (
-        <div className="block rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 min-w-[140px] shrink-0">
+        <div className="block sk-card px-3 py-2 min-w-[140px] shrink-0">
           {children}
         </div>
       )

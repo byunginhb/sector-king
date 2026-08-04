@@ -50,7 +50,7 @@ export function PriceChangesCard({ region = 'all' }: PriceChangesCardProps = {})
 
   return (
     <>
-      <div data-tour="price-changes-card" className="rounded-md border border-border-subtle bg-surface-1 overflow-hidden">
+      <div data-tour="price-changes-card" className="sk-card overflow-hidden">
         {/* Header */}
         <div className="px-5 py-3 border-b border-border-subtle bg-surface-2/40">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -212,7 +212,7 @@ function CompanyList({
 
 function PriceChangesCardSkeleton() {
   return (
-    <div className="rounded-xl border border-border-subtle bg-card overflow-hidden">
+    <div className="sk-card overflow-hidden">
       <div className="px-5 py-4 border-b border-border bg-muted/30">
         <Skeleton className="h-6 w-32" />
         <Skeleton className="h-3 w-48 mt-2" />

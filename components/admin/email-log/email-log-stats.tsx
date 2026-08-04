@@ -23,7 +23,7 @@ interface StatGroupData {
 
 function StatGroup({ title, stats }: { title: string; stats: StatGroupData }) {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-1 p-4">
+    <div className="sk-card p-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {title}
       </p>

@@ -54,7 +54,7 @@ export function HonestLimits() {
       title="E. 정직한 주의사항"
       description="유료 신뢰의 핵심입니다. 이 서비스의 숫자가 가진 한계를 숨기지 않고 알려드립니다."
     >
-      <div className="rounded-xl border border-warning/30 bg-warning/10 p-5">
+      <div className="rounded-md border border-warning/30 bg-warning/10 p-5">
         <div className="mb-4 flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 shrink-0 text-warning" aria-hidden />
           <p className="text-sm font-semibold text-foreground">

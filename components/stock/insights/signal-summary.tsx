@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowUp, AlertTriangle, Sparkles } from 'lucide-react'
+import { ArrowUp, AlertTriangle } from 'lucide-react'
 import { buildStockSignals, type StockSignal } from '@/lib/stock-signals'
 import type { CompanyDetailResponse, CompanyInsightsResponse } from '@/types'
 
@@ -54,11 +54,8 @@ export function SignalSummary({ data, insights }: SignalSummaryProps) {
   const hasAny = strengths.length > 0 || cautions.length > 0
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
-      <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-        <Sparkles className="h-4 w-4" aria-hidden />
-        종합 시그널
-      </h2>
+    <section className="sk-card p-4 sm:p-5">
+      <h2 className="mb-3 text-sm font-semibold text-foreground">종합 시그널</h2>
 
       {!hasAny ? (
         <p className="rounded-md border border-dashed border-border-subtle p-3 text-sm text-muted-foreground">

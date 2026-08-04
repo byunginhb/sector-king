@@ -94,7 +94,7 @@ export function OnboardingPickerStep({
               aria-pressed={isPicked}
               onClick={() => toggle(industry.id)}
               className={cn(
-                'group relative rounded-xl border p-4 text-left transition-colors',
+                'group relative rounded-md border p-4 text-left transition-colors',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 alreadyWatched
                   ? 'border-border-subtle bg-surface-2 opacity-60 cursor-not-allowed'

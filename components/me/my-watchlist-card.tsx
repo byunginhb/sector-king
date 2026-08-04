@@ -180,7 +180,7 @@ function Column({
 
 function CardShell({ children }: { children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface-1 p-5">
+    <section className="sk-card p-5">
       {children}
     </section>
   )

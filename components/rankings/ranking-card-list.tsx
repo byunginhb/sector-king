@@ -56,7 +56,7 @@ export function RankingCardList({ items, horizon, onCardClick }: RankingCardList
               type="button"
               onClick={() => onCardClick(item.ticker)}
               className={cn(
-                'sk-card w-full text-left transition-colors hover:bg-surface-2',
+                'sk-card w-full text-left transition-colors hover:bg-surface-2 p-5',
                 isTop3 && 'border-l-2 border-l-primary/40'
               )}
             >

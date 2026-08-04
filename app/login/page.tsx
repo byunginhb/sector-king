@@ -39,7 +39,7 @@ export default async function LoginPage({
   const errorMessage = errorMessageFor(errorCode)
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-slate-950 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="container mx-auto px-4 py-4">
         <Link
           href="/"
@@ -53,7 +53,7 @@ export default async function LoginPage({
 
       <main className="flex-1 flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-md">
-          <div className="rounded-2xl border border-border-subtle bg-surface-1 p-8 shadow-sm">
+          <div className="sk-card p-8 shadow-sm">
             <div className="flex flex-col items-center mb-6">
               <SectorKingLogo size={56} className="mb-4" />
               <h1 className="text-2xl font-bold text-foreground tracking-tight">

@@ -78,7 +78,7 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
       transition={{ delay: index * 0.1 }}
       onClick={onClick}
       className={cn(
-        'relative rounded-xl p-4 min-h-[120px] overflow-hidden cursor-pointer transition-shadow border',
+        'relative rounded-md p-4 min-h-[120px] overflow-hidden cursor-pointer transition-shadow border',
         isInflow
           ? 'bg-success/5 border-success/30'
           : 'bg-danger/5 border-danger/30',
@@ -89,7 +89,7 @@ export function FlowCard({ flow, index, maxFlow, onClick, isExpanded }: FlowCard
       {/* Animated background pulse */}
       <motion.div
         className={cn(
-          'absolute inset-0 rounded-xl',
+          'absolute inset-0 rounded-md',
           isInflow ? 'bg-success/10' : 'bg-danger/10'
         )}
         animate={{

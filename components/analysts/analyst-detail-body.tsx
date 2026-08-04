@@ -203,7 +203,7 @@ export function AnalystDetailBody({ data }: { data: AnalystDetailResponse }) {
         </div>
       )}
 
-      <section className="rounded-xl border bg-card p-4">
+      <section className="rounded-md border bg-card p-4">
         <h3 className="font-semibold mb-2">
           {active.businessName}
           <span className="ml-1.5 text-xs font-normal text-muted-foreground">{active.ticker}</span>

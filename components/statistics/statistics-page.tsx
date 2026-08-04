@@ -145,7 +145,7 @@ export function StatisticsPage({ industryId }: StatisticsPageProps) {
         {/* Charts Grid */}
         <div data-tour="charts-grid" className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Sector Trend Chart */}
-          <div className="sk-card">
+          <div className="sk-card p-5">
             <h2 className="text-base font-semibold text-card-foreground mb-4 flex items-center gap-2">
               <LineChart className="w-5 h-5 text-info" aria-hidden />
               섹터별 시가총액 추이
@@ -157,7 +157,7 @@ export function StatisticsPage({ industryId }: StatisticsPageProps) {
           </div>
 
           {/* Category Comparison Chart */}
-          <div className="sk-card">
+          <div className="sk-card p-5">
             <h2 className="text-base font-semibold text-card-foreground mb-4 flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-success" aria-hidden />
               카테고리별 시가총액
@@ -169,7 +169,7 @@ export function StatisticsPage({ industryId }: StatisticsPageProps) {
           </div>
 
           {/* Top Sectors Growth Chart */}
-          <div className="sk-card">
+          <div className="sk-card p-5">
             <h2 className="text-base font-semibold text-card-foreground mb-4 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" aria-hidden />
               섹터 성장률 Top/Bottom 5
@@ -181,7 +181,7 @@ export function StatisticsPage({ industryId }: StatisticsPageProps) {
           </div>
 
           {/* Company Trend Chart */}
-          <div className="sk-card">
+          <div className="sk-card p-5">
             <h2 className="text-base font-semibold text-card-foreground mb-4 flex items-center gap-2">
               <Building2 className="w-5 h-5 text-chart-4" aria-hidden />
               주요 기업 시가총액 추이

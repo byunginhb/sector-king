@@ -16,7 +16,7 @@ export const metadata = {
 export default function UnsubscribedPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="max-w-md w-full rounded-2xl border border-border-subtle bg-surface-1 p-8 text-center">
+      <div className="max-w-md w-full sk-card p-8 text-center">
         <div className="flex items-center justify-center mb-4">
           <CheckCircle2 className="h-12 w-12 text-success" aria-hidden />
         </div>

@@ -59,7 +59,7 @@ export function ExpertReportView({ report, isLoggedIn = true }: ExpertReportView
       </Section>
 
       <Section id="section-oneliner" title="F. 한 줄 결론" icon={<Quote className="h-4 w-4" />}>
-        <blockquote className="rounded-2xl border border-primary/40 bg-primary/5 p-5 sm:p-6">
+        <blockquote className="rounded-lg border border-primary/40 bg-primary/5 p-5 sm:p-6">
           <p className="text-base sm:text-lg font-semibold text-primary leading-relaxed italic">
             “{report.oneLiner}”
           </p>
@@ -111,7 +111,7 @@ export function ExpertReportView({ report, isLoggedIn = true }: ExpertReportView
           {report.actions.map((a, i) => (
             <li
               key={i}
-              className="rounded-2xl border border-border-subtle bg-surface-1 p-4 flex gap-3"
+              className="sk-card p-4 flex gap-3"
             >
               <span className="shrink-0 inline-flex items-center text-[11px] font-semibold uppercase tracking-wide text-primary border border-primary/30 bg-primary/10 rounded-md px-2 py-0.5 self-start">
                 {ACTION_LABELS[a.label]}
@@ -167,7 +167,7 @@ function ThirtySecBrief({ raw }: { raw: string }) {
   }
 
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-1 p-5 border-l-4 border-l-primary">
+    <div className="sk-card p-5 border-l-4 border-l-primary">
       {sentences.length > 1 ? (
         <ul className="space-y-2.5">
           {sentences.map((sentence, i) => (
@@ -236,7 +236,7 @@ function Section({
 
 function ThemeFlowCard({ item }: { item: ThemeFlowItem }) {
   return (
-    <article className="rounded-2xl border border-border-subtle bg-surface-1 p-4 sm:p-5">
+    <article className="sk-card p-4 sm:p-5">
       <div className="flex items-start gap-3">
         <span
           className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md bg-primary/10 text-primary text-sm font-bold tabular-nums"
@@ -282,7 +282,7 @@ function FundFlowMapView({ flow }: { flow: FundFlowMap }) {
         <FlowColumn title="흘러가는 곳" tone="success" items={flow.inflows} />
       </div>
       {flow.driver && (
-        <div className="rounded-2xl border border-border-subtle bg-surface-1 p-4 sm:p-5">
+        <div className="sk-card p-4 sm:p-5">
           <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
             흐름의 핵심 동력
           </h4>
@@ -310,7 +310,7 @@ function FlowColumn({
       : 'border-success/40 bg-success/5'
   const accent = tone === 'danger' ? 'text-danger' : 'text-success'
   return (
-    <div className={cn('rounded-2xl border p-4 sm:p-5', cls)}>
+    <div className={cn('rounded-lg border p-4 sm:p-5', cls)}>
       <h4 className={cn('text-xs font-bold uppercase tracking-wide mb-3', accent)}>
         {title}
       </h4>
@@ -341,7 +341,7 @@ function FlowColumn({
 function KoreanStockCard({ item }: { item: KoreanStockItem }) {
   const meta = OPINION_META[item.opinion]
   return (
-    <article className="rounded-2xl border border-border-subtle bg-surface-1 p-4 sm:p-5">
+    <article className="sk-card p-4 sm:p-5">
       <header className="flex items-center justify-between gap-2 mb-3">
         <div className="min-w-0">
           <h3 className="text-base font-bold text-card-foreground leading-tight">

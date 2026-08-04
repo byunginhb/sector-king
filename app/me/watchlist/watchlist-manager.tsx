@@ -81,7 +81,7 @@ function WatchlistRow({
   onRemove: () => void
 }) {
   return (
-    <li className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface-1 px-4 py-3 hover:bg-surface-2 transition-colors">
+    <li className="flex items-center gap-3 sk-card px-4 py-3 hover:bg-surface-2 transition-colors">
       <Star className="h-4 w-4 text-primary fill-primary shrink-0" aria-hidden />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-foreground truncate">
@@ -107,7 +107,7 @@ function WatchlistRow({
 
 function EmptyState({ filter }: { filter: Filter }) {
   return (
-    <div className="rounded-xl border border-dashed border-border-subtle bg-surface-1/50 p-8 text-center">
+    <div className="rounded-md border border-dashed border-border-subtle bg-surface-1/50 p-8 text-center">
       <Star
         className="h-7 w-7 mx-auto text-muted-foreground mb-2"
         aria-hidden
