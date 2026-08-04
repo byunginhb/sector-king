@@ -29,7 +29,7 @@ function RisingArrow({ index, delay, total, paused }: ArrowProps) {
   const size = 20 + Math.random() * 12
   const icon = (
     <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
-      <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="rgba(16, 185, 129, 0.7)" />
+      <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="hsl(var(--success) / 0.7)" />
     </svg>
   )
 
@@ -67,7 +67,7 @@ function FallingArrow({ index, delay, total, paused }: ArrowProps) {
   const size = 20 + Math.random() * 12
   const icon = (
     <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
-      <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="rgba(244, 63, 94, 0.7)" />
+      <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="hsl(var(--danger) / 0.7)" />
     </svg>
   )
 

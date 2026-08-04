@@ -14,11 +14,16 @@ interface ScoreBarProps {
 
 /**
  * 점수 막대 + 숫자(progressbar). 점수가 주인공이므로 숫자를 먼저·또렷하게.
- * 토큰 색만 사용, 빨강(danger)은 하락/매도 의미에 예약 → 점수엔 쓰지 않는다.
- * - 상위(≥75): primary(amber, 킹 강조)
- * - 중위(40~75): chart-2(슬레이트 틸)
- * - 하위(<40): muted-foreground (차분한 회색)
- * 강조(emphasized) 시 막대를 진하게, 숫자를 크고 진하게 — 선택된 토글 축과 시각 연동.
+ *
+ * 색은 크기를 인코딩하지 않는다 — 길이가 이미 크기다.
+ * 예전엔 ≥75=amber / 40~75=teal / <40=회색 이라 같은 '단기' 컬럼 안에서도
+ * 값에 따라 색이 바뀌었다. 읽는 사람에겐 컬럼별로 색이 다른 것처럼 보여
+ * 의미를 찾게 만드는데 실제로는 아무 의미가 없었고, 무엇보다 표의 막대 대부분이
+ * amber 로 칠해져 globals.css 가 "signal only, not decorative" 로 못박은
+ * 단일 액센트가 장식으로 소모됐다.
+ *
+ * 그래서 막대는 잉크 단색으로 두고, amber 는 선택된 축(emphasized = 종합점수)
+ * 하나에만 남긴다. 그러면 표에서 amber 가 다시 "여기를 보라"는 신호가 된다.
  */
 export function ScoreBar({ score, emphasized, label, className }: ScoreBarProps) {
   if (score === null) {
@@ -36,16 +41,8 @@ export function ScoreBar({ score, emphasized, label, className }: ScoreBarProps)
   }
 
   const rounded = Math.round(score)
-  const fillTone =
-    rounded >= 75
-      ? emphasized
-        ? 'bg-primary'
-        : 'bg-primary/70'
-      : rounded >= 40
-        ? emphasized
-          ? 'bg-chart-2'
-          : 'bg-chart-2/70'
-        : 'bg-muted-foreground/40'
+  // 선택된 축만 amber(신호). 나머지는 잉크 단색 — 크기는 길이가 말한다.
+  const fillTone = emphasized ? 'bg-primary' : 'bg-foreground/30'
 
   return (
     <div className={cn('flex items-center gap-2', className)}>

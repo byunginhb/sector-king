@@ -6,7 +6,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Newspaper, HelpCircle } from 'lucide-react'
+import { ArrowRight, HelpCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import type { NewsReportListItem, NoviceStockAction } from '@/drizzle/supabase-schema'
@@ -60,23 +60,18 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
       )}
     >
       <Link href={`/news/${report.id}`} className="block">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <Newspaper
-              className="h-5 w-5 text-primary shrink-0"
-              aria-hidden
-            />
-            <span className="text-xs font-medium text-primary uppercase tracking-wide">
-              {reportKindLabel(kind)}
-            </span>
-          </div>
-          <span className="inline-flex items-center gap-2 text-xs text-muted-foreground tabular-nums shrink-0">
+        {/* 헤더 해부구조 — SectorKingPickCard 와 동일하게 유지할 것.
+            두 카드가 홈 TODAY 2열에 나란히 서므로 eyebrow 행 + 제목 행의
+            높이가 어긋나면 상단 정렬이 즉시 깨진다. */}
+        <div className="mb-2 flex min-h-8 items-center justify-between gap-3">
+          <p className="eyebrow eyebrow-accent">{reportKindLabel(kind)}</p>
+          <span className="inline-flex shrink-0 items-center gap-2 text-xs tabular-nums text-muted-foreground">
             {kind !== 'daily' && <ReportKindBadge kind={kind} />}
             {dateLabel}
           </span>
         </div>
 
-        <h3 className="text-lg sm:text-xl font-bold text-card-foreground leading-tight tracking-tight group-hover:text-primary transition-colors mb-2">
+        <h3 className="font-display mb-2 text-lg font-bold leading-tight tracking-tight text-card-foreground transition-colors group-hover:text-primary sm:text-xl">
           {report.title}
         </h3>
 

@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
 import { useRankings } from '@/hooks/use-rankings'
-import { SectionHeader } from '@/components/ui/section-header'
 import { ScoreBar } from '@/components/rankings/score-bar'
 import { PickProfileToggle } from '@/components/rankings/pick-profile-toggle'
 import { PICK_PROFILE_META, type PickProfile } from '@/lib/pick-profile'
@@ -31,15 +30,24 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
   if (picks.length === 0) return null
 
   return (
-    <section className="mt-8" aria-label="섹터킹 픽">
-      <SectionHeader
-        eyebrow="Sector King Picks"
-        title="섹터킹 픽 TOP 5"
-        description={PICK_PROFILE_META[profile].description}
-        actions={<PickProfileToggle value={profile} onChange={setProfile} />}
-      />
-
+    <section aria-label="섹터킹 픽">
+      {/* 헤더 해부구조 — NewsHomeCard 와 동일하게 유지할 것 (홈 TODAY 2열 상단 정렬).
+          예전엔 SectionHeader 를 카드 '밖'에 두고 mt-8 까지 붙어 있어서
+          카드 안에 헤더를 둔 좌측 컬럼과 시작선이 어긋났다. */}
       <div className="overflow-hidden sk-card">
+        <div className="px-5 pb-4 pt-5">
+          <div className="mb-2 flex min-h-8 items-center justify-between gap-3">
+            <p className="eyebrow eyebrow-accent">Sector King Picks</p>
+            <PickProfileToggle value={profile} onChange={setProfile} />
+          </div>
+          <h3 className="font-display text-lg font-bold leading-tight tracking-tight text-card-foreground sm:text-xl">
+            섹터킹 픽 TOP 5
+          </h3>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            {PICK_PROFILE_META[profile].description}
+          </p>
+        </div>
+
         {/* 데스크탑: 컬럼 + progressbar 표 */}
         <div className="hidden sm:block">
           <table className="w-full border-collapse text-sm">

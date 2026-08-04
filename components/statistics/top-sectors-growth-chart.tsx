@@ -12,6 +12,7 @@ import {
 } from 'recharts'
 import type { SectorGrowth } from '@/types'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
+import { CHART_AXIS, CHART_AXIS_LINE, CHART_NEGATIVE, CHART_POSITIVE } from '@/lib/chart-colors'
 
 interface TopSectorsGrowthChartProps {
   data: SectorGrowth[]
@@ -54,16 +55,16 @@ export function TopSectorsGrowthChart({ data, isLoading }: TopSectorsGrowthChart
         >
           <XAxis
             type="number"
-            tick={{ fontSize: 10, fill: '#94a3b8' }}
+            tick={{ fontSize: 10, fill: CHART_AXIS }}
             tickFormatter={(value) => `${value.toFixed(1)}%`}
             tickLine={false}
-            axisLine={{ stroke: '#e2e8f0' }}
+            axisLine={{ stroke: CHART_AXIS_LINE }}
             domain={['dataMin', 'dataMax']}
           />
           <YAxis
             type="category"
             dataKey="displayName"
-            tick={{ fontSize: 11, fill: '#64748b' }}
+            tick={{ fontSize: 11, fill: CHART_AXIS }}
             tickLine={false}
             axisLine={false}
             width={80}
@@ -89,17 +90,17 @@ export function TopSectorsGrowthChart({ data, isLoading }: TopSectorsGrowthChart
             contentStyle={{
               fontSize: 12,
               backgroundColor: 'white',
-              border: '1px solid #e2e8f0',
+              border: `1px solid ${CHART_AXIS_LINE}`,
               borderRadius: 8,
               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
             }}
           />
-          <ReferenceLine x={0} stroke="#94a3b8" strokeDasharray="3 3" />
+          <ReferenceLine x={0} stroke={CHART_AXIS} strokeDasharray="3 3" />
           <Bar dataKey="growthRate" radius={[0, 4, 4, 0]}>
             {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={entry.growthRate >= 0 ? '#10b981' : '#ef4444'}
+                fill={entry.growthRate >= 0 ? CHART_POSITIVE : CHART_NEGATIVE}
               />
             ))}
           </Bar>

@@ -49,7 +49,7 @@ const HIGH = { r: 0x8b, g: 0x5c, b: 0xf6 } // violet-500
 const DOWN = { r: 0xf4, g: 0x3f, b: 0x5e }
 const MID = { r: 0x94, g: 0xa3, b: 0xb8 }
 const UP = { r: 0x10, g: 0xb9, b: 0x81 }
-const NEUTRAL = '#94a3b8' // slate-400 (데이터 없음)
+const NEUTRAL = 'hsl(var(--muted-foreground))' // 데이터 없음
 
 type Rgb = { r: number; g: number; b: number }
 

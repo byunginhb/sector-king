@@ -2,6 +2,7 @@
 
 import { ResponsiveContainer, Area, AreaChart } from 'recharts'
 import type { PriceHistory } from '@/types'
+import { CHART_POSITIVE, CHART_NEGATIVE } from '@/lib/chart-colors'
 
 interface SparklineChartProps {
   data: PriceHistory[]
@@ -19,7 +20,7 @@ export function SparklineChart({ data, ticker }: SparklineChartProps) {
 
   const priceChange = data[data.length - 1].price - data[0].price
   const isPositive = priceChange >= 0
-  const color = isPositive ? '#10b981' : '#ef4444'
+  const color = isPositive ? CHART_POSITIVE : CHART_NEGATIVE
   const gradientId = `sparkline-${ticker}`
 
   return (

@@ -23,6 +23,7 @@ import { formatDate, formatPriceChange } from '@/lib/format'
 import { CHART_POSITIVE, CHART_NEGATIVE } from '@/lib/chart-colors'
 import { cn } from '@/lib/utils'
 import type { RegionFilter } from '@/types'
+import { CHART_AXIS, CHART_AXIS_LINE } from '@/lib/chart-colors'
 
 interface MarketCapDetailModalProps {
   open: boolean
@@ -142,14 +143,14 @@ export function MarketCapDetailModal({
                     </defs>
                     <XAxis
                       dataKey="label"
-                      tick={{ fontSize: 10, fill: '#94a3b8' }}
+                      tick={{ fontSize: 10, fill: CHART_AXIS }}
                       interval="preserveStartEnd"
                       tickLine={false}
-                      axisLine={{ stroke: '#e2e8f0' }}
+                      axisLine={{ stroke: CHART_AXIS_LINE }}
                     />
                     <YAxis
                       domain={['auto', 'auto']}
-                      tick={{ fontSize: 10, fill: '#94a3b8' }}
+                      tick={{ fontSize: 10, fill: CHART_AXIS }}
                       tickFormatter={(v) => fmt.marketCap(v as number)}
                       tickLine={false}
                       axisLine={false}
@@ -157,11 +158,11 @@ export function MarketCapDetailModal({
                     />
                     <Tooltip
                       formatter={(v) => [fmt.marketCap(typeof v === 'number' ? v : 0), '시총']}
-                      labelStyle={{ color: '#64748b', fontWeight: 500 }}
+                      labelStyle={{ color: CHART_AXIS, fontWeight: 500 }}
                       contentStyle={{
                         fontSize: 12,
                         backgroundColor: 'white',
-                        border: '1px solid #e2e8f0',
+                        border: `1px solid ${CHART_AXIS_LINE}`,
                         borderRadius: 8,
                       }}
                     />

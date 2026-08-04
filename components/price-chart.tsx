@@ -3,6 +3,7 @@
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
 import type { PriceHistory } from '@/types'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
+import { CHART_AXIS, CHART_AXIS_LINE, CHART_NEGATIVE, CHART_POSITIVE } from '@/lib/chart-colors'
 
 interface PriceChartProps {
   data: PriceHistory[]
@@ -36,7 +37,7 @@ export function PriceChart({ data }: PriceChartProps) {
 
   // Determine if price went up or down
   const priceChange = data.length >= 2 ? data[data.length - 1].price - data[0].price : 0
-  const chartColor = priceChange >= 0 ? '#10b981' : '#ef4444'
+  const chartColor = priceChange >= 0 ? CHART_POSITIVE : CHART_NEGATIVE
   const gradientId = priceChange >= 0 ? 'colorGreen' : 'colorRed'
 
   return (
@@ -45,24 +46,24 @@ export function PriceChart({ data }: PriceChartProps) {
         <AreaChart data={formattedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="colorGreen" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+              <stop offset="5%" stopColor={CHART_POSITIVE} stopOpacity={0.2} />
+              <stop offset="95%" stopColor={CHART_POSITIVE} stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorRed" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+              <stop offset="5%" stopColor={CHART_NEGATIVE} stopOpacity={0.2} />
+              <stop offset="95%" stopColor={CHART_NEGATIVE} stopOpacity={0} />
             </linearGradient>
           </defs>
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 10, fill: '#94a3b8' }}
+            tick={{ fontSize: 10, fill: CHART_AXIS }}
             interval="preserveStartEnd"
             tickLine={false}
-            axisLine={{ stroke: '#e2e8f0' }}
+            axisLine={{ stroke: CHART_AXIS_LINE }}
           />
           <YAxis
             domain={[minPrice, maxPrice]}
-            tick={{ fontSize: 10, fill: '#94a3b8' }}
+            tick={{ fontSize: 10, fill: CHART_AXIS }}
             tickFormatter={(value) => fmt.price(value as number)}
             tickLine={false}
             axisLine={false}
@@ -73,11 +74,11 @@ export function PriceChart({ data }: PriceChartProps) {
               const numValue = typeof value === 'number' ? value : 0
               return [fmt.price(numValue), 'Price']
             }}
-            labelStyle={{ color: '#64748b', fontWeight: 500 }}
+            labelStyle={{ color: CHART_AXIS, fontWeight: 500 }}
             contentStyle={{
               fontSize: 12,
               backgroundColor: 'white',
-              border: '1px solid #e2e8f0',
+              border: `1px solid ${CHART_AXIS_LINE}`,
               borderRadius: 8,
               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
             }}

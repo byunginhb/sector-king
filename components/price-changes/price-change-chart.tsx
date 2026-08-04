@@ -12,6 +12,7 @@ import {
   ReferenceLine,
 } from 'recharts'
 import type { PriceChangeItem } from '@/types'
+import { CHART_POSITIVE, CHART_NEGATIVE } from '@/lib/chart-colors'
 
 interface PriceChangeChartProps {
   data: PriceChangeItem[]
@@ -78,7 +79,7 @@ export function PriceChangeChart({ data, isLoading }: PriceChangeChartProps) {
             {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={entry.value >= 0 ? '#10b981' : '#ef4444'}
+                fill={entry.value >= 0 ? CHART_POSITIVE : CHART_NEGATIVE}
               />
             ))}
           </Bar>

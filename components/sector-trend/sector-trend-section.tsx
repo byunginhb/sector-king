@@ -16,6 +16,7 @@ import { useRegion } from '@/hooks/use-region'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
 import type { SectorTrendData } from '@/types'
+import { CHART_AXIS, CHART_AXIS_LINE, CHART_SERIES } from '@/lib/chart-colors'
 
 const PERIODS = [1, 3, 7, 14, 30] as const
 const PERIOD_LABELS: Record<number, string> = {
@@ -27,8 +28,8 @@ const PERIOD_LABELS: Record<number, string> = {
 }
 
 const CHART_COLORS = [
-  '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-  '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1',
+  CHART_SERIES[0], CHART_SERIES[1], CHART_SERIES[2], CHART_SERIES[3], CHART_SERIES[4],
+  CHART_SERIES[5], CHART_SERIES[6], CHART_SERIES[7], CHART_SERIES[0], CHART_SERIES[1],
 ]
 
 const DEFAULT_VISIBLE_COUNT = 10
@@ -244,12 +245,12 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
               >
                 <XAxis
                   dataKey="period"
-                  tick={{ fontSize: 12, fill: '#94a3b8' }}
+                  tick={{ fontSize: 12, fill: CHART_AXIS }}
                   tickLine={false}
-                  axisLine={{ stroke: '#e2e8f0' }}
+                  axisLine={{ stroke: CHART_AXIS_LINE }}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tick={{ fontSize: 10, fill: CHART_AXIS }}
                   tickFormatter={(v) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`}
                   tickLine={false}
                   axisLine={false}
@@ -268,7 +269,7 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
                   contentStyle={{
                     fontSize: 12,
                     backgroundColor: 'white',
-                    border: '1px solid #e2e8f0',
+                    border: `1px solid ${CHART_AXIS_LINE}`,
                     borderRadius: 8,
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                     maxHeight: 300,
@@ -282,7 +283,7 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
                   }}
                   wrapperStyle={{ fontSize: 11 }}
                 />
-                <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="3 3" />
+                <ReferenceLine y={0} stroke={CHART_AXIS} strokeDasharray="3 3" />
                 {chartSectors.map((sector, index) => (
                   <Line
                     key={sector.id}

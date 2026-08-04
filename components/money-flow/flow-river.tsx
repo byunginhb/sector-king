@@ -212,22 +212,22 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
   // Colors
   const colors = isInflow
     ? {
-        gradient: ['#10b981', '#34d399', '#6ee7b7'],
-        particle: '#fbbf24', // Gold
-        particleLight: '#fef3c7', // Light gold
-        glow: 'rgba(16, 185, 129, 0.5)',
+        gradient: ['hsl(var(--success))', 'hsl(var(--success) / 0.65)', 'hsl(var(--success) / 0.35)'],
+        particle: 'hsl(var(--primary))',
+        particleLight: 'hsl(var(--primary) / 0.45)',
+        glow: 'hsl(var(--success) / 0.35)',
         bg: 'bg-success-bg',
         text: 'text-success',
-        riverGlow: '#10b981',
+        riverGlow: 'hsl(var(--success))',
       }
     : {
-        gradient: ['#ef4444', '#f87171', '#fca5a5'],
-        particle: '#fb923c', // Orange
-        particleLight: '#fed7aa', // Light orange
-        glow: 'rgba(239, 68, 68, 0.5)',
+        gradient: ['hsl(var(--danger))', 'hsl(var(--danger) / 0.65)', 'hsl(var(--danger) / 0.35)'],
+        particle: 'hsl(var(--warning))',
+        particleLight: 'hsl(var(--warning) / 0.45)',
+        glow: 'hsl(var(--danger) / 0.35)',
         bg: 'bg-danger-bg',
         text: 'text-danger',
-        riverGlow: '#ef4444',
+        riverGlow: 'hsl(var(--danger))',
       }
 
   // River path - slightly wavy

@@ -10,13 +10,15 @@ import {
   Legend,
 } from 'recharts'
 import type { TrendItem } from '@/types'
+import { CHART_AXIS, CHART_AXIS_LINE, CHART_NEGATIVE, CHART_POSITIVE, CHART_PRIMARY } from '@/lib/chart-colors'
+import { CHART_SERIES } from '@/lib/chart-colors'
 
 const CHART_COLORS = [
-  { stroke: '#3b82f6', fill: '#3b82f6' },
-  { stroke: '#10b981', fill: '#10b981' },
-  { stroke: '#f59e0b', fill: '#f59e0b' },
-  { stroke: '#ef4444', fill: '#ef4444' },
-  { stroke: '#8b5cf6', fill: '#8b5cf6' },
+  { stroke: CHART_PRIMARY, fill: CHART_PRIMARY },
+  { stroke: CHART_POSITIVE, fill: CHART_POSITIVE },
+  { stroke: CHART_SERIES[0], fill: CHART_SERIES[1] },
+  { stroke: CHART_NEGATIVE, fill: CHART_NEGATIVE },
+  { stroke: CHART_SERIES[2], fill: CHART_SERIES[3] },
 ]
 
 interface CompanyTrendChartProps {
@@ -89,13 +91,13 @@ export function CompanyTrendChart({ data, isLoading }: CompanyTrendChartProps) {
           </defs>
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 10, fill: '#94a3b8' }}
+            tick={{ fontSize: 10, fill: CHART_AXIS }}
             interval="preserveStartEnd"
             tickLine={false}
-            axisLine={{ stroke: '#e2e8f0' }}
+            axisLine={{ stroke: CHART_AXIS_LINE }}
           />
           <YAxis
-            tick={{ fontSize: 10, fill: '#94a3b8' }}
+            tick={{ fontSize: 10, fill: CHART_AXIS }}
             tickFormatter={(value) => `${value.toFixed(0)}%`}
             tickLine={false}
             axisLine={false}
@@ -103,11 +105,11 @@ export function CompanyTrendChart({ data, isLoading }: CompanyTrendChartProps) {
           />
           <Tooltip
             formatter={(value, name) => [`${(value as number).toFixed(2)}%`, name as string]}
-            labelStyle={{ color: '#64748b', fontWeight: 500 }}
+            labelStyle={{ color: CHART_AXIS, fontWeight: 500 }}
             contentStyle={{
               fontSize: 12,
               backgroundColor: 'white',
-              border: '1px solid #e2e8f0',
+              border: `1px solid ${CHART_AXIS_LINE}`,
               borderRadius: 8,
               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
             }}

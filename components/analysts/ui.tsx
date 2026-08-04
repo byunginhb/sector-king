@@ -3,6 +3,7 @@
 import { TrendingUp, TrendingDown, Minus, Plus, Info } from 'lucide-react'
 import { HintPopover } from '@/components/ui/hint-popover'
 import type { Direction, PredictionStatus } from '@/types'
+import { CHART_SERIES } from '@/lib/chart-colors'
 
 /**
  * 예측력 점수 개념 설명 툴팁(문구 SoT — 점수가 노출되는 모든 화면에서 재사용).
@@ -33,14 +34,10 @@ export function ScoreHint({ className }: { className?: string }) {
 }
 
 /** 다중 시리즈 색 팔레트(칩·차트선 공용 SoT). */
-export const PALETTE = [
-  '#2563eb', '#8b5cf6', '#14b8a6', '#f59e0b', '#ec4899',
-  '#06b6d4', '#84cc16', '#a855f7', '#f97316', '#6366f1',
-  '#0ea5e9', '#d946ef', '#22c55e', '#eab308', '#ef4444', '#0891b2',
-] as const
+export const PALETTE = CHART_SERIES
 
 /** 컨센서스(중앙값) 선 색 — indigo. */
-export const CONSENSUS_COLOR = '#6366f1'
+export const CONSENSUS_COLOR = 'hsl(var(--foreground))'
 
 export function pct(rate: number | null): string {
   return rate == null ? '—' : `${Math.round(rate * 100)}%`

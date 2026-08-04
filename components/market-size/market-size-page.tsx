@@ -24,16 +24,14 @@ import {
 import { MarketSizeExplainer } from './market-size-explainer'
 import { cn } from '@/lib/utils'
 import type { MarketSizeCategory, MarketSizeNode } from '@/types'
+import { CHART_SERIES, CHART_AXIS } from '@/lib/chart-colors'
 
 /** "전체" 뷰에서 표시할 카테고리 상한 (시총 상위). */
 const TOP_N = 30
 
 // 버블 산업 색 팔레트 (검정·순빨강 배제 톤). industryId 순서로 배정.
-const INDUSTRY_PALETTE = [
-  '#3b82f6', '#8b5cf6', '#14b8a6', '#f59e0b', '#ec4899',
-  '#06b6d4', '#84cc16', '#a855f7', '#f97316', '#6366f1',
-]
-const FALLBACK_COLOR = '#94a3b8'
+const INDUSTRY_PALETTE = [...CHART_SERIES]
+const FALLBACK_COLOR = CHART_AXIS
 
 function toPoint(n: MarketSizeNode): BubblePoint | null {
   if (n.revenueGrowth == null || n.targetUpside == null) return null

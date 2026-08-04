@@ -11,11 +11,13 @@ import {
 } from 'recharts'
 import type { CategoryMarketCap } from '@/types'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
+import { CHART_AXIS, CHART_AXIS_LINE, CHART_NEGATIVE, CHART_POSITIVE, CHART_PRIMARY } from '@/lib/chart-colors'
+import { CHART_SERIES } from '@/lib/chart-colors'
 
 const CATEGORY_COLORS = [
-  '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-  '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1',
-  '#14b8a6', '#a855f7', '#22c55e',
+  CHART_PRIMARY, CHART_POSITIVE, CHART_SERIES[0], CHART_NEGATIVE, CHART_SERIES[1],
+  CHART_SERIES[2], CHART_SERIES[3], CHART_SERIES[4], CHART_SERIES[5], CHART_SERIES[6],
+  CHART_SERIES[7], CHART_SERIES[0], CHART_SERIES[1],
 ]
 
 interface CategoryComparisonChartProps {
@@ -57,15 +59,15 @@ export function CategoryComparisonChart({ data, isLoading }: CategoryComparisonC
         >
           <XAxis
             type="number"
-            tick={{ fontSize: 10, fill: '#94a3b8' }}
+            tick={{ fontSize: 10, fill: CHART_AXIS }}
             tickFormatter={(value) => fmt.marketCap(value as number)}
             tickLine={false}
-            axisLine={{ stroke: '#e2e8f0' }}
+            axisLine={{ stroke: CHART_AXIS_LINE }}
           />
           <YAxis
             type="category"
             dataKey="displayName"
-            tick={{ fontSize: 11, fill: '#64748b' }}
+            tick={{ fontSize: 11, fill: CHART_AXIS }}
             tickLine={false}
             axisLine={false}
             width={70}
@@ -79,7 +81,7 @@ export function CategoryComparisonChart({ data, isLoading }: CategoryComparisonC
             contentStyle={{
               fontSize: 12,
               backgroundColor: 'white',
-              border: '1px solid #e2e8f0',
+              border: `1px solid ${CHART_AXIS_LINE}`,
               borderRadius: 8,
               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
             }}
