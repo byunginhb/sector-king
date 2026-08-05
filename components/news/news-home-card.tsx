@@ -52,9 +52,10 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
   return (
     <div
       className={cn(
-        // hover 는 opacity 만 — 보더·배경·글자색을 동시에 바꾸면 카드가 통째로
-        // 다른 상태처럼 보인다. 15% 만 흐려 눌리는 대상임을 표시한다.
-        'group flex h-full flex-col sk-card p-5 transition-opacity duration-200 ease-out hover:opacity-85',
+        // hover 는 배경 한 단계만 — 보더·글자색까지 같이 바꾸면 카드가 통째로
+        // 다른 상태처럼 보인다. opacity 15% 는 체감이 약해 surface-1(흰색) →
+        // surface-2(명도 4pt 아래)로 바꾼다.
+        'group flex h-full flex-col sk-card p-5 transition-colors duration-200 ease-out hover:bg-surface-2',
         className
       )}
     >
