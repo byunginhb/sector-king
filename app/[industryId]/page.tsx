@@ -9,7 +9,7 @@ export default async function IndustryPage({
   const { industryId } = await params
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen">
       <Suspense fallback={null}>
         <HegemonyMap industryId={industryId} />
       </Suspense>

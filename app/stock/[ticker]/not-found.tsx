@@ -18,7 +18,7 @@ const POPULAR_TICKERS: readonly { ticker: string; label: string }[] = [
 
 export default function StockNotFound() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-16">
+    <div className="min-h-screen flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md text-center">
         <span
           aria-hidden

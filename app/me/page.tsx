@@ -18,7 +18,7 @@ export default async function MePage() {
   const profile = await requireUser('/me')
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar subtitle={`내 페이지 · ${profile.email}`} />
 
       <main className="container mx-auto px-4 py-8 space-y-8">

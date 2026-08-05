@@ -39,7 +39,7 @@ export default async function LoginPage({
   const errorMessage = errorMessageFor(errorCode)
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <header className="container mx-auto px-4 py-4">
         <Link
           href="/"

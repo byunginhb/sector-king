@@ -85,7 +85,7 @@ export function StatisticsPage({ industryId }: StatisticsPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar
         pageId="statistics"
         shareTitle="기업·섹터 트렌드 | Sector King"

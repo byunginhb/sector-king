@@ -47,7 +47,7 @@ export function StockDetailPage({ ticker, initialName, initialNameKo }: StockDet
   const subName = company?.name ?? initialName ?? ''
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar
         shareTitle={`${displayName} (${ticker}) | Sector King`}
         shareDescription={`${displayName}의 시가총액·섹터 지배력·패권 점수 분석`}

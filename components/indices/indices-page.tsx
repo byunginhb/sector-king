@@ -115,7 +115,7 @@ export function IndicesPage({ initialItems }: { initialItems?: MarketIndexItem[]
   const asOf = items.find((i) => i.asOfDate)?.asOfDate ?? null
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar
         shareTitle="세계 주요 지수 | Sector King"
         shareDescription="미국·한국·일본·인도 등 주요 국가 대표 지수 한눈에"

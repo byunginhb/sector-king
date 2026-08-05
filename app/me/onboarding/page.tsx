@@ -14,7 +14,7 @@ export default async function OnboardingPage() {
   await requireUser('/me/onboarding')
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar subtitle="시작하기" />
 
       <main className="container mx-auto px-4 py-10 max-w-2xl">

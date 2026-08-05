@@ -151,7 +151,7 @@ export default function RootLayout({
         <WebSiteJsonLd />
       </head>
       <body
-        className={`${geistSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} ${nanumMyeongjo.variable} antialiased bg-background font-sans`}
+        className={`${geistSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} ${nanumMyeongjo.variable} antialiased font-sans`}
       >
         <Providers>
           <TooltipProvider delayDuration={0}>

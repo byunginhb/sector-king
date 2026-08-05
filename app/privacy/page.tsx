@@ -15,7 +15,7 @@ const UPDATED_AT = '2025년 7월 6일'
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar subtitle="개인정보 처리방침" />
       <main className="container mx-auto px-4 py-8 max-w-3xl">
         <div className="mb-8">

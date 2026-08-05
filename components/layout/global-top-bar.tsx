@@ -117,7 +117,7 @@ export function GlobalTopBar({
   const showMobile = mounted && !isDesktop
 
   return (
-    <header className="sticky top-0 z-50 bg-background/85 backdrop-blur-sm border-b border-foreground/15">
+    <header className="sticky top-0 z-50 bg-background/60 backdrop-blur-md border-b border-foreground/15">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">

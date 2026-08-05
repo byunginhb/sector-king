@@ -14,7 +14,7 @@ export default async function NotesPage() {
   await requireUser('/me/notes')
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar subtitle="내 메모" />
 
       <main className="container mx-auto px-4 py-8">

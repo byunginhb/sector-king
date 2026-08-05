@@ -58,7 +58,7 @@ export function PriceChangesPageContent({ industryId }: PriceChangesPageContentP
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar
         pageId="price-changes"
         shareTitle="가격 변화율 | Sector King"

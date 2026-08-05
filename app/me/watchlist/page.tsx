@@ -14,7 +14,7 @@ export default async function WatchlistPage() {
   await requireUser('/me/watchlist')
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar subtitle="내 워치리스트" />
 
       <main className="container mx-auto px-4 py-8">

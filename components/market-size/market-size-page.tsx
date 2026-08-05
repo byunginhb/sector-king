@@ -233,7 +233,7 @@ export function MarketSizePage() {
     : '카테고리별 · 지표 높은 순(막대 클릭 시 섹터로 드릴다운).'
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar
         lastUpdated={data?.date}
         shareTitle="시장 규모 | Sector King"

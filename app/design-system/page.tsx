@@ -25,7 +25,7 @@ const NAV_ITEMS: SidebarNavItem[] = [
 
 export default function DesignSystemPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         <header className="mb-12 sm:mb-16 border-b border-foreground pb-8">
           <div className="flex items-baseline justify-between gap-4 flex-wrap mb-6">

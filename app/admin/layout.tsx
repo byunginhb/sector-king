@@ -18,7 +18,7 @@ export default async function AdminLayout({
   const profile = await requireAdmin('/admin')
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar subtitle={`관리자 · ${profile.email}`} />
       <main className="container mx-auto px-4 py-8">{children}</main>
     </div>

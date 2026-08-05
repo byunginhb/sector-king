@@ -17,7 +17,7 @@ export default async function SettingsPage() {
   const profile = await requireUser('/me/settings')
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar subtitle="설정" />
 
       <main className="container mx-auto px-4 py-8 max-w-2xl space-y-8">

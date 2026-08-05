@@ -46,7 +46,7 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalTopBar
         pageId="money-flow"
         shareTitle="섹터 자금 흐름 | Sector King"
