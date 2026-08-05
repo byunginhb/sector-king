@@ -11,12 +11,12 @@
  * Voice:
  *   1.  Newsprint typography. Fraunces serif for headlines, Geist for body,
  *       JetBrains Mono for prices. Three voices, never one.
- *   2.  Pale lilac paper (light) / charcoal canvas (dark), single amber accent.
+ *   2.  Pale blue paper (light) / charcoal canvas (dark), single amber accent.
  *       Color carries meaning (up / down / signal); the accent is never
- *       decorative. Purple appears ONLY as a very low-saturation (12~14%) tint
- *       of the neutral ramp — never as a saturated violet, which is the tell.
- *       One near-invisible top wash gradient; still no glow, no color ramps
- *       inside components.
+ *       decorative. The neutral ramp carries a blue tint at high lightness
+ *       (91%+) — tinted, never saturated-mid, which is the AI tell.
+ *       One soft top wash gradient; still no glow, no color ramps inside
+ *       components.
  *   3.  Hairline rules. 1px borders at low alpha, like a financial paper grid.
  *   4.  Data density first. Numbers are tabular and tight. Whitespace exists
  *       to clarify, not to luxuriate.
@@ -28,51 +28,52 @@
 
 @layer base {
   :root {
-    /* Light — 연보라 종이 (pale lilac paper).
+    /* Light — 옅은 푸른 종이 (pale blue paper).
      *
-     * 핵심: AI 톤으로 읽히는 건 '보라 색상환'이 아니라 '채도'다.
-     * 흔히 지목되는 violet-500(#8b5cf6)은 채도 91% 다. 여기서는 hue 만 보라로
-     * 두고 채도를 12~14% 로 눌러, 형광 보라가 아니라 아주 옅은 라일락 회색
-     * 용지처럼 읽히게 한다. 회색보다 온기가 있어 밋밋함이 사라진다.
+     * 채도 14% 대에서는 배경이 회색과 구분되지 않아 "티가 안 난다"는 피드백이
+     * 있었다. hue 를 212° 로 옮기고 채도를 34% 로 올려 실제로 푸르게 보이게 한다.
+     * 채도를 올려도 명도가 91% 라 여전히 옅은 용지 톤이고, AI 톤으로 읽히는
+     * 형광 계열(명도 50~60% 대의 고채도)과는 다른 자리다.
      *
      * 중성 램프 전체(배경·표면·보더·muted)를 같은 hue 로 옮겨야 hover 나
      * 보더에 이전 hue 잔재가 남아 충돌하지 않는다.
      *
-     * amber(--primary)는 그대로 둔다. 36° 와 270° 는 분할 보색 관계라
+     * amber(--primary)는 그대로 둔다. 36° 와 212° 는 보색에 가까워
      * 액센트가 바탕에서 확실히 분리된다.
      */
-    --background:       270 14% 94%;       /* pale lilac paper */
+    --background:       212 34% 91%;       /* pale blue paper */
     --surface-1:          0  0% 100%;       /* card = 흰 종이 */
-    --surface-2:        270 13% 91%;       /* hover / nested */
-    --surface-3:        270 11% 87%;       /* elevated / pressed */
-    --foreground:       268 24% 13%;       /* violet-tinted ink */
+    --surface-2:        212 30% 88%;       /* hover / nested */
+    --surface-3:        212 26% 84%;       /* elevated / pressed */
+    --foreground:       215 32% 13%;       /* blue-tinted ink */
     --card:               0  0% 100%;
-    --card-foreground:  268 28% 11%;
+    --card-foreground:  215 36% 11%;
     --popover:            0  0% 100%;
-    --popover-foreground:268 28% 11%;
+    --popover-foreground:215 36% 11%;
 
-    /* 페이지 상단 워시 — body 그라디언트의 밝은 끝. 아주 살짝만. */
-    --page-wash:        272 34% 97%;
+    /* 페이지 상단 워시 — body 그라디언트의 밝은 끝.
+     * 배경과 명도 6pt 차를 둬 그라디언트가 실제로 보이게 한다. */
+    --page-wash:        210 60% 97%;
 
     /* Single amber signature — used for primary actions and meaning-bearing
      * highlights. Not decorative. */
     --primary:           36 78% 44%;       /* #C68A28 editorial amber */
     --primary-foreground:210 20% 98%;
 
-    --secondary:        270 13% 90%;
-    --secondary-foreground:268 24% 14%;
-    --muted:            270 13% 92%;
-    --muted-foreground: 268 10% 40%;
+    --secondary:        212 30% 88%;
+    --secondary-foreground:215 32% 14%;
+    --muted:            212 28% 90%;
+    --muted-foreground: 215 16% 38%;
     --accent:            36 58% 90%;       /* amber tint highlight bg */
     --accent-foreground: 36 78% 30%;
 
     --destructive:        2 68% 46%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Hairlines — lilac-tinted, low-alpha, newspaper grid */
-    --border:           270 14% 81%;
-    --border-subtle:    270 14% 87%;
-    --input:            270 14% 83%;
+    /* Hairlines — blue-tinted, low-alpha, newspaper grid */
+    --border:           212 26% 78%;
+    --border-subtle:    212 26% 85%;
+    --input:            212 26% 80%;
     --ring:              36 78% 44%;
 
     /* Geometry — 카드 기준 8px. .sk-card 가 rounded-md 라 --radius 가 곧 카드 반경. */
@@ -106,36 +107,36 @@
   .dark {
     /* Dark — Bloomberg Terminal at 2am.
      * Pitch charcoal (#0B0E13) + bone ivory text (#E8E4DA) + warm amber. */
-    --background:        265 20%  7%;       /* terminal black, 보라 기미 */
-    --surface-1:         265 17%  9%;       /* card */
-    --surface-2:         265 14% 12%;       /* hover */
-    --surface-3:         265 12% 16%;       /* elevated */
+    --background:        218 26%  7%;       /* terminal black, 푸른 기미 */
+    --surface-1:         218 22% 10%;       /* card */
+    --surface-2:         218 19% 13%;       /* hover */
+    --surface-3:         218 16% 17%;       /* elevated */
 
     /* 페이지 상단 워시 — 다크에서는 배경보다 살짝 밝은 쪽 */
-    --page-wash:         268 22% 10%;
+    --page-wash:         214 30% 14%;
     --foreground:         40 22% 88%;       /* #E8E4DA bone ivory */
-    --card:              265 17%  9%;
+    --card:              218 22% 10%;
     --card-foreground:    40 22% 90%;
-    --popover:           265 17%  9%;
+    --popover:           218 22% 10%;
     --popover-foreground: 40 22% 90%;
 
     --primary:           38 80% 56%;       /* #E5B14C burnished amber */
-    --primary-foreground:265 20%  7%;
+    --primary-foreground:218 26%  7%;
 
-    --secondary:         265 12% 14%;
+    --secondary:         218 17% 15%;
     --secondary-foreground: 40 22% 88%;
-    --muted:             265 12% 14%;
+    --muted:             218 17% 15%;
     --muted-foreground:  40  8% 60%;
-    --accent:            265 12% 15%;
+    --accent:            218 17% 16%;
     --accent-foreground: 38 80% 64%;
 
     --destructive:        2 70% 56%;
     --destructive-foreground: 0 0% 98%;
 
     /* Hairlines on dark — barely-there, like a CRT grid */
-    --border:            265  9% 19%;
-    --border-subtle:     265  9% 14%;
-    --input:             265  9% 19%;
+    --border:            218 14% 21%;
+    --border-subtle:     218 14% 16%;
+    --input:             218 14% 21%;
     --ring:              38 80% 56%;
 
     /* State — desaturated, terminal-readable */
@@ -241,13 +242,13 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    /* 아주 옅은 상단 워시. 단색 배경의 밋밋함만 걷어내는 정도로,
-     * 46% 지점에서 --background 로 완전히 수렴시켜 그라디언트 자체는
-     * 의식되지 않게 한다. fixed 라 스크롤해도 반복되지 않는다. */
+    /* 상단 워시. 배경과 명도 6pt 차를 두고 65% 지점에서 수렴시켜
+     * 전이 구간을 넓게 잡는다(46% 는 너무 빨리 수렴해 보이지 않았다).
+     * fixed 라 스크롤해도 반복되지 않는다. */
     background-image: linear-gradient(
       180deg,
       hsl(var(--page-wash)) 0%,
-      hsl(var(--background)) 46%
+      hsl(var(--background)) 65%
     );
     background-attachment: fixed;
     background-repeat: no-repeat;

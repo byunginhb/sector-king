@@ -49,7 +49,7 @@ export function IndustryDashboard() {
       />
 
       {/*
-        레이아웃 위계 — 4단. 1면(LEAD) → 오늘(TODAY) → 지도(MAP) → 자료(BRIEF).
+        레이아웃 위계 — 4단. 1면(LEAD) → 오늘(TODAY) → 개괄(BRIEF) → 지도(MAP).
         구분선(sk-rule)과 큰 여백은 걷어냈고, 카드·구획 간격은 32px(mt-8/gap-8)로
         통일한다. 단 구분은 이제 SectionHeader 의 eyebrow + 제목이 담당한다.
       */}
@@ -100,6 +100,11 @@ export function IndustryDashboard() {
             <NewsHomeCardSlot />
             <KoreanPicksCard />
           </div>
+          {/* 애널리스트 성적표 → 섹터킹 픽 순서. 둘 다 "누구 말을 믿을까"에 답하는
+              카드라 붙여 두고, 검증(적중률)을 먼저 보여준 뒤 픽을 제시한다. */}
+          <div className="mt-8">
+            <AnalystScorecardCard />
+          </div>
           {/* 섹터킹 픽은 5행 × 6컬럼 표라 반폭에서 점수 막대가 눌린다. 전폭 1단. */}
           <div className="mt-8">
             <SectorKingPickCard region={region} />
@@ -107,18 +112,7 @@ export function IndustryDashboard() {
         </section>
 
 
-        {/* ───────── MAP — 산업 인덱스 ───────── */}
-        <section id="industries" className="mt-8 scroll-mt-24">
-          <SectionHeader eyebrow="Hegemony Map" title="산업 패권 지도" />
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {industries.map((industry, index) => (
-              <IndustryCard key={industry.id} industry={industry} isFirst={index === 0} />
-            ))}
-          </div>
-        </section>
-
-
-        {/* ───────── BRIEF — 참고 자료. 리드보다 의도적으로 조용하게 ───────── */}
+        {/* ───────── BRIEF — 시장 동향 요약. 산업 지도로 내려가기 전 개괄. ───────── */}
         <section className="mt-8">
           <SectionHeader eyebrow="Market Brief" title="시장 동향 요약" />
           <MarketPulseStrip region={region} />
@@ -126,13 +120,20 @@ export function IndustryDashboard() {
             <CompanyStatsCard region={region} />
             <PriceChangesCard region={region} />
           </div>
-          {/* 캘린더는 월 그리드(7열)라 반폭에서 날짜 칸이 눌리고, 성적표는 3행뿐이라
-              나란히 두면 한쪽에 빈 공간이 크게 남는다. 각자 전폭으로 쌓는다. */}
+          {/* 캘린더는 월 그리드(7열)라 반폭에서 날짜 칸이 눌린다. 전폭. */}
           <div className="mt-8">
             <EconomicCalendarSection />
           </div>
-          <div className="mt-8">
-            <AnalystScorecardCard />
+        </section>
+
+
+        {/* ───────── MAP — 산업 인덱스. 개괄(BRIEF) 다음의 드릴다운 진입점. ───────── */}
+        <section id="industries" className="mt-8 scroll-mt-24">
+          <SectionHeader eyebrow="Hegemony Map" title="산업 패권 지도" />
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {industries.map((industry, index) => (
+              <IndustryCard key={industry.id} industry={industry} isFirst={index === 0} />
+            ))}
           </div>
         </section>
       </main>
