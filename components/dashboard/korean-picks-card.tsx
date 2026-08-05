@@ -64,36 +64,40 @@ export function KoreanPicksCard() {
             const style = ACTION_STYLE[p.action] ?? ACTION_STYLE['지켜봐']
             const Icon = style.icon
             return (
-              <li
-                key={`${p.code}-${p.index}`}
-                className="flex items-start gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4 transition-colors hover:bg-surface-2"
-              >
-                <span className="num-mono text-xs text-muted-foreground/80 mt-1 w-6 shrink-0 tabular-nums">
-                  {String(p.index).padStart(2, '0')}
-                </span>
+              <li key={`${p.code}-${p.index}`}>
+                {/* 행 자체를 리포트 상세로 연결한다. hover 배경만 있고
+                    클릭이 안 되면 눌리는 척하는 UI 가 된다. */}
+                <Link
+                  href={detailUrl}
+                  className="flex cursor-pointer items-start gap-3 px-4 py-3.5 transition-colors hover:bg-surface-2 sm:gap-4 sm:px-5 sm:py-4"
+                >
+                  <span className="num-mono text-xs text-muted-foreground/80 mt-1 w-6 shrink-0 tabular-nums">
+                    {String(p.index).padStart(2, '0')}
+                  </span>
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm sm:text-base font-semibold text-foreground truncate">
-                      {p.name}
-                    </span>
-                    <span className="num-mono text-[11px] text-muted-foreground">
-                      {p.code}
-                    </span>
-                    <span
-                      className={cn(
-                        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold',
-                        style.chipClass
-                      )}
-                    >
-                      <Icon className="h-3 w-3" aria-hidden />
-                      {style.label}
-                    </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm sm:text-base font-semibold text-foreground truncate">
+                        {p.name}
+                      </span>
+                      <span className="num-mono text-[11px] text-muted-foreground">
+                        {p.code}
+                      </span>
+                      <span
+                        className={cn(
+                          'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold',
+                          style.chipClass
+                        )}
+                      >
+                        <Icon className="h-3 w-3" aria-hidden />
+                        {style.label}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs sm:text-sm text-foreground/75 line-clamp-2">
+                      {p.body}
+                    </p>
                   </div>
-                  <p className="mt-1 text-xs sm:text-sm text-foreground/75 line-clamp-2">
-                    {p.body}
-                  </p>
-                </div>
+                </Link>
               </li>
             )
           })}

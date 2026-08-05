@@ -17,13 +17,10 @@ import { ReportKindBadge } from './report-kind-badge'
 
 // action 별 chip 색상 토큰 (시맨틱 — 라이트/다크 자동 대응)
 const PICK_CHIP_CLASS: Record<NoviceStockAction, string> = {
-  사: 'border-success/40 text-success bg-success/10 group-hover:bg-success/20',
-  '조심하면서 사':
-    'border-warning/40 text-warning bg-warning/10 group-hover:bg-warning/20',
-  지켜봐:
-    'border-border-subtle text-muted-foreground bg-surface-2 group-hover:bg-surface-2/70',
-  '안 사':
-    'border-danger/40 text-danger bg-danger/10 group-hover:bg-danger/20',
+  사: 'border-success/40 text-success bg-success/10',
+  '조심하면서 사': 'border-warning/40 text-warning bg-warning/10',
+  지켜봐: 'border-border-subtle text-muted-foreground bg-surface-2',
+  '안 사': 'border-danger/40 text-danger bg-danger/10',
 }
 
 // 표시용 라벨 (DB enum 값과 분리 — '안 사' 는 UI 에서 '사지마' 로 노출)
@@ -55,7 +52,9 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
   return (
     <div
       className={cn(
-        'group flex h-full flex-col sk-card p-5 transition-[border-color,background-color,transform] duration-200 ease-out hover:border-primary/40 hover:bg-surface-2',
+        // hover 는 opacity 만 — 보더·배경·글자색을 동시에 바꾸면 카드가 통째로
+        // 다른 상태처럼 보인다. 15% 만 흐려 눌리는 대상임을 표시한다.
+        'group flex h-full flex-col sk-card p-5 transition-opacity duration-200 ease-out hover:opacity-85',
         className
       )}
     >
@@ -71,7 +70,7 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
           </span>
         </div>
 
-        <h3 className="font-display mb-2 text-lg font-bold leading-tight tracking-tight text-card-foreground transition-colors group-hover:text-primary sm:text-xl">
+        <h3 className="font-display mb-2 text-lg font-bold leading-tight tracking-tight text-card-foreground sm:text-xl">
           {report.title}
         </h3>
 
@@ -125,10 +124,7 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
 
         <div className="mt-auto flex items-center justify-end gap-1.5 pt-4 text-sm font-medium text-primary">
           상세 보기
-          <ArrowRight
-            className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-            aria-hidden
-          />
+          <ArrowRight className="h-4 w-4" aria-hidden />
         </div>
       </Link>
 
