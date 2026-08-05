@@ -55,7 +55,7 @@
 
     /* 상단 워시 — 그라디언트의 진한 끝. 배경(99%)과 명도 6pt 차를 둬
      * 위→아래 전이가 확실히 보이게 한다. */
-    --page-wash:        214 58% 91%;
+    --page-wash:        214 42% 94%;
 
     /* Single amber signature — used for primary actions and meaning-bearing
      * highlights. Not decorative. */
@@ -251,6 +251,10 @@
    *  - body::before + z-index:-1 → 캔버스 배경(html/body 배경)이 항상 그보다
    *    앞에 칠해져서 아예 보이지 않는다.
    *
+   * 패턴은 대각선 크로스해치에서 직교 격자로 바꿨다. 대각선은 직물·아가일처럼
+   * 읽혀 금융 화면과 안 맞고, 세로·가로 미세 격자는 원장지와 차트 플로팅
+   * 그리드라 이 서비스의 톤에 붙는다. 40px 간격 + 2.2% 알파로 눈에 띄지 않게.
+   *
    * 그래서 html 한 곳에 레이어를 쌓는다. background-size 를 px 로 고정해
    * 문서 최상단 1100px 구간에만 워시가 깔리고, 스크롤을 내리면 base(거의 흰색)
    * 만 남는다. 맨 위 레이어인 '베일'이 아래로 갈수록 base 색으로 덮어
@@ -258,7 +262,7 @@
    *
    * 레이어 순서(먼저 = 위):
    *   1) 베일   — 아래쪽을 base 로 덮어 패턴/워시 경계 제거
-   *   2,3) 격자 — 45° / -45°, 3.5% 알파의 종이 질감
+   *   2,3) 격자 — 40px 원장/방안지 그리드, 2.2% 알파
    *   4) 워시   — page-wash → base 세로 그라디언트
    */
   html {
@@ -271,14 +275,14 @@
         hsl(var(--background)) 100%
       ),
       repeating-linear-gradient(
-        45deg,
-        hsl(var(--foreground) / 0.035) 0 1px,
-        transparent 1px 18px
+        0deg,
+        hsl(var(--foreground) / 0.022) 0 1px,
+        transparent 1px 40px
       ),
       repeating-linear-gradient(
-        -45deg,
-        hsl(var(--foreground) / 0.035) 0 1px,
-        transparent 1px 18px
+        90deg,
+        hsl(var(--foreground) / 0.022) 0 1px,
+        transparent 1px 40px
       ),
       linear-gradient(
         180deg,
