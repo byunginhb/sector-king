@@ -50,8 +50,8 @@ export function IndustryDashboard() {
 
       {/*
         레이아웃 위계 — 4단. 1면(LEAD) → 오늘(TODAY) → 지도(MAP) → 자료(BRIEF).
-        단 사이는 sk-rule 한 줄 + 큰 여백(mt-16/24), 단 안쪽은 작은 여백(mt-6/8)
-        으로 벌린다. 전 구획이 같은 mt-12 로 쌓이면 위계 없는 카드 적층으로 읽힌다.
+        구분선(sk-rule)과 큰 여백은 걷어냈고, 카드·구획 간격은 32px(mt-8/gap-8)로
+        통일한다. 단 구분은 이제 SectionHeader 의 eyebrow + 제목이 담당한다.
       */}
       <main className="container mx-auto px-4 py-8 sm:py-10">
         {/* ───────── LEAD — 제호 + 오늘의 시세 띠 + 자금 흐름 단독 ───────── */}
@@ -79,7 +79,7 @@ export function IndustryDashboard() {
         </div>
 
         {/* 리드 기사 — 이 서비스가 답하는 질문 그 자체라 단독으로 크게 둔다 */}
-        <section id="money-flow" className="mt-10 scroll-mt-24">
+        <section id="money-flow" className="mt-8 scroll-mt-24">
           <IndustryMoneyFlowCard region={region} />
         </section>
 
@@ -87,54 +87,51 @@ export function IndustryDashboard() {
           <QuickNavCards />
         </div>
 
-        <hr className="sk-rule mt-16 sm:mt-24" />
 
         {/* ───────── TODAY — 오늘 읽을 것 / 오늘 살 것 ─────────
             섹션 제목을 두지 않는다. 아래 두 카드가 각자 자기 이름("오늘의 마켓
-            리포트" / "섹터킹 픽 TOP 3")을 이미 달고 있어서, 바깥에 "오늘의 시장"을
+            리포트" / "오늘 추천하는 한국 종목")을 이미 달고 있어서, 바깥에 "오늘의 시장"을
             또 두면 같은 위계의 제목이 150px 안에 두 개 겹쳐 서로 경쟁한다.
-            단 경계는 위의 sk-rule + 큰 여백이 이미 만든다.
             (아래 MAP·BRIEF 는 자식들이 자기 이름이 없어서 섹션 제목이 필요하다.) */}
         <section className="mt-8" aria-label="오늘의 시장">
           {/* items-start 를 쓰지 않는다 — 두 카드를 같은 높이로 늘리고 각 카드 안에서
               푸터를 mt-auto 로 바닥에 붙여야 하단 라인이 맞는다. */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <NewsHomeCardSlot />
-            <SectorKingPickCard region={region} />
-          </div>
-          <div className="mt-6">
             <KoreanPicksCard />
+          </div>
+          {/* 섹터킹 픽은 5행 × 6컬럼 표라 반폭에서 점수 막대가 눌린다. 전폭 1단. */}
+          <div className="mt-8">
+            <SectorKingPickCard region={region} />
           </div>
         </section>
 
-        <hr className="sk-rule mt-16 sm:mt-24" />
 
         {/* ───────── MAP — 산업 인덱스 ───────── */}
         <section id="industries" className="mt-8 scroll-mt-24">
           <SectionHeader eyebrow="Hegemony Map" title="산업 패권 지도" />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {industries.map((industry, index) => (
               <IndustryCard key={industry.id} industry={industry} isFirst={index === 0} />
             ))}
           </div>
         </section>
 
-        <hr className="sk-rule mt-16 sm:mt-24" />
 
         {/* ───────── BRIEF — 참고 자료. 리드보다 의도적으로 조용하게 ───────── */}
         <section className="mt-8">
           <SectionHeader eyebrow="Market Brief" title="시장 동향 요약" />
           <MarketPulseStrip region={region} />
-          <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+          <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-2">
             <CompanyStatsCard region={region} />
             <PriceChangesCard region={region} />
           </div>
           {/* 캘린더는 월 그리드(7열)라 반폭에서 날짜 칸이 눌리고, 성적표는 3행뿐이라
               나란히 두면 한쪽에 빈 공간이 크게 남는다. 각자 전폭으로 쌓는다. */}
-          <div className="mt-6">
+          <div className="mt-8">
             <EconomicCalendarSection />
           </div>
-          <div className="mt-6">
+          <div className="mt-8">
             <AnalystScorecardCard />
           </div>
         </section>

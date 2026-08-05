@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { ArrowRight, Flag, ShieldAlert, Eye, Ban } from 'lucide-react'
 import { useLatestKoreanStocks } from '@/hooks/use-latest-korean-stocks'
-import { SectionHeader } from '@/components/ui/section-header'
 import { cn } from '@/lib/utils'
 import type { NoviceStockAction } from '@/drizzle/supabase-schema'
 
@@ -43,15 +42,24 @@ export function KoreanPicksCard() {
   const detailUrl = `/news/${data.reportId}`
 
   return (
-    <section className="mt-8" aria-label="오늘의 한국 추천 종목">
-      <SectionHeader
-        eyebrow="Today's Korea Picks"
-        title="오늘 추천하는 한국 종목"
-        description="에디터가 고른 종목 — 메일에서도 매일 받아볼 수 있어요"
-      />
+    <section aria-label="오늘의 한국 추천 종목">
+      {/* 헤더 해부구조 — NewsHomeCard 와 동일하게 유지할 것.
+          두 카드가 홈 TODAY 2열에 나란히 서므로 eyebrow 행(min-h-8) + 제목 행의
+          높이가 어긋나면 상단 정렬이 즉시 깨진다. */}
+      <div className="flex h-full flex-col overflow-hidden sk-card">
+        <div className="px-5 pb-4 pt-5">
+          <div className="mb-2 flex min-h-8 items-center justify-between gap-3">
+            <p className="eyebrow eyebrow-accent">Today&apos;s Korea Picks</p>
+          </div>
+          <h3 className="font-display text-lg font-bold leading-tight tracking-tight text-card-foreground sm:text-xl">
+            오늘 추천하는 한국 종목
+          </h3>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            에디터가 고른 종목 — 메일에서도 매일 받아볼 수 있어요
+          </p>
+        </div>
 
-      <div className="sk-card overflow-hidden">
-        <ul className="divide-y divide-border-subtle">
+        <ul className="divide-y divide-border-subtle border-t border-border-subtle">
           {data.picks.map((p) => {
             const style = ACTION_STYLE[p.action] ?? ACTION_STYLE['지켜봐']
             const Icon = style.icon
@@ -91,7 +99,7 @@ export function KoreanPicksCard() {
           })}
         </ul>
 
-        <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-t border-border-subtle bg-surface-2/40">
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-border-subtle bg-surface-2/40 px-4 py-3 sm:px-5">
           <p className="text-[11px] text-muted-foreground">
             {data.reportDate} 발행 · {data.reportTitle}
           </p>

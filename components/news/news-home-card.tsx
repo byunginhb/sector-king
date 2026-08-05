@@ -59,7 +59,7 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
         className
       )}
     >
-      <Link href={`/news/${report.id}`} className="block">
+      <Link href={`/news/${report.id}`} className="flex flex-1 flex-col">
         {/* 헤더 해부구조 — SectorKingPickCard 와 동일하게 유지할 것.
             두 카드가 홈 TODAY 2열에 나란히 서므로 eyebrow 행 + 제목 행의
             높이가 어긋나면 상단 정렬이 즉시 깨진다. */}
@@ -123,7 +123,7 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
           </div>
         )}
 
-        <div className="mt-4 flex items-center justify-end gap-1.5 text-sm text-primary font-medium">
+        <div className="mt-auto flex items-center justify-end gap-1.5 pt-4 text-sm font-medium text-primary">
           상세 보기
           <ArrowRight
             className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
@@ -132,7 +132,7 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
         </div>
       </Link>
 
-      <div className="mt-auto flex items-center justify-between gap-3 border-t border-border-subtle/60 pt-3">
+      <div className="mt-3 flex items-center justify-between gap-3 border-t border-border-subtle/60 pt-3">
         <NewsSubscribeCta variant="compact" />
         <Link
           href="/news"

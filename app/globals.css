@@ -11,8 +11,12 @@
  * Voice:
  *   1.  Newsprint typography. Fraunces serif for headlines, Geist for body,
  *       JetBrains Mono for prices. Three voices, never one.
- *   2.  Charcoal canvas, ivory ink, single amber accent. No purple, no
- *       gradients, no glow. Color carries meaning (up / down / signal).
+ *   2.  Pale lilac paper (light) / charcoal canvas (dark), single amber accent.
+ *       Color carries meaning (up / down / signal); the accent is never
+ *       decorative. Purple appears ONLY as a very low-saturation (12~14%) tint
+ *       of the neutral ramp — never as a saturated violet, which is the tell.
+ *       One near-invisible top wash gradient; still no glow, no color ramps
+ *       inside components.
  *   3.  Hairline rules. 1px borders at low alpha, like a financial paper grid.
  *   4.  Data density first. Numbers are tabular and tight. Whitespace exists
  *       to clarify, not to luxuriate.
@@ -24,54 +28,55 @@
 
 @layer base {
   :root {
-    /* Light — Newsprint.
+    /* Light — 연보라 종이 (pale lilac paper).
      *
-     * Cool press gray, not warm cream. 이전 값은 40 32% 95% (#F4EFE4) 로,
-     * 채도 32% 의 따뜻한 크림이었다. 두 가지 이유로 바꾼다.
+     * 핵심: AI 톤으로 읽히는 건 '보라 색상환'이 아니라 '채도'다.
+     * 흔히 지목되는 violet-500(#8b5cf6)은 채도 91% 다. 여기서는 hue 만 보라로
+     * 두고 채도를 12~14% 로 눌러, 형광 보라가 아니라 아주 옅은 라일락 회색
+     * 용지처럼 읽히게 한다. 회색보다 온기가 있어 밋밋함이 사라진다.
      *
-     * 1. 개념 불일치 — 실제 신문 용지는 차가운 회색이다. 따뜻한 크림은
-     *    "세월 먹은 책"이지 갓 인쇄된 신문이 아니다.
-     * 2. cream + serif + amber 조합은 2024년 이후 AI 제품의 하우스 스타일로
-     *    굳었다. 제네릭 SaaS 를 벗어나 다른 제네릭으로 옮겨간 셈이었다.
-     *
-     * 차가운 바탕은 amber 액센트와 보색에 가까워 대비가 커진다 — 액센트가
-     * 장식이 아니라 신호로 읽히는 데 오히려 유리하다.
      * 중성 램프 전체(배경·표면·보더·muted)를 같은 hue 로 옮겨야 hover 나
-     * 보더에 이전 warm 잔재가 남아 충돌하지 않는다.
+     * 보더에 이전 hue 잔재가 남아 충돌하지 않는다.
+     *
+     * amber(--primary)는 그대로 둔다. 36° 와 270° 는 분할 보색 관계라
+     * 액센트가 바탕에서 확실히 분리된다.
      */
-    --background:       214 15% 93%;       /* cool press gray */
+    --background:       270 14% 94%;       /* pale lilac paper */
     --surface-1:          0  0% 100%;       /* card = 흰 종이 */
-    --surface-2:        214 14% 90%;       /* hover / nested */
-    --surface-3:        214 12% 86%;       /* elevated / pressed */
-    --foreground:       215 32% 12%;       /* cool charcoal ink */
+    --surface-2:        270 13% 91%;       /* hover / nested */
+    --surface-3:        270 11% 87%;       /* elevated / pressed */
+    --foreground:       268 24% 13%;       /* violet-tinted ink */
     --card:               0  0% 100%;
-    --card-foreground:  215 35% 10%;
+    --card-foreground:  268 28% 11%;
     --popover:            0  0% 100%;
-    --popover-foreground:215 35% 10%;
+    --popover-foreground:268 28% 11%;
+
+    /* 페이지 상단 워시 — body 그라디언트의 밝은 끝. 아주 살짝만. */
+    --page-wash:        272 34% 97%;
 
     /* Single amber signature — used for primary actions and meaning-bearing
      * highlights. Not decorative. */
     --primary:           36 78% 44%;       /* #C68A28 editorial amber */
     --primary-foreground:210 20% 98%;
 
-    --secondary:        214 14% 89%;
-    --secondary-foreground:215 32% 13%;
-    --muted:            214 14% 91%;
-    --muted-foreground: 215 12% 38%;
+    --secondary:        270 13% 90%;
+    --secondary-foreground:268 24% 14%;
+    --muted:            270 13% 92%;
+    --muted-foreground: 268 10% 40%;
     --accent:            36 58% 90%;       /* amber tint highlight bg */
     --accent-foreground: 36 78% 30%;
 
     --destructive:        2 68% 46%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Hairlines — cool, low-alpha, newspaper grid */
-    --border:           214 15% 79%;
-    --border-subtle:    214 15% 86%;
-    --input:            214 15% 81%;
+    /* Hairlines — lilac-tinted, low-alpha, newspaper grid */
+    --border:           270 14% 81%;
+    --border-subtle:    270 14% 87%;
+    --input:            270 14% 83%;
     --ring:              36 78% 44%;
 
-    /* Geometry — restrained, almost rectilinear */
-    --radius: 0.375rem;                    /* was 0.75rem — less SaaS-friendly */
+    /* Geometry — 카드 기준 8px. .sk-card 가 rounded-md 라 --radius 가 곧 카드 반경. */
+    --radius: 0.5rem;                      /* 8px */
 
     /* State — slate-tinted, not neon */
     --success:          162 48% 28%;       /* slate-teal, not lime */
@@ -101,33 +106,36 @@
   .dark {
     /* Dark — Bloomberg Terminal at 2am.
      * Pitch charcoal (#0B0E13) + bone ivory text (#E8E4DA) + warm amber. */
-    --background:        222 22%  6%;       /* #0B0E13 terminal black */
-    --surface-1:         222 18%  8%;       /* #0F131A card */
-    --surface-2:         220 14% 11%;       /* #161A22 hover */
-    --surface-3:         220 12% 15%;       /* #1F242E elevated */
+    --background:        265 20%  7%;       /* terminal black, 보라 기미 */
+    --surface-1:         265 17%  9%;       /* card */
+    --surface-2:         265 14% 12%;       /* hover */
+    --surface-3:         265 12% 16%;       /* elevated */
+
+    /* 페이지 상단 워시 — 다크에서는 배경보다 살짝 밝은 쪽 */
+    --page-wash:         268 22% 10%;
     --foreground:         40 22% 88%;       /* #E8E4DA bone ivory */
-    --card:              222 18%  8%;
+    --card:              265 17%  9%;
     --card-foreground:    40 22% 90%;
-    --popover:           222 18%  8%;
+    --popover:           265 17%  9%;
     --popover-foreground: 40 22% 90%;
 
     --primary:           38 80% 56%;       /* #E5B14C burnished amber */
-    --primary-foreground:222 22%  6%;
+    --primary-foreground:265 20%  7%;
 
-    --secondary:         220 12% 13%;
+    --secondary:         265 12% 14%;
     --secondary-foreground: 40 22% 88%;
-    --muted:             220 12% 13%;
+    --muted:             265 12% 14%;
     --muted-foreground:  40  8% 60%;
-    --accent:            220 12% 14%;
+    --accent:            265 12% 15%;
     --accent-foreground: 38 80% 64%;
 
     --destructive:        2 70% 56%;
     --destructive-foreground: 0 0% 98%;
 
     /* Hairlines on dark — barely-there, like a CRT grid */
-    --border:            220  8% 18%;
-    --border-subtle:     220  8% 13%;
-    --input:             220  8% 18%;
+    --border:            265  9% 19%;
+    --border-subtle:     265  9% 14%;
+    --input:             265  9% 19%;
     --ring:              38 80% 56%;
 
     /* State — desaturated, terminal-readable */
@@ -233,6 +241,16 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    /* 아주 옅은 상단 워시. 단색 배경의 밋밋함만 걷어내는 정도로,
+     * 46% 지점에서 --background 로 완전히 수렴시켜 그라디언트 자체는
+     * 의식되지 않게 한다. fixed 라 스크롤해도 반복되지 않는다. */
+    background-image: linear-gradient(
+      180deg,
+      hsl(var(--page-wash)) 0%,
+      hsl(var(--background)) 46%
+    );
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

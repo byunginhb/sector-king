@@ -15,7 +15,7 @@ interface SectorKingPickCardProps {
 }
 
 /**
- * 메인 대시보드용 섹터킹 픽 카드 — 균형 성향 TOP 3.
+ * 메인 대시보드용 섹터킹 픽 카드 — 균형 성향 TOP 5(전폭 1단).
  * 단기·장기·가치·종합을 컬럼 + progressbar 로 표현(데스크탑=표, 모바일=막대 카드).
  * 행 클릭 시 종목 상세 페이지로, "자세히 보기"는 /rankings(성향 전환·전체 표)로 이동.
  * 픽은 limit 과 무관하게 전체 후보에서 선정되므로 payload 절약 위해 limit=5.
@@ -26,9 +26,7 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
   const { data, isLoading } = useRankings({ region, limit: 5 })
 
   if (isLoading) return null
-  // 홈에서는 TOP 3 만. 옆의 마켓 리포트 카드와 높이를 맞추기 위한 개수다
-  // (5행이면 리포트 카드보다 눈에 띄게 길어져 하단 라인이 어긋난다).
-  const picks = (data?.topPicksByProfile?.[profile] ?? []).slice(0, 3)
+  const picks = (data?.topPicksByProfile?.[profile] ?? []).slice(0, 5)
   if (picks.length === 0) return null
 
   return (
@@ -43,7 +41,7 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
             <PickProfileToggle value={profile} onChange={setProfile} />
           </div>
           <h3 className="font-display text-lg font-bold leading-tight tracking-tight text-card-foreground sm:text-xl">
-            섹터킹 픽 TOP 3
+            섹터킹 픽 TOP 5
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">
             {PICK_PROFILE_META[profile].description}
@@ -54,7 +52,7 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
         <div className="hidden sm:block">
           <table className="w-full border-collapse text-sm">
             <caption className="sr-only">
-              섹터킹 픽 TOP 3 — 순위, 종목, 단기·장기·가치 점수와 종합점수를 막대로 표시합니다.
+              섹터킹 픽 TOP 5 — 순위, 종목, 단기·장기·가치 점수와 종합점수를 막대로 표시합니다.
             </caption>
             <thead>
               <tr className="border-b border-border-subtle bg-surface-2/40 text-xs font-medium text-muted-foreground">
