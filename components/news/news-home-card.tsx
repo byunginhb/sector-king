@@ -55,7 +55,7 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
   return (
     <div
       className={cn(
-        'group block sk-card p-5 transition-[border-color,background-color,transform] duration-200 ease-out hover:border-primary/40 hover:bg-surface-2',
+        'group flex h-full flex-col sk-card p-5 transition-[border-color,background-color,transform] duration-200 ease-out hover:border-primary/40 hover:bg-surface-2',
         className
       )}
     >
@@ -132,7 +132,7 @@ export function NewsHomeCard({ report, brief, className }: NewsHomeCardProps) {
         </div>
       </Link>
 
-      <div className="mt-3 pt-3 border-t border-border-subtle/60 flex items-center justify-between gap-3">
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-border-subtle/60 pt-3">
         <NewsSubscribeCta variant="compact" />
         <Link
           href="/news"

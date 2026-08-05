@@ -91,12 +91,14 @@ export function IndustryDashboard() {
 
         {/* ───────── TODAY — 오늘 읽을 것 / 오늘 살 것 ─────────
             섹션 제목을 두지 않는다. 아래 두 카드가 각자 자기 이름("오늘의 마켓
-            리포트" / "섹터킹 픽 TOP 5")을 이미 달고 있어서, 바깥에 "오늘의 시장"을
+            리포트" / "섹터킹 픽 TOP 3")을 이미 달고 있어서, 바깥에 "오늘의 시장"을
             또 두면 같은 위계의 제목이 150px 안에 두 개 겹쳐 서로 경쟁한다.
             단 경계는 위의 sk-rule + 큰 여백이 이미 만든다.
             (아래 MAP·BRIEF 는 자식들이 자기 이름이 없어서 섹션 제목이 필요하다.) */}
         <section className="mt-8" aria-label="오늘의 시장">
-          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+          {/* items-start 를 쓰지 않는다 — 두 카드를 같은 높이로 늘리고 각 카드 안에서
+              푸터를 mt-auto 로 바닥에 붙여야 하단 라인이 맞는다. */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <NewsHomeCardSlot />
             <SectorKingPickCard region={region} />
           </div>
