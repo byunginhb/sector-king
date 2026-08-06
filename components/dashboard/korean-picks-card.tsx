@@ -34,6 +34,13 @@ const ACTION_STYLE: Record<
   },
 }
 
+/**
+ * 홈 카드에 노출할 종목 수. 전량(보통 5개)을 펼치면 이 카드가 TODAY 2열의 행 높이를
+ * 혼자 끌어올려서, 옆의 NewsHomeCard 가 늘어난 만큼 빈 여백으로 채워진다.
+ * 나머지는 "이유 보러가기"(리포트 상세)에서 전량 볼 수 있다.
+ */
+const HOME_PICK_LIMIT = 3
+
 export function KoreanPicksCard() {
   const { data, isLoading } = useLatestKoreanStocks()
 
@@ -41,6 +48,7 @@ export function KoreanPicksCard() {
   if (!data || data.picks.length === 0) return null
 
   const detailUrl = `/news/${data.reportId}`
+  const picks = data.picks.slice(0, HOME_PICK_LIMIT)
 
   return (
     <section aria-label="오늘의 한국 추천 종목">
@@ -61,7 +69,7 @@ export function KoreanPicksCard() {
         </div>
 
         <ul className="divide-y divide-border-subtle border-t border-border-subtle">
-          {data.picks.map((p) => {
+          {picks.map((p) => {
             const style = ACTION_STYLE[p.action] ?? ACTION_STYLE['지켜봐']
             const Icon = style.icon
             return (
@@ -131,7 +139,7 @@ function KoreanPicksCardSkeleton() {
           <Skeleton className="h-4 w-64 mt-1.5" />
         </div>
         <div className="divide-y divide-border-subtle border-t border-border-subtle">
-          {Array.from({ length: 5 }).map((_, i) => (
+          {Array.from({ length: HOME_PICK_LIMIT }).map((_, i) => (
             <div key={i} className="flex items-start gap-3 px-4 py-3.5 sm:gap-4 sm:px-5 sm:py-4">
               <Skeleton className="h-3 w-6 mt-1 shrink-0" />
               <div className="min-w-0 flex-1 space-y-2">
