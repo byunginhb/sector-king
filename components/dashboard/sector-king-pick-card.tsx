@@ -8,6 +8,7 @@ import { useRankings } from '@/hooks/use-rankings'
 import { ScoreBar } from '@/components/rankings/score-bar'
 import { PickProfileToggle } from '@/components/rankings/pick-profile-toggle'
 import { PICK_PROFILE_META, type PickProfile } from '@/lib/pick-profile'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { RegionFilter } from '@/types'
 
 interface SectorKingPickCardProps {
@@ -25,7 +26,7 @@ export function SectorKingPickCard({ region }: SectorKingPickCardProps) {
   const [profile, setProfile] = useState<PickProfile>('balanced')
   const { data, isLoading } = useRankings({ region, limit: 5 })
 
-  if (isLoading) return null
+  if (isLoading) return <SectorKingPickCardSkeleton />
   const picks = (data?.topPicksByProfile?.[profile] ?? []).slice(0, 5)
   if (picks.length === 0) return null
 
@@ -189,5 +190,36 @@ function MobileScoreRow({ label, score }: { label: string; score: number | null 
       <span className="w-16 shrink-0 text-[11px] text-muted-foreground">{label}</span>
       <ScoreBar score={score} label={`${label} 점수`} className="flex-1" />
     </div>
+  )
+}
+
+function SectorKingPickCardSkeleton() {
+  return (
+    <section aria-label="섹터킹 픽">
+      <div className="flex h-full flex-col overflow-hidden sk-card">
+        <div className="px-5 pb-4 pt-5">
+          <div className="mb-2 flex min-h-8 items-center justify-between gap-3">
+            <Skeleton className="h-3 w-28" />
+            <Skeleton className="h-7 w-28 rounded-full" />
+          </div>
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-56 mt-1.5" />
+        </div>
+        <div className="divide-y divide-border-subtle border-t border-border-subtle">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+              <Skeleton className="h-4 w-4 shrink-0" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+              <Skeleton className="hidden h-4 w-16 sm:block" />
+              <Skeleton className="hidden h-4 w-16 sm:block" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }

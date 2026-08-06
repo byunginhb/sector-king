@@ -5,6 +5,7 @@ import { ClipboardCheck, ArrowRight } from 'lucide-react'
 import { useAnalysts } from '@/hooks/use-analysts'
 import { fmtScore, scoreTone, scoreBar } from '@/components/analysts/ui'
 import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
 
 /**
  * 메인 대시보드용 애널리스트 성적표 티저 — 신규 기능 홍보 진입점.
@@ -14,7 +15,7 @@ import { cn } from '@/lib/utils'
 export function AnalystScorecardCard() {
   const { data, isLoading } = useAnalysts()
 
-  if (isLoading) return null
+  if (isLoading) return <AnalystScorecardCardSkeleton />
   const top = data?.ranked.slice(0, 3) ?? []
   if (top.length === 0) return null
 
@@ -86,6 +87,40 @@ export function AnalystScorecardCard() {
             전체 성적표 보기
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function AnalystScorecardCardSkeleton() {
+  return (
+    <section className="mt-8" aria-label="애널리스트 성적표">
+      <div className="mb-3 flex items-center gap-2">
+        <Skeleton className="h-3 w-28" />
+      </div>
+
+      <div className="overflow-hidden sk-card">
+        <div className="flex items-start gap-3 border-b border-border-subtle px-4 py-3.5 sm:px-5">
+          <Skeleton className="h-5 w-5 shrink-0 rounded-full" />
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-3 w-64" />
+          </div>
+        </div>
+
+        <div className="divide-y divide-border-subtle">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 px-4 py-3 sm:px-5">
+              <Skeleton className="h-6 w-6 shrink-0 rounded-full" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+              <Skeleton className="hidden h-1.5 w-24 rounded-full sm:block" />
+              <Skeleton className="h-4 w-8" />
+            </div>
+          ))}
         </div>
       </div>
     </section>

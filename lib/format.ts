@@ -8,7 +8,7 @@ export function formatMarketCap(
   value: number | null | undefined,
   currency: Currency = 'USD'
 ): string {
-  if (value === null || value === undefined) return 'N/A'
+  if (value === null || value === undefined || value === 0) return 'N/A'
   if (currency === 'KRW') return formatKrw(value) // 조원/억원/만원/원 압축 재사용
   if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`
   if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`
@@ -55,7 +55,7 @@ export function formatPriceChange(value: number | null): string {
 
 export function formatVolume(value: number | null | undefined): string {
   if (value === null || value === undefined) return 'N/A'
-  if (value === 0) return '0'
+  if (value === 0) return 'N/A'
   if (value >= 1e9) return `${(value / 1e9).toFixed(2)}B`
   if (value >= 1e6) return `${(value / 1e6).toFixed(2)}M`
   if (value >= 1e3) return `${(value / 1e3).toFixed(2)}K`

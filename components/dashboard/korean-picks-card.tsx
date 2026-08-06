@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowRight, Flag, ShieldAlert, Eye, Ban } from 'lucide-react'
 import { useLatestKoreanStocks } from '@/hooks/use-latest-korean-stocks'
 import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { NoviceStockAction } from '@/drizzle/supabase-schema'
 
 // action 별 시각 토큰 (시맨틱 — 라이트/다크 자동 대응, 메일 템플릿과 동일한 의미 매핑)
@@ -36,7 +37,7 @@ const ACTION_STYLE: Record<
 export function KoreanPicksCard() {
   const { data, isLoading } = useLatestKoreanStocks()
 
-  if (isLoading) return null
+  if (isLoading) return <KoreanPicksCardSkeleton />
   if (!data || data.picks.length === 0) return null
 
   const detailUrl = `/news/${data.reportId}`
@@ -114,6 +115,34 @@ export function KoreanPicksCard() {
             이유 보러가기
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function KoreanPicksCardSkeleton() {
+  return (
+    <section aria-label="오늘의 한국 추천 종목">
+      <div className="flex h-full flex-col overflow-hidden sk-card">
+        <div className="px-5 pb-4 pt-5">
+          <Skeleton className="h-3 w-32" />
+          <Skeleton className="h-6 w-48 mt-2" />
+          <Skeleton className="h-4 w-64 mt-1.5" />
+        </div>
+        <div className="divide-y divide-border-subtle border-t border-border-subtle">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-start gap-3 px-4 py-3.5 sm:gap-4 sm:px-5 sm:py-4">
+              <Skeleton className="h-3 w-6 mt-1 shrink-0" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-3 w-full" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

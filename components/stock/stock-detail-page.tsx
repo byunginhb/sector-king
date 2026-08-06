@@ -8,6 +8,7 @@ import { useCompanyInsights } from '@/hooks/use-company-insights'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 import { ShareButton } from '@/components/share-button'
 import { WatchStarToggle } from '@/components/me/watch-star-toggle'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   StockDetailSkeleton,
   StockDetailError,
@@ -117,7 +118,7 @@ function StockInsights({
   ticker: string
   data: CompanyDetailResponse
 }) {
-  const { data: insights } = useCompanyInsights(ticker)
+  const { data: insights, isLoading: insightsLoading } = useCompanyInsights(ticker)
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
@@ -127,14 +128,15 @@ function StockInsights({
         <ShortLongScores data={data} scoreHistory={insights?.scoreHistory} />
         <StockDcfSection dcf={data.dcf} currentPriceUsd={data.snapshot?.price ?? null} />
         <SignalSummary data={data} insights={insights} />
-        {insights && (
+        {insightsLoading && <InsightsSectionSkeleton count={3} />}
+        {!insightsLoading && insights && (
           <ScoreTrendChart
             history={insights.scoreHistory}
             appliedRange={insights.appliedRange}
           />
         )}
-        {insights && <SectorPosition insights={insights} />}
-        {insights?.peBand && <PeBandChart band={insights.peBand} />}
+        {!insightsLoading && insights && <SectorPosition insights={insights} />}
+        {!insightsLoading && insights?.peBand && <PeBandChart band={insights.peBand} />}
         <PriceChartSection ticker={ticker} initialHistory={data.history} />
       </div>
 
@@ -142,9 +144,24 @@ function StockInsights({
       <div className="space-y-6">
         <DominanceCard data={data} />
         <FinancialAnalyst data={data} />
-        {insights && <ValuationCompare insights={insights} />}
+        {insightsLoading && <InsightsSectionSkeleton count={1} />}
+        {!insightsLoading && insights && <ValuationCompare insights={insights} />}
       </div>
     </div>
+  )
+}
+
+/** insights(점수추이/섹터포지션/PER밴드/밸류에이션) 로딩 중 표시하는 카드형 스켈레톤. */
+function InsightsSectionSkeleton({ count }: { count: number }) {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <section key={i} className="sk-card p-4 sm:p-5">
+          <Skeleton className="h-4 w-40 mb-3" />
+          <Skeleton className="h-48 w-full rounded-md" />
+        </section>
+      ))}
+    </>
   )
 }
 
