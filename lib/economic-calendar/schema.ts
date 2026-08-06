@@ -9,7 +9,7 @@
 import { z } from 'zod'
 
 export const countrySchema = z.enum(['KR', 'US'])
-export const categorySchema = z.enum(['indicator', 'earnings', 'event'])
+export const categorySchema = z.enum(['indicator', 'earnings'])
 export const importanceSchema = z.enum(['high', 'medium', 'low'])
 
 const dateSchema = z
@@ -72,7 +72,7 @@ export const adminEventListQuerySchema = z.object({
   from: dateSchema.optional(),
   to: dateSchema.optional(),
   country: z.enum(['KR', 'US', 'all']).default('all'),
-  category: z.enum(['indicator', 'earnings', 'event', 'all']).default('all'),
+  category: z.enum(['indicator', 'earnings', 'all']).default('all'),
   source: z.string().max(20).default('all'), // 'all' | 'manual' | 'fred' ...
   importance: z.enum(['high', 'medium', 'low', 'all']).default('all'),
   includeHidden: z.coerce.boolean().default(true), // 어드민은 숨김도 표시

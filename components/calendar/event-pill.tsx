@@ -1,7 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { Star, Circle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { CATEGORY_META } from './category-meta'
 import type { EconomicEvent, CalendarCountryValue, EconomicImportance } from '@/types'
 
 /** 국가 배지 메타 — 텍스트(US/KR) + 색 dot 병기(색 단독 금지). */
@@ -90,15 +92,104 @@ function ValueLine({ event }: { event: EconomicEvent }) {
   )
 }
 
+/** 카테고리 아이콘(경제지표=선그래프, 실적발표=막대). 색이 아닌 형태로 구분. */
+function CategoryIcon({ category }: { category: EconomicEvent['category'] }) {
+  const meta = CATEGORY_META[category]
+  if (!meta) return null
+  const Icon = meta.icon
+  return (
+    <Icon
+      className="h-3 w-3 shrink-0 text-muted-foreground"
+      aria-label={meta.label}
+    />
+  )
+}
+
+interface EventLink {
+  href: string
+  /** true=외부 원문(새 탭), false=내부 라우트(실적→종목 상세) */
+  external: boolean
+}
+
+/**
+ * sourceUrl → 링크 종류. 심층방어로 스킴을 화이트리스트한다.
+ * - http(s)  = 외부 출처 원문 → 새 탭
+ * - '/…'     = 내부 경로(단, '//host' 프로토콜 상대 URL 은 외부라 거부)
+ * - 그 외    = 링크화하지 않음(javascript: 등)
+ */
+function resolveLink(sourceUrl: string | null): EventLink | null {
+  if (!sourceUrl) return null
+  if (/^https?:\/\//i.test(sourceUrl)) return { href: sourceUrl, external: true }
+  if (sourceUrl.startsWith('/') && !sourceUrl.startsWith('//')) {
+    return { href: sourceUrl, external: false }
+  }
+  return null
+}
+
+function linkAriaLabel(title: string, link: EventLink): string {
+  return link.external
+    ? `${title} — 새 탭에서 출처 열기`
+    : `${title} — 종목 상세 보기`
+}
+
+interface EventShellProps {
+  link: EventLink | null
+  title: string
+  className: string
+  /** 링크가 없을 때 쓸 태그. list 변형은 내부에 <p> 가 있어 span 이면 무효 HTML. */
+  as: 'span' | 'div'
+  /** 월 그리드는 로빙 tabindex 라 링크를 Tab 순서에서 제외(-1). */
+  tabIndex?: number
+  children: React.ReactNode
+}
+
+/** 항목 껍데기 — 링크 유무/내외부에 따라 a · Link · 비클릭 태그로 렌더. */
+function EventShell({
+  link,
+  title,
+  className,
+  as: Tag,
+  tabIndex,
+  children,
+}: EventShellProps) {
+  if (!link) return <Tag className={className}>{children}</Tag>
+
+  const interactive = cn(
+    className,
+    'transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+  )
+  const aria = linkAriaLabel(title, link)
+
+  if (!link.external) {
+    return (
+      <Link
+        href={link.href}
+        aria-label={aria}
+        tabIndex={tabIndex}
+        className={interactive}
+      >
+        {children}
+      </Link>
+    )
+  }
+  return (
+    <a
+      href={link.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={aria}
+      tabIndex={tabIndex}
+      className={interactive}
+    >
+      {children}
+    </a>
+  )
+}
+
 interface EventPillProps {
   event: EconomicEvent
   /** grid=셀 내부 콤팩트 라인, list=상세 라인 */
   variant: 'grid' | 'list'
-}
-
-/** 출처가 있을 때 새 탭 링크로 감싸는 aria-label 문구. */
-function sourceAriaLabel(title: string): string {
-  return `${title} — 새 탭에서 출처 열기`
 }
 
 /**
@@ -110,59 +201,45 @@ function sourceAriaLabel(title: string): string {
  */
 export function EventPill({ event, variant }: EventPillProps) {
   const bar = IMPORTANCE_BAR[event.importance]
-  // 렌더 측 스킴 가드(심층방어) — http(s) 아닌 URL(javascript: 등)은 링크화하지 않음.
-  const href =
-    event.sourceUrl && /^https?:\/\//i.test(event.sourceUrl) ? event.sourceUrl : null
+  const link = resolveLink(event.sourceUrl)
+  const titleHover =
+    link && 'underline-offset-2 decoration-dotted group-hover:underline group-hover:text-primary'
 
   if (variant === 'grid') {
-    const base = cn(
-      'group flex items-center gap-1 border-l-2 pl-1 py-px rounded-sm',
-      bar
-    )
-    const inner = (
-      <>
+    return (
+      <EventShell
+        link={link}
+        title={event.title}
+        as="span"
+        // 월 그리드는 로빙 tabindex(셀 단위 방향키 탐색)라 링크를 Tab 순서에서 제외.
+        // 키보드 접근은 주별 리스트 뷰(list variant, 자연 Tab 순서)로 위임.
+        tabIndex={-1}
+        className={cn(
+          'group flex items-center gap-1 border-l-2 pl-1 py-px rounded-sm',
+          bar
+        )}
+      >
+        <CategoryIcon category={event.category} />
         <CountryBadge country={event.country} />
-        <span
-          className={cn(
-            'truncate text-[11px] leading-tight text-foreground/90',
-            href &&
-              'underline-offset-2 decoration-dotted group-hover:underline group-hover:text-primary'
-          )}
-        >
+        <span className={cn('truncate text-[11px] leading-tight text-foreground/90', titleHover)}>
           {event.title}
         </span>
-      </>
+      </EventShell>
     )
-
-    if (href) {
-      return (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={sourceAriaLabel(event.title)}
-          // 월 그리드는 로빙 tabindex(셀 단위 방향키 탐색)라 링크를 Tab 순서에서 제외.
-          // 키보드 접근은 주별 리스트 뷰(list variant, 자연 Tab 순서)로 위임.
-          tabIndex={-1}
-          className={cn(
-            base,
-            'transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
-          )}
-        >
-          {inner}
-        </a>
-      )
-    }
-    return <span className={base}>{inner}</span>
   }
 
-  const base = cn(
-    'group block w-full border-l-2 pl-3 pr-2 py-2 text-left rounded-sm',
-    bar
-  )
-  const inner = (
-    <>
+  return (
+    <EventShell
+      link={link}
+      title={event.title}
+      as="div"
+      className={cn(
+        'group block w-full border-l-2 pl-3 pr-2 py-2 text-left rounded-sm',
+        bar
+      )}
+    >
       <span className="flex items-center gap-2 flex-wrap">
+        <CategoryIcon category={event.category} />
         <CountryBadge country={event.country} />
         {event.time && (
           <span className="num-mono text-[11px] text-muted-foreground">
@@ -176,34 +253,10 @@ export function EventPill({ event, variant }: EventPillProps) {
           </span>
         )}
       </span>
-      <span
-        className={cn(
-          'mt-1 block text-sm leading-snug text-foreground',
-          href &&
-            'underline-offset-2 decoration-dotted group-hover:underline group-hover:text-primary'
-        )}
-      >
+      <span className={cn('mt-1 block text-sm leading-snug text-foreground', titleHover)}>
         {event.title}
       </span>
       <ValueLine event={event} />
-    </>
+    </EventShell>
   )
-
-  if (href) {
-    return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={sourceAriaLabel(event.title)}
-        className={cn(
-          base,
-          'transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
-        )}
-      >
-        {inner}
-      </a>
-    )
-  }
-  return <div className={base}>{inner}</div>
 }

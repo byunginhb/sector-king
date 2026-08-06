@@ -783,11 +783,11 @@ export interface IndustryMoneyFlowResponse {
 // ── 경제 캘린더 (14_econ_calendar) ─────────────────────────────
 // 필터 유니온 (UI/쿼리 값). SoT: lib/econ-calendar.ts (Phase C)
 export type CalendarCountry = 'all' | 'kr' | 'us'
-export type CalendarCategory = 'all' | 'indicator' | 'earnings' | 'event'
+export type CalendarCategory = 'all' | 'indicator' | 'earnings'
 
 // DB 컬럼 값 (economic_events.country / .category)
 export type CalendarCountryValue = 'KR' | 'US'
-export type CalendarCategoryValue = 'indicator' | 'earnings' | 'event'
+export type CalendarCategoryValue = 'indicator' | 'earnings'
 
 /** 중요도 3단계 (별점/색상 매핑용) */
 export type EconomicImportance = 'low' | 'medium' | 'high'

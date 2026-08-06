@@ -4,11 +4,14 @@
  * 쿼리:
  *   ?from=YYYY-MM-DD&to=YYYY-MM-DD   (누락/오류 시 금주 폴백, to-from>62일 클램프)
  *   ?country=all|kr|us               (기본 all)
- *   ?category=all|indicator|earnings|event (기본 all, MVP 는 indicator 만 데이터)
+ *   ?category=all|indicator|earnings (기본 all)
  *
- * 저장소: Supabase(뉴스와 동일 `createClient()` anon read).
+ * 저장소가 카테고리마다 다르다 — 크로스-스토어 머지:
+ *   indicator = Supabase economic_events (런타임 어드민 CRUD 필요)
+ *   earnings  = SQLite earnings_calendar (update_data.py 수집, lib/earnings-calendar)
  * 방어심층: RLS 공개정책이 is_hidden=false 를 이미 강제하지만 앱에서도 명시.
  * 값(actual/forecast/previous)은 문자열 원문 → toUsd 불요.
+ * (실적 쪽 시총→중요도 환산은 lib/earnings-calendar 에서 toUsd 후 판정)
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
@@ -18,7 +21,9 @@ import {
   resolveRange,
   countryFilterToValue,
   categoryFilterToValue,
+  compareEvents,
 } from '@/lib/econ-calendar'
+import { getEarningsEvents } from '@/lib/earnings-calendar'
 import type {
   ApiResponse,
   EconomicCalendarResponse,
@@ -78,22 +83,33 @@ export async function GET(
     const countryValue = countryFilterToValue(country) // null=미적용
     const categoryValue = categoryFilterToValue(category) // null=미적용
 
-    const supabase = await createClient()
+    // 카테고리 필터는 소스 선택으로 내려간다 — 안 보여줄 소스는 아예 조회하지 않는다.
+    const wantsIndicators = category === 'all' || category === 'indicator'
+    const wantsEarnings = category === 'all' || category === 'earnings'
 
-    let query = supabase
-      .from('economic_events')
-      .select(SELECT_COLUMNS)
-      .gte('event_date', from)
-      .lte('event_date', to)
-      .eq('is_hidden', false) // RLS + 앱 이중 방어
+    const [indicatorResult, earnings] = await Promise.all([
+      wantsIndicators
+        ? (async () => {
+            const supabase = await createClient()
+            let query = supabase
+              .from('economic_events')
+              .select(SELECT_COLUMNS)
+              .gte('event_date', from)
+              .lte('event_date', to)
+              .eq('is_hidden', false) // RLS + 앱 이중 방어
 
-    if (countryValue) query = query.eq('country', countryValue)
-    if (categoryValue) query = query.eq('category', categoryValue)
+            if (countryValue) query = query.eq('country', countryValue)
+            if (categoryValue) query = query.eq('category', categoryValue)
 
-    // 날짜 → 시각(종일=null 은 마지막) 오름차순.
-    const { data, error } = await query
-      .order('event_date', { ascending: true })
-      .order('event_time', { ascending: true, nullsFirst: false })
+            return query
+          })()
+        : Promise.resolve({ data: [], error: null }),
+      wantsEarnings
+        ? getEarningsEvents({ from, to, country })
+        : Promise.resolve([] as EconomicEvent[]),
+    ])
+
+    const { data, error } = indicatorResult
 
     if (error) {
       console.error('[GET /api/economic-calendar] supabase error:', error.message)
@@ -103,9 +119,11 @@ export async function GET(
       )
     }
 
-    const events = (data ?? []).map((row) =>
+    const indicators = (data ?? []).map((row) =>
       rowToDto(row as Parameters<typeof rowToDto>[0])
     )
+    // 두 소스를 합친 뒤 한 번에 정렬 — DB order 로는 크로스-스토어 순서를 못 만든다.
+    const events = [...indicators, ...earnings].sort(compareEvents)
 
     return NextResponse.json({
       success: true,

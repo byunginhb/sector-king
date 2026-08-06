@@ -1,16 +1,9 @@
 'use client'
 
-import {
-  LineChart,
-  BarChart3,
-  CalendarClock,
-  Globe2,
-  Flag,
-  DollarSign,
-  type LucideIcon,
-} from 'lucide-react'
+import { LayoutGrid, Globe2, Flag, DollarSign, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CalendarLegend } from './calendar-legend'
+import { CATEGORY_META } from './category-meta'
 import type { CalendarCountry, CalendarCategory } from '@/types'
 
 const PILL_BASE =
@@ -20,15 +13,13 @@ interface CategoryDef {
   value: CalendarCategory
   label: string
   icon: LucideIcon
-  disabled?: boolean
 }
 
-// MVP: indicator 만 데이터. earnings/event 는 disabled("준비 중").
+// 'event' 는 수집 소스도 정의도 없이 비어 있던 탭이라 제거했다.
 const CATEGORIES: readonly CategoryDef[] = [
-  { value: 'all', label: '전체', icon: LineChart },
-  { value: 'indicator', label: '경제지표', icon: LineChart },
-  { value: 'earnings', label: '실적발표', icon: BarChart3, disabled: true },
-  { value: 'event', label: '이벤트', icon: CalendarClock, disabled: true },
+  { value: 'all', label: '전체', icon: LayoutGrid },
+  { value: 'indicator', ...CATEGORY_META.indicator },
+  { value: 'earnings', ...CATEGORY_META.earnings },
 ]
 
 interface CountryDef {
@@ -85,26 +76,18 @@ export function CalendarFilters({
                 key={c.value}
                 type="button"
                 aria-pressed={isOn}
-                aria-disabled={c.disabled || undefined}
-                disabled={c.disabled}
                 onClick={() => {
-                  if (!c.disabled && !isOn) onCategoryChange(c.value)
+                  if (!isOn) onCategoryChange(c.value)
                 }}
                 className={cn(
                   PILL_BASE,
                   isOn
                     ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground',
-                  c.disabled && 'opacity-40 cursor-not-allowed hover:text-muted-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <Icon className="h-3.5 w-3.5" aria-hidden />
                 <span>{c.label}</span>
-                {c.disabled && (
-                  <span className="ml-0.5 rounded bg-surface-2 px-1 text-[10px] text-muted-foreground">
-                    준비 중
-                  </span>
-                )}
               </button>
             )
           })}

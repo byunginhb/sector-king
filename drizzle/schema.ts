@@ -182,6 +182,39 @@ export const analystRecommendationTrend = sqliteTable(
   (table) => [primaryKey({ columns: [table.ticker, table.period] })]
 )
 
+/**
+ * 실적발표 일정 (Yahoo .info 의 earningsTimestamp / earningsTimestampStart).
+ *
+ * 경제 캘린더의 'earnings' 카테고리 소스. 매크로 지표(Supabase economic_events)와
+ * 저장소가 다른 이유는 종목 데이터라 수집 파이프라인(update_data.py)이 이미
+ * 같은 .info 를 들고 있기 때문이다 — 추가 API 호출도, 신규 크론도 없다.
+ *
+ * 일시는 KST 확정값(economic_events 와 동일 규약). 미국 장마감 후 발표는
+ * KST 로 다음날 새벽에 찍히며, 그게 한국 사용자 기준의 올바른 날짜다.
+ * (ticker, earnings_date) 키라 분기가 지나도 과거 발표일이 남는다.
+ */
+export const earningsCalendar = sqliteTable(
+  'earnings_calendar',
+  {
+    ticker: text('ticker')
+      .notNull()
+      .references(() => companies.ticker),
+    /** 'YYYY-MM-DD' (KST) */
+    earningsDate: text('earnings_date').notNull(),
+    /** 'HH:MM' (KST) */
+    earningsTime: text('earnings_time'),
+    /** 1 = Yahoo 추정일(미확정). 0 = 확정 */
+    isEstimate: integer('is_estimate').notNull().default(0),
+    updatedAt: text('updated_at'),
+  },
+  (table) => [
+    primaryKey({ columns: [table.ticker, table.earningsDate] }),
+    index('idx_earnings_calendar_date').on(table.earningsDate),
+  ]
+)
+
+export type EarningsCalendarRow = typeof earningsCalendar.$inferSelect
+
 export const scoreHistory = sqliteTable(
   'score_history',
   {

@@ -55,7 +55,6 @@ const CATEGORY_OPTIONS = [
   { value: 'all', label: '전체' },
   { value: 'indicator', label: '지표' },
   { value: 'earnings', label: '실적' },
-  { value: 'event', label: '이벤트' },
 ]
 const IMPORTANCE_OPTIONS = [
   { value: 'all', label: '전체' },

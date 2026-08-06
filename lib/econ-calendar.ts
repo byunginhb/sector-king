@@ -25,7 +25,6 @@ const CATEGORY_VALUES: readonly CalendarCategory[] = [
   'all',
   'indicator',
   'earnings',
-  'event',
 ]
 
 /** 'YYYY-MM-DD' 형식 + 실재 날짜 검증(예: 2026-02-30 거부). */
@@ -136,11 +135,54 @@ export function countryFilterToValue(
   return null
 }
 
-/** UI 필터 → DB category 값. all→null(미적용), 그 외 그대로. */
+/**
+ * UI 필터 → DB category 값. all→null(미적용), 그 외 그대로.
+ * earnings 는 Supabase 가 아니라 SQLite 소스라 이 값이 Supabase 쿼리에 걸려도
+ * 결과가 비는 게 정상이다(호출부가 소스 자체를 분기한다).
+ */
 export function categoryFilterToValue(
   c: CalendarCategory
 ): CalendarCategoryValue | null {
   return c === 'all' ? null : c
+}
+
+/** 중요도 정렬 가중치(높을수록 앞). */
+const IMPORTANCE_RANK: Record<EconomicEvent['importance'], number> = {
+  high: 0,
+  medium: 1,
+  low: 2,
+}
+
+/** 동률일 때 카테고리 우선순위(낮을수록 앞). */
+const CATEGORY_RANK: Record<EconomicEvent['category'], number> = {
+  indicator: 0,
+  earnings: 1,
+}
+
+/**
+ * 크로스-스토어(지표+실적) 통합 정렬 비교자.
+ *
+ * 날짜 → 중요도 → 카테고리 → 시각(종일=null 은 마지막) → id.
+ *
+ * 중요도·카테고리가 시각보다 앞서는 이유는 같다: 월 그리드가 칸당 2건만 보여주는데
+ * 실적은 분기마다 수백 건이 몰리고 매크로 지표는 2주에 서너 건뿐이다. 시각 우선이면
+ * 소형주 실적이 대형주 실적을, 실적 무더기가 고용보고서·CPI 를 칸 밖으로 밀어낸다.
+ */
+export function compareEvents(a: EconomicEvent, b: EconomicEvent): number {
+  if (a.dateKst !== b.dateKst) return a.dateKst < b.dateKst ? -1 : 1
+
+  const impDiff = IMPORTANCE_RANK[a.importance] - IMPORTANCE_RANK[b.importance]
+  if (impDiff !== 0) return impDiff
+
+  const catDiff = CATEGORY_RANK[a.category] - CATEGORY_RANK[b.category]
+  if (catDiff !== 0) return catDiff
+
+  if (a.time !== b.time) {
+    if (a.time === null) return 1 // 종일/미정은 뒤로
+    if (b.time === null) return -1
+    return a.time < b.time ? -1 : 1
+  }
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0 // 안정적 순서(입력 순서 의존 제거)
 }
 
 /**

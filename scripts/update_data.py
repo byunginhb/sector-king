@@ -3,7 +3,7 @@
 
 import sqlite3
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 # Ensure sibling modules (scoring.py) are importable regardless of CWD
@@ -14,6 +14,9 @@ import yfinance as yf
 from scoring import calculate_hegemony_scores, update_sector_rankings
 
 DB_PATH = Path(__file__).parent.parent / "data" / "hegemony.db"
+
+# 실적 캘린더는 KST 확정값으로 저장한다(economic_events 와 동일 규약).
+KST = timezone(timedelta(hours=9))
 
 # Invalid tickers that should be skipped (e.g., wrong format in DB).
 # CATL/ABB 등 좀비 종목은 09_accuracy_audit(A5) 마이그레이션으로 DB 에서 제거됨.
@@ -88,6 +91,8 @@ def fetch_stock_data(ticker: str, target_date: str) -> dict | None:
             # 투자의견 분포 추이 (issue#33). quoteSummary 의 별도 모듈이라
             # .info 에 없다 → 티커당 호출 1회 추가. 실패해도 스냅샷은 살린다.
             "recommendation_trend": fetch_recommendation_trend(stock, ticker),
+            # 실적발표 일정. 같은 .info dict 안에 있어 추가 호출 0.
+            "earnings_dates": parse_earnings_dates(info),
         }
     except Exception as e:
         print(f"  Error fetching {ticker}: {e}")
@@ -123,6 +128,63 @@ def fetch_recommendation_trend(stock, ticker: str) -> list[dict]:
     except Exception as e:
         print(f"  (recommendation trend unavailable for {ticker}: {e})", end=" ")
         return []
+
+
+def parse_earnings_dates(info: dict) -> list[dict]:
+    """Extract earnings dates (KST) from the .info dict we already fetched.
+
+    Yahoo ships epoch seconds in the quote summary, so this costs no extra API
+    call. Two keys matter:
+      - earningsTimestamp      = most recent print (past, always confirmed)
+      - earningsTimestampStart = next scheduled print (may be an estimate)
+    Both are stored so the calendar has backward coverage from day one.
+
+    The epoch is an absolute moment, so KST conversion is exact — and it MUST
+    shift the date for US after-close prints (AAPL 16:00 ET -> 05:00 KST next
+    day). That is the correct row for a KST calendar, not an off-by-one.
+    """
+    is_estimate = bool(info.get("isEarningsDateEstimate"))
+    by_date: dict[str, dict] = {}
+    # Order matters: on a collision the scheduled entry (2nd) wins so its
+    # estimate flag is the one that survives.
+    for key, estimate in (("earningsTimestamp", False), ("earningsTimestampStart", is_estimate)):
+        ts = info.get(key)
+        if not ts:
+            continue
+        try:
+            dt = datetime.fromtimestamp(int(ts), tz=timezone.utc).astimezone(KST)
+        except (TypeError, ValueError, OSError, OverflowError):
+            continue
+        by_date[dt.date().isoformat()] = {
+            "date": dt.date().isoformat(),
+            "time": dt.strftime("%H:%M"),
+            "is_estimate": 1 if estimate else 0,
+        }
+    return list(by_date.values())
+
+
+def upsert_earnings_calendar(conn: sqlite3.Connection, data: dict):
+    """UPSERT earnings dates for one ticker.
+
+    Keyed on (ticker, earnings_date) so past quarters accumulate instead of
+    being overwritten when Yahoo rolls the schedule forward. A confirmed date
+    replacing an estimate is just an is_estimate flip on the same row; a
+    rescheduled date creates a new row and the stale estimate is filtered out
+    at read time (see lib/earnings-calendar.ts).
+    """
+    for row in data.get("earnings_dates") or []:
+        conn.execute(
+            """
+            INSERT INTO earnings_calendar
+            (ticker, earnings_date, earnings_time, is_estimate, updated_at)
+            VALUES (?, ?, ?, ?, datetime('now'))
+            ON CONFLICT(ticker, earnings_date) DO UPDATE SET
+                earnings_time = excluded.earnings_time,
+                is_estimate = excluded.is_estimate,
+                updated_at = datetime('now')
+        """,
+            (data["ticker"], row["date"], row["time"], row["is_estimate"]),
+        )
 
 
 def upsert_snapshot(conn: sqlite3.Connection, data: dict):
@@ -308,6 +370,18 @@ def ensure_score_tables(conn: sqlite3.Connection):
             updated_at TEXT,
             PRIMARY KEY (ticker, period)
         );
+
+        CREATE TABLE IF NOT EXISTS earnings_calendar (
+            ticker TEXT NOT NULL REFERENCES companies(ticker),
+            earnings_date TEXT NOT NULL,
+            earnings_time TEXT,
+            is_estimate INTEGER NOT NULL DEFAULT 0,
+            updated_at TEXT,
+            PRIMARY KEY (ticker, earnings_date)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_earnings_calendar_date
+            ON earnings_calendar(earnings_date);
     """)
     except sqlite3.Error as e:
         print(f"Error: Failed to ensure score tables: {e}")
@@ -370,6 +444,7 @@ def main():
             upsert_snapshot(conn, data)
             upsert_company_scores(conn, data)
             upsert_recommendation_trend(conn, data)
+            upsert_earnings_calendar(conn, data)
             results.append(ticker)
             print("OK")
         else:
