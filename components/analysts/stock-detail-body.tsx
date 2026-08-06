@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { TargetLinesChart, type TargetSeries } from './target-lines-chart'
-import { PALETTE, CONSENSUS_COLOR, pct, hitRateTone, fmtScore, scoreTone, ScoreHint } from './ui'
+import { PALETTE, PRICE_COLOR, CONSENSUS_COLOR, pct, hitRateTone, fmtScore, scoreTone, ScoreHint } from './ui'
 import type { AnalystStockDetailResponse, StockAnalystSeries } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -90,7 +90,7 @@ export function StockDetailBody({ data }: { data: AnalystStockDetailResponse }) 
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
         최신가 <span className="font-medium text-foreground">{fmt.price(data.latestPrice)}</span> ·{' '}
-        {data.analysts.length}명이 예측. <span className="font-medium text-foreground">실제 주가</span>(굵은 선),{' '}
+        {data.analysts.length}명이 예측. <span className="font-medium" style={{ color: PRICE_COLOR }}>실제 주가</span>(가장 굵은 선),{' '}
         <span className="font-medium" style={{ color: CONSENSUS_COLOR }}>컨센서스(중앙값, 전원 기준)</span>, 그리고{' '}
         <span className="font-medium text-foreground">
           {expanded ? `애널리스트 ${data.analysts.length}명 전체` : `예측력 점수 상위 ${Math.min(TOP_N, data.analysts.length)}명`}

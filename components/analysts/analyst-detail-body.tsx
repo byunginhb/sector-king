@@ -4,11 +4,12 @@ import { useState, useMemo } from 'react'
 import { FileText } from 'lucide-react'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { TargetLinesChart, type TargetSeries } from './target-lines-chart'
-import { PALETTE, pct, hitRateTone, DIRECTION_META, STATUS_META } from './ui'
+import { PALETTE, PRICE_COLOR, CONSENSUS_COLOR, pct, hitRateTone, DIRECTION_META, STATUS_META } from './ui'
 import type { AnalystDetailResponse, AnalystTickerSeries, AnalystTargetPoint } from '@/types'
 import { cn } from '@/lib/utils'
 
-const ME_COLOR = '#2563eb'
+/** 주인공 애널리스트 선 — 컨센서스와 같은 "기준선" 슬롯이라 색을 공유(팔레트와 미충돌). */
+const ME_COLOR = CONSENSUS_COLOR
 
 /** 리포트 이력 행 — 모바일 2줄(제목 오버플로우 방지), 데스크탑 1줄. */
 function TargetRow({ p }: { p: AnalystTargetPoint }) {
@@ -156,7 +157,9 @@ function TickerPanel({ series }: { series: AnalystTickerSeries }) {
       </div>
 
       <p className="text-[11px] text-muted-foreground">
-        최신가 {fmt.price(series.prices.at(-1)?.price ?? null)} · 진한 선=실제 주가, 파란 굵은 선=이 애널리스트 목표가.
+        최신가 {fmt.price(series.prices.at(-1)?.price ?? null)} ·{' '}
+        <span className="font-medium" style={{ color: PRICE_COLOR }}>가장 굵은 선=실제 주가</span>,{' '}
+        <span className="font-medium" style={{ color: ME_COLOR }}>다음 굵은 선=이 애널리스트 목표가</span>.
       </p>
     </div>
   )

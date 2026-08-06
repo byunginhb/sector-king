@@ -11,11 +11,10 @@ import {
   Legend,
 } from 'recharts'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
-import { PALETTE } from './ui'
+import { PALETTE, PRICE_COLOR } from './ui'
 import type { AnalystPricePoint } from '@/types'
 
 // 테마 대응: recharts inline SVG 는 CSS 변수를 상속받는다(프로젝트 표준: indices-comparison-chart).
-const PRICE_COLOR = 'hsl(var(--foreground))' // 실제 주가 — 라이트/다크 모두 대비 확보
 const AXIS_COLOR = 'hsl(var(--muted-foreground))'
 const AXIS_LINE = 'hsl(var(--border))'
 const TOOLTIP_STYLE = {
@@ -28,6 +27,13 @@ const TOOLTIP_STYLE = {
 const PRICE_KEY = '__price'
 // 애널리스트 예측선은 전부 동일 점선 — 색상으로만 구분(사용자 요청).
 const DASH = '5 3'
+/**
+ * 선 굵기 위계 — 색만으로는 겹칠 때 구분이 안 돼서 두께도 함께 나눈다.
+ * 실제 주가(기준·점 없음) > 컨센서스/주인공(emphasis·점 있음) > 개별 예측(점선).
+ */
+const PRICE_WIDTH = 3
+const EMPHASIS_WIDTH = 1.9
+const SERIES_WIDTH = 1.4
 
 export interface TargetSeries {
   key: string
@@ -122,7 +128,7 @@ export function TargetLinesChart({
             dataKey={PRICE_KEY}
             name="실제 주가"
             stroke={PRICE_COLOR}
-            strokeWidth={2.5}
+            strokeWidth={PRICE_WIDTH}
             dot={false}
             connectNulls
             hide={hidden.has(PRICE_KEY)}
@@ -135,7 +141,7 @@ export function TargetLinesChart({
               dataKey={s.key}
               name={s.label}
               stroke={s.color ?? colorOf(i)}
-              strokeWidth={s.emphasis ? 2.5 : 1.5}
+              strokeWidth={s.emphasis ? EMPHASIS_WIDTH : SERIES_WIDTH}
               strokeDasharray={s.emphasis ? undefined : DASH}
               dot={{ r: s.emphasis ? 3 : 2 }}
               connectNulls

@@ -11,11 +11,16 @@ import { useAnalystStocks, useAnalystStockDetail } from '@/hooks/use-analyst-sto
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { AnalystDetailBody } from './analyst-detail-body'
 import { StockDetailBody } from './stock-detail-body'
-import { pct, fmtScore, scoreTone, scoreBar, ScoreHint } from './ui'
+import { pct, fmtScore, scoreTone, scoreBar, ScoreHint, RowsSkeleton, DetailSkeleton } from './ui'
 import type { AnalystLeaderboardRow, AnalystStockListItem } from '@/types'
 import { cn } from '@/lib/utils'
 
 type Tab = 'analysts' | 'tickers'
+
+/** 행 등장 스태거 — 첫 화면 몫만 지연을 주고 그 아래는 즉시(스크롤 시 이미 끝나 있어야 함). */
+const RISE_STEP_MS = 28
+const RISE_MAX_STEPS = 12
+const riseStyle = (i: number) => ({ '--sk-rise-delay': `${Math.min(i, RISE_MAX_STEPS) * RISE_STEP_MS}ms` }) as React.CSSProperties
 
 /** 상위 3위만 메달 색으로 강조(성적표 가독성). 그 외·표본부족(null)은 은은하게. */
 function rankTone(rank: number | null): string {
@@ -47,7 +52,7 @@ function Expandable({ open, children }: { open: boolean; children: React.ReactNo
 // ── 애널리스트 탭 ────────────────────────────────────────────────
 function AnalystExpanded({ analystId }: { analystId: number }) {
   const { data, isLoading, error } = useAnalystDetail(analystId)
-  if (isLoading) return <div className="h-40 rounded-lg bg-muted/40 animate-pulse" />
+  if (isLoading) return <DetailSkeleton height={280} />
   if (error || !data) return <p className="text-sm text-danger py-4">상세를 불러오지 못했습니다.</p>
   return <AnalystDetailBody data={data} />
 }
@@ -55,11 +60,13 @@ function AnalystExpanded({ analystId }: { analystId: number }) {
 function AnalystRow({
   row,
   rank,
+  index,
   open,
   onToggle,
 }: {
   row: AnalystLeaderboardRow
   rank: number | null
+  index: number
   open: boolean
   onToggle: () => void
 }) {
@@ -69,7 +76,7 @@ function AnalystRow({
     if (open) ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [open])
   return (
-    <div className={cn('rounded-lg', open && 'bg-muted/30')}>
+    <div className={cn('sk-rise rounded-lg', open && 'bg-muted/30')} style={riseStyle(index)}>
       <button
         ref={ref}
         onClick={onToggle}
@@ -110,18 +117,8 @@ function AnalystTab() {
   const [rankBy, setRankBy] = useState<AnalystRank>('score')
   const toggle = (id: number) => setOpenId((cur) => (cur === id ? null : id))
 
-  if (isLoading)
-    return (
-      <div className="space-y-2">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="h-14 rounded-lg bg-muted/40 animate-pulse" />
-        ))}
-      </div>
-    )
-  if (error || !data)
-    return <p className="text-center text-sm text-danger py-10">랭킹을 불러오지 못했습니다.</p>
-
-  const rows = rankBy === 'score' ? data.ranked : (data.byReports ?? data.ranked)
+  // 정렬 칩·열 헤더는 데이터와 무관하니 로딩 중에도 그린다 — 나중에 끼어들면 목록이 통째로 밀린다(CLS).
+  const rows = data ? (rankBy === 'score' ? data.ranked : (data.byReports ?? data.ranked)) : []
   const RANKS: { key: AnalystRank; label: string }[] = [
     { key: 'score', label: '예측력 점수' },
     { key: 'reports', label: '리포트 최다' },
@@ -159,12 +156,19 @@ function AnalystTab() {
         <span className="text-center">리포트</span>
         <span />
       </div>
-      <div>
-        {rows.map((row, i) => (
-          <AnalystRow key={row.analystId} row={row} rank={i + 1} open={openId === row.analystId} onToggle={() => toggle(row.analystId)} />
-        ))}
-      </div>
-      {rows.length === 0 && <p className="text-center text-sm text-muted-foreground py-10">아직 채점 가능한 애널리스트가 없습니다.</p>}
+      {isLoading ? (
+        <RowsSkeleton variant="analysts" />
+      ) : error || !data ? (
+        <p className="text-center text-sm text-danger py-10">랭킹을 불러오지 못했습니다.</p>
+      ) : rows.length === 0 ? (
+        <p className="text-center text-sm text-muted-foreground py-10">아직 채점 가능한 애널리스트가 없습니다.</p>
+      ) : (
+        <div>
+          {rows.map((row, i) => (
+            <AnalystRow key={row.analystId} row={row} rank={i + 1} index={i} open={openId === row.analystId} onToggle={() => toggle(row.analystId)} />
+          ))}
+        </div>
+      )}
     </>
   )
 }
@@ -179,12 +183,12 @@ function upsideOf(s: AnalystStockListItem): number | null {
 
 function StockExpanded({ ticker }: { ticker: string }) {
   const { data, isLoading, error } = useAnalystStockDetail(ticker)
-  if (isLoading) return <div className="h-48 rounded-lg bg-muted/40 animate-pulse" />
+  if (isLoading) return <DetailSkeleton height={320} />
   if (error || !data) return <p className="text-sm text-danger py-4">종목 상세를 불러오지 못했습니다.</p>
   return <StockDetailBody data={data} />
 }
 
-function StockRow({ stock, open, onToggle }: { stock: AnalystStockListItem; open: boolean; onToggle: () => void }) {
+function StockRow({ stock, index, open, onToggle }: { stock: AnalystStockListItem; index: number; open: boolean; onToggle: () => void }) {
   const fmt = useCurrencyFormat()
   const ref = useRef<HTMLButtonElement>(null)
   const up = upsideOf(stock)
@@ -192,7 +196,7 @@ function StockRow({ stock, open, onToggle }: { stock: AnalystStockListItem; open
     if (open) ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [open])
   return (
-    <div className={cn('rounded-lg', open && 'bg-muted/30')}>
+    <div className={cn('sk-rise rounded-lg', open && 'bg-muted/30')} style={riseStyle(index)}>
       <button
         ref={ref}
         onClick={onToggle}
@@ -247,16 +251,7 @@ function StockTab() {
       return next
     })
 
-  if (isLoading)
-    return (
-      <div className="space-y-2">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="h-14 rounded-lg bg-muted/40 animate-pulse" />
-        ))}
-      </div>
-    )
-  if (error || !data) return <p className="text-center text-sm text-danger py-10">종목 목록을 불러오지 못했습니다.</p>
-
+  // 정렬 칩·열 헤더는 데이터와 무관하니 로딩 중에도 그린다 — 나중에 끼어들면 목록이 통째로 밀린다(CLS).
   const SORTS: { key: StockSort; label: string }[] = [
     { key: 'analysts', label: '커버 애널 수' },
     { key: 'reports', label: '리포트 수' },
@@ -286,12 +281,16 @@ function StockTab() {
         <span className="text-right">상승여력</span>
         <span />
       </div>
-      {stocks.length === 0 ? (
+      {isLoading ? (
+        <RowsSkeleton variant="stocks" />
+      ) : error || !data ? (
+        <p className="text-center text-sm text-danger py-10">종목 목록을 불러오지 못했습니다.</p>
+      ) : stocks.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground py-10">표시할 종목이 없습니다.</p>
       ) : (
         <div>
-          {stocks.map((s) => (
-            <StockRow key={s.ticker} stock={s} open={openSet.has(s.ticker)} onToggle={() => toggle(s.ticker)} />
+          {stocks.map((s, i) => (
+            <StockRow key={s.ticker} stock={s} index={i} open={openSet.has(s.ticker)} onToggle={() => toggle(s.ticker)} />
           ))}
         </div>
       )}

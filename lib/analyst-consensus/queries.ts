@@ -33,6 +33,38 @@ import type {
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v))
 
+/**
+ * 프로세스 로컬 TTL 캐시.
+ *
+ * 원본은 하루 1회 크롤(update-analyst-consensus.yml)로만 바뀌는데, 아래 함수들은 요청마다
+ * analyst_reports·report_authors 전량을 1000행씩 순차 페이징한 뒤 다시 채점한다. 티커별 상세는
+ * 변종이 많아 CDN 히트율도 낮다(x-vercel-cache MISS 실측). 워밍된 인스턴스에서 두 번째 요청부터
+ * 이 비용이 0이 된다.
+ *
+ * 인스턴스 간 공유는 각 라우트의 s-maxage 헤더가 맡는다.
+ * ponytail: 프로세스 로컬 Map. 인스턴스 수만큼 중복 계산되지만 정확성엔 영향 없고,
+ *           그게 문제가 될 규모면 Redis 같은 공유 캐시로 올린다.
+ */
+const CACHE_TTL_MS = 10 * 60 * 1000
+const CACHE_MAX = 64 // 티커 수만큼 무한정 쌓이지 않게 (오래된 것부터 방출)
+const cache = new Map<string, { at: number; value: Promise<unknown> }>()
+
+function cached<T>(key: string, compute: () => Promise<T>): Promise<T> {
+  const hit = cache.get(key)
+  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value as Promise<T>
+  // 실패는 캐시하지 않는다 — 일시적 Supabase 오류가 TTL 내내 고착되면 안 된다.
+  const value = compute().catch((e) => {
+    if (cache.get(key)?.value === value) cache.delete(key)
+    throw e
+  })
+  cache.set(key, { at: Date.now(), value })
+  if (cache.size > CACHE_MAX) {
+    const oldest = cache.keys().next()
+    if (!oldest.done) cache.delete(oldest.value)
+  }
+  return value
+}
+
 interface ReportRow {
   id: number
   ticker: string
@@ -77,7 +109,9 @@ function loadPriceSeries(tickers: string[]): Map<string, PricePoint[]> {
 }
 
 /** GET /api/analysts — 방향 적중률 랭킹. */
-export async function getLeaderboard(): Promise<AnalystLeaderboardResponse> {
+export const getLeaderboard = (): Promise<AnalystLeaderboardResponse> => cached('leaderboard', computeLeaderboard)
+
+async function computeLeaderboard(): Promise<AnalystLeaderboardResponse> {
   const supabase = createAdminClient()
   const today = kstToday()
 
@@ -155,7 +189,10 @@ export async function getLeaderboard(): Promise<AnalystLeaderboardResponse> {
 }
 
 /** GET /api/analysts/[id] — 애널리스트 상세(종목별 목표가 vs 실제 + 겹쳐보기). null=없음. */
-export async function getAnalystDetail(analystId: number): Promise<AnalystDetailResponse | null> {
+export const getAnalystDetail = (analystId: number): Promise<AnalystDetailResponse | null> =>
+  cached(`analyst:${analystId}`, () => computeAnalystDetail(analystId))
+
+async function computeAnalystDetail(analystId: number): Promise<AnalystDetailResponse | null> {
   const supabase = createAdminClient()
   const today = kstToday()
 
@@ -318,7 +355,9 @@ interface StockReportRow extends ReportRow {
 }
 
 /** GET /api/analysts/stocks — 커버 종목 목록(예측 애널 수 순). */
-export async function getStockList(): Promise<AnalystStockListResponse> {
+export const getStockList = (): Promise<AnalystStockListResponse> => cached('stock-list', computeStockList)
+
+async function computeStockList(): Promise<AnalystStockListResponse> {
   const supabase = createAdminClient()
 
   const [reports, authors] = await Promise.all([
@@ -394,7 +433,10 @@ export async function getStockList(): Promise<AnalystStockListResponse> {
 }
 
 /** GET /api/analysts/stocks/[ticker] — 그 종목을 예측한 애널리스트들 비교. null=없음. */
-export async function getStockDetail(ticker: string): Promise<AnalystStockDetailResponse | null> {
+export const getStockDetail = (ticker: string): Promise<AnalystStockDetailResponse | null> =>
+  cached(`stock:${ticker}`, () => computeStockDetail(ticker))
+
+async function computeStockDetail(ticker: string): Promise<AnalystStockDetailResponse | null> {
   const supabase = createAdminClient()
   const today = kstToday()
 
