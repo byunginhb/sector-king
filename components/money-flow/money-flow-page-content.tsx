@@ -48,7 +48,6 @@ export function MoneyFlowPageContent({ industryId }: MoneyFlowPageContentProps) 
   return (
     <div className="min-h-screen">
       <GlobalTopBar
-        pageId="money-flow"
         shareTitle="섹터 자금 흐름 | Sector King"
         shareDescription="섹터별 자금 유입/유출 현황 분석"
         subtitle={

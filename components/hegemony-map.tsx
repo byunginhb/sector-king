@@ -77,7 +77,6 @@ export function HegemonyMap({ industryId }: HegemonyMapProps) {
   return (
     <div className="min-h-screen">
       <GlobalTopBar
-        pageId="hegemony-map"
         lastUpdated={lastUpdated}
         shareTitle="투자 패권 지도 | Sector King"
         shareDescription="산업 섹터별 시장 지배력 순위 시각화"

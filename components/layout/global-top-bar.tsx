@@ -8,8 +8,6 @@ import { SectorKingLogo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { CurrencyToggle } from '@/components/currency-toggle'
 import { useCurrency } from '@/hooks/use-currency'
-import { SearchTrigger } from '@/components/search-trigger'
-import { HelpButton } from '@/components/onboarding/help-button'
 import { ShareButton } from '@/components/share-button'
 import { AuthButtonClient } from '@/components/auth/auth-button-client'
 import {
@@ -22,12 +20,9 @@ import {
 } from '@/components/ui/sheet'
 import { formatRelativeTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import type { PageId } from '@/components/onboarding/tour-steps'
 
 interface GlobalTopBarProps {
-  /** 페이지별 도움말 키 */
-  pageId?: PageId
-  /** 데이터 최신 시각 (ISO date string) */
+  /** 데이터 최신 시각 (ISO date string). 상시 노출하지 않고 태그라인 클릭 시에만 드러난다. */
   lastUpdated?: string | null
   /** 공유 카드 타이틀 */
   shareTitle?: string
@@ -39,6 +34,8 @@ interface GlobalTopBarProps {
   subtitle?: React.ReactNode
   /** 모바일에서 햄버거 좌측에 노출되는 leading 액션 (예: 뒤로가기) */
   mobileLeading?: React.ReactNode
+  /** 통화 토글을 페이지 본문에서 직접 렌더할 때 헤더에서 감춘다 (중복 방지) */
+  hideCurrencyToggle?: boolean
 }
 
 // 인라인 바(메뉴 + 밀도 높은 우측 액션)는 lg(1024px)+에서만. 그 아래는 햄버거 Sheet.
@@ -75,8 +72,8 @@ function NewBadge() {
 /**
  * 모든 페이지 공통 글로벌 헤더
  *
- * - 좌: 로고 + 사이트명 + (옵션) 부제
- * - 우(데스크탑): lastUpdated · extraActions · Share · Search · Help · Theme · Auth
+ * - 좌: 로고 + 사이트명 + (옵션) 부제 — 태그라인/부제 클릭 시 데이터 기준일 노출(이스터에그)
+ * - 우(데스크탑): extraActions · Share · Currency · Theme · Auth
  * - 우(모바일 ≤sm): 햄버거 → Sheet 패널에서 모든 액션 노출
  * - sticky top-0 z-50, backdrop-blur 톤 일관
  *
@@ -85,13 +82,13 @@ function NewBadge() {
  * 데스크탑 트리를 기본으로 렌더하고, 마운트 직후 한쪽만 남긴다.
  */
 export function GlobalTopBar({
-  pageId,
   lastUpdated,
   shareTitle = 'Sector King - 투자 패권 지도',
   shareDescription = '산업별 섹터 시장 지배력 순위 시각화',
   extraActions,
   subtitle,
   mobileLeading,
+  hideCurrencyToggle = false,
 }: GlobalTopBarProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
@@ -121,19 +118,20 @@ export function GlobalTopBar({
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <Link href="/" className="flex items-baseline gap-3 shrink-0 group" aria-label="홈으로">
-              <SectorKingLogo size={32} className="shrink-0 self-center" />
+            {/* 태그라인은 Link 밖에 둔다 — 이스터에그 클릭이 홈 이동과 겹치지 않도록. */}
+            <div className="flex items-baseline gap-3 shrink-0">
+              <Link href="/" aria-label="홈으로" className="shrink-0 self-center">
+                <SectorKingLogo size={32} />
+              </Link>
               <div className="min-w-0">
-                <h1 className="font-display text-xl md:text-2xl font-bold text-foreground leading-none tracking-tight">
-                  Sector King
-                </h1>
-                {subtitle ? (
-                  <p className="eyebrow mt-1.5 line-clamp-1">{subtitle}</p>
-                ) : (
-                  <p className="eyebrow mt-1.5">The Map of Capital</p>
-                )}
+                <Link href="/" className="group">
+                  <h1 className="font-display text-xl md:text-2xl font-bold text-foreground leading-none tracking-tight">
+                    Sector King
+                  </h1>
+                </Link>
+                <TagLine subtitle={subtitle} lastUpdated={lastUpdated} />
               </div>
-            </Link>
+            </div>
 
             {/* 데스크탑 inline 메뉴 — 로고 옆에 자리잡는 콘텐츠 진입 */}
             <nav
@@ -164,15 +162,13 @@ export function GlobalTopBar({
             </nav>
           </div>
 
-          {/* 데스크탑 액션 — 마운트 전에는 기본 노출, 마운트 후 데스크탑에만 노출 */}
+          {/* 데스크탑 액션 — 마운트 전에는 기본 노출, 마운트 후 데스크탑에만 노출.
+              flex-wrap 을 두지 않는다 — 두 번째 줄로 흘러 메뉴와 정렬이 어긋난다. */}
           {showDesktop && (
-            <div className="hidden lg:flex items-center gap-2 lg:gap-3 flex-wrap justify-end">
-              {lastUpdated && <UpdateTimestamp dateStr={lastUpdated} />}
+            <div className="hidden lg:flex items-center gap-2 lg:gap-3 justify-end">
               {extraActions}
               <ShareButton title={shareTitle} description={shareDescription} />
-              <SearchTrigger />
-              {pageId && <HelpButton pageId={pageId} />}
-              <CurrencyToggleConnected />
+              {!hideCurrencyToggle && <CurrencyToggleConnected />}
               <ThemeToggle />
               <AuthButtonClient />
             </div>
@@ -182,7 +178,6 @@ export function GlobalTopBar({
           {showMobile && (
             <div className="lg:hidden flex items-center gap-2">
               {mobileLeading}
-              {lastUpdated && <UpdateTimestamp dateStr={lastUpdated} />}
               <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
                   <button
@@ -246,11 +241,9 @@ export function GlobalTopBar({
                   <section className="flex flex-col gap-2">
                     <p className="text-xs font-medium text-muted-foreground">도구</p>
                     <div className="flex flex-wrap items-center gap-2">
-                      <SearchTrigger />
-                      {pageId && <HelpButton pageId={pageId} />}
                       <ShareButton title={shareTitle} description={shareDescription} />
                       <ThemeToggle />
-                      <CurrencyToggleConnected />
+                      {!hideCurrencyToggle && <CurrencyToggleConnected />}
                     </div>
                   </section>
 
@@ -267,6 +260,36 @@ export function GlobalTopBar({
         </div>
       </div>
     </header>
+  )
+}
+
+/**
+ * 로고 아래 한 줄 — 태그라인 또는 페이지 부제.
+ *
+ * lastUpdated 가 있으면 클릭할 때마다 데이터 기준일이 드러났다 사라진다(이스터에그).
+ * 상단바에 상시 노출하면 헤더가 복잡해져서 숨겼지만, 정보 자체는 한 번의 클릭으로 닿는다.
+ */
+function TagLine({
+  subtitle,
+  lastUpdated,
+}: {
+  subtitle?: React.ReactNode
+  lastUpdated?: string | null
+}) {
+  const [revealed, setRevealed] = useState(false)
+  const label = subtitle ?? 'The Map of Capital'
+
+  if (!lastUpdated) return <p className="eyebrow mt-1.5 line-clamp-1">{label}</p>
+
+  return (
+    <button
+      type="button"
+      onClick={() => setRevealed((prev) => !prev)}
+      aria-label={revealed ? '태그라인 보기' : '데이터 기준일 보기'}
+      className="eyebrow mt-1.5 line-clamp-1 block text-left transition-colors hover:text-primary"
+    >
+      {revealed ? <UpdateTimestamp dateStr={lastUpdated} /> : label}
+    </button>
   )
 }
 

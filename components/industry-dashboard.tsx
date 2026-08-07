@@ -6,6 +6,8 @@ import { useIndustries } from '@/hooks/use-industries'
 import { useRegion } from '@/hooks/use-region'
 import { usePageTour } from '@/hooks/use-page-tour'
 import { RegionToggle } from './region-toggle'
+import { CurrencyToggle } from '@/components/currency-toggle'
+import { useCurrency } from '@/hooks/use-currency'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 import { SectionHeader } from '@/components/ui/section-header'
 import { IndustryIcon } from '@/components/ui/industry-icon'
@@ -29,6 +31,7 @@ import type { IndustryOverview } from '@/types'
 
 export function IndustryDashboard() {
   const { region, setRegion } = useRegion()
+  const { currency, setCurrency } = useCurrency()
   const { data, isLoading, error } = useIndustries({ region })
   usePageTour('dashboard')
 
@@ -41,11 +44,10 @@ export function IndustryDashboard() {
   return (
     <div className="min-h-screen">
       <GlobalTopBar
-        pageId="dashboard"
         lastUpdated={lastUpdated}
         shareTitle="Sector King - 투자 패권 지도"
         shareDescription="산업별 섹터 시장 지배력 순위 시각화"
-        extraActions={<RegionToggle value={region} onChange={setRegion} />}
+        hideCurrencyToggle
       />
 
       {/*
@@ -60,12 +62,19 @@ export function IndustryDashboard() {
             <h1 className="display text-3xl sm:text-5xl lg:text-6xl leading-[1.02] text-foreground">
               시장의 돈이 어디로 흐르는가.
             </h1>
-            <Link
-              href="/news"
-              className="inline-flex shrink-0 items-center gap-2 self-start rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:self-auto"
-            >
-              무료 뉴스 이메일 받기
-            </Link>
+            {/* 필터(지역·통화)를 헤더에서 내려 CTA 위에 붙인다 — 상단바는 메뉴만 남긴다. */}
+            <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
+              <div className="flex flex-wrap items-center gap-2">
+                <RegionToggle value={region} onChange={setRegion} size="sm" />
+                <CurrencyToggle value={currency} onChange={setCurrency} size="sm" />
+              </div>
+              <Link
+                href="/news"
+                className="inline-flex items-center gap-2 rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                무료 뉴스 이메일 받기
+              </Link>
+            </div>
           </div>
         </section>
 

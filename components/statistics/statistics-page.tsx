@@ -87,7 +87,6 @@ export function StatisticsPage({ industryId }: StatisticsPageProps) {
   return (
     <div className="min-h-screen">
       <GlobalTopBar
-        pageId="statistics"
         shareTitle="기업·섹터 트렌드 | Sector King"
         shareDescription="섹터별 기업 분포 및 시가총액 분석"
         subtitle={
