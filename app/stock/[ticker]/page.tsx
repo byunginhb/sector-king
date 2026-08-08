@@ -6,6 +6,7 @@ import { StockDetailPage } from '@/components/stock/stock-detail-page'
 import { StockDetailSkeleton } from '@/components/stock/stock-detail-sections'
 import { StockJsonLd } from '@/components/json-ld'
 import { StockSeoFacts } from '@/components/seo/stock-seo-facts'
+import { UPDATE_CADENCE } from '@/lib/site-facts'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
@@ -32,7 +33,7 @@ export async function generateMetadata({
   const displayName = summary.nameKo || summary.name
   // 브랜드는 루트 layout 의 template('%s | Sector King')이 붙인다 — 여기서 또 붙이면 두 번 나온다.
   const title = `${displayName}(${summary.ticker}) 시가총액·패권 점수`
-  const description = `${displayName}의 시가총액, 섹터 지배력 순위, 성장성·수익성 패권 점수 분석. 평일 1일 2회 갱신.`
+  const description = `${displayName}의 시가총액, 섹터 지배력 순위, 성장성·수익성 패권 점수 분석. ${UPDATE_CADENCE} 수집.`
   const url = `${BASE_URL}/stock/${summary.ticker}`
 
   return {

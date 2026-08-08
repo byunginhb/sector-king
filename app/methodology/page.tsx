@@ -13,7 +13,7 @@ import {
 import { ScoringDiagram } from '@/components/methodology/scoring-diagram'
 import { DataPipeline } from '@/components/methodology/data-pipeline'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
-import { getSiteFacts } from '@/lib/site-facts'
+import { getSiteFacts, UPDATE_CADENCE } from '@/lib/site-facts'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
@@ -81,7 +81,7 @@ export default async function MethodologyPage() {
                     <span className="shrink-0 w-6 h-6 rounded-full bg-info/10 text-info flex items-center justify-center text-xs font-bold">2</span>
                     <div>
                       <p className="text-sm font-medium text-foreground">수집 주기</p>
-                      <p className="text-sm text-muted-foreground">평일 하루 2회(07:00 · 16:30 KST) GitHub Actions를 통해 자동 수집됩니다.</p>
+                      <p className="text-sm text-muted-foreground">{UPDATE_CADENCE} GitHub Actions를 통해 자동 수집됩니다. 화면 숫자는 수집분이 배포에 반영될 때 바뀌므로, 실제 기준은 각 화면의 &quot;데이터 기준일&quot;입니다.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -391,7 +391,7 @@ export default async function MethodologyPage() {
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 mt-0.5 text-muted-foreground">•</span>
-                    <span><strong className="text-foreground">실시간 데이터가 아닙니다.</strong> 평일 하루 2회(07:00 · 16:30 KST) 수집되며, 장중 변동은 반영되지 않습니다.</span>
+                    <span><strong className="text-foreground">실시간 데이터가 아닙니다.</strong> {UPDATE_CADENCE} 수집되며, 장중 변동은 반영되지 않습니다.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 mt-0.5 text-muted-foreground">•</span>

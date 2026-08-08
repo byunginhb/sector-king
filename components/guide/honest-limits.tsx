@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { UPDATE_CADENCE } from '@/lib/site-facts'
 import { AlertTriangle, ArrowRight } from 'lucide-react'
 import { GuideSection } from './guide-section'
 
@@ -18,7 +19,7 @@ const LIMITS: LimitEntry[] = [
   },
   {
     title: '데이터 수집 시점',
-    body: 'KST 16:30, 다음날 07:00 2회 수집합니다. 당일 최종값은 오전 7시 이후 반영됩니다.',
+    body: `${UPDATE_CADENCE} 수집합니다. 화면 숫자는 수집분이 배포에 반영될 때 바뀌므로, 실제 기준은 각 화면에 표시된 "데이터 기준일"입니다.`,
   },
   {
     title: '자금 흐름 정의',

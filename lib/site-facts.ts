@@ -19,8 +19,19 @@ export interface SiteFacts {
   latestDataDate: string | null
 }
 
-/** 데이터 갱신 주기 — metadata·본문·JSON-LD 가 같은 문구를 쓰도록 여기서만 정의한다("실시간" 금지). */
-export const UPDATE_CADENCE = '평일 1일 2회(KST 16:30 / 익일 07:00)'
+/**
+ * 데이터 수집 주기 — metadata·본문·JSON-LD 가 같은 문구를 쓰도록 여기서만 정의한다("실시간" 금지).
+ *
+ * 값의 근거는 `.github/workflows/update-data.yml` 의 cron 4개다. 문자열을 손으로 바꾸지 말고
+ * 워크플로를 먼저 확인할 것 — 이전 값("1일 2회")은 어느 시점의 옛 푸터 문구가 검증 없이
+ * 굳어진 것이었고, 실제 cron 과 어긋난 채로 전 페이지에 노출되고 있었다.
+ *
+ * ⚠️ 이건 **수집** 주기이지 화면 반영 주기가 아니다. 배포된 DB 는 빌드 시점에 db-snapshot
+ * 에서 받아온 파일이고, db-snapshot push 는 Vercel 배포를 트리거하지 않는다(워크플로가
+ * deploymentEnabled=false 를 심는다). 따라서 화면 숫자는 main 에 DB sync 커밋이 올라가
+ * 재배포될 때 바뀐다. 사용자에게 신뢰할 값은 각 화면에 찍히는 "데이터 기준일"이다.
+ */
+export const UPDATE_CADENCE = '평일 1일 4회(KST 07:00 · 12:00 · 16:30 · 22:00)'
 export const DATA_SOURCE = 'Yahoo Finance'
 
 /** 같은 렌더 패스 안에서는 한 번만 조회 (푸터 + 본문이 동시에 부르는 경우 대비). */

@@ -1,4 +1,5 @@
 import { Building2, Layers, Briefcase, ChevronRight, Clock, Globe } from 'lucide-react'
+import { UPDATE_CADENCE } from '@/lib/site-facts'
 import { GuideSection } from './guide-section'
 
 const TIERS = [
@@ -7,7 +8,7 @@ const TIERS = [
   { icon: Briefcase, label: '종목', example: '엔비디아' },
 ] as const
 
-/** 섹션 A — 서비스 소개(3계층 · 미국/한국 · 1일 2회 갱신). */
+/** 섹션 A — 서비스 소개(3계층 · 미국/한국 · 갱신 주기는 lib/site-facts SoT). */
 export function ServiceIntro() {
   return (
     <GuideSection
@@ -57,9 +58,8 @@ export function ServiceIntro() {
           <div className="flex items-start gap-2 rounded-lg bg-surface-1 px-4 py-3">
             <Clock className="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden />
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">갱신 주기</span> — 하루 2회
-              (KST 오후 4:30 / 다음날 오전 7:00) 수집합니다. 실시간이 아닙니다(자세한
-              내용은 아래 주의사항).
+              <span className="font-medium text-foreground">갱신 주기</span> — {UPDATE_CADENCE}{' '}
+              수집합니다. 실시간이 아닙니다(자세한 내용은 아래 주의사항).
             </p>
           </div>
         </div>
