@@ -79,6 +79,11 @@ export default async function Home() {
               })),
             }}
             links={[
+              { href: '/sectors', label: '전체 섹터 목록' },
+              {
+                href: '/guide/market-cap-change-vs-net-buying',
+                label: '자금 흐름이 순매수와 다른 이유',
+              },
               { href: '/rankings', label: '전 종목 점수 랭킹' },
               { href: '/market-size', label: '시장 규모 지도' },
               { href: '/indices', label: '세계 주요 지수' },

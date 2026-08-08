@@ -52,6 +52,43 @@ export function WebSiteJsonLd() {
 }
 
 /**
+ * 가이드 문서(`/guide/{slug}`, `/data-sources`)의 Article JSON-LD.
+ *
+ * NewsArticle 과 분리한 이유: 이 글들은 시의성 있는 보도가 아니라 상시 참조용 설명이라
+ * Google News 대상이 아니다. author 는 실존하지 않는 사람을 지어내지 않고 운영 조직
+ * (`#organization`)을 그대로 쓴다 — 허위 저자는 신뢰 신호가 아니라 부채다.
+ */
+interface ArticleJsonLdProps {
+  url: string
+  headline: string
+  description: string
+  /** 본문에 표시되는 최종 수정일과 반드시 같아야 한다(화면-마크업 일치). */
+  updatedAt: string
+}
+
+export function ArticleJsonLd({ url, headline, description, updatedAt }: ArticleJsonLdProps) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline,
+    description,
+    inLanguage: 'ko-KR',
+    url,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    dateModified: updatedAt,
+    datePublished: updatedAt,
+    author: { '@id': `${BASE_URL}#organization` },
+    publisher: { '@id': `${BASE_URL}#organization` },
+  }
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  )
+}
+
+/**
  * 마켓 리포트 상세 (`/news/[id]`) 의 NewsArticle JSON-LD.
  * Google News / Discover 노출 후보를 위한 핵심 schema.
  */

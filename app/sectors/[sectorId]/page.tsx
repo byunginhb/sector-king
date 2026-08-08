@@ -227,6 +227,14 @@ export default async function SectorPage({
               </Link>
             </li>
             <li>
+              <Link
+                href="/guide/market-cap-change-vs-net-buying"
+                className="text-info hover:underline"
+              >
+                기간 변화가 순매수와 다른 이유
+              </Link>
+            </li>
+            <li>
               <Link href="/rankings" className="text-info hover:underline">
                 전 종목 점수 랭킹
               </Link>

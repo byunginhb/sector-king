@@ -91,6 +91,11 @@ export default async function MoneyFlowPage({
             })),
           }}
           links={[
+            {
+              href: '/guide/market-cap-change-vs-net-buying',
+              label: '이 값이 순매수와 다른 이유',
+            },
+            { href: '/guide/how-to-read-money-flow', label: '자금 흐름 읽는 법' },
             { href: '/', label: '전체 산업 지도' },
             { href: `/${industryId}`, label: `${name} 섹터 지도` },
             { href: `/${industryId}/price-changes`, label: `${name} 등락율` },

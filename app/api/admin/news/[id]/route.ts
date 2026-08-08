@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdminApi } from '@/lib/auth/require-admin-api'
 import { newsReportPatchSchema } from '@/lib/news/schema'
 import { NEWS_FULL_COLUMNS, rowToDto } from '@/lib/news/dto'
+import { submitNewsUrl } from '@/lib/indexnow'
 import type { ApiResponse } from '@/types'
 import type { NewsReportDTO } from '@/drizzle/supabase-schema'
 
@@ -126,6 +127,8 @@ export async function PATCH(
       updateRow.published_at = new Date().toISOString()
     }
     // archived/draft 전환 시 published_at 보존 (히스토리 유지)
+    const isNewlyPublished =
+      input.status === 'published' && existing.status !== 'published'
 
     const { data, error } = await supabase
       .from('news_reports')
@@ -142,6 +145,11 @@ export async function PATCH(
       }
       return NextResponse.json(body, { status: 500 })
     }
+
+    // 발행 전환 순간에만 IndexNow 통지 — 새 URL 이 생기는 유일한 지점이다.
+    // 이미 발행된 글의 수정은 sitemap lastmod 로 충분해서 보내지 않는다.
+    // await 하지 않는다: 색인 통지 실패가 발행 응답을 막으면 안 된다.
+    if (isNewlyPublished) void submitNewsUrl(id)
 
     const dto = rowToDto(data as Parameters<typeof rowToDto>[0])
     const body: ApiResponse<NewsReportDTO> = { success: true, data: dto }

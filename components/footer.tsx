@@ -42,6 +42,12 @@ export async function Footer() {
               방법론
             </Link>
             <Link
+              href="/data-sources"
+              className="text-sm text-info hover:underline"
+            >
+              데이터 출처
+            </Link>
+            <Link
               href="/methodology#scoring"
               className="text-sm text-info hover:underline"
             >
