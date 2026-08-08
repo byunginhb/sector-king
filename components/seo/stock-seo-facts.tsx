@@ -16,7 +16,30 @@ import type { StockServerFacts } from '@/lib/stock-server'
 export function StockSeoFacts({ facts }: { facts: StockServerFacts }) {
   const displayName = facts.nameKo || facts.name
   const sectorText =
-    facts.sectorNames.length > 0 ? facts.sectorNames.join(', ') : '분류된 섹터 없음'
+    facts.sectors.length > 0
+      ? facts.sectors.map((s) => s.name).join(', ')
+      : '분류된 섹터 없음'
+
+  // 상세 페이지가 있는 섹터만 링크로 — 나머지는 텍스트(404 링크 방지).
+  const sectorCell =
+    facts.sectors.length > 0 ? (
+      <>
+        {facts.sectors.map((sector, i) => (
+          <span key={sector.id}>
+            {i > 0 ? ', ' : ''}
+            {sector.hasPage ? (
+              <Link href={`/sectors/${sector.id}`} className="text-info hover:underline">
+                {sector.name}
+              </Link>
+            ) : (
+              sector.name
+            )}
+          </span>
+        ))}
+      </>
+    ) : (
+      '분류된 섹터 없음'
+    )
 
   return (
     <section className="space-y-6">
@@ -41,7 +64,7 @@ export function StockSeoFacts({ facts }: { facts: StockServerFacts }) {
             <Row label="전일 대비" value={formatPriceChange(facts.priceChangePct)} />
             <Row label="52주 최고" value={formatPrice(facts.week52HighUsd)} />
             <Row label="52주 최저" value={formatPrice(facts.week52LowUsd)} />
-            <Row label="섹터 분류" value={sectorText} />
+            <Row label="섹터 분류" value={sectorCell} />
           </tbody>
         </table>
       </div>
@@ -55,6 +78,11 @@ export function StockSeoFacts({ facts }: { facts: StockServerFacts }) {
               </Link>
             </li>
           ))}
+          <li>
+            <Link href="/sectors" className="text-info hover:underline">
+              전체 섹터 목록
+            </Link>
+          </li>
           <li>
             <Link href="/rankings" className="text-info hover:underline">
               전 종목 점수 랭킹
@@ -81,7 +109,7 @@ export function StockSeoFacts({ facts }: { facts: StockServerFacts }) {
   )
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <tr className="border-b border-border-subtle last:border-0">
       <th scope="row" className="py-2 pr-4 text-left font-medium text-muted-foreground">

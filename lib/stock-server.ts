@@ -10,6 +10,7 @@ import {
 } from '@/drizzle/schema'
 import { eq, desc, inArray } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
+import { getIndexableSectors } from '@/lib/sector-server'
 
 /** `/stock/[ticker]` 라우트 파라미터 검증 정규식 (ASCII 티커만). */
 export const TICKER_PATTERN = /^[A-Za-z0-9.\-]{1,12}$/
@@ -43,8 +44,12 @@ export interface StockServerFacts extends StockServerSummary {
   priceChangePct: number | null
   week52HighUsd: number | null
   week52LowUsd: number | null
-  /** 이 종목이 속한 섹터명 (사이트 분류 기준). */
-  sectorNames: string[]
+  /**
+   * 이 종목이 속한 섹터 (사이트 분류 기준).
+   * `hasPage` 는 `/sectors/{id}` 상세가 존재하는지 — 종목 3개 미만 섹터는 페이지가 없어
+   * 링크로 걸면 404 가 된다(lib/sector-server 의 MIN_COMPANIES_FOR_PAGE).
+   */
+  sectors: { id: string; name: string; hasPage: boolean }[]
   /** 이 종목이 노출되는 산업 (id, name). */
   industries: { id: string; name: string }[]
 }
@@ -107,12 +112,15 @@ export async function getStockFacts(ticker: string): Promise<StockServerFacts | 
 
   const sectorRows = await db
     .select({
+      sectorId: sectors.id,
       sectorName: sectors.name,
       categoryId: sectors.categoryId,
     })
     .from(sectorCompanies)
     .innerJoin(sectors, eq(sectorCompanies.sectorId, sectors.id))
     .where(eq(sectorCompanies.ticker, ticker))
+
+  const pageableSectorIds = new Set((await getIndexableSectors()).map((s) => s.id))
 
   const categoryIds = Array.from(
     new Set(sectorRows.map((r) => r.categoryId).filter((id): id is string => !!id))
@@ -135,7 +143,11 @@ export async function getStockFacts(ticker: string): Promise<StockServerFacts | 
     priceChangePct: snapshot?.priceChange ?? null,
     week52HighUsd: usd(snapshot?.week52High),
     week52LowUsd: usd(snapshot?.week52Low),
-    sectorNames: Array.from(new Set(sectorRows.map((r) => r.sectorName))),
+    sectors: sectorRows.map((r) => ({
+      id: r.sectorId,
+      name: r.sectorName,
+      hasPage: pageableSectorIds.has(r.sectorId),
+    })),
     industries: industryRows,
   }
 }

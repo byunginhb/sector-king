@@ -5,6 +5,7 @@ import { SeoSummary } from '@/components/seo/seo-summary'
 import { BreadcrumbJsonLd } from '@/components/json-ld'
 import { getAllIndustries } from '@/lib/industry'
 import { getSectorSnapshot, getSnapshotDates } from '@/lib/seo-snapshot'
+import { MIN_COMPANIES_FOR_PAGE } from '@/lib/sector-server'
 import { formatMarketCap, formatPriceChange } from '@/lib/format'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
@@ -50,6 +51,11 @@ export default async function IndustryPage({
               caption: `${name} 산업 섹터별 시가총액 (${dates.latest ?? '-'} 기준, 상위 ${shown.length}개${sectorRows.length > shown.length ? ` / 전체 ${sectorRows.length}개` : ''})`,
               head: ['섹터', '종목 수', '시가총액(USD)', '기간 변화', '대표 종목'],
               rows: shown.map((sector) => ({
+                // 종목 3개 미만 섹터는 상세 페이지가 없다(404 링크 방지) — lib/sector-server 의 기준.
+                href:
+                  sector.companyCount >= MIN_COMPANIES_FOR_PAGE
+                    ? `/sectors/${sector.id}`
+                    : undefined,
                 cells: [
                   sector.name,
                   `${sector.companyCount}개`,
@@ -70,6 +76,7 @@ export default async function IndustryPage({
             }}
             links={[
               { href: '/', label: '전체 산업 지도' },
+              { href: '/sectors', label: '전체 섹터 목록' },
               { href: `/${industryId}/money-flow`, label: `${name} 섹터 자금 흐름` },
               { href: `/${industryId}/price-changes`, label: `${name} 등락율` },
               { href: `/${industryId}/statistics`, label: `${name} 통계` },

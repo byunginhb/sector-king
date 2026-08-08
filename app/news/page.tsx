@@ -93,6 +93,18 @@ export default async function NewsListPage({
       <GlobalTopBar subtitle="마켓 리포트" />
 
       <main className="container mx-auto px-4 py-8 space-y-6">
+        {/* 이 페이지엔 고유 h1 이 없어 상단바의 "Sector King" 이 유일한 h1 이었다 —
+            목록이 무엇인지 설명하는 제목을 둔다(sitemap 등재 페이지). */}
+        <header className="max-w-3xl">
+          <h1 className="font-display text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">
+            마켓 리포트
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            섹터킹이 발행하는 일별·월별 마켓 리포트입니다. 그날 시장에서 무슨 일이 있었는지,
+            어느 섹터로 자금이 옮겨갔는지를 초보자·전문가 두 관점으로 정리합니다.
+          </p>
+        </header>
+
         <NewsSubscribeCta variant="banner" dismissible />
 
         {/* 리포트 종류 필터 */}

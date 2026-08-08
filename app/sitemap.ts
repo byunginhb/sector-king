@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { getAllIndustries } from '@/lib/industry'
 import { getAllStockTickers } from '@/lib/stock-server'
 import { getSiteFacts } from '@/lib/site-facts'
+import { getIndexableSectors } from '@/lib/sector-server'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
@@ -52,11 +53,12 @@ async function getPublishedNews(): Promise<{ id: string; updatedAt: string }[]> 
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [industries, tickers, facts, news] = await Promise.all([
+  const [industries, tickers, facts, news, indexableSectors] = await Promise.all([
     getAllIndustries(),
     getAllStockTickers(),
     getSiteFacts(),
     getPublishedNews(),
+    getIndexableSectors(),
   ])
 
   // 데이터 페이지의 lastmod = 최신 스냅샷 일자(= 실제로 숫자가 바뀐 시점).
@@ -89,6 +91,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     data('/analysts', 0.8),
     data('/indices', 0.8),
     data('/news', 0.8),
+    data('/sectors', 0.9),
     // 신뢰·설명 페이지 — E-E-A-T 신호라 반드시 색인 대상에 넣는다.
     doc('/guide', 0.7),
     doc('/about', 0.7),
@@ -106,6 +109,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     data(`/${industry.id}/rankings`, 0.8),
   ])
 
+  // 섹터 상세 — 라우트의 generateStaticParams 와 같은 원천(getIndexableSectors)을 쓴다.
+  // 다른 목록을 쓰면 "sitemap 엔 있는데 404" 가 생긴다.
+  const sectorPages: MetadataRoute.Sitemap = indexableSectors.map((sector) =>
+    data(`/sectors/${sector.id}`, 0.7)
+  )
+
   // 종목 상세 페이지 — DB 에 존재하는(= active) 티커만 동적 등록.
   // 시장 한정으로 제거된 티커는 DB 에서 빠지므로 자동으로 sitemap 에서도 제외된다.
   const stockPages: MetadataRoute.Sitemap = tickers.map((ticker) =>
@@ -119,5 +128,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  return [...staticPages, ...industryPages, ...stockPages, ...newsPages]
+  return [...staticPages, ...industryPages, ...sectorPages, ...stockPages, ...newsPages]
 }

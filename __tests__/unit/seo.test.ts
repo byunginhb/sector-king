@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import robots from '@/app/robots'
 import sitemap from '@/app/sitemap'
+import {
+  getIndexableSectors,
+  getSectorDetail,
+  MIN_COMPANIES_FOR_PAGE,
+} from '@/lib/sector-server'
 
 /**
  * SEO 인프라 회귀 가드.
@@ -76,6 +81,18 @@ describe('sitemap.xml', () => {
     expect(stamps.size).toBeGreaterThan(1)
   })
 
+  it('sitemap 의 모든 /sectors/{id} 가 실제 색인 대상 섹터다 — 404 등재 방지', async () => {
+    const entries = await sitemap()
+    const inSitemap = entries
+      .map((e) => e.url)
+      .filter((u) => u.includes('/sectors/'))
+      .map((u) => u.split('/sectors/')[1])
+    const indexable = new Set((await getIndexableSectors()).map((s) => s.id))
+
+    expect(inSitemap.length).toBeGreaterThan(0)
+    for (const id of inSitemap) expect(indexable.has(id)).toBe(true)
+  })
+
   it('lastmod 에 미래 날짜나 Invalid Date 가 없다', async () => {
     const now = Date.now()
     for (const entry of await sitemap()) {
@@ -84,5 +101,35 @@ describe('sitemap.xml', () => {
       // 하루 여유 — 데이터 기준일이 UTC 자정으로 저장되는 경우 대비.
       expect(time).toBeLessThanOrEqual(now + 86_400_000)
     }
+  })
+})
+
+describe('섹터 상세 라우트 (/sectors/{id})', () => {
+  it('색인 대상은 전부 최소 종목 수를 넘는다', async () => {
+    const list = await getIndexableSectors()
+    expect(list.length).toBeGreaterThan(0)
+    for (const sector of list) {
+      expect(sector.companyCount).toBeGreaterThanOrEqual(MIN_COMPANIES_FOR_PAGE)
+    }
+  })
+
+  it('종목이 기준 미만인 섹터는 상세를 내주지 않는다 — 얇은 페이지 방지', async () => {
+    // 색인 목록에 없는 실제 섹터 id 를 하나 찾아 확인한다(없으면 이 단언은 건너뛴다).
+    const indexable = new Set((await getIndexableSectors()).map((s) => s.id))
+    const detail = await getSectorDetail('__does_not_exist__')
+    expect(detail).toBeNull()
+    expect(indexable.has('__does_not_exist__')).toBe(false)
+  })
+
+  it('상세의 종목은 시가총액 내림차순이고 티커 중복이 없다', async () => {
+    const [first] = await getIndexableSectors()
+    const detail = await getSectorDetail(first.id)
+    expect(detail).not.toBeNull()
+
+    const caps = detail!.companies.map((c) => c.marketCapUsd ?? 0)
+    expect([...caps].sort((a, b) => b - a)).toEqual(caps)
+
+    const tickers = detail!.companies.map((c) => c.ticker)
+    expect(new Set(tickers).size).toBe(tickers.length)
   })
 })

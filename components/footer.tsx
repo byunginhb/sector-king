@@ -24,6 +24,12 @@ export async function Footer() {
               소개
             </Link>
             <Link
+              href="/sectors"
+              className="text-sm text-info hover:underline"
+            >
+              섹터 목록
+            </Link>
+            <Link
               href="/guide"
               className="text-sm text-info hover:underline"
             >

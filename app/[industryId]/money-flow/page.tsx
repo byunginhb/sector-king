@@ -4,6 +4,7 @@ import { getAllIndustries } from '@/lib/industry'
 import { MoneyFlowPageContent } from '@/components/money-flow/money-flow-page-content'
 import { SeoSummary } from '@/components/seo/seo-summary'
 import { getSectorSnapshot, getSnapshotDates } from '@/lib/seo-snapshot'
+import { MIN_COMPANIES_FOR_PAGE } from '@/lib/sector-server'
 import { formatMarketCap, formatPriceChange } from '@/lib/format'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
@@ -75,6 +76,11 @@ export default async function MoneyFlowPage({
             caption: `${name} 산업 섹터별 시가총액 변화 (${dates.base ?? '-'} → ${dates.latest ?? '-'}, 상승률 상위 ${shown.length}개)`,
             head: ['섹터', '종목 수', '시가총액(USD)', '기간 변화', '대표 종목'],
             rows: shown.map((sector) => ({
+              // 종목 3개 미만 섹터는 상세 페이지가 없다(404 링크 방지).
+              href:
+                sector.companyCount >= MIN_COMPANIES_FOR_PAGE
+                  ? `/sectors/${sector.id}`
+                  : undefined,
               cells: [
                 sector.name,
                 `${sector.companyCount}개`,
