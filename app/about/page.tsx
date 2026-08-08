@@ -244,6 +244,49 @@ export default async function AboutPage() {
             </ul>
           )}
         </section>
+
+        {/* 신뢰 문서 — /data-sources·/editorial-policy 의 빵부스러기 상위가 이 페이지라
+            여기서 되돌아가는 링크가 있어야 크롤 경로가 끊기지 않는다. */}
+        <section className="space-y-4 border-t border-border pt-8">
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            더 투명하게
+          </h2>
+          <ul className="space-y-3">
+            <li>
+              <Link
+                href="/data-sources"
+                className="text-sm font-medium text-info hover:underline"
+              >
+                데이터 출처와 수집 방식
+              </Link>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                어떤 숫자가 어디서 오고 언제 갱신되는지, 무엇이 섹터킹이 직접 계산한 값인지.
+              </p>
+            </li>
+            <li>
+              <Link
+                href="/editorial-policy"
+                className="text-sm font-medium text-info hover:underline"
+              >
+                편집 방침
+              </Link>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                자동 계산·AI 초안·사람 검수의 경계, 이해상충 여부, 오류 정정 방침.
+              </p>
+            </li>
+            <li>
+              <Link
+                href="/methodology"
+                className="text-sm font-medium text-info hover:underline"
+              >
+                방법론
+              </Link>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                점수 산출 공식과 종목 선정 기준.
+              </p>
+            </li>
+          </ul>
+        </section>
       </main>
     </div>
   )

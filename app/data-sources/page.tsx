@@ -41,6 +41,7 @@ export default async function DataSourcesPage() {
       lead={LEAD}
       updatedAt={UPDATED_AT}
       related={[
+        { href: '/editorial-policy', label: '편집 방침' },
         { href: '/about', label: '섹터킹 소개' },
         { href: '/guide', label: '이용 안내' },
         {

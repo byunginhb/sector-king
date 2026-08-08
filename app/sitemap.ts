@@ -24,6 +24,7 @@ const CONTENT_UPDATED_AT: Record<string, string> = {
   '/privacy': '2025-07-06',
   // 아래 값은 각 페이지 파일의 UPDATED_AT 상수와 같아야 한다(본문 표시일 = lastmod).
   '/data-sources': '2026-08-08',
+  '/editorial-policy': '2026-08-08',
   '/guide/market-cap-change-vs-net-buying': '2026-08-08',
   '/guide/how-to-read-money-flow': '2026-08-08',
   '/guide/sector-rotation': '2026-08-08',
@@ -102,6 +103,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     doc('/about', 0.7),
     doc('/methodology', 0.7),
     doc('/data-sources', 0.7),
+    doc('/editorial-policy', 0.6),
     // 비브랜드 검색 의도별 설명 문서. lastmod 는 각 페이지의 UPDATED_AT 과 맞춘다.
     doc('/guide/market-cap-change-vs-net-buying', 0.7),
     doc('/guide/how-to-read-money-flow', 0.7),

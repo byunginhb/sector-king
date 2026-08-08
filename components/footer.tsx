@@ -48,6 +48,12 @@ export async function Footer() {
               데이터 출처
             </Link>
             <Link
+              href="/editorial-policy"
+              className="text-sm text-info hover:underline"
+            >
+              편집 방침
+            </Link>
+            <Link
               href="/methodology#scoring"
               className="text-sm text-info hover:underline"
             >
