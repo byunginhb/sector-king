@@ -81,7 +81,7 @@ export default async function MethodologyPage() {
                     <span className="shrink-0 w-6 h-6 rounded-full bg-info/10 text-info flex items-center justify-center text-xs font-bold">2</span>
                     <div>
                       <p className="text-sm font-medium text-foreground">수집 주기</p>
-                      <p className="text-sm text-muted-foreground">{UPDATE_CADENCE} GitHub Actions를 통해 자동 수집됩니다. 화면 숫자는 수집분이 배포에 반영될 때 바뀌므로, 실제 기준은 각 화면의 &quot;데이터 기준일&quot;입니다.</p>
+                      <p className="text-sm text-muted-foreground">{UPDATE_CADENCE} GitHub Actions를 통해 자동 수집되고, 수집 직후 사이트에 반영됩니다. 화면에 표시되는 &quot;데이터 기준일&quot;이 그 화면 숫자의 실제 기준입니다.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
