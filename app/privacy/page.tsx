@@ -6,9 +6,12 @@
 import { ShieldCheck } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
+
 export const metadata = {
-  title: '개인정보 처리방침 — Sector King',
+  title: '개인정보 처리방침',
   description: 'Sector King 개인정보 처리방침.',
+  alternates: { canonical: `${BASE_URL}/privacy` },
 }
 
 const UPDATED_AT = '2025년 7월 6일'

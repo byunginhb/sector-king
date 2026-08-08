@@ -1,16 +1,17 @@
 import { cache, Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { getStockSummary, isValidTicker } from '@/lib/stock-server'
+import { getStockFacts, isValidTicker } from '@/lib/stock-server'
 import { StockDetailPage } from '@/components/stock/stock-detail-page'
 import { StockDetailSkeleton } from '@/components/stock/stock-detail-sections'
 import { StockJsonLd } from '@/components/json-ld'
+import { StockSeoFacts } from '@/components/seo/stock-seo-facts'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
 export const revalidate = 3600 // 1시간 캐시 (company API와 동일)
 
-const getCachedSummary = cache((ticker: string) => getStockSummary(ticker))
+const getCachedSummary = cache((ticker: string) => getStockFacts(ticker))
 
 export async function generateMetadata({
   params,
@@ -20,17 +21,18 @@ export async function generateMetadata({
   const { ticker } = await params
 
   if (!isValidTicker(ticker)) {
-    return { title: '종목 없음 | Sector King' }
+    return { title: '종목 없음' }
   }
 
   const summary = await getCachedSummary(ticker)
   if (!summary) {
-    return { title: '종목 없음 | Sector King' }
+    return { title: '종목 없음' }
   }
 
   const displayName = summary.nameKo || summary.name
-  const title = `${displayName}(${summary.ticker}) 시가총액·패권 점수 | Sector King`
-  const description = `${displayName}의 실시간 시가총액, 섹터 지배력 순위, 성장성·수익성 패권 점수 분석`
+  // 브랜드는 루트 layout 의 template('%s | Sector King')이 붙인다 — 여기서 또 붙이면 두 번 나온다.
+  const title = `${displayName}(${summary.ticker}) 시가총액·패권 점수`
+  const description = `${displayName}의 시가총액, 섹터 지배력 순위, 성장성·수익성 패권 점수 분석. 평일 1일 2회 갱신.`
   const url = `${BASE_URL}/stock/${summary.ticker}`
 
   return {
@@ -80,7 +82,10 @@ export default async function StockPage({
           ticker={summary.ticker}
           initialName={summary.name}
           initialNameKo={summary.nameKo}
-        />
+        >
+          {/* 데이터 도착 전 본문 = 초기 HTML. 크롤러는 이걸 읽는다. */}
+          <StockSeoFacts facts={summary} />
+        </StockDetailPage>
       </Suspense>
     </>
   )

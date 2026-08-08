@@ -6,9 +6,12 @@
 import { FileText } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
+
 export const metadata = {
-  title: '이용약관 — Sector King',
+  title: '이용약관',
   description: 'Sector King 서비스 이용약관.',
+  alternates: { canonical: `${BASE_URL}/terms` },
 }
 
 const UPDATED_AT = '2025년 7월 6일'

@@ -13,11 +13,15 @@ import {
 import { ScoringDiagram } from '@/components/methodology/scoring-diagram'
 import { DataPipeline } from '@/components/methodology/data-pipeline'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
+import { getSiteFacts } from '@/lib/site-facts'
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
 export const metadata: Metadata = {
   title: '방법론',
   description:
     'Sector King의 데이터 수집, 패권 점수 산출 공식, 기업 선정 기준, 데이터 품질 기준을 설명합니다.',
+  alternates: { canonical: `${BASE_URL}/methodology` },
 }
 
 function SectionHeading({ id, children }: { id: string; children: React.ReactNode }) {
@@ -36,7 +40,9 @@ function Card({ children }: { children: React.ReactNode }) {
   )
 }
 
-export default function MethodologyPage() {
+export default async function MethodologyPage() {
+  const facts = await getSiteFacts()
+
   return (
     <div className="min-h-screen">
       <GlobalTopBar subtitle="방법론 · 데이터 수집부터 점수 산출까지" />
@@ -183,17 +189,22 @@ export default function MethodologyPage() {
                 <p>
                   각 섹터에서 <strong className="text-foreground">시가총액과 시장 대표성</strong>을 기준으로 큐레이션된 기업 목록을 추적합니다.
                 </p>
+                {/* 수치는 lib/site-facts 의 DB 실측값 — 손으로 적어두면 sitemap 과 어긋난다. */}
                 <div className="grid grid-cols-3 gap-3">
                   <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <p className="text-lg font-bold text-foreground">9개</p>
+                    <p className="text-lg font-bold text-foreground">{facts.industryCount}개</p>
                     <p className="text-xs text-muted-foreground">산업</p>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <p className="text-lg font-bold text-foreground">30+</p>
+                    <p className="text-lg font-bold text-foreground">
+                      {facts.sectorCount.toLocaleString('ko-KR')}개
+                    </p>
                     <p className="text-xs text-muted-foreground">섹터</p>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <p className="text-lg font-bold text-foreground">120+</p>
+                    <p className="text-lg font-bold text-foreground">
+                      {facts.companyCount.toLocaleString('ko-KR')}개
+                    </p>
                     <p className="text-xs text-muted-foreground">기업</p>
                   </div>
                 </div>

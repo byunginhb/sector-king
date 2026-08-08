@@ -5,6 +5,8 @@ import { RankingsPage } from '@/components/rankings/rankings-page'
 import { FaqJsonLd, BreadcrumbJsonLd, ItemListJsonLd } from '@/components/json-ld'
 import { RANKINGS_FAQ } from '@/lib/seo-faq'
 import { getRankings } from '@/app/api/rankings/route'
+import { SeoSummary } from '@/components/seo/seo-summary'
+import { formatRecommendation } from '@/lib/format'
 
 export const revalidate = 3600
 
@@ -86,7 +88,36 @@ export default async function RankingsPageRoute({
           { name: '점수 랭킹', url: `${BASE_URL}/${industryId}/rankings` },
         ]}
       />
-      <Suspense fallback={null}>
+      <Suspense
+        fallback={
+          <SeoSummary
+            h1={`${industry?.name ?? '산업'} 종목 점수 랭킹`}
+            answer={`${industry?.name ?? '이 산업'}에 속한 한국·미국 상장 종목 ${data.total.toLocaleString('ko-KR')}곳을 단기·장기 점수로 줄 세운 랭킹입니다. 점수는 규모·성장성·수익성·시장심리를 0~100 으로 환산해 가중 합산한 값이며 산출식은 전부 공개되어 있습니다.`}
+            interpretation="같은 산업 안에서 비교해야 점수가 의미를 갖습니다. 산업이 다르면 재무 구조가 달라 점수 수준 자체가 다르게 형성됩니다."
+            caveat="점수는 매수·매도 신호가 아니며 목표 수익률을 예측하지 않습니다."
+            dataDate={data.date}
+            table={{
+              caption: `${industry?.name ?? '산업'} 장기 점수 상위 종목 (${data.date ?? '-'} 기준, 전체 ${data.total.toLocaleString('ko-KR')}종목 중)`,
+              head: ['종목', '티커', '장기 점수', '단기 점수', '투자의견'],
+              rows: data.items.slice(0, 20).map((item) => ({
+                href: `/stock/${item.ticker}`,
+                cells: [
+                  item.nameKo ?? item.name ?? item.ticker,
+                  item.ticker,
+                  item.longScore != null ? item.longScore.toFixed(1) : '-',
+                  item.shortScore != null ? item.shortScore.toFixed(1) : '-',
+                  formatRecommendation(item.recommendationKey),
+                ],
+              })),
+            }}
+            links={[
+              { href: '/', label: '전체 산업 지도' },
+              { href: `/${industryId}`, label: `${industry?.name ?? '산업'} 섹터 지도` },
+              { href: '/rankings', label: '전 종목 랭킹' },
+            ]}
+          />
+        }
+      >
         <RankingsPage industryId={industryId} initialData={data} />
       </Suspense>
     </>

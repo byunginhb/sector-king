@@ -29,10 +29,14 @@ import {
 
 export const dynamic = 'force-dynamic'
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
+
 export const metadata: Metadata = {
-  title: '소개 · Sector King',
+  // title 에 브랜드를 다시 붙이지 말 것 — 루트 layout 의 template('%s | Sector King')이 이미 붙인다.
+  title: '소개',
   description:
     '섹터킹을 만든 이유와 함께하는 사람들. 돈이 어디로 흐르는지 한눈에 보고 싶은 누구나 환영합니다.',
+  alternates: { canonical: `${BASE_URL}/about` },
 }
 
 export default async function AboutPage() {

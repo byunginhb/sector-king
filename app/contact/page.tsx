@@ -11,9 +11,12 @@ import { getCurrentProfile } from '@/lib/auth/get-user'
 
 export const dynamic = 'force-dynamic'
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
+
 export const metadata = {
-  title: '문의/제보 — Sector King',
+  title: '문의 / 제보',
   description: '서비스 관련 문의·제보·버그·기능 제안을 받습니다.',
+  alternates: { canonical: `${BASE_URL}/contact` },
 }
 
 export default async function ContactPage() {

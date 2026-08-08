@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { SectorKingLogo } from './logo'
+import { getSiteFacts, UPDATE_CADENCE, DATA_SOURCE } from '@/lib/site-facts'
 
-export function Footer() {
+export async function Footer() {
+  const facts = await getSiteFacts()
+
   return (
     <footer className="border-t border-border bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -61,7 +64,9 @@ export function Footer() {
 
         <div className="mt-6 border-t border-border pt-4 space-y-2">
           <p className="text-xs text-muted-foreground">
-            데이터 출처: Yahoo Finance · 업데이트: 1일 2회(KST 16:30 / 익일 07:00) · 추적: 120+ 기업 / 9개 산업
+            데이터 출처: {DATA_SOURCE} · 업데이트: {UPDATE_CADENCE} · 추적: {facts.companyCount.toLocaleString('ko-KR')}개 기업 /{' '}
+            {facts.sectorCount.toLocaleString('ko-KR')}개 섹터 / {facts.industryCount}개 산업
+            {facts.latestDataDate ? ` · 데이터 기준일: ${facts.latestDataDate}` : ''}
           </p>
           <p className="text-xs text-muted-foreground">
             &copy; 2025 Sector King. 본 사이트의 정보는 투자 권유가 아니며, 투자 결정의 책임은 이용자에게 있습니다.

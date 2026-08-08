@@ -32,6 +32,14 @@ interface StockDetailPageProps {
   /** SSR/메타데이터에서 미리 알고 있는 표시명 (헤더·워치 토글 초기 표기용) */
   initialName?: string | null
   initialNameKo?: string | null
+  /**
+   * 데이터 도착 전 본문 자리에 넣을 서버 렌더링 노드(`StockSeoFacts`).
+   *
+   * 이 컴포넌트는 모든 수치를 React Query 로 받으므로, JS 를 실행하지 않는 크롤러에게는
+   * 회사명과 스켈레톤만 남는다. 여기에 서버에서 만든 핵심 수치 블록을 넣어 초기 HTML 이
+   * 실제로 답을 담게 한다. 없으면 기존 스켈레톤으로 폴백.
+   */
+  children?: React.ReactNode
 }
 
 /**
@@ -40,7 +48,12 @@ interface StockDetailPageProps {
  * - 좌(메인): S1 히어로 · S2 시그널 · S3 점수추이 · S4 섹터포지션 · S8 가격차트
  * - 우(사이드): S6 패권 · S7 재무·애널리스트 · S5 밸류에이션
  */
-export function StockDetailPage({ ticker, initialName, initialNameKo }: StockDetailPageProps) {
+export function StockDetailPage({
+  ticker,
+  initialName,
+  initialNameKo,
+  children,
+}: StockDetailPageProps) {
   const { data, isLoading, error } = useCompany(ticker)
 
   const company = data?.company
@@ -92,7 +105,7 @@ export function StockDetailPage({ ticker, initialName, initialNameKo }: StockDet
           </div>
         </header>
 
-        {isLoading && <StockDetailSkeleton showChart />}
+        {isLoading && (children ?? <StockDetailSkeleton showChart />)}
         {!isLoading && (error || !data) && (
           <StockDetailError message="종목 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." />
         )}

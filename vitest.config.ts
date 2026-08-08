@@ -34,6 +34,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
+      // `server-only` 는 Next 번들러 전용 가드라 vitest 가 해석하지 못한다.
+      // 서버 모듈(sitemap·stock-server 등)을 테스트하려면 no-op 으로 치환해야 한다.
+      'server-only': path.resolve(__dirname, './__tests__/stubs/server-only.ts'),
     },
   },
 })

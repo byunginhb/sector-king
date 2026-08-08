@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     '한국·미국 주식 시장의 산업별 섹터 지배력을 한 눈에 — 시가총액, 자금 흐름, 등락율, 일별 마켓 리포트. 반도체·AI·클라우드·헬스케어·에너지·금융까지 모든 섹터 분석을 무료로 제공합니다. 코스피, 코스닥, S&P 500, 나스닥 종목 추적.',
   keywords: [
     // 기본 검색어
-    '주식', '투자', '주식 투자', '주식 시장', '주식 분석', '주식 추천', '실시간 주가',
+    '주식', '투자', '주식 투자', '주식 시장', '주식 분석', '주식 추천', '주가 추적',
     // 섹터·산업
     '섹터', '섹터 분석', '산업별 분석', '시장 지배력', '시가총액', '자금흐름', '섹터 자금 흐름', '등락율', '가격 변화율',
     // 시장
@@ -121,9 +121,9 @@ export const metadata: Metadata = {
       { url: '/apple-icon.svg', type: 'image/svg+xml', sizes: '180x180' },
     ],
   },
-  alternates: {
-    canonical: BASE_URL,
-  },
+  // ⚠️ 여기에 alternates.canonical 을 두지 말 것 — Next 는 루트 metadata 를 자식 페이지로
+  //    상속시키므로, 자기 canonical 을 선언하지 않은 모든 페이지가 홈을 canonical 로 가리키게
+  //    되어 색인에서 통째로 사라진다. canonical 은 각 페이지가 직접 선언한다(app/page.tsx 포함).
   verification: {
     other: {
       'naver-site-verification': '71e2d01a3f93512e250aa02f676771a4f601d748',
