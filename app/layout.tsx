@@ -124,9 +124,13 @@ export const metadata: Metadata = {
   // ⚠️ 여기에 alternates.canonical 을 두지 말 것 — Next 는 루트 metadata 를 자식 페이지로
   //    상속시키므로, 자기 canonical 을 선언하지 않은 모든 페이지가 홈을 canonical 로 가리키게
   //    되어 색인에서 통째로 사라진다. canonical 은 각 페이지가 직접 선언한다(app/page.tsx 포함).
+  // 검색엔진 소유 확인 토큰. 인증이 끝난 뒤에도 지우면 소유권이 풀리므로 그대로 둔다.
+  // Google 은 DNS TXT(도메인 속성)로 인증돼 있어 여기 없다 — 삭제된 게 아니다.
   verification: {
     other: {
       'naver-site-verification': '71e2d01a3f93512e250aa02f676771a4f601d748',
+      // Bing Webmaster Tools. GSC 임포트는 도메인 속성을 못 읽어서 직접 인증했다.
+      'msvalidate.01': '46EFAE4566241B6A88D94F7DFCC2041D',
     },
   },
 }
