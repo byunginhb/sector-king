@@ -29,6 +29,7 @@ const GENDER_LABEL: Record<ContributorGender, string> = {
 // 아이디만 입력받고 앞의 기본 주소는 자동으로 붙인다.
 const INSTAGRAM_BASE = 'https://www.instagram.com/'
 const THREADS_BASE = 'https://www.threads.com/@'
+const LINKEDIN_BASE = 'https://www.linkedin.com/in/'
 
 /** 입력값에서 @·슬래시를 제거해 순수 아이디만 남긴다. */
 const cleanHandle = (raw: string) =>
@@ -53,6 +54,9 @@ export function ContributorEditor({ initial, nextSortOrder }: ContributorEditorP
   const [threadsHandle, setThreadsHandle] = useState(
     handleFromUrl(initial?.threadsUrl, THREADS_BASE)
   )
+  const [linkedinHandle, setLinkedinHandle] = useState(
+    handleFromUrl(initial?.linkedinUrl, LINKEDIN_BASE)
+  )
   const [blogUrl, setBlogUrl] = useState(initial?.blogUrl ?? '')
   const [gender, setGender] = useState<ContributorGender>(initial?.gender ?? 'male')
   const [avatarVariant, setAvatarVariant] = useState(initial?.avatarVariant ?? 0)
@@ -67,12 +71,14 @@ export function ContributorEditor({ initial, nextSortOrder }: ContributorEditorP
         if (!nickname.trim()) throw new Error('닉네임을 입력하세요')
         const ig = cleanHandle(instagramHandle)
         const th = cleanHandle(threadsHandle)
+        const li = cleanHandle(linkedinHandle)
         const payload = {
           nickname: nickname.trim(),
           bio: bio.trim() || null,
           email: email.trim() || null,
           instagramUrl: ig ? INSTAGRAM_BASE + ig : null,
           threadsUrl: th ? THREADS_BASE + th : null,
+          linkedinUrl: li ? LINKEDIN_BASE + li : null,
           blogUrl: blogUrl.trim() || null,
           gender,
           avatarVariant,
@@ -254,6 +260,14 @@ export function ContributorEditor({ initial, nextSortOrder }: ContributorEditorP
             value={threadsHandle}
             onChange={setThreadsHandle}
             placeholder="ssector.king"
+          />
+        </Field>
+        <Field label="링크드인 아이디">
+          <HandleInput
+            base={LINKEDIN_BASE}
+            value={linkedinHandle}
+            onChange={setLinkedinHandle}
+            placeholder="ssector-king"
           />
         </Field>
         <Field label="블로그 URL" full>

@@ -9,6 +9,7 @@ import Link from 'next/link'
 import {
   Instagram,
   AtSign,
+  Linkedin,
   Globe,
   MessageSquare,
   Compass,
@@ -217,6 +218,17 @@ export default async function AboutPage() {
                             className="hover:text-foreground"
                           >
                             <AtSign className="h-4 w-4" aria-hidden />
+                          </a>
+                        )}
+                        {p.linkedinUrl && (
+                          <a
+                            href={p.linkedinUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`${p.nickname} 링크드인`}
+                            className="hover:text-foreground"
+                          >
+                            <Linkedin className="h-4 w-4" aria-hidden />
                           </a>
                         )}
                         {p.blogUrl && (

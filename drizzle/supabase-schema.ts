@@ -596,6 +596,7 @@ export const contributors = pgTable(
     email: text('email'),
     instagramUrl: text('instagram_url'),
     threadsUrl: text('threads_url'),
+    linkedinUrl: text('linkedin_url'),
     blogUrl: text('blog_url'),
     gender: text('gender').$type<ContributorGender>().notNull().default('male'),
     avatarVariant: integer('avatar_variant').notNull().default(0),

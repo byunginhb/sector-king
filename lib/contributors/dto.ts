@@ -11,6 +11,7 @@ export interface ContributorDTO {
   email: string | null
   instagramUrl: string | null
   threadsUrl: string | null
+  linkedinUrl: string | null
   blogUrl: string | null
   gender: ContributorGender
   avatarVariant: number
@@ -26,6 +27,7 @@ interface RawContributorRow {
   email: string | null
   instagram_url: string | null
   threads_url: string | null
+  linkedin_url: string | null
   blog_url: string | null
   gender: ContributorGender
   avatar_variant: number
@@ -42,6 +44,7 @@ export function rowToDto(row: RawContributorRow): ContributorDTO {
     email: row.email ?? null,
     instagramUrl: row.instagram_url ?? null,
     threadsUrl: row.threads_url ?? null,
+    linkedinUrl: row.linkedin_url ?? null,
     blogUrl: row.blog_url ?? null,
     gender: row.gender,
     avatarVariant: Number(row.avatar_variant),
@@ -52,4 +55,4 @@ export function rowToDto(row: RawContributorRow): ContributorDTO {
 }
 
 export const CONTRIBUTOR_COLUMNS =
-  'id, nickname, bio, email, instagram_url, threads_url, blog_url, gender, avatar_variant, sort_order, created_at, updated_at'
+  'id, nickname, bio, email, instagram_url, threads_url, linkedin_url, blog_url, gender, avatar_variant, sort_order, created_at, updated_at'
