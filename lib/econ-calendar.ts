@@ -50,7 +50,7 @@ function toYmd(d: Date): string {
 }
 
 /** ymd 에 n 일 가감(불변, 새 문자열 반환). */
-function addDays(ymd: string, n: number): string {
+export function addDays(ymd: string, n: number): string {
   const d = parseYmd(ymd)
   d.setUTCDate(d.getUTCDate() + n)
   return toYmd(d)
@@ -346,4 +346,16 @@ export function shiftAnchor(
     Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + dir, 1)
   )
   return toYmd(shifted)
+}
+
+/** 스와이프로 날짜를 옮기는 최소 가로 이동(px). 미만은 탭·흔들림으로 간주. */
+const SWIPE_MIN_PX = 48
+
+/**
+ * 터치 이동량 → 날짜 증감(-1 이전 / +1 다음 / 0 무시).
+ * 왼쪽으로 밀면(dx<0) 다음 날. 세로 이동이 더 크면 페이지 스크롤이므로 무시한다.
+ */
+export function swipeDelta(dx: number, dy: number): -1 | 0 | 1 {
+  if (Math.abs(dx) < SWIPE_MIN_PX || Math.abs(dy) > Math.abs(dx)) return 0
+  return dx < 0 ? 1 : -1
 }

@@ -126,11 +126,11 @@ export function CalendarFilters({
             })}
           </div>
 
-          {/* 주/월 뷰 토글 */}
+          {/* 주/월 뷰 토글 — 모바일은 하루 보기 고정이라 lg 이상에서만 노출 */}
           <div
             role="group"
             aria-label="캘린더 보기 방식"
-            className="inline-flex items-center gap-0.5 rounded-lg bg-muted p-0.5"
+            className="hidden lg:inline-flex items-center gap-0.5 rounded-lg bg-muted p-0.5"
           >
             {VIEWS.map((v) => {
               const isOn = view === v.value

@@ -7,8 +7,8 @@ interface CalendarSkeletonProps {
 }
 
 /**
- * 로딩 스켈레톤. 월뷰=7열 그리드 형태 유지(레이아웃 시프트 방지),
- * 주뷰=날짜 그룹 리스트 형태.
+ * 로딩 스켈레톤. 데스크탑 월뷰=7열 그리드 형태 유지(레이아웃 시프트 방지),
+ * 모바일=하루 보기(날짜 바 + 항목), 주뷰=날짜 그룹 리스트 형태.
  */
 export function CalendarSkeleton({ view }: CalendarSkeletonProps) {
   if (view === 'month') {
@@ -22,14 +22,10 @@ export function CalendarSkeleton({ view }: CalendarSkeletonProps) {
             <Skeleton key={`c-${i}`} className="h-20" />
           ))}
         </div>
-        <div className="lg:hidden space-y-4">
-          {Array.from({ length: 3 }).map((_, g) => (
-            <div key={g} className="space-y-2">
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-12" />
-              <Skeleton className="h-12" />
-            </div>
-          ))}
+        <div className="lg:hidden space-y-2">
+          <Skeleton className="h-9" />
+          <Skeleton className="h-12" />
+          <Skeleton className="h-12" />
         </div>
       </div>
     )

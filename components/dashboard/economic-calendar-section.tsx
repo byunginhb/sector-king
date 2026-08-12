@@ -7,6 +7,7 @@ import { useEconomicCalendar } from '@/hooks/use-economic-calendar'
 import {
   getCalendarRange,
   buildDateGroups,
+  groupEventsByDate,
   shiftAnchor,
   monthLabel,
   weekRangeLabel,
@@ -15,6 +16,7 @@ import {
 import { CalendarFilters } from '@/components/calendar/calendar-filters'
 import { CalendarMonthGrid } from '@/components/calendar/calendar-month-grid'
 import { CalendarWeekList } from '@/components/calendar/calendar-week-list'
+import { CalendarDayView } from '@/components/calendar/calendar-day-view'
 import { CalendarSkeleton } from '@/components/calendar/calendar-skeleton'
 import { CalendarEmpty } from '@/components/calendar/calendar-empty'
 import type { CalendarCountry, CalendarCategory } from '@/types'
@@ -22,7 +24,8 @@ import type { CalendarCountry, CalendarCategory } from '@/types'
 /**
  * 메인에 마운트하는 전체 경제 캘린더(월/주 토글·국가/카테고리 필터).
  * 필터 상태는 전역 useRegion 과 분리된 캘린더 로컬 상태(국가 축이 다름).
- * 데스크탑=월 그리드, 모바일=주별 리스트. 값은 문자열 원문 표시(toUsd 무관).
+ * 데스크탑(lg+)=월 그리드/주별 리스트, 모바일=하루 보기(스와이프·날짜 선택).
+ * 값은 문자열 원문 표시(toUsd 무관).
  * 이벤트 항목 클릭 시 출처(sourceUrl)로 이동 — 날짜 상세 팝업은 없다.
  */
 export function EconomicCalendarSection() {
@@ -30,6 +33,8 @@ export function EconomicCalendarSection() {
   const [country, setCountry] = useState<CalendarCountry>('all')
   const [category, setCategory] = useState<CalendarCategory>('all')
   const [anchor, setAnchor] = useState<string>(() => kstToday())
+  /** 모바일 하루 보기에서 보고 있는 날짜 */
+  const [selected, setSelected] = useState<string>(() => kstToday())
 
   const todayKey = kstToday()
   const range = useMemo(() => getCalendarRange(view, anchor), [view, anchor])
@@ -43,6 +48,7 @@ export function EconomicCalendarSection() {
 
   const events = useMemo(() => data?.events ?? [], [data])
   const groups = useMemo(() => buildDateGroups(events, todayKey), [events, todayKey])
+  const eventsByDate = useMemo(() => groupEventsByDate(events), [events])
 
   const periodLabel = view === 'month' ? monthLabel(anchor) : weekRangeLabel(anchor)
   const filtered = country !== 'all' || category !== 'all'
@@ -50,6 +56,15 @@ export function EconomicCalendarSection() {
 
   function handleShift(dir: -1 | 1) {
     setAnchor((a) => shiftAnchor(view, a, dir))
+  }
+
+  /**
+   * 모바일 날짜 이동. 선택일이 현재 페치 범위 밖으로 나가면 anchor 를 옮겨
+   * 범위를 재조회한다(월뷰 42일이라 대부분은 재조회 없이 이동).
+   */
+  function handleSelectDate(next: string) {
+    setSelected(next)
+    if (next < range.from || next > range.to) setAnchor(next)
   }
 
   return (
@@ -63,7 +78,7 @@ export function EconomicCalendarSection() {
             description="미국·한국 경제지표 발표와 추적 종목 실적발표 일정"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="hidden items-center gap-2 lg:flex">
           <button
             type="button"
             onClick={() => handleShift(-1)}
@@ -107,24 +122,33 @@ export function EconomicCalendarSection() {
           <div className="rounded-md border border-danger/40 bg-danger-bg/50 px-4 py-6 text-center text-sm text-danger">
             경제 캘린더를 불러오지 못했습니다.
           </div>
-        ) : !hasData ? (
-          <CalendarEmpty filtered={filtered} />
-        ) : view === 'month' ? (
+        ) : (
           <>
             <div className="hidden lg:block">
-              <CalendarMonthGrid
-                anchor={anchor}
+              {!hasData ? (
+                <CalendarEmpty filtered={filtered} />
+              ) : view === 'month' ? (
+                <CalendarMonthGrid
+                  anchor={anchor}
+                  todayKey={todayKey}
+                  events={events}
+                  onShiftMonth={handleShift}
+                />
+              ) : (
+                <CalendarWeekList groups={groups} />
+              )}
+            </div>
+            {/* 모바일: 날짜별 전량 나열 대신 하루만 (빈 날은 자체 빈 상태) */}
+            <div className="lg:hidden">
+              <CalendarDayView
+                dateKey={selected}
                 todayKey={todayKey}
-                events={events}
-                onShiftMonth={handleShift}
+                events={eventsByDate[selected] ?? []}
+                onDateChange={handleSelectDate}
+                filtered={filtered}
               />
             </div>
-            <div className="lg:hidden">
-              <CalendarWeekList groups={groups} />
-            </div>
           </>
-        ) : (
-          <CalendarWeekList groups={groups} />
         )}
       </div>
     </div>
