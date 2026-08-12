@@ -117,6 +117,29 @@ export function formatScore(score: number, maxScore: number): string {
   return `${score.toFixed(1)}/${maxScore}`
 }
 
+/**
+ * 화면에 보이는 4개 항목 점수의 합계.
+ *
+ * 각 항목을 표시와 동일하게 소수 1자리로 반올림한 뒤 더한다 — 원값을 더하면
+ * 사용자가 화면의 숫자를 직접 더한 값과 최대 0.2 어긋나 "합산이 틀렸다"로 보인다.
+ * 이 합계는 `raw_total_score`(오늘 원점수)와 같고, 총점으로 표시되는
+ * `smoothed_score`(EMA α=0.3)와는 다르다.
+ */
+export function sumScoreDimensions(dimensions: {
+  scale: number
+  growth: number
+  profitability: number
+  sentiment: number
+}): number {
+  const round1 = (v: number) => Math.round(v * 10) / 10
+  return round1(
+    round1(dimensions.scale) +
+      round1(dimensions.growth) +
+      round1(dimensions.profitability) +
+      round1(dimensions.sentiment)
+  )
+}
+
 const RECOMMENDATION_LABELS: Record<string, string> = {
   strong_buy: '적극 매수',
   buy: '매수',

@@ -6,6 +6,8 @@ import {
   formatVolume,
   formatNumber,
   formatDate,
+  formatScore,
+  sumScoreDimensions,
 } from '@/lib/format'
 
 describe('formatMarketCap', () => {
@@ -104,5 +106,36 @@ describe('formatDate', () => {
     expect(result).toMatch(/2024/)
     expect(result).toMatch(/01/)
     expect(result).toMatch(/15/)
+  })
+})
+
+describe('sumScoreDimensions', () => {
+  // 화면 캡처 사례: 18.8 + 25.4 + 12.6 + 7.9 = 64.7 (총점 63.8 은 EMA 평활값)
+  const captured = {
+    scale: 18.75123,
+    growth: 25.4,
+    profitability: 12.63981,
+    sentiment: 7.90412,
+  }
+
+  it('sums the values as they are displayed', () => {
+    expect(sumScoreDimensions(captured)).toBe(64.7)
+  })
+
+  it('matches the sum of the rendered 1-decimal labels', () => {
+    const rendered = [
+      captured.scale,
+      captured.growth,
+      captured.profitability,
+      captured.sentiment,
+    ].map((v) => Number(formatScore(v, 100).split('/')[0]))
+    const byHand = Math.round(rendered.reduce((a, v) => a + v, 0) * 10) / 10
+    expect(sumScoreDimensions(captured)).toBe(byHand)
+  })
+
+  it('has no float dust for values that round up', () => {
+    expect(
+      sumScoreDimensions({ scale: 0.05, growth: 0.05, profitability: 0.05, sentiment: 0.05 })
+    ).toBe(0.4)
   })
 })

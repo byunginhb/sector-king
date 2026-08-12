@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { getRankStyle } from '@/lib/styles'
-import { formatPriceChange, formatScore } from '@/lib/format'
+import { formatPriceChange, formatScore, sumScoreDimensions } from '@/lib/format'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { SCORING } from '@/lib/scoring-methodology'
 import { CompanyDetail } from './company-detail'
@@ -118,7 +118,7 @@ export function CompanyBadge({ sectorCompany, isHistorical = false, isFirst = fa
             {score && (
               <div className="pt-1.5 border-t border-border space-y-1.5">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">패권 점수</span>
+                  <span className="text-muted-foreground">패권 점수 (EMA)</span>
                   <span className="font-semibold">{formatScore(score.total, SCORING.totalMaxScore)}</span>
                 </div>
                 <div className="space-y-1">
@@ -142,12 +142,19 @@ export function CompanyBadge({ sectorCompany, isHistorical = false, isFirst = fa
                     <ScoreBar value={score.sentiment} max={SCORING.sentiment.maxScore} color="bg-chart-4" />
                     <span className="text-muted-foreground w-9 text-right">{formatScore(score.sentiment, SCORING.sentiment.maxScore)}</span>
                   </div>
+                  {/* 항목 합계 — 위 막대의 합(오늘 원점수). 총점은 EMA 평활값이라 다를 수 있다. */}
+                  <div className="flex justify-between text-[10px] pt-0.5">
+                    <span className="text-muted-foreground">항목 합계</span>
+                    <span className="text-muted-foreground">
+                      {formatScore(sumScoreDimensions(score), SCORING.totalMaxScore)}
+                    </span>
+                  </div>
                 </div>
                 {score.dataQuality < 0.7 && (
                   <p className="text-[10px] text-warning">데이터 제한적</p>
                 )}
                 <p className="text-[10px] text-muted-foreground">
-                  순위는 EMA 스무딩된 점수 기준으로 결정됩니다
+                  총점은 항목 합계를 EMA로 평활한 값이라 합계와 다를 수 있습니다
                 </p>
               </div>
             )}

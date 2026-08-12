@@ -2,7 +2,12 @@
 
 import Link from 'next/link'
 import { BarChart3, ExternalLink } from 'lucide-react'
-import { formatPercent, formatRecommendation, formatScore } from '@/lib/format'
+import {
+  formatPercent,
+  formatRecommendation,
+  formatScore,
+  sumScoreDimensions,
+} from '@/lib/format'
 import { SCORING } from '@/lib/scoring-methodology'
 import { cn } from '@/lib/utils'
 import type { CompanyDetailResponse } from '@/types'
@@ -32,6 +37,9 @@ interface StockScoreAnalysisProps {
  */
 export function StockScoreAnalysis({ score, snapshot, ticker }: StockScoreAnalysisProps) {
   const totalPercent = Math.min((score.total / SCORING.totalMaxScore) * 100, 100)
+  // 총점(EMA 평활)과 항목 합계(오늘 원점수)는 서로 다른 값이라 둘 다 노출한다.
+  const dimensionSum = sumScoreDimensions(score)
+  const smoothingGap = Math.round((score.total - dimensionSum) * 10) / 10
 
   const dimensions: ScoreDimension[] = [
     {
@@ -111,6 +119,7 @@ export function StockScoreAnalysis({ score, snapshot, ticker }: StockScoreAnalys
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-foreground">{score.total.toFixed(1)}</span>
             <span className="text-sm text-muted-foreground">/ {SCORING.totalMaxScore}</span>
+            <span className="text-[11px] text-muted-foreground">EMA 평활</span>
           </div>
           <span className="text-xs text-muted-foreground">
             데이터 커버리지 {Math.round(score.dataQuality * 100)}%
@@ -169,9 +178,23 @@ export function StockScoreAnalysis({ score, snapshot, ticker }: StockScoreAnalys
           })}
         </div>
 
+        {/* 항목 합계 — 위 4개 막대의 합(오늘 원점수). 총점(EMA)과 다른 이유를 함께 표기. */}
+        <div className="pt-2 border-t border-border space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-medium text-foreground">항목 합계 (오늘 원점수)</span>
+            <span className="text-muted-foreground">
+              {formatScore(dimensionSum, SCORING.totalMaxScore)}
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            위 4개 항목을 더한 오늘 점수입니다. 총점 {score.total.toFixed(1)}점은 하루 급등락을
+            줄이기 위해 EMA로 평활한 값이라 {smoothingGap === 0 ? '합계와 같습니다' : `합계보다 ${Math.abs(smoothingGap).toFixed(1)}점 ${smoothingGap > 0 ? '높습니다' : '낮습니다'}`}.
+          </p>
+        </div>
+
         {/* Methodology Link + Data Source */}
         <div className="pt-2 border-t border-border flex items-center justify-between">
-          <Link href="/methodology" className="text-[11px] text-info hover:underline">
+          <Link href="/methodology#ema" className="text-[11px] text-info hover:underline">
             방법론 상세 보기 →
           </Link>
           <a
