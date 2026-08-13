@@ -783,11 +783,12 @@ export interface IndustryMoneyFlowResponse {
 // ── 경제 캘린더 (14_econ_calendar) ─────────────────────────────
 // 필터 유니온 (UI/쿼리 값). SoT: lib/econ-calendar.ts (Phase C)
 export type CalendarCountry = 'all' | 'kr' | 'us'
-export type CalendarCategory = 'all' | 'indicator' | 'earnings'
+export type CalendarCategory = 'all' | 'indicator' | 'ipo' | 'earnings'
 
 // DB 컬럼 값 (economic_events.country / .category)
 export type CalendarCountryValue = 'KR' | 'US'
-export type CalendarCategoryValue = 'indicator' | 'earnings'
+export type CalendarCategoryValue = 'indicator' | 'ipo' | 'earnings'
+// 'ipo' 는 SQLite ipo_calendar 파생값 — economic_events 컬럼에는 없다.
 
 /** 중요도 3단계 (별점/색상 매핑용) */
 export type EconomicImportance = 'low' | 'medium' | 'high'
@@ -796,7 +797,7 @@ export type EconomicImportance = 'low' | 'medium' | 'high'
 export interface EconomicEvent {
   id: string
   country: CalendarCountryValue // 'KR' | 'US'
-  category: CalendarCategoryValue // MVP 는 'indicator' 만 데이터 존재
+  category: CalendarCategoryValue // 소스가 다르다: indicator=Supabase, ipo/earnings=SQLite
   title: string // 예: "미국 소비자물가지수(CPI)"
   titleEn: string | null
   /** 'YYYY-MM-DD' (KST) — 그리드 range 축 & 그룹핑 키 */

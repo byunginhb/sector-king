@@ -215,6 +215,46 @@ export const earningsCalendar = sqliteTable(
 
 export type EarningsCalendarRow = typeof earningsCalendar.$inferSelect
 
+/**
+ * 공모주(IPO) 청약·상장 일정. 38커뮤니케이션 크롤(scripts/ipo_calendar.py).
+ *
+ * 상장 전 기업이라 티커가 없다 → companies FK 없이 종목명이 키다.
+ * (name, event_type) 이 PK 인 이유: 청약/상장일은 정정신고로 자주 밀리는데
+ * 날짜를 키에 넣으면 옛 날짜 행이 유령으로 남는다. 한 종목의 청약·상장은 각 1회뿐.
+ *
+ * 가격 컬럼은 전부 **원화 표시용 원문 문자열**('23,000', '20,000~24,000')이라
+ * toUsd 대상이 아니다 — 숫자 필드가 아니라 라벨이다.
+ */
+export const ipoCalendar = sqliteTable(
+  'ipo_calendar',
+  {
+    /** 종목명(상장 전이라 티커 없음) */
+    name: text('name').notNull(),
+    /** 'subscription' = 공모청약, 'listing' = 신규상장 */
+    eventType: text('event_type').notNull(),
+    /** 'YYYY-MM-DD' — 청약 시작일 / 상장일 */
+    eventDate: text('event_date').notNull(),
+    /** 'YYYY-MM-DD' — 청약 종료일(listing 은 null) */
+    endDate: text('end_date'),
+    /** 확정공모가 (예 '23,000') */
+    offerPrice: text('offer_price'),
+    /** 희망공모가 밴드 (예 '20,000~24,000') */
+    priceBand: text('price_band'),
+    /** 청약경쟁률 (예 '522.99:1') */
+    competition: text('competition'),
+    /** 주간사(콤마 구분) */
+    underwriter: text('underwriter'),
+    detailUrl: text('detail_url'),
+    updatedAt: text('updated_at'),
+  },
+  (table) => [
+    primaryKey({ columns: [table.name, table.eventType] }),
+    index('idx_ipo_calendar_date').on(table.eventDate),
+  ]
+)
+
+export type IpoCalendarRow = typeof ipoCalendar.$inferSelect
+
 export const scoreHistory = sqliteTable(
   'score_history',
   {

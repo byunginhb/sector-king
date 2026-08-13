@@ -24,6 +24,7 @@ const COUNTRY_VALUES: readonly CalendarCountry[] = ['all', 'kr', 'us']
 const CATEGORY_VALUES: readonly CalendarCategory[] = [
   'all',
   'indicator',
+  'ipo',
   'earnings',
 ]
 
@@ -137,7 +138,7 @@ export function countryFilterToValue(
 
 /**
  * UI 필터 → DB category 값. all→null(미적용), 그 외 그대로.
- * earnings 는 Supabase 가 아니라 SQLite 소스라 이 값이 Supabase 쿼리에 걸려도
+ * ipo·earnings 는 Supabase 가 아니라 SQLite 소스라 이 값이 Supabase 쿼리에 걸려도
  * 결과가 비는 게 정상이다(호출부가 소스 자체를 분기한다).
  */
 export function categoryFilterToValue(
@@ -153,14 +154,19 @@ const IMPORTANCE_RANK: Record<EconomicEvent['importance'], number> = {
   low: 2,
 }
 
-/** 동률일 때 카테고리 우선순위(낮을수록 앞). */
+/**
+ * 동률일 때 카테고리 우선순위(낮을수록 앞).
+ * 건수의 역순이다 — 지표는 2주에 서너 건, 공모주는 월 10~30건, 실적은 분기마다 수백 건.
+ * 많은 쪽이 앞서면 칸당 2건짜리 월 그리드에서 적은 쪽이 통째로 사라진다.
+ */
 const CATEGORY_RANK: Record<EconomicEvent['category'], number> = {
   indicator: 0,
-  earnings: 1,
+  ipo: 1,
+  earnings: 2,
 }
 
 /**
- * 크로스-스토어(지표+실적) 통합 정렬 비교자.
+ * 크로스-스토어(지표+공모주+실적) 통합 정렬 비교자.
  *
  * 날짜 → 중요도 → 카테고리 → 시각(종일=null 은 마지막) → id.
  *

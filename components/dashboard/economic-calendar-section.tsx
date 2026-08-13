@@ -75,7 +75,7 @@ export function EconomicCalendarSection() {
           <SectionHeader
             eyebrow="Economic Calendar"
             title="경제 캘린더"
-            description="미국·한국 경제지표 발표와 추적 종목 실적발표 일정"
+            description="미국·한국 경제지표 발표, 추적 종목 실적발표, 국내 공모주 청약·상장 일정"
           />
         </div>
         <div className="hidden items-center gap-2 lg:flex">

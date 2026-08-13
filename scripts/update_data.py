@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import yfinance as yf
 
+from ipo_calendar import sync_ipo_calendar
 from scoring import calculate_hegemony_scores, update_sector_rankings
 
 DB_PATH = Path(__file__).parent.parent / "data" / "hegemony.db"
@@ -382,6 +383,25 @@ def ensure_score_tables(conn: sqlite3.Connection):
 
         CREATE INDEX IF NOT EXISTS idx_earnings_calendar_date
             ON earnings_calendar(earnings_date);
+
+        -- 공모주(IPO) 일정. 상장 전이라 티커가 없어 종목명이 키다(companies FK 없음).
+        -- 값은 표시용 원문 문자열(공모가 '23,000' 등) — 원화 라벨이라 toUsd 대상이 아니다.
+        CREATE TABLE IF NOT EXISTS ipo_calendar (
+            name TEXT NOT NULL,
+            event_type TEXT NOT NULL,      -- 'subscription' | 'listing'
+            event_date TEXT NOT NULL,      -- 청약 시작일 / 상장일 (YYYY-MM-DD)
+            end_date TEXT,                 -- 청약 종료일 (listing 은 NULL)
+            offer_price TEXT,              -- 확정공모가
+            price_band TEXT,               -- 희망공모가 밴드
+            competition TEXT,              -- 청약경쟁률
+            underwriter TEXT,              -- 주간사
+            detail_url TEXT,
+            updated_at TEXT,
+            PRIMARY KEY (name, event_type)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_ipo_calendar_date
+            ON ipo_calendar(event_date);
     """)
     except sqlite3.Error as e:
         print(f"Error: Failed to ensure score tables: {e}")
@@ -423,6 +443,11 @@ def main():
             print("Continuing with WAL mode - ensure WAL is checkpointed before git commit")
 
     ensure_score_tables(conn)
+
+    # 공모주 일정은 티커 루프와 무관한 외부 크롤이라 먼저 끝내고 즉시 커밋한다.
+    # (루프가 50% 실패로 조기 종료해도 이 수집분은 살아남는다.)
+    sync_ipo_calendar(conn)
+    conn.commit()
 
     tickers = get_tickers_from_db(conn)
 

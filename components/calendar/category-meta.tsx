@@ -1,4 +1,4 @@
-import { LineChart, BarChart3, type LucideIcon } from 'lucide-react'
+import { LineChart, BarChart3, Rocket, type LucideIcon } from 'lucide-react'
 import type { CalendarCategoryValue } from '@/types'
 
 /**
@@ -12,5 +12,6 @@ export const CATEGORY_META: Record<
   { label: string; icon: LucideIcon }
 > = {
   indicator: { label: '경제지표', icon: LineChart },
+  ipo: { label: '공모주', icon: Rocket },
   earnings: { label: '실적발표', icon: BarChart3 },
 }

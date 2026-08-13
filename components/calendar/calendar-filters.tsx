@@ -19,6 +19,7 @@ interface CategoryDef {
 const CATEGORIES: readonly CategoryDef[] = [
   { value: 'all', label: '전체', icon: LayoutGrid },
   { value: 'indicator', ...CATEGORY_META.indicator },
+  { value: 'ipo', ...CATEGORY_META.ipo },
   { value: 'earnings', ...CATEGORY_META.earnings },
 ]
 
