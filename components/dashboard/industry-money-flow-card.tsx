@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { TrendingUp as TrendingUpIcon, Zap, ZapOff } from 'lucide-react'
 import { useIndustryMoneyFlow } from '@/hooks/use-industry-money-flow'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
+import { buildTrendPath } from '@/lib/trend-path'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IndustryIcon } from '@/components/ui/industry-icon'
 import { CardError } from './card-error'
@@ -100,6 +101,111 @@ function FallingArrow({ index, delay, total, paused }: ArrowProps) {
   )
 }
 
+/* ─── Cumulative Flow Background Chart ─── */
+
+/**
+ * 기간 내 일별 누적 순유입 추이를 카드 전체 배경으로 깐다.
+ * 마지막 점 = 카드에 적힌 순유입액이라 숫자와 그래프가 같은 이야기를 한다.
+ * 글씨(z-10)보다 아래 레이어에 두고 불투명도를 낮춰 가독성을 지킨다.
+ */
+function FlowTrendBackground({
+  trend,
+  dates,
+  isInflow,
+  gradientId,
+}: {
+  trend: number[] | undefined
+  dates: string[] | undefined
+  isInflow: boolean
+  gradientId: string
+}) {
+  const path = useMemo(() => buildTrendPath(trend ?? []), [trend])
+  const extremes = useMemo(() => findExtremes(trend, dates), [trend, dates])
+  if (!path) return null
+
+  const color = isInflow ? 'hsl(var(--success))' : 'hsl(var(--danger))'
+
+  return (
+    <>
+      <svg
+        className="absolute inset-0 h-full w-full pointer-events-none"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        aria-hidden
+      >
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity={0.28} />
+            <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+          </linearGradient>
+        </defs>
+        <path d={path.area} fill={`url(#${gradientId})`} />
+        <path
+          d={path.line}
+          fill="none"
+          stroke={color}
+          strokeOpacity={0.45}
+          strokeWidth={1.5}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+
+      {/* 최고·최저 날짜 — SVG 는 가로로 늘어나므로(preserveAspectRatio=none)
+          글자가 찌그러지지 않게 HTML 레이어에 올린다. */}
+      {extremes.map(({ kind, index, label }) => {
+        const point = path.points[index]
+        return (
+          <span
+            key={kind}
+            className="absolute z-0 pointer-events-none whitespace-nowrap text-[9px] tabular-nums opacity-45"
+            style={{
+              color,
+              left: `${point.x}%`,
+              top: `${point.y}%`,
+              // 카드 밖으로 잘리지 않게 양 끝에서는 안쪽으로 붙인다(테두리에 딱 붙지 않게 4px 여유).
+              transform: `translateX(${point.x < 12 ? '4px' : point.x > 88 ? 'calc(-100% - 4px)' : '-50%'}) translateY(${kind === 'max' ? '3px' : '-100%'})`,
+            }}
+          >
+            {label}
+          </span>
+        )
+      })}
+    </>
+  )
+}
+
+/**
+ * 누적 추이의 최고점·최저점 (동률이면 먼저 찍힌 날).
+ *
+ * 첫 점(index 0)은 제외한다 — 누적값이 정의상 0 이라 계속 오르기만 한 산업은
+ * 첫날이 자동으로 "최저"가 되는데, 그건 시작일일 뿐 정보가 아니고 헤더의
+ * 기간 표기와 중복되며 카드 좌하단 모서리에 잘려 박힌다.
+ * 점이 3개 미만이면 양 끝이 곧 최고·최저라 통째로 생략한다.
+ */
+function findExtremes(
+  trend: number[] | undefined,
+  dates: string[] | undefined
+): { kind: 'max' | 'min'; index: number; label: string }[] {
+  if (!trend || !dates || trend.length < 3 || dates.length !== trend.length) return []
+
+  let maxIdx = 0
+  let minIdx = 0
+  for (let i = 1; i < trend.length; i++) {
+    if (trend[i] > trend[maxIdx]) maxIdx = i
+    if (trend[i] < trend[minIdx]) minIdx = i
+  }
+  if (maxIdx === minIdx) return []
+
+  // 'YYYY-MM-DD' → 'MM.DD'
+  const label = (i: number) => dates[i].slice(5).replace('-', '.')
+  return [
+    { kind: 'max' as const, index: maxIdx, label: label(maxIdx) },
+    { kind: 'min' as const, index: minIdx, label: label(minIdx) },
+  ].filter((e) => e.index > 0)
+}
+
 /* ─── Main Card Component ─── */
 
 interface IndustryMoneyFlowCardProps {
@@ -180,6 +286,7 @@ export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardP
           <IndustryFlowItem
             key={industry.industryId}
             industry={industry}
+            dates={data.dates}
             index={i}
             paused={paused}
           />
@@ -193,10 +300,12 @@ export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardP
 
 function IndustryFlowItem({
   industry,
+  dates,
   index,
   paused,
 }: {
   industry: IndustryMoneyFlowSummary
+  dates: string[]
   index: number
   paused: boolean
 }) {
@@ -248,6 +357,14 @@ function IndustryFlowItem({
             transition={paused ? { duration: 0 } : { duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
           />
         )}
+
+        {/* 기간 내 누적 순유입 추이 (배경) */}
+        <FlowTrendBackground
+          trend={industry.trend}
+          dates={dates}
+          isInflow={isInflow}
+          gradientId={`flow-trend-${industry.industryId}`}
+        />
 
         {/* Rising / Falling arrows (5~7 random) */}
         {isInflow

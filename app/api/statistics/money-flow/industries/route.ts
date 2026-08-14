@@ -30,7 +30,7 @@ export async function GET(
     if (allIndustries.length === 0) {
       return NextResponse.json({
         success: true,
-        data: { industries: [], period, dateRange: { start: '', end: '' }, appliedRegion: region },
+        data: { industries: [], period, dateRange: { start: '', end: '' }, dates: [], appliedRegion: region },
       })
     }
 
@@ -125,6 +125,7 @@ export async function GET(
           industries: [],
           period,
           dateRange: { start: effectiveStartDate, end: effectiveStartDate },
+          dates: [],
           appliedRegion: region,
         },
       })
@@ -141,6 +142,7 @@ export async function GET(
           industries: [],
           period,
           dateRange: { start: firstDate, end: lastDate },
+          dates: [],
           appliedRegion: region,
         },
       })
@@ -157,6 +159,8 @@ export async function GET(
 
       let totalInflow = 0
       let totalOutflow = 0
+      // 시작·종료 양쪽에 스냅샷이 있는 종목만 — 구성이 날마다 바뀌면 추이가 거짓이 된다.
+      const eligibleTickers: string[] = []
 
       for (const ticker of tickerSet) {
         const startSnap = snapshotIndex.get(`${ticker}|${firstDate}`)
@@ -167,6 +171,8 @@ export async function GET(
         const endCap = toUsd(endSnap.marketCap || 0, ticker)
         if (startCap === 0 && endCap === 0) continue
 
+        eligibleTickers.push(ticker)
+
         const change = endCap - startCap
         if (change > 0) {
           totalInflow += change
@@ -174,6 +180,26 @@ export async function GET(
           totalOutflow += Math.abs(change)
         }
       }
+
+      // 일별 누적 순유입 — 같은 종목 집합의 시총 합을 첫날 대비 차이로 본다.
+      // 첫날은 정의상 0, 마지막 날은 netFlow 와 정확히 일치한다.
+      // 중간에 스냅샷이 빈 날은 직전 값을 이어 쓴다(0 으로 두면 가짜 급락이 생김).
+      const lastCapByTicker = new Map<string, number>()
+      const totalCapByDate: number[] = []
+      for (const date of dates) {
+        let dayTotal = 0
+        for (const ticker of eligibleTickers) {
+          const snap = snapshotIndex.get(`${ticker}|${date}`)
+          const cap = snap
+            ? toUsd(snap.marketCap || 0, ticker)
+            : lastCapByTicker.get(ticker) ?? 0
+          lastCapByTicker.set(ticker, cap)
+          dayTotal += cap
+        }
+        totalCapByDate.push(dayTotal)
+      }
+      const baseCap = totalCapByDate[0] ?? 0
+      const trend = totalCapByDate.map((cap) => cap - baseCap)
 
       const netFlow = totalInflow - totalOutflow
       const totalBase = totalInflow + totalOutflow
@@ -189,6 +215,7 @@ export async function GET(
         netFlow,
         netFlowPercent,
         flowDirection: netFlow >= 0 ? 'in' : 'out',
+        trend,
       })
     }
 
@@ -198,6 +225,7 @@ export async function GET(
         industries: results,
         period,
         dateRange: { start: firstDate, end: lastDate },
+        dates,
         appliedRegion: region,
       },
     })

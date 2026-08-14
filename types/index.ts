@@ -771,12 +771,20 @@ export interface IndustryMoneyFlowSummary {
   netFlow: number
   netFlowPercent: number
   flowDirection: 'in' | 'out'
+  /**
+   * 기간 내 일별 누적 순유입액(USD). dateRange.start 를 0 으로 잡은 시계열이라
+   * 마지막 값 === netFlow. 카드 배경 그래프용이라 날짜는 싣지 않는다
+   * (x 축은 dateRange 로 이미 표기됨).
+   */
+  trend: number[]
 }
 
 export interface IndustryMoneyFlowResponse {
   industries: IndustryMoneyFlowSummary[]
   period: number
   dateRange: { start: string; end: string }
+  /** trend 배열의 x 축. 산업마다 같은 날짜열이라 응답에 한 번만 싣는다. */
+  dates: string[]
   appliedRegion?: _RegionFilter
 }
 
