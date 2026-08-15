@@ -6,8 +6,8 @@
  * ────────────────────────────────────────────────────────────────────
  *
  * 1. **DB CHECK 은 최소한만, 의미 검증은 여기서 한다.** `feature_permissions.params`
- *    의 DB 제약은 `jsonb_typeof(params) = 'object'` 뿐이다. "partial 인데
- *    visibleRows 가 없다" 같은 조합 오류는 SQL 로 표현하면 마이그레이션이
+ *    의 DB 제약은 `jsonb_typeof(params) = 'object'` 뿐이다. "hidden 인데
+ *    visibleRows 가 있다" 같은 조합 오류는 SQL 로 표현하면 마이그레이션이
  *    필요해지므로 zod 가 막는다(gate_mode 별 discriminated union).
  *
  * 2. **알 수 없는 키는 거부한다(strict).** params 오타(`visibleRow`)가 조용히
@@ -34,7 +34,7 @@ import type { GateMode, GateParams } from './types'
 
 export const tierSchema = z.enum(['anon', 'free', 'basic', 'pro', 'admin'])
 export const storableTierSchema = z.enum(['free', 'basic', 'pro'])
-export const gateModeSchema = z.enum(['open', 'hidden', 'blur', 'partial', 'teaser'])
+export const gateModeSchema = z.enum(['open', 'partial', 'hidden'])
 
 /** `Tier` 에 값이 추가되면 여기서 tsc 가 깨진다 — enum 을 함께 고치라는 신호. */
 const _tierExhaustive: Record<Tier, true> = {
@@ -47,10 +47,8 @@ const _tierExhaustive: Record<Tier, true> = {
 /** `GateMode` 에 값이 추가되면 여기서 tsc 가 깨진다. */
 const _gateModeExhaustive: Record<GateMode, true> = {
   open: true,
-  hidden: true,
-  blur: true,
   partial: true,
-  teaser: true,
+  hidden: true,
 }
 void _tierExhaustive
 void _gateModeExhaustive
@@ -98,32 +96,16 @@ const ctaShape = {
 /** `open` = 게이트 없음. 파라미터를 받을 자리가 없다. */
 export const openParamsSchema = z.object({}).strict()
 
-/** `hidden`/`blur` = 전량 마스킹. 행 수 파라미터는 의미가 없고 CTA 만 쓴다. */
+/** `hidden` = 전량 마스킹. 행 수 파라미터는 의미가 없고 CTA 만 쓴다. */
 export const hiddenParamsSchema = z.object({ ...ctaShape }).strict()
-export const blurParamsSchema = z.object({ ...ctaShape }).strict()
 
 /**
- * `partial` = 부분 노출. 두 방향 중 정확히 하나를 고른다.
- * - `visibleRows: N` 상위 N개만 실값 (일반 리스트)
- * - `blurTopK: K`    상위 K개를 가리고 K+1번째부터 실값 (상위가 곧 상품인 순위표)
+ * `partial` = 상위 `visibleRows` 건만 실값, 나머지는 서버가 지운다.
  *
- * 둘 다 없으면 "0개 노출"이라 hidden 과 같아지고, 운영자는 그걸 의도한 적이
- * 없다. 저장 시점에 막는다.
+ * 미지정을 허용한다 — 게이트 런타임이 `PARTIAL_DEFAULT_VISIBLE_ROWS`(3건)를
+ * 적용하므로 "0개 노출로 조용히 잠기는" 실패 모드가 없다.
  */
 export const partialParamsSchema = z
-  .object({
-    visibleRows: rowCountSchema.optional(),
-    blurTopK: rowCountSchema.optional(),
-    ...ctaShape,
-  })
-  .strict()
-  .refine(
-    (p) => p.visibleRows !== undefined || p.blurTopK !== undefined,
-    'partial 은 visibleRows 또는 blurTopK 중 하나가 필요합니다'
-  )
-
-/** `teaser` = 요약 몇 건 + CTA. 미지정 시 1건(게이트 런타임 기본값과 동일). */
-export const teaserParamsSchema = z
   .object({
     visibleRows: rowCountSchema.optional(),
     ...ctaShape,
@@ -136,10 +118,8 @@ export const teaserParamsSchema = z
  */
 export const gateConfigSchema = z.discriminatedUnion('gateMode', [
   z.object({ gateMode: z.literal('open'), params: openParamsSchema.default({}) }),
+  z.object({ gateMode: z.literal('partial'), params: partialParamsSchema.default({}) }),
   z.object({ gateMode: z.literal('hidden'), params: hiddenParamsSchema.default({}) }),
-  z.object({ gateMode: z.literal('blur'), params: blurParamsSchema.default({}) }),
-  z.object({ gateMode: z.literal('partial'), params: partialParamsSchema }),
-  z.object({ gateMode: z.literal('teaser'), params: teaserParamsSchema.default({}) }),
 ])
 
 export type GateConfig = z.infer<typeof gateConfigSchema>
@@ -147,10 +127,8 @@ export type GateConfig = z.infer<typeof gateConfigSchema>
 /** gateMode → 해당 params 스키마. `parseParams` 와 어드민 폼이 공유한다. */
 const PARAMS_SCHEMA_BY_MODE = {
   open: openParamsSchema,
-  hidden: hiddenParamsSchema,
-  blur: blurParamsSchema,
   partial: partialParamsSchema,
-  teaser: teaserParamsSchema,
+  hidden: hiddenParamsSchema,
 } as const satisfies Record<GateMode, z.ZodTypeAny>
 
 /**
@@ -158,7 +136,7 @@ const PARAMS_SCHEMA_BY_MODE = {
  *
  * **파싱 실패는 throw 하지 않고 `{}` 로 떨어진다.** 정책 행 하나가 깨졌다고
  * 페이지 전체가 500 이 되면 안 되고, `{}` 는 게이트 런타임에서 가장 보수적인
- * 해석(노출 0건 / teaser 1건)이라 fail-close 다. 열리는 쪽으로 새지 않는다.
+ * 해석(hidden 은 0건, partial 은 기본 3건)이라 크게 새지 않는다.
  *
  * 반대로 어드민 저장 경로는 `gateConfigSchema` 로 **엄격히** 검증해 오타를
  * 저장 시점에 튕긴다 — 읽기는 관대하게, 쓰기는 엄격하게.
@@ -190,8 +168,6 @@ function buildPolicySchema<Extra extends z.ZodRawShape>(extra: Extra) {
   const base = {
     ...extra,
     minTier: tierSchema,
-    // 킬 스위치. 미지정이면 켜진 상태로 저장한다.
-    enabled: z.boolean().default(true),
     note: z.preprocess(
       (v) => (v === '' ? null : v),
       z.string().max(500).nullable().optional()
@@ -200,10 +176,8 @@ function buildPolicySchema<Extra extends z.ZodRawShape>(extra: Extra) {
 
   return z.discriminatedUnion('gateMode', [
     z.object({ ...base, gateMode: z.literal('open'), params: openParamsSchema.default({}) }),
+    z.object({ ...base, gateMode: z.literal('partial'), params: partialParamsSchema.default({}) }),
     z.object({ ...base, gateMode: z.literal('hidden'), params: hiddenParamsSchema.default({}) }),
-    z.object({ ...base, gateMode: z.literal('blur'), params: blurParamsSchema.default({}) }),
-    z.object({ ...base, gateMode: z.literal('partial'), params: partialParamsSchema }),
-    z.object({ ...base, gateMode: z.literal('teaser'), params: teaserParamsSchema.default({}) }),
   ])
 }
 
@@ -268,7 +242,6 @@ export const featurePermissionRowSchema = z
     min_tier: tierSchema,
     gate_mode: gateModeSchema,
     params: z.unknown().optional(),
-    enabled: z.boolean(),
     note: z.string().nullable().optional(),
     updated_by: z.string().nullable().optional(),
     updated_at: z.string().nullable().optional(),
@@ -278,7 +251,6 @@ export const featurePermissionRowSchema = z
     minTier: row.min_tier,
     gateMode: row.gate_mode,
     params: parseParams(row.gate_mode, row.params),
-    enabled: row.enabled,
     note: row.note ?? null,
     updatedBy: row.updated_by ?? null,
     updatedAt: row.updated_at ?? '',

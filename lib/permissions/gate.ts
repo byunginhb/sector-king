@@ -10,15 +10,15 @@
  *  판정 순서 (이 순서가 곧 사양이다)
  * ────────────────────────────────────────────────────────────────────
  *
- *   1. `enabled === false`  → 전면 차단. **관리자도 예외가 아니다.**
- *      킬 스위치의 목적이 "지금 이 화면이 틀린 값을 보여준다"인데 관리자만
- *      통과시키면 "관리자 화면에선 멀쩡한데요"라는 오진이 나온다.
- *      (어드민 콘솔 `/admin/features` 자체는 게이트 대상이 아니라서
- *       관리자는 언제나 정책과 상태를 확인할 수 있다.)
- *   2. 등급 충족(`hasTier`) → 통과.
- *   3. `gateMode === 'open'` → 통과. open 은 "게이트 없음"이라는 뜻이므로
+ *   1. 등급 충족(`hasTier`) → 통과.
+ *   2. `gateMode === 'open'` → 통과. open 은 "게이트 없음"이라는 뜻이므로
  *      minTier 를 잘못 올려 둬도 화면이 잠기지 않는다.
- *   4. 그 외 → 차단 + 해당 gateMode 적용.
+ *   3. 그 외 → 차단 + 해당 gateMode 적용.
+ *
+ * 별도의 킬 스위치(`enabled`)는 두지 않는다. "전원 차단"은 최소 등급을
+ * `admin` + `hidden` 으로 두면 그대로 표현되고, 스위치를 따로 두면 운영자가
+ * 같은 결과를 두 가지 방법으로 만들 수 있어 "왜 잠겼는지"를 두 군데서
+ * 확인해야 한다.
  *
  * ────────────────────────────────────────────────────────────────────
  *  마스킹 원칙
@@ -43,8 +43,14 @@ import type {
   GatedList,
 } from './types'
 
-/** `teaser` 에서 visibleRows 미지정 시 노출 건수. */
-export const TEASER_DEFAULT_VISIBLE_ROWS = 1
+/**
+ * `partial` 에서 `visibleRows` 미지정 시 실값으로 내보낼 건수.
+ *
+ * 0(전량 차단)이 아니라 3인 이유: `partial` 을 고른 운영자의 의도는 "일부는
+ * 보여준다"이고, 파라미터를 비웠을 때 결과가 `hidden` 과 같아지면 셀렉트가
+ * 거짓말을 한다. 전량 차단이 필요하면 `hidden` 이라는 이름이 이미 있다.
+ */
+export const PARTIAL_DEFAULT_VISIBLE_ROWS = 3
 
 /**
  * 정책 × 등급 → 판정.
@@ -61,12 +67,7 @@ export function decideGate(policy: FeaturePolicy, tier: Tier): GateDecision {
     actualTier: tier,
   }
 
-  // 1) 킬 스위치 — 등급 비교 이전. 관리자 포함 전원 차단.
-  if (policy.enabled === false) {
-    return { ...base, allowed: false, gateMode: 'hidden' }
-  }
-
-  // 2) 등급 충족 / 3) open 은 게이트 없음
+  // 1) 등급 충족 / 2) open 은 게이트 없음
   if (hasTier(tier, policy.minTier) || policy.gateMode === 'open') {
     return { ...base, allowed: true, gateMode: 'open' }
   }
@@ -97,22 +98,13 @@ function visibilityPredicate(
       return () => true
 
     case 'hidden':
-    case 'blur':
-      // 형상만 남기고 값은 전부 제거. blur 는 "흐리게 보여준다"가 아니라
-      // "서버가 지운 자리에 클라이언트가 흐림 효과를 그린다"는 뜻이다.
+      // 형상만 남기고 값은 전부 제거. 클라이언트가 그 자리에 무엇을 그릴지는
+      // 표시 레이어의 몫이고, 서버 응답에는 값이 남지 않는다.
       return () => false
 
     case 'partial': {
-      // blurTopK 가 visibleRows 보다 우선한다(둘 다 지정 시 규약).
-      const topK = normalizeCount(params.blurTopK)
-      if (topK !== null) return (i) => i >= topK
-      const visible = normalizeCount(params.visibleRows) ?? 0
-      return (i) => i < visible
-    }
-
-    case 'teaser': {
       const visible =
-        normalizeCount(params.visibleRows) ?? TEASER_DEFAULT_VISIBLE_ROWS
+        normalizeCount(params.visibleRows) ?? PARTIAL_DEFAULT_VISIBLE_ROWS
       return (i) => i < visible
     }
 

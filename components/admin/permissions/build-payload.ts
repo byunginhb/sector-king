@@ -65,20 +65,17 @@ export function buildAdminFeaturesPayload(
         minTier: defaults.minTier,
         gateMode: defaults.gateMode,
         params: defaults.params ?? {},
-        enabled: true,
       },
       effective: override
         ? {
             minTier: override.minTier,
             gateMode: override.gateMode,
             params: override.params ?? {},
-            enabled: override.enabled,
           }
         : {
             minTier: defaults.minTier,
             gateMode: defaults.gateMode,
             params: defaults.params ?? {},
-            enabled: true,
           },
       overridden: Boolean(override),
       note: override?.note ?? null,
@@ -98,7 +95,6 @@ export function buildAdminFeaturesPayload(
         minTier: row.minTier,
         gateMode: row.gateMode,
         params: row.params ?? {},
-        enabled: row.enabled,
         note: row.note,
         updatedBy: row.updatedBy,
         updatedAt: row.updatedAt,

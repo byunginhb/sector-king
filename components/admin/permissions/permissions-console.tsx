@@ -133,7 +133,7 @@ export function PermissionsConsole({ initial }: { initial: AdminFeaturesPayload 
   )
 
   /**
-   * 게이트를 걸어 뒀지만 **배선이 없어 사용자 화면이 그대로인** 기능 수.
+   * 제어를 걸어 뒀지만 **배선이 없어 사용자 화면이 그대로인** 기능 수.
    *
    * draft 기준으로 센다 — 지금 편집 중인 선택까지 포함해야 저장하기 전에
    * "이 설정은 아직 화면에 반영되지 않습니다" 를 알릴 수 있다.
@@ -212,9 +212,6 @@ export function PermissionsConsole({ initial }: { initial: AdminFeaturesPayload 
           break
         case 'changed':
           if (!changed.has(row.featureId)) return false
-          break
-        case 'disabled':
-          if (draft.enabled) return false
           break
         case 'nondefault':
           if (isAtDefault(row, draft)) return false
@@ -309,7 +306,6 @@ export function PermissionsConsole({ initial }: { initial: AdminFeaturesPayload 
           minTier: draft.minTier,
           gateMode: draft.gateMode,
           params: draft.params,
-          enabled: draft.enabled,
           note: draft.note,
         })
       }
@@ -375,9 +371,9 @@ export function PermissionsConsole({ initial }: { initial: AdminFeaturesPayload 
         >
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <p>
-            게이트를 지정한 {unwiredGatedCount.toLocaleString()}건이 아직
+일부·숨김으로 지정한 {unwiredGatedCount.toLocaleString()}건이 아직
             <b className="font-bold"> 미배선</b>입니다 — 정책은 저장되지만 해당
-            화면·API 에 게이트 코드가 들어가기 전까지 사용자에게 보이는 내용은
+            화면·API 에 제어 코드가 들어가기 전까지 사용자에게 보이는 내용은
             바뀌지 않습니다. 표에서 <b className="font-bold">미배선</b> 배지로
             표시된 행입니다.
           </p>
@@ -558,9 +554,6 @@ export function PermissionsConsole({ initial }: { initial: AdminFeaturesPayload 
               }
               onBulkGateMode={(gateMode: GateMode) =>
                 applyToIds([...selection], (_row, cur) => ({ ...cur, gateMode }))
-              }
-              onBulkEnabled={(enabled: boolean) =>
-                applyToIds([...selection], (_row, cur) => ({ ...cur, enabled }))
               }
             />
           </div>

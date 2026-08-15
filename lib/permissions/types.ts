@@ -26,32 +26,29 @@
 import type { Tier } from './tier'
 
 /**
- * 게이트 방식.
+ * 게이트 방식 — **세 가지뿐이다.**
  *
  * - `open`    게이트 없음 (기본)
- * - `hidden`  진입점 자체를 렌더하지 않음. API 는 값을 아예 제외
- * - `blur`    형상만 남기고 흐림 + 업셀 오버레이. **서버가 값을 더미로 대체**
- * - `partial` 상위 N개만 실값, 나머지는 서버가 마스킹
- * - `teaser`  개별 값 대신 건수·범위 같은 메타만
+ * - `partial` 상위 N개만 실값, 나머지는 서버가 마스킹 + 클라이언트가 흐림.
+ *             리스트·표처럼 **쪼갤 단위가 있는 기능에만** 쓴다.
+ * - `hidden`  값을 전량 제외. 진입점 자체를 렌더하지 않음
+ *
+ * 이전에는 `blur`(전량 흐림)와 `teaser`(메타만)가 따로 있었으나 둘 다 접었다:
+ * 서버 판정에서 `blur` 는 `hidden` 과, `teaser` 는 `partial` 과 완전히 같은
+ * 동작이었고(값 0개 / 상위 N개), 운영자에게는 다섯 개의 선택지가 사실상 두
+ * 개의 결정을 다섯 가지로 물어보는 것이었다. 시각 표현(흐림 + 업셀 오버레이)은
+ * `partial` 의 가려진 구간이 그대로 담당한다.
  */
-export type GateMode = 'open' | 'hidden' | 'blur' | 'partial' | 'teaser'
+export type GateMode = 'open' | 'partial' | 'hidden'
 
 /** 화면 표기용 한글 라벨. 어드민 표와 범례가 공유한다. */
 export const GATE_MODE_LABEL: Record<GateMode, string> = {
   open: '보임',
-  hidden: '숨김',
-  blur: '흐림',
   partial: '일부',
-  teaser: '요약',
+  hidden: '숨김',
 }
 
-export const GATE_MODES: readonly GateMode[] = [
-  'open',
-  'hidden',
-  'blur',
-  'partial',
-  'teaser',
-]
+export const GATE_MODES: readonly GateMode[] = ['open', 'partial', 'hidden']
 
 export function isGateMode(value: unknown): value is GateMode {
   return typeof value === 'string' && value in GATE_MODE_LABEL
@@ -61,15 +58,11 @@ export function isGateMode(value: unknown): value is GateMode {
  * 게이트 파라미터.
  *
  * `visibleRows` 는 서버가 실값으로 내보낼 항목 수다(§원칙 1).
- * `blurTopK` 는 "상위 K개를 가리고 K+1 번째부터 공개" 하는 역방향 partial 로,
- * 애널리스트 순위처럼 상위가 곧 상품인 리스트에 쓴다.
- * 둘 중 하나만 쓴다 — 동시 지정 시 `blurTopK` 가 우선한다.
+ * 미지정이면 `PARTIAL_DEFAULT_VISIBLE_ROWS`(3건)가 적용된다.
  */
 export type GateParams = {
-  /** 상위 N개를 실값으로 노출. `partial`/`teaser` 에서 사용. */
+  /** 상위 N개를 실값으로 노출. `partial` 에서만 의미가 있다. */
   visibleRows?: number
-  /** 상위 K개를 가리고 그 이후를 노출. `partial` 에서 사용. */
-  blurTopK?: number
   /** 업셀 CTA 착지점 오버라이드. 미지정 시 등급별 기본값. */
   ctaHref?: string
   /** 업셀 문구 오버라이드. 미지정 시 등급 조합별 기본 카피. */
@@ -107,7 +100,7 @@ export type FeatureDef = {
   supportedGateModes?: readonly GateMode[]
   /** 서버 마스킹 필수 여부. `server` 인데 표시 게이트만 걸면 우회된다. */
   masking: MaskingRequirement
-  /** 색인 대상 화면인가. true 인데 hidden/blur 를 고르면 어드민이 경고한다. */
+  /** 색인 대상 화면인가. true 인데 hidden 을 고르면 어드민이 경고한다. */
   seoIndexed?: boolean
   /**
    * **이 기능의 화면·API 에 게이트가 실제로 배선되어 있는가.**
@@ -155,8 +148,6 @@ export type FeaturePolicy = {
   minTier: Tier
   gateMode: GateMode
   params: GateParams
-  /** 킬 스위치. false 면 등급과 무관하게 전면 차단(관리자 포함). */
-  enabled: boolean
   /** DB 오버라이드가 존재하는가. 어드민에서 "기본값 되돌리기" 활성 조건. */
   overridden: boolean
 }
@@ -167,7 +158,6 @@ export type FeaturePermissionRow = {
   minTier: Tier
   gateMode: GateMode
   params: GateParams
-  enabled: boolean
   note: string | null
   updatedBy: string | null
   updatedAt: string

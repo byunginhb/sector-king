@@ -28,7 +28,6 @@ export function toDraft(row: AdminFeatureRow): DraftPolicy {
     minTier: row.effective.minTier,
     gateMode: row.effective.gateMode,
     params: row.effective.params ?? {},
-    enabled: row.effective.enabled,
     note: row.note,
   }
 }
@@ -39,7 +38,6 @@ export function defaultDraft(row: AdminFeatureRow): DraftPolicy {
     minTier: row.defaultPolicy.minTier,
     gateMode: row.defaultPolicy.gateMode,
     params: row.defaultPolicy.params ?? {},
-    enabled: true,
     // note 는 정책이 아니라 운영 메모라 기본값 복귀 대상이 아니다.
     // 어차피 오버라이드 행이 삭제되면서 함께 사라진다.
     note: row.note,
@@ -51,7 +49,6 @@ export function isDirty(row: AdminFeatureRow, draft: DraftPolicy): boolean {
   return (
     draft.minTier !== row.effective.minTier ||
     draft.gateMode !== row.effective.gateMode ||
-    draft.enabled !== row.effective.enabled ||
     !paramsEqual(draft.params, row.effective.params)
   )
 }
@@ -64,7 +61,6 @@ export function isAtDefault(row: AdminFeatureRow, draft: DraftPolicy): boolean {
   return (
     draft.minTier === row.defaultPolicy.minTier &&
     draft.gateMode === row.defaultPolicy.gateMode &&
-    draft.enabled === true &&
     paramsEqual(draft.params, row.defaultPolicy.params)
   )
 }

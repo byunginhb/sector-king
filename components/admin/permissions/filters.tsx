@@ -11,7 +11,7 @@
  */
 'use client'
 
-import { Search, RotateCcw, Undo2, X, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Search, RotateCcw, Undo2, X } from 'lucide-react'
 import { TIER_LABEL, TIER_ORDER, type Tier } from '@/lib/permissions/tier'
 import { GATE_MODE_LABEL, GATE_MODES, type GateMode } from '@/lib/permissions/types'
 import { cn } from '@/lib/utils'
@@ -21,7 +21,6 @@ const STATUS_OPTIONS: Array<{ value: ConsoleFilters['status']; label: string }> 
   { value: 'all', label: '전체' },
   { value: 'unset', label: '미설정만' },
   { value: 'changed', label: '변경분만' },
-  { value: 'disabled', label: '비활성만' },
   { value: 'nondefault', label: '기본값과 다른 것만' },
 ]
 
@@ -90,7 +89,7 @@ export function FilterBar({
 
         <label>
           <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            게이트 방식
+            상세제어
           </span>
           <select
             value={filters.gateMode}
@@ -161,14 +160,12 @@ export function BulkActionBar({
   count,
   onMinTier,
   onGateMode,
-  onEnabled,
   onResetDefault,
   onClear,
 }: {
   count: number
   onMinTier: (tier: Tier) => void
   onGateMode: (mode: GateMode) => void
-  onEnabled: (enabled: boolean) => void
   onResetDefault: () => void
   onClear: () => void
 }) {
@@ -197,7 +194,7 @@ export function BulkActionBar({
       </select>
 
       <select
-        aria-label="선택 항목 게이트 방식 일괄 변경"
+        aria-label="선택 항목 상세제어 일괄 변경"
         value=""
         onChange={(e) => {
           const v = e.target.value
@@ -206,30 +203,13 @@ export function BulkActionBar({
         }}
         className={cn(SELECT_CLASS, 'py-1 text-xs')}
       >
-        <option value="">게이트 방식…</option>
+        <option value="">상세제어…</option>
         {GATE_MODES.map((g) => (
           <option key={g} value={g}>
             {GATE_MODE_LABEL[g]}
           </option>
         ))}
       </select>
-
-      <button
-        type="button"
-        onClick={() => onEnabled(true)}
-        className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-background px-2 py-1 text-xs text-muted-foreground hover:bg-surface-3"
-      >
-        <ToggleRight className="h-3.5 w-3.5 text-success" aria-hidden />
-        활성
-      </button>
-      <button
-        type="button"
-        onClick={() => onEnabled(false)}
-        className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-background px-2 py-1 text-xs text-muted-foreground hover:bg-surface-3"
-      >
-        <ToggleLeft className="h-3.5 w-3.5" aria-hidden />
-        비활성
-      </button>
 
       <button
         type="button"

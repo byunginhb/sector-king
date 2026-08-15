@@ -18,7 +18,7 @@
  *    결정), 행마다 저장하면 그 사이 몇 초 동안 잠긴 곳으로 가는 링크가 열려
  *    있는 상태가 실서비스에 노출된다(UI 기획 §A-4).
  *
- * 3. **기본값으로 되돌리기 = 행 삭제.** `enabled=false` 는 "이 오버라이드를
+ * 3. **기본값으로 되돌리기 = 행 삭제.** 빈 오버라이드 행은 "이 오버라이드를
  *    끈다" 가 아니라 킬 스위치(전원 차단)다. 두 의미를 겹치면 "행 있음 +
  *    비활성" 과 "행 없음" 이 같은 뜻이 되는 중복 상태가 생긴다(§3.3).
  *
@@ -53,7 +53,7 @@ export const dynamic = 'force-dynamic'
 
 // ── 입력 스키마 ────────────────────────────────────────────────────────
 // upsert 원소는 `featurePolicyItemSchema` 를 **그대로** 쓴다. gate_mode 별
-// params 규약(예: partial 은 visibleRows|blurTopK 중 하나 필수)이 거기 있고,
+// params 규약(예: partial 의 visibleRows)이 거기 있고,
 // 쓰기 경로는 엄격해야 한다 — `parseParams` 는 읽기용이라 실패를 `{}` 로
 // 흡수하므로 저장 검증에 쓰면 오타난 파라미터가 조용히 "0건 노출"이 된다.
 const saveSchema = z
@@ -168,7 +168,6 @@ export async function PUT(req: Request) {
           min_tier: item.minTier,
           gate_mode: item.gateMode,
           params: item.params,
-          enabled: item.enabled,
           note: item.note ?? null,
           updated_by: guard.profile.id,
           updated_at: now,

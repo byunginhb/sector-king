@@ -204,7 +204,7 @@ export type GateNoticeProps = {
 }
 
 /**
- * 안내 스트립 — `partial` / `teaser` 게이트의 설명 줄.
+ * 안내 스트립 — `partial` 게이트의 설명 줄.
  *
  * **`role="status"` 이고 `aria-hidden` 이 아니다.** 흐려진 영역 전체가
  * `aria-hidden` + `inert` 로 접근성 트리에서 빠지기 때문에, 스크린리더 사용자에게

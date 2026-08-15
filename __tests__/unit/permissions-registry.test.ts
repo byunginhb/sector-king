@@ -64,10 +64,10 @@ const PRE_GATED: Record<string, { minTier: Tier; gateMode: GateMode }> = {
   'me.onboarding': { minTier: 'free', gateMode: 'hidden' },
 
   // components/news/locked-section.tsx — 비로그인 잠금 (카탈로그 §0.2)
-  'news.novice-korea': { minTier: 'free', gateMode: 'blur' },
-  'news.expert-locked': { minTier: 'free', gateMode: 'teaser' },
+  'news.novice-korea': { minTier: 'free', gateMode: 'hidden' },
+  'news.expert-locked': { minTier: 'free', gateMode: 'hidden' },
   'news.monthly-korea-coverage': { minTier: 'free', gateMode: 'partial' },
-  'news.monthly-outlook': { minTier: 'free', gateMode: 'teaser' },
+  'news.monthly-outlook': { minTier: 'free', gateMode: 'hidden' },
 }
 
 /**

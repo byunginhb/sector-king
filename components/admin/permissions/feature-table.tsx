@@ -2,22 +2,16 @@
  * 우측 기능 표 — 이 콘솔에서 **쓰기가 일어나는 유일한 화면.**
  *
  * 설정(왼쪽 컨트롤)과 결과(오른쪽 매트릭스 5열)가 같은 행에 있다. "무료를
- * 흐림으로 바꾸면 비로그인은 어떻게 되지?" 가 눈으로 즉시 확인되는 것이
+ * 숨김으로 바꾸면 비로그인은 어떻게 되지?" 가 눈으로 즉시 확인되는 것이
  * 이 화면의 유일한 핵심 가치이고, 그래서 매트릭스를 별도 탭으로 빼지 않는다.
  *
- * 데스크탑은 표, 모바일(<lg)은 카드다. 표 행을 그대로 좁히면 select 5개가
+ * 데스크탑은 표, 모바일(<lg)은 카드다. 표 행을 그대로 좁히면 컨트롤이
  * 가로 스크롤 뒤로 숨어 "보이지 않는 것을 바꾸는" 상태가 된다.
  */
 'use client'
 
-import {
-  AlertTriangle,
-  Undo2,
-  RotateCcw,
-  ToggleLeft,
-  ToggleRight,
-  Lock,
-} from 'lucide-react'
+import { AlertTriangle, Undo2, RotateCcw, Lock } from 'lucide-react'
+import { PARTIAL_DEFAULT_VISIBLE_ROWS } from '@/lib/permissions/gate'
 import { TIER_LABEL, TIER_ORDER, type Tier } from '@/lib/permissions/tier'
 import {
   GATE_MODE_LABEL,
@@ -50,13 +44,9 @@ function isLockProhibited(row: AdminFeatureRow): boolean {
   )
 }
 
-/** 색인된 콘텐츠를 숨기거나 흐리게 하려는가. 경고만 하고 저장은 막지 않는다. */
+/** 색인된 콘텐츠를 숨기려는가. 경고만 하고 저장은 막지 않는다. */
 function seoRisk(row: AdminFeatureRow, draft: DraftPolicy): boolean {
-  return (
-    row.seoIndexed &&
-    draft.enabled &&
-    (draft.gateMode === 'hidden' || draft.gateMode === 'blur')
-  )
+  return row.seoIndexed && draft.gateMode === 'hidden'
 }
 
 export type FeatureTableProps = {
@@ -76,7 +66,6 @@ export type FeatureTableProps = {
   onClearSelection: () => void
   onBulkMinTier: (tier: Tier) => void
   onBulkGateMode: (mode: GateMode) => void
-  onBulkEnabled: (enabled: boolean) => void
 }
 
 export function FeatureTable(props: FeatureTableProps) {
@@ -113,7 +102,6 @@ export function FeatureTable(props: FeatureTableProps) {
           count={selectedVisible.length}
           onMinTier={props.onBulkMinTier}
           onGateMode={props.onBulkGateMode}
-          onEnabled={props.onBulkEnabled}
           onResetDefault={() => props.onResetDefault(selectedVisible)}
           onClear={props.onClearSelection}
         />
@@ -158,13 +146,10 @@ export function FeatureTable(props: FeatureTableProps) {
                     최소 등급
                   </th>
                   <th scope="col" className="w-28 px-2 py-2 font-medium">
-                    게이트
+                    상세제어
                   </th>
-                  <th scope="col" className="w-40 px-2 py-2 font-medium">
-                    파라미터
-                  </th>
-                  <th scope="col" className="w-16 px-2 py-2 font-medium">
-                    활성
+                  <th scope="col" className="w-32 px-2 py-2 font-medium">
+                    노출 개수
                   </th>
                   {MATRIX_TIERS.map((t) => (
                     <th
@@ -268,19 +253,11 @@ function FeatureRow({
       </td>
 
       {/* 폭을 조건과 무관하게 고정한다 — 값이 바뀔 때 표가 흔들리지 않게. */}
-      <td className="w-40 px-2 py-2 align-top">
+      <td className="w-32 px-2 py-2 align-top">
         <ParamFields
           row={row}
           draft={draft}
           onChange={(params) => onPatch(row.featureId, { params })}
-        />
-      </td>
-
-      <td className="px-2 py-2 align-top">
-        <EnabledToggle
-          enabled={draft.enabled}
-          label={row.label}
-          onChange={(enabled) => onPatch(row.featureId, { enabled })}
         />
       </td>
 
@@ -370,7 +347,7 @@ function FeatureCard({
         </label>
         <label className="block">
           <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            게이트
+            상세제어
           </span>
           <GateSelect
             row={row}
@@ -381,16 +358,11 @@ function FeatureCard({
         </label>
       </div>
 
-      <div className="mt-2 flex items-end justify-between gap-3">
+      <div className="mt-2">
         <ParamFields
           row={row}
           draft={draft}
           onChange={(params) => onPatch(row.featureId, { params })}
-        />
-        <EnabledToggle
-          enabled={draft.enabled}
-          label={row.label}
-          onChange={(enabled) => onPatch(row.featureId, { enabled })}
         />
       </div>
 
@@ -420,15 +392,10 @@ function FeatureIdentity({
         {risky && (
           <span
             className="inline-flex items-center gap-1 rounded-md border border-warning/30 bg-warning/10 px-1.5 py-0.5 text-[11px] font-bold text-warning"
-            title="색인된 콘텐츠입니다 — teaser 를 검토하세요"
+            title="색인된 콘텐츠입니다 — 숨김 대신 일부 노출을 검토하세요"
           >
             <AlertTriangle className="h-3 w-3" aria-hidden />
             색인
-          </span>
-        )}
-        {!draft.enabled && (
-          <span className="rounded-md border border-danger/40 bg-danger/10 px-1.5 py-0.5 text-[11px] font-bold text-danger">
-            킬 스위치
           </span>
         )}
         {!row.overridden && atDefault && (
@@ -445,7 +412,7 @@ function FeatureIdentity({
         {!row.wired && draft.gateMode !== 'open' && (
           <span
             className="rounded-md border border-border-subtle bg-surface-2 px-1.5 py-0.5 text-[11px] font-bold text-muted-foreground"
-            title="이 기능에는 아직 게이트가 배선되지 않았습니다 — 저장은 되지만 사용자 화면은 바뀌지 않습니다"
+            title="이 기능에는 아직 제어 코드가 배선되지 않았습니다 — 저장은 되지만 사용자 화면은 바뀌지 않습니다"
           >
             미배선
           </span>
@@ -456,7 +423,7 @@ function FeatureIdentity({
       </span>
       {row.masking === 'server' && (
         <span className="mt-0.5 block text-[11px] text-muted-foreground">
-          서버 마스킹 필요 — 표시 게이트만 걸면 우회됩니다
+          서버 마스킹 필요 — 화면에서만 가리면 우회됩니다
         </span>
       )}
     </>
@@ -511,7 +478,7 @@ function GateSelect({
   return (
     <>
       <select
-        aria-label={`${row.label} 게이트 방식`}
+        aria-label={`${row.label} 상세제어`}
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value as GateMode)}
@@ -533,9 +500,8 @@ function GateSelect({
 }
 
 /**
- * `visibleRows` 는 "서버가 몇 개를 실값으로 보낼지" 다(CSS 값이 아니다).
- * `blurTopK` 는 상위 K개를 가리고 그 이후를 여는 역방향으로, 상위가 곧 상품인
- * 리스트(애널리스트 순위 등)에 쓴다. 계약상 둘 중 하나만 쓴다.
+ * "일부" 를 골랐을 때만 뜨는 단일 입력 — **서버가 몇 개를 실값으로 보낼지**다
+ * (CSS 값이 아니다). 비워 두면 기본 3건.
  */
 function ParamFields({
   row,
@@ -546,78 +512,31 @@ function ParamFields({
   draft: DraftPolicy
   onChange: (params: GateParams) => void
 }) {
-  const needsCount = draft.gateMode === 'partial' || draft.gateMode === 'teaser'
-  if (!needsCount) {
+  if (draft.gateMode !== 'partial') {
     return <span className="block text-xs text-muted-foreground">—</span>
   }
 
-  const set = (key: 'visibleRows' | 'blurTopK', raw: string) => {
+  const set = (raw: string) => {
     const next: GateParams = { ...draft.params }
-    if (raw === '') delete next[key]
-    else next[key] = Math.max(0, Math.floor(Number(raw) || 0))
+    if (raw === '') delete next.visibleRows
+    else next.visibleRows = Math.max(0, Math.floor(Number(raw) || 0))
     onChange(next)
   }
 
   return (
-    <span className="flex flex-wrap items-center gap-1.5">
-      <label className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-        노출
-        <input
-          type="number"
-          min={0}
-          inputMode="numeric"
-          aria-label={`${row.label} 실값 노출 개수`}
-          value={draft.params.visibleRows ?? ''}
-          onChange={(e) => set('visibleRows', e.target.value)}
-          className="w-14 rounded-md border border-border-subtle bg-background px-1.5 py-1 text-xs text-foreground tabular-nums"
-        />
-      </label>
-      {draft.gateMode === 'partial' && (
-        <label className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-          상위가림
-          <input
-            type="number"
-            min={0}
-            inputMode="numeric"
-            aria-label={`${row.label} 상위 가림 개수`}
-            value={draft.params.blurTopK ?? ''}
-            onChange={(e) => set('blurTopK', e.target.value)}
-            className="w-14 rounded-md border border-border-subtle bg-background px-1.5 py-1 text-xs text-foreground tabular-nums"
-          />
-        </label>
-      )}
-    </span>
-  )
-}
-
-function EnabledToggle({
-  enabled,
-  label,
-  onChange,
-}: {
-  enabled: boolean
-  label: string
-  onChange: (enabled: boolean) => void
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={enabled}
-      aria-label={`${label} 게이트 활성`}
-      title={
-        enabled
-          ? '활성 — 아래 정책대로 동작합니다'
-          : '킬 스위치 — 등급과 무관하게 전면 차단됩니다(관리자 포함)'
-      }
-      onClick={() => onChange(!enabled)}
-      className="inline-flex items-center rounded-md p-1 hover:bg-surface-3"
-    >
-      {enabled ? (
-        <ToggleRight className="h-5 w-5 text-success" aria-hidden />
-      ) : (
-        <ToggleLeft className="h-5 w-5 text-muted-foreground" aria-hidden />
-      )}
-    </button>
+    <label className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+      <input
+        type="number"
+        min={0}
+        inputMode="numeric"
+        placeholder={String(PARTIAL_DEFAULT_VISIBLE_ROWS)}
+        aria-label={`${row.label} 실값 노출 개수`}
+        value={draft.params.visibleRows ?? ''}
+        onChange={(e) => set(e.target.value)}
+        className="w-14 rounded-md border border-border-subtle bg-background px-1.5 py-1 text-xs text-foreground tabular-nums"
+      />
+      개까지 보임
+    </label>
   )
 }
 

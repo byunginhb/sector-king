@@ -2,7 +2,7 @@
  * 등급 매트릭스 5칸 — **읽기 전용 파생 표시.**
  *
  * 셀은 독립 변수가 아니다. 등급이 단조 사다리(anon < free < basic < pro < admin)
- * 이므로 `(minTier, gateMode, enabled)` 가 정해지면 5칸이 전부 결정된다. 셀을
+ * 이므로 `(minTier, gateMode)` 가 정해지면 5칸이 전부 결정된다. 셀을
  * 직접 편집 가능하게 만들면 "Pro 는 숨김, 무료는 보임" 같은 **표현 불가능한
  * 상태**를 입력할 수 있고, UI 가 그걸 조용히 되돌리는 순간 신뢰를 잃는다.
  *
@@ -16,7 +16,7 @@
  */
 'use client'
 
-import { Eye, Droplets, AlignLeft, EyeOff } from 'lucide-react'
+import { Eye, Droplets, EyeOff } from 'lucide-react'
 import { decideGate } from '@/lib/permissions/gate'
 import { TIER_LABEL, TIER_ORDER, type Tier } from '@/lib/permissions/tier'
 import { GATE_MODE_LABEL, type GateMode } from '@/lib/permissions/types'
@@ -35,9 +35,7 @@ export const TIER_COLUMN_LABEL: Record<Tier, string> = {
 const CELL_CLASS: Record<GateMode, string> = {
   // 기본 상태는 조용해야 한다 — 열려 있는 것이 정상이다.
   open: 'border-border-subtle bg-surface-2 text-muted-foreground',
-  blur: 'border-warning/30 bg-warning/10 text-warning',
   partial: 'border-warning/30 bg-warning/10 text-warning',
-  teaser: 'border-info/30 bg-info/10 text-info',
   hidden: 'border-danger/40 bg-danger/10 text-danger',
 }
 
@@ -51,7 +49,6 @@ export function deriveCells(
     minTier: draft.minTier,
     gateMode: draft.gateMode,
     params: draft.params,
-    enabled: draft.enabled,
     // 파생에 관여하지 않는 필드지만 계약상 필수라 채운다.
     overridden: false,
   }
@@ -86,7 +83,7 @@ export function MatrixBadge({
 
 /**
  * 한 줄 요약 — 모바일 카드에서 5열 표 대신 쓴다.
- * "비로그인 숨김 · 무료 흐림 · 일반 보임 …"
+ * "비로그인 숨김 · 무료 일부 · 일반 보임 …"
  */
 export function matrixSummary(cells: Record<Tier, GateMode>): string {
   return TIER_ORDER.map(
@@ -104,19 +101,13 @@ export function MatrixLegend() {
       </span>
       <span className="inline-flex items-center gap-1">
         <Droplets className="h-3 w-3" aria-hidden />
-        흐림·일부 — 형상만 남기고 값을 가림
-      </span>
-      <span className="inline-flex items-center gap-1">
-        <AlignLeft className="h-3 w-3" aria-hidden />
-        요약 — 건수·범위 같은 메타만
+        일부 — 설정한 개수까지만 실값, 나머지는 흐림
       </span>
       <span className="inline-flex items-center gap-1">
         <EyeOff className="h-3 w-3" aria-hidden />
         숨김 — 렌더하지 않음
       </span>
-      <span>
-        관리자 열은 항상 보임입니다(킬 스위치가 걸린 기능은 예외).
-      </span>
+      <span>관리자 열은 항상 보임입니다.</span>
     </p>
   )
 }

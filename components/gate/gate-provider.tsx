@@ -102,7 +102,6 @@ function readPreviewTier(): Tier | null {
  */
 function hasAnyGate(policies: PolicyMap): boolean {
   for (const policy of Object.values(policies)) {
-    if (!policy.enabled) return true
     if (policy.gateMode === 'open') continue
     if (policy.minTier !== 'anon') return true
   }

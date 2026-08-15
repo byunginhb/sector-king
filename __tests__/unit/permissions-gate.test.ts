@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  TEASER_DEFAULT_VISIBLE_ROWS,
+  PARTIAL_DEFAULT_VISIBLE_ROWS,
   decideGate,
   maskList,
   maskValue,
@@ -15,9 +15,8 @@ function policy(overrides: Partial<FeaturePolicy> = {}): FeaturePolicy {
   return {
     featureId: 'rankings.dcf',
     minTier: 'basic',
-    gateMode: 'blur',
+    gateMode: 'hidden',
     params: {},
-    enabled: true,
     overridden: false,
     ...overrides,
   }
@@ -28,7 +27,7 @@ const ROWS = ['a', 'b', 'c', 'd', 'e']
 
 describe('decideGate — 판정 순서', () => {
   it('등급 충족이면 통과하고 gateMode 는 open 으로 접힌다', () => {
-    const d = decideGate(policy({ minTier: 'basic', gateMode: 'blur' }), 'pro')
+    const d = decideGate(policy({ minTier: 'basic', gateMode: 'hidden' }), 'pro')
     expect(d.allowed).toBe(true)
     expect(d.gateMode).toBe('open')
     expect(d.requiredTier).toBe('basic')
@@ -40,7 +39,7 @@ describe('decideGate — 판정 순서', () => {
   })
 
   it('등급 미충족이면 정책의 gateMode 가 그대로 나온다', () => {
-    const modes: GateMode[] = ['hidden', 'blur', 'partial', 'teaser']
+    const modes: GateMode[] = ['hidden', 'partial']
     for (const gateMode of modes) {
       const d = decideGate(policy({ minTier: 'pro', gateMode }), 'free')
       expect(d.allowed).toBe(false)
@@ -54,22 +53,6 @@ describe('decideGate — 판정 순서', () => {
     const d = decideGate(policy({ minTier: 'pro', gateMode: 'open' }), 'anon')
     expect(d.allowed).toBe(true)
     expect(d.gateMode).toBe('open')
-  })
-
-  it('enabled=false 는 킬 스위치 — 관리자도 막는다', () => {
-    for (const tier of TIER_ORDER) {
-      const d = decideGate(
-        policy({ minTier: 'anon', gateMode: 'open', enabled: false }),
-        tier
-      )
-      expect(d.allowed).toBe(false)
-      expect(d.gateMode).toBe('hidden')
-    }
-  })
-
-  it('킬 스위치는 등급 비교보다 먼저다 (open + admin 조합도 차단)', () => {
-    const d = decideGate(policy({ gateMode: 'open', enabled: false }), 'admin')
-    expect(d.allowed).toBe(false)
   })
 
   it('전 등급 × 전 요구등급 조합이 hasTier 와 일치한다', () => {
@@ -107,16 +90,14 @@ describe('maskList — 허용', () => {
   })
 })
 
-describe('maskList — hidden / blur', () => {
+describe('maskList — hidden', () => {
   it('전부 제거하고 개수만 남긴다', () => {
-    for (const gateMode of ['hidden', 'blur'] as GateMode[]) {
-      const d = decideGate(policy({ minTier: 'pro', gateMode }), 'anon')
-      const out = maskList(ROWS, d)
-      expect(out.items).toEqual([])
-      expect(out.lockedCount).toBe(ROWS.length)
-      expect(out.gated).toBe(true)
-      expect(out.gateMode).toBe(gateMode)
-    }
+    const d = decideGate(policy({ minTier: 'pro', gateMode: 'hidden' }), 'anon')
+    const out = maskList(ROWS, d)
+    expect(out.items).toEqual([])
+    expect(out.lockedCount).toBe(ROWS.length)
+    expect(out.gated).toBe(true)
+    expect(out.gateMode).toBe('hidden')
   })
 })
 
@@ -154,14 +135,7 @@ describe('maskList — partial + visibleRows', () => {
     expect(out.lockedCount).toBe(5)
   })
 
-  it('파라미터가 아예 없으면 전면 차단으로 떨어진다 (fail-close)', () => {
-    const d = decideGate(policy({ minTier: 'pro', gateMode: 'partial' }), 'free')
-    const out = maskList(ROWS, d)
-    expect(out.items).toEqual([])
-    expect(out.lockedCount).toBe(5)
-  })
-
-  it('음수·NaN 같은 이상값도 개방이 아니라 차단이다', () => {
+  it('음수·NaN 같은 이상값은 미지정과 같게 취급된다 (기본 노출 건수)', () => {
     for (const bad of [-1, Number.NaN, Infinity, '3' as unknown as number]) {
       const d = decideGate(
         policy({
@@ -171,76 +145,34 @@ describe('maskList — partial + visibleRows', () => {
         }),
         'free'
       )
-      expect(maskList(ROWS, d).items).toEqual([])
+      // 이상값이 "전량 개방"으로 새지 않는 것이 핵심이다. zod 가 저장 시점에
+      // min(0) 으로 막으므로 여기 오는 값은 psql 직접 수정 정도뿐이다.
+      expect(maskList(ROWS, d).items).toEqual(['a', 'b', 'c'])
     }
   })
 })
 
-describe('maskList — partial + blurTopK (상위가 곧 상품인 순위표)', () => {
-  it('상위 K개를 제거하고 K+1번째부터 실값', () => {
-    const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'partial', params: { blurTopK: 3 } }),
-      'free'
-    )
+describe('maskList — partial 기본값', () => {
+  it('visibleRows 미지정이면 기본 3건이 실값으로 남는다', () => {
+    const d = decideGate(policy({ minTier: 'pro', gateMode: 'partial' }), 'free')
     const out = maskList(ROWS, d)
-    expect(out.items).toEqual(['d', 'e'])
-    expect(out.lockedCount).toBe(3)
+    expect(PARTIAL_DEFAULT_VISIBLE_ROWS).toBe(3)
+    expect(out.items).toEqual(['a', 'b', 'c'])
+    expect(out.lockedCount).toBe(2)
   })
 
-  it('K가 길이 이상이면 전부 제거된다', () => {
+  it('visibleRows=0 은 명시적 전량 차단이다 (기본값으로 되돌아가지 않는다)', () => {
     const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'partial', params: { blurTopK: 99 } }),
+      policy({ minTier: 'pro', gateMode: 'partial', params: { visibleRows: 0 } }),
       'free'
     )
-    const out = maskList(ROWS, d)
-    expect(out.items).toEqual([])
-    expect(out.lockedCount).toBe(5)
-  })
-
-  it('K=0 이면 아무것도 가리지 않는다', () => {
-    const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'partial', params: { blurTopK: 0 } }),
-      'free'
-    )
-    const out = maskList(ROWS, d)
-    expect(out.items).toEqual(ROWS)
-    expect(out.lockedCount).toBe(0)
-  })
-
-  it('visibleRows 와 동시 지정되면 blurTopK 가 우선한다', () => {
-    const d = decideGate(
-      policy({
-        minTier: 'pro',
-        gateMode: 'partial',
-        params: { blurTopK: 2, visibleRows: 4 },
-      }),
-      'free'
-    )
-    expect(maskList(ROWS, d).items).toEqual(['c', 'd', 'e'])
-  })
-})
-
-describe('maskList — teaser', () => {
-  it('visibleRows 미지정이면 기본 1건', () => {
-    const d = decideGate(policy({ minTier: 'pro', gateMode: 'teaser' }), 'free')
-    const out = maskList(ROWS, d)
-    expect(TEASER_DEFAULT_VISIBLE_ROWS).toBe(1)
-    expect(out.items).toEqual(['a'])
-    expect(out.lockedCount).toBe(4)
-  })
-
-  it('visibleRows 지정 시 그 값을 따른다', () => {
-    const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'teaser', params: { visibleRows: 3 } }),
-      'free'
-    )
-    expect(maskList(ROWS, d).items).toEqual(['a', 'b', 'c'])
+    expect(maskList(ROWS, d).items).toEqual([])
   })
 })
 
 describe('maskList — 경계', () => {
   it('빈 배열은 lockedCount 0 으로 조용히 통과한다', () => {
-    const d = decideGate(policy({ minTier: 'pro', gateMode: 'blur' }), 'free')
+    const d = decideGate(policy({ minTier: 'pro', gateMode: 'hidden' }), 'free')
     const out = maskList<string>([], d)
     expect(out.items).toEqual([])
     expect(out.lockedCount).toBe(0)
@@ -286,7 +218,7 @@ describe('maskList — maskFn (형상 유지 더미 치환)', () => {
   })
 
   it('더미 치환에도 원본 값이 응답에 남지 않는다', () => {
-    const d = decideGate(policy({ minTier: 'pro', gateMode: 'blur' }), 'anon')
+    const d = decideGate(policy({ minTier: 'pro', gateMode: 'hidden' }), 'anon')
     const out = maskList(objRows, d, dummy)
     const serialized = JSON.stringify(out)
     expect(serialized).not.toContain('엔비디아')
@@ -294,13 +226,13 @@ describe('maskList — maskFn (형상 유지 더미 치환)', () => {
     expect(out.lockedCount).toBe(3)
   })
 
-  it('blurTopK 는 상위 K개를 더미로 바꾸고 순서를 유지한다', () => {
+  it('partial 은 앞쪽 실값을 남기고 뒤쪽만 더미로 바꾼다 (순서 유지)', () => {
     const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'partial', params: { blurTopK: 2 } }),
+      policy({ minTier: 'pro', gateMode: 'partial', params: { visibleRows: 1 } }),
       'free'
     )
     const out = maskList(objRows, d, dummy)
-    expect(out.items.map((r) => r.name)).toEqual(['●●●', '●●●', '애플'])
+    expect(out.items.map((r) => r.name)).toEqual(['엔비디아', '●●●', '●●●'])
   })
 })
 
@@ -332,21 +264,30 @@ describe('featurePolicyBodySchema — 저장 시점 검증', () => {
     expect(r.success).toBe(false)
   })
 
-  it('partial 은 visibleRows/blurTopK 중 하나를 요구한다', () => {
+  it('partial 은 params 없이도 저장된다 (런타임 기본 3건)', () => {
     expect(
       featurePolicyBodySchema.safeParse({
         minTier: 'pro',
         gateMode: 'partial',
         params: {},
       }).success
-    ).toBe(false)
+    ).toBe(true)
     expect(
       featurePolicyBodySchema.safeParse({
         minTier: 'pro',
         gateMode: 'partial',
-        params: { blurTopK: 3 },
+        params: { visibleRows: 3 },
       }).success
     ).toBe(true)
+  })
+
+  it('폐지된 게이트 방식(blur·teaser)은 거부된다', () => {
+    for (const gateMode of ['blur', 'teaser']) {
+      expect(
+        featurePolicyBodySchema.safeParse({ minTier: 'pro', gateMode, params: {} })
+          .success
+      ).toBe(false)
+    }
   })
 
   it('open 은 파라미터를 받지 않는다', () => {
@@ -363,27 +304,35 @@ describe('featurePolicyBodySchema — 저장 시점 검증', () => {
     expect(
       featurePolicyBodySchema.safeParse({
         minTier: 'pro',
-        gateMode: 'blur',
+        gateMode: 'hidden',
         params: { ctaHref: 'https://evil.example.com' },
       }).success
     ).toBe(false)
     expect(
       featurePolicyBodySchema.safeParse({
         minTier: 'pro',
-        gateMode: 'blur',
+        gateMode: 'hidden',
         params: { ctaHref: '//evil.example.com' },
       }).success
     ).toBe(false)
   })
 })
 
-describe('parseParams — 읽기는 관대하게, 단 fail-close', () => {
-  it('깨진 params 는 {} 로 떨어지고, 게이트는 그때 전면 차단한다', () => {
+describe('parseParams — 읽기는 관대하게', () => {
+  it('깨진 params 는 {} 로 떨어지고, 게이트는 기본 노출 건수를 쓴다', () => {
     expect(parseParams('partial', { nope: 1 })).toEqual({})
-    expect(parseParams('teaser', null)).toEqual({})
+    expect(parseParams('hidden', null)).toEqual({})
 
     const d = decideGate(
       policy({ minTier: 'pro', gateMode: 'partial', params: parseParams('partial', 'garbage') }),
+      'free'
+    )
+    expect(maskList(ROWS, d).items).toEqual(['a', 'b', 'c'])
+  })
+
+  it('깨진 params 여도 hidden 은 전량 차단이다', () => {
+    const d = decideGate(
+      policy({ minTier: 'pro', gateMode: 'hidden', params: parseParams('hidden', 'garbage') }),
       'free'
     )
     expect(maskList(ROWS, d).items).toEqual([])

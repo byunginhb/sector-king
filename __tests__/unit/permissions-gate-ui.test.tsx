@@ -1,31 +1,15 @@
-import { describe, it, expect, beforeAll, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import Link from 'next/link'
 import { FeatureGate } from '@/components/gate/feature-gate'
 import { PartialGate, GatedValue } from '@/components/gate/partial-gate'
 import { GATED_ROOT_CLASS } from '@/lib/permissions/constants'
 import type { GateDecision } from '@/lib/permissions/types'
 
-/*
- * vitest.setup.ts 의 공용 ResizeObserver 스텁은 `vi.fn().mockImplementation(화살표)`
- * 라서 `new` 로 호출할 수 없다. FeatureGate 는 오버레이 변형을 컨테이너 높이로
- * 고르느라 실제로 `new ResizeObserver` 를 부르므로, 이 파일에서만 생성 가능한
- * 클래스로 덮는다(공용 setup 은 다른 테스트가 의존하므로 건드리지 않는다).
- */
-beforeAll(() => {
-  class TestResizeObserver {
-    observe = vi.fn()
-    unobserve = vi.fn()
-    disconnect = vi.fn()
-  }
-  vi.stubGlobal('ResizeObserver', TestResizeObserver)
-})
-
 function decision(overrides: Partial<GateDecision> = {}): GateDecision {
   return {
     featureId: 'rankings.table',
     allowed: false,
-    gateMode: 'blur',
+    gateMode: 'partial',
     params: {},
     requiredTier: 'pro',
     actualTier: 'free',
@@ -49,62 +33,31 @@ describe('FeatureGate', () => {
     expect(container.querySelector(`.${GATED_ROOT_CLASS}`)).toBeNull()
   })
 
-  it('차단되면 베일에 aria-hidden 과 inert 를 함께 건다', () => {
+  it('일부(partial) 는 축약 콘텐츠를 남기고 안내 스트립을 붙인다', () => {
     const { container } = render(
-      <FeatureGate featureId="rankings.table" decision={decision()} lockedCount={3}>
-        <p>실제 값</p>
+      <FeatureGate featureId="rankings.table" decision={decision()}>
+        <p>상위 3건</p>
       </FeatureGate>
     )
 
-    const veil = container.querySelector('.sk-gate-veil')
-    expect(veil).not.toBeNull()
-    // 셋 다 필요하다 — 하나씩은 각각 구멍이 있다.
-    expect(veil).toHaveAttribute('aria-hidden', 'true')
-    expect(veil).toHaveAttribute('inert')
-    expect(veil).toHaveClass('pointer-events-none')
-  })
-
-  it('차단되면 게이트 루트에 계약 클래스와 QA 셀렉터가 붙는다', () => {
-    const { container } = render(
-      <FeatureGate featureId="rankings.table" decision={decision()} lockedCount={2}>
-        <p>실제 값</p>
-      </FeatureGate>
-    )
+    // 서버가 이미 잘라 보낸 실값이라 그대로 남는다 — 여기서 흐리면 보여야 할
+    // 것까지 가려진다(셀 단위 흐림은 PartialGate 담당).
+    expect(screen.getByText('상위 3건')).toBeInTheDocument()
 
     const root = container.querySelector(`.${GATED_ROOT_CLASS}`)
     expect(root).not.toBeNull()
-    expect(root).toHaveAttribute('data-gate', 'blur')
+    expect(root).toHaveAttribute('data-gate', 'partial')
     expect(root).toHaveAttribute('data-feature', 'rankings.table')
   })
 
-  it('오버레이에 잠긴 이유와 CTA 링크가 텍스트로 존재한다', () => {
+  it('차단 상태는 시각 신호만이 아니라 텍스트와 CTA 로도 전달된다', () => {
     render(
-      <FeatureGate
-        featureId="rankings.table"
-        decision={decision()}
-        lockedCount={3}
-        variant="panel"
-      >
-        <p>실제 값</p>
+      <FeatureGate featureId="rankings.table" decision={decision()}>
+        <p>상위 3건</p>
       </FeatureGate>
     )
 
-    // 흐림(시각 신호)만으로 상태를 전달하지 않는다 — 항상 텍스트가 동반한다.
-    expect(screen.getByText('Pro 전용')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Pro 알아보기' })).toBeInTheDocument()
-  })
-
-  it('lockedCount 만큼 더미 행을 그리고 실제 값은 DOM 에 넣지 않는다', () => {
-    const { container } = render(
-      <FeatureGate featureId="rankings.table" decision={decision()} lockedCount={3}>
-        <p>영업비밀 71.4%</p>
-      </FeatureGate>
-    )
-
-    expect(container.querySelector('.sk-gate-veil')?.textContent).not.toContain('71.4%')
-    // 더미 행의 순위 번호 1·2·3
-    expect(screen.getByText('1')).toBeInTheDocument()
-    expect(screen.getByText('3')).toBeInTheDocument()
   })
 
   it('hidden 게이트는 자리표시자 없이 완전히 제거한다', () => {
@@ -120,15 +73,19 @@ describe('FeatureGate', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('베일 안에는 포커스 가능한 요소가 없다', () => {
-    const { container } = render(
-      <FeatureGate featureId="rankings.table" decision={decision()} lockedCount={4}>
-        <Link href="/stock/NVDA">엔비디아</Link>
+  it('hidden 게이트에 fallback 을 주면 그것만 렌더한다', () => {
+    render(
+      <FeatureGate
+        featureId="rankings.export"
+        decision={decision({ gateMode: 'hidden' })}
+        fallback={<p>구독하면 열립니다</p>}
+      >
+        <button type="button">CSV 내보내기</button>
       </FeatureGate>
     )
 
-    const veil = container.querySelector('.sk-gate-veil')
-    expect(veil?.querySelectorAll('a, button, input, select, textarea, [tabindex]')).toHaveLength(0)
+    expect(screen.getByText('구독하면 열립니다')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'CSV 내보내기' })).toBeNull()
   })
 })
 

@@ -60,15 +60,12 @@ export type AdminFeatureRow = {
     minTier: Tier
     gateMode: GateMode
     params: GateParams
-    /** 코드 기본값에는 킬 스위치가 없다 — 항상 true. */
-    enabled: true
   }
   /** 현재 실제 정책(오버라이드가 있으면 그 값, 없으면 기본값). */
   effective: {
     minTier: Tier
     gateMode: GateMode
     params: GateParams
-    enabled: boolean
   }
   /** DB 오버라이드 행 존재 여부. */
   overridden: boolean
@@ -83,7 +80,6 @@ export type OrphanRow = {
   minTier: Tier
   gateMode: GateMode
   params: GateParams
-  enabled: boolean
   note: string | null
   updatedBy: string | null
   updatedAt: string
@@ -111,7 +107,6 @@ export type SaveFeatureItem = {
   minTier: Tier
   gateMode: GateMode
   params: GateParams
-  enabled: boolean
   note: string | null
 }
 
@@ -136,7 +131,6 @@ export type DraftPolicy = {
   minTier: Tier
   gateMode: GateMode
   params: GateParams
-  enabled: boolean
   note: string | null
 }
 
@@ -145,7 +139,7 @@ export type ConsoleFilters = {
   q: string
   minTier: Tier | 'all'
   gateMode: GateMode | 'all'
-  status: 'all' | 'unset' | 'changed' | 'disabled' | 'nondefault'
+  status: 'all' | 'unset' | 'changed' | 'nondefault'
 }
 
 export const EMPTY_FILTERS: ConsoleFilters = {

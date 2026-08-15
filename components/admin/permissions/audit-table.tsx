@@ -171,11 +171,6 @@ export function AuditTable({
                             aria-label="저장되지 않은 변경 있음"
                           />
                         )}
-                        {!row.effective.enabled && (
-                          <span className="rounded-md border border-danger/40 bg-danger/10 px-1.5 py-0.5 text-[11px] font-bold text-danger">
-                            킬 스위치
-                          </span>
-                        )}
                       </span>
                       <span className="mt-0.5 block font-mono text-[11px] text-muted-foreground">
                         {row.featureId}

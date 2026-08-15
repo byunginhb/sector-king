@@ -40,7 +40,7 @@ import { featurePermissionRowSchema } from './schema'
 import type { FeaturePermissionRow, FeaturePolicy, PolicyMap } from './types'
 
 /** 조회 컬럼 — 판정에 쓰는 것 + 콘솔 표시용. `select *` 로 두면 컬럼 추가가 조용히 페이로드를 늘린다. */
-const ROW_COLUMNS = 'feature_id, min_tier, gate_mode, params, enabled, note, updated_by, updated_at'
+const ROW_COLUMNS = 'feature_id, min_tier, gate_mode, params, note, updated_by, updated_at'
 
 /** PostgreSQL undefined_table — 마이그레이션 적용 전 창. */
 const UNDEFINED_TABLE = '42P01'
@@ -147,6 +147,10 @@ const getOverrideMap = cache(
  * DEFAULT 라 행이 존재하면 네 값이 항상 채워져 있다. 부분 병합을 허용하면
  * "행은 있는데 minTier 만 기본값" 같은 상태가 생겨 콘솔이 무엇을 보여줄지
  * 애매해진다. 오버라이드는 전체 교체, 되돌리기는 행 삭제 — 두 가지뿐이다.
+ *
+ * `enabled` 컬럼은 더 이상 읽지 않는다(킬 스위치 폐지 — `gate.ts` 참조).
+ * DEFAULT true 라 INSERT 에서 생략해도 되므로 컬럼을 남겨 둔다.
+ * ponytail: 컬럼 DROP 은 되돌릴 수 없고 얻는 게 없어 하지 않는다.
  */
 export function resolvePolicy(
   featureId: string,
@@ -164,7 +168,6 @@ export function resolvePolicy(
       minTier: row.minTier,
       gateMode: row.gateMode,
       params: row.params ?? {},
-      enabled: row.enabled,
       overridden: true,
     }
   }
@@ -174,7 +177,6 @@ export function resolvePolicy(
     minTier: fallback.minTier,
     gateMode: fallback.gateMode,
     params: ('params' in fallback ? fallback.params : undefined) ?? {},
-    enabled: true,
     overridden: false,
   }
 }
