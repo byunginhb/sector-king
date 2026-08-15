@@ -19,7 +19,6 @@ import type { ConsoleFilters } from './types'
 
 const STATUS_OPTIONS: Array<{ value: ConsoleFilters['status']; label: string }> = [
   { value: 'all', label: '전체' },
-  { value: 'unset', label: '미설정만' },
   { value: 'changed', label: '변경분만' },
   { value: 'nondefault', label: '기본값과 다른 것만' },
 ]

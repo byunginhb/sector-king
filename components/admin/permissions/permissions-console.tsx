@@ -127,11 +127,6 @@ export function PermissionsConsole({ initial }: { initial: AdminFeaturesPayload 
     [save.error]
   )
 
-  const unsetCount = useMemo(
-    () => data.features.filter((f) => !f.overridden).length,
-    [data.features]
-  )
-
   /**
    * 제어를 걸어 뒀지만 **배선이 없어 사용자 화면이 그대로인** 기능 수.
    *
@@ -207,9 +202,6 @@ export function PermissionsConsole({ initial }: { initial: AdminFeaturesPayload 
         return false
       }
       switch (filters.status) {
-        case 'unset':
-          if (row.overridden) return false
-          break
         case 'changed':
           if (!changed.has(row.featureId)) return false
           break
@@ -243,12 +235,11 @@ export function PermissionsConsole({ initial }: { initial: AdminFeaturesPayload 
   const pageStats = useMemo(() => {
     const stats: Record<string, PageStat> = {}
     for (const p of data.pages) {
-      stats[p.id] = { changed: 0, unset: 0, matched: 0 }
+      stats[p.id] = { changed: 0, matched: 0 }
     }
     for (const f of data.features) {
-      const s = (stats[f.pageId] ??= { changed: 0, unset: 0, matched: 0 })
+      const s = (stats[f.pageId] ??= { changed: 0, matched: 0 })
       if (changed.has(f.featureId)) s.changed += 1
-      if (!f.overridden) s.unset += 1
     }
     for (const f of filtered) {
       const s = stats[f.pageId]
@@ -390,15 +381,6 @@ export function PermissionsConsole({ initial }: { initial: AdminFeaturesPayload 
           </TabButton>
         </div>
 
-        {unsetCount > 0 && (
-          <span
-            className="inline-flex items-center gap-1 rounded-md border border-warning/30 bg-warning/10 px-2 py-1 text-xs font-bold text-warning"
-            title="DB 오버라이드가 없어 코드 기본값으로 동작 중인 기능"
-          >
-            <AlertTriangle className="h-3.5 w-3.5" aria-hidden />
-            미설정 {unsetCount.toLocaleString()}건
-          </span>
-        )}
         {data.orphans.length > 0 && (
           <button
             type="button"

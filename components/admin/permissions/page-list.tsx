@@ -3,7 +3,14 @@
  *
  * 권한 설정의 실수는 언제나 *페이지 단위*로 드러난다 — 한 카드는 잠기고 그
  * 아래 링크는 열려 있는 식이다. 그래서 편집의 1차 축이 페이지이고, 이 리스트가
- * 미저장 변경(primary 점)과 미설정(warning) 을 한눈에 지고 있어야 한다.
+ * 미저장 변경(primary 점)을 한눈에 지고 있어야 한다.
+ *
+ * **"미설정"을 경고로 표시하지 않는다.** DB 오버라이드 행이 없는 것은 결손이
+ * 아니라 정상이다(코드 기본값이 곧 정책 — `build-payload.ts` §병합 규칙).
+ * 게다가 콘솔은 값이 기본값과 같아지면 행을 삭제하므로, 그 경고를 0으로
+ * 만드는 유일한 길은 전 기능을 기본값과 다르게 바꾸는 것 = 사이트 전체를
+ * 잠그는 것이었다. 도달해서도 안 되는 목표를 경고로 띄우면 운영자는 경고를
+ * 읽지 않는 법부터 배운다.
  *
  * 검색어에 안 걸린 페이지는 **흐리게 두되 사라지지 않는다.** 사라지면
  * "이 페이지가 없어졌나" 라는 착시가 생기고, 그 착시는 권한 화면에서
@@ -11,15 +18,13 @@
  */
 'use client'
 
-import { AlertTriangle, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AdminPageMeta } from './types'
 
 export type PageStat = {
   /** 이 페이지의 미저장 변경 수. */
   changed: number
-  /** DB 오버라이드가 없는 기능 수 = 코드 기본값으로 동작 중. */
-  unset: number
   /** 현재 필터·검색을 통과한 기능 수. */
   matched: number
 }
@@ -42,7 +47,7 @@ export function PageList({
     <nav aria-label="페이지 목록" className="sk-card overflow-hidden">
       <ul className="divide-y divide-border-subtle">
         {pages.map((page) => {
-          const stat = stats[page.id] ?? { changed: 0, unset: 0, matched: 0 }
+          const stat = stats[page.id] ?? { changed: 0, matched: 0 }
           const selected = page.id === selectedId
           const dimmed = filtering && stat.matched === 0
 
@@ -75,16 +80,10 @@ export function PageList({
                 </span>
 
                 <span className="flex shrink-0 items-center gap-1.5">
-                  {stat.unset > 0 && (
-                    <span
-                      className="inline-flex items-center gap-0.5 text-[11px] font-bold text-warning tabular-nums"
-                      title={`미설정 ${stat.unset}건 — 코드 기본값으로 동작 중`}
-                    >
-                      <AlertTriangle className="h-3 w-3" aria-hidden />
-                      {stat.unset}
-                    </span>
-                  )}
-                  <span className="text-xs text-muted-foreground tabular-nums">
+                  <span
+                    className="text-xs text-muted-foreground tabular-nums"
+                    title={`기능 ${page.featureCount}개`}
+                  >
                     {page.featureCount}
                   </span>
                   {stat.changed > 0 && (

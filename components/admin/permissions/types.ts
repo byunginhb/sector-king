@@ -139,7 +139,7 @@ export type ConsoleFilters = {
   q: string
   minTier: Tier | 'all'
   gateMode: GateMode | 'all'
-  status: 'all' | 'unset' | 'changed' | 'nondefault'
+  status: 'all' | 'changed' | 'nondefault'
 }
 
 export const EMPTY_FILTERS: ConsoleFilters = {
