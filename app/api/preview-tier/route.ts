@@ -20,12 +20,13 @@
  *   `sk_preview_tier` 를 읽지 않는다.
  * - 응답에 `private, no-store` 를 박는다. 리다이렉트가 공용 캐시에 남으면
  *   다른 사람의 요청이 관리자의 미리보기 상태를 물려받을 수 있다.
- * - `next` 는 같은 출처의 절대 경로만 허용한다. 검증 없이 그대로 넘기면
- *   오픈 리다이렉터가 된다.
+ * - `next` 는 같은 출처의 절대 경로만 허용한다(`lib/safe-redirect`). 검증 없이
+ *   그대로 넘기면 오픈 리다이렉터가 된다.
  */
 
 import { NextResponse } from 'next/server'
 import { getCurrentProfile } from '@/lib/auth/get-user'
+import { safeRedirectPath } from '@/lib/safe-redirect'
 import {
   PREVIEW_COOKIE,
   PREVIEW_MAX_AGE_SEC,
@@ -35,24 +36,16 @@ import { isTier, type Tier } from '@/lib/permissions/tier'
 
 export const dynamic = 'force-dynamic'
 
-/**
- * 오픈 리다이렉트 방지. `/` 로 시작하되 `//` 나 `/\` 는 프로토콜 상대 URL 이라
- * 외부 호스트로 나간다.
- */
-function safeNextPath(raw: string | null): string {
-  if (!raw) return '/'
-  if (!raw.startsWith('/')) return '/'
-  if (raw.startsWith('//') || raw.startsWith('/\\')) return '/'
-  return raw
-}
-
 function isPreviewableTier(value: unknown): value is Tier {
   return isTier(value) && (PREVIEW_TIERS as readonly string[]).includes(value)
 }
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
-  const next = safeNextPath(url.searchParams.get('next'))
+  // `lib/safe-redirect` 가 제어문자 제거 → 형태 검사 → 출처 재확인까지 한다.
+  // 문자열 검사만으로는 `/<TAB>/evil.com` 이 파싱 단계에서 `//evil.com` 으로
+  // 되살아나 외부로 나간다(그 파일 주석의 실측 참조).
+  const next = safeRedirectPath(url.searchParams.get('next'), url.origin)
   const response = NextResponse.redirect(new URL(next, url.origin))
   response.headers.set('Cache-Control', 'private, no-store, max-age=0')
 

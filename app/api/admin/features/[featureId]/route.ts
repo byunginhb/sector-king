@@ -10,8 +10,8 @@
  * 개방이 소리 없이 사라진다. 특히 킬 스위치가 사라지면 장애 상태가 다시
  * 노출된다 — 자동 삭제의 최악 시나리오다. 그래서 사람이 누르는 이 경로만 둔다.
  *
- * 콘솔의 일괄 저장(`PUT /api/admin/features` 의 `action: 'reset'`)과 같은 결과를
- * 내지만, 이 라우트는 draft 와 무관한 단건 즉시 삭제다(고아는 표에 없다).
+ * 콘솔의 일괄 저장(`PUT /api/admin/features` 의 `resetIds`)과 같은 결과를 내지만,
+ * 이 라우트는 draft 와 무관한 단건 즉시 삭제다(고아는 표에 없다).
  */
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'

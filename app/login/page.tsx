@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 import { SectorKingLogo } from '@/components/logo'
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button'
 import { getCurrentUser } from '@/lib/auth/get-user'
+import { safeRedirectPath } from '@/lib/safe-redirect'
 
 export const metadata: Metadata = {
   title: '로그인',
@@ -14,12 +15,6 @@ export const metadata: Metadata = {
 
 type SearchParams = Promise<{ redirect?: string; error?: string }>
 
-function isSafeRedirect(target: string | null | undefined): target is string {
-  if (!target) return false
-  if (!target.startsWith('/')) return false
-  if (target.startsWith('//')) return false
-  return true
-}
 
 export default async function LoginPage({
   searchParams,
@@ -27,7 +22,10 @@ export default async function LoginPage({
   searchParams: SearchParams
 }) {
   const params = await searchParams
-  const redirectTarget = isSafeRedirect(params.redirect) ? params.redirect : '/'
+  // `redirect()` 는 Location 헤더에 값을 그대로 싣고, 브라우저는 탭·CR·LF 를
+  // 지운 뒤 해석한다 — 문자열 검사만으로는 `/<TAB>/evil.com` 이 프로토콜 상대
+  // URL 로 되살아나 외부로 나간다(`lib/safe-redirect` 주석의 실측 참조).
+  const redirectTarget = safeRedirectPath(params.redirect)
 
   // 이미 로그인된 사용자는 redirect 대상으로 즉시 이동
   const user = await getCurrentUser()

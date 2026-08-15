@@ -68,12 +68,23 @@ export const featureIdSchema = z
 /** 노출/은닉 행 수. 음수·소수·NaN 차단. 상한은 실수로 10만을 넣는 것 방지. */
 const rowCountSchema = z.coerce.number().int().min(0).max(1000)
 
-/** CTA 착지점 — 내부 경로만 허용(오픈 리다이렉트 차단). */
+/**
+ * CTA 착지점 — 내부 경로만 허용(오픈 리다이렉트 차단).
+ *
+ * 이 값은 `resolveCtaHref()` 를 거쳐 `<Link href>` 에 그대로 들어간다. 그래서
+ * `^\/(?!\/)` 하나로는 부족하다 — 제어문자(`/<TAB>/evil.com`)와 백슬래시
+ * (`/\evil.com`)는 브라우저·URL 파서가 정규화하면서 `//evil.com` 이 되어
+ * 외부 호스트로 나간다. `lib/safe-redirect` 와 같은 판단 기준을 쓴다.
+ */
 const ctaHrefSchema = z
   .string()
   .min(1)
   .max(200)
-  .regex(/^\/(?!\/)/, 'CTA 링크는 내부 절대경로(/로 시작)여야 합니다')
+  .regex(/^\/(?![/\\])/, 'CTA 링크는 내부 절대경로(/로 시작)여야 합니다')
+  .refine(
+    (v) => !/[\u0000-\u001F\u007F\\]/.test(v),
+    'CTA 링크에 제어문자·백슬래시를 넣을 수 없습니다'
+  )
 
 const ctaShape = {
   ctaHref: ctaHrefSchema.optional(),

@@ -11,13 +11,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-function isSafeRedirect(target: string | null): target is string {
-  if (!target) return false
-  if (!target.startsWith('/')) return false
-  if (target.startsWith('//')) return false
-  return true
-}
+import { safeRedirectPath } from '@/lib/safe-redirect'
 
 async function ensureAdminRoleForKnownEmails(email: string | null | undefined) {
   if (!email) return
@@ -62,6 +56,9 @@ export async function GET(request: NextRequest) {
   // ADMIN_EMAILS 자동 부여 (trigger fallback)
   await ensureAdminRoleForKnownEmails(data.user?.email)
 
-  const safeNext = isSafeRedirect(redirectParam) ? redirectParam : '/'
-  return NextResponse.redirect(`${origin}${safeNext}`)
+  // 문자열 이어붙이기가 지금은 우연히 안전하지만(파서가 `//evil.com` 을 같은
+  // 출처의 경로로 읽는다), 그 안전성이 연결 방식에 걸려 있는 상태라 검증
+  // 자체를 `lib/safe-redirect` 로 옮긴다.
+  const safeNext = safeRedirectPath(redirectParam, origin)
+  return NextResponse.redirect(new URL(safeNext, origin))
 }
