@@ -7,7 +7,7 @@
  *
  * 1. **DB CHECK 은 최소한만, 의미 검증은 여기서 한다.** `feature_permissions.params`
  *    의 DB 제약은 `jsonb_typeof(params) = 'object'` 뿐이다. "hidden 인데
- *    visibleRows 가 있다" 같은 조합 오류는 SQL 로 표현하면 마이그레이션이
+ *    hiddenRows 가 있다" 같은 조합 오류는 SQL 로 표현하면 마이그레이션이
  *    필요해지므로 zod 가 막는다(gate_mode 별 discriminated union).
  *
  * 2. **알 수 없는 키는 거부한다(strict).** params 오타(`visibleRow`)가 조용히
@@ -63,7 +63,7 @@ export const featureIdSchema = z
   .max(80)
   .regex(FEATURE_ID_PATTERN, 'featureId 형식은 `namespace.feature` 여야 합니다')
 
-/** 노출/은닉 행 수. 음수·소수·NaN 차단. 상한은 실수로 10만을 넣는 것 방지. */
+/** 가릴 행 수. 음수·소수·NaN 차단. 상한은 실수로 10만을 넣는 것 방지. */
 const rowCountSchema = z.coerce.number().int().min(0).max(1000)
 
 /**
@@ -100,14 +100,14 @@ export const openParamsSchema = z.object({}).strict()
 export const hiddenParamsSchema = z.object({ ...ctaShape }).strict()
 
 /**
- * `partial` = 상위 `visibleRows` 건만 실값, 나머지는 서버가 지운다.
+ * `partial` = 상위 `hiddenRows` 건을 서버가 지우고 그 아래를 실값으로 준다.
  *
- * 미지정을 허용한다 — 게이트 런타임이 `PARTIAL_DEFAULT_VISIBLE_ROWS`(3건)를
- * 적용하므로 "0개 노출로 조용히 잠기는" 실패 모드가 없다.
+ * 미지정을 허용한다 — 게이트 런타임이 `PARTIAL_DEFAULT_HIDDEN_ROWS`(3건)를
+ * 적용하므로 "0개를 가려 조용히 전량 공개되는" 실패 모드가 없다.
  */
 export const partialParamsSchema = z
   .object({
-    visibleRows: rowCountSchema.optional(),
+    hiddenRows: rowCountSchema.optional(),
     ...ctaShape,
   })
   .strict()
@@ -136,7 +136,8 @@ const PARAMS_SCHEMA_BY_MODE = {
  *
  * **파싱 실패는 throw 하지 않고 `{}` 로 떨어진다.** 정책 행 하나가 깨졌다고
  * 페이지 전체가 500 이 되면 안 되고, `{}` 는 게이트 런타임에서 가장 보수적인
- * 해석(hidden 은 0건, partial 은 기본 3건)이라 크게 새지 않는다.
+ * 해석(hidden 은 전량 차단, partial 은 상위 3건 차단)이라 열리는 쪽으로 크게
+ * 새지 않는다.
  *
  * 반대로 어드민 저장 경로는 `gateConfigSchema` 로 **엄격히** 검증해 오타를
  * 저장 시점에 튕긴다 — 읽기는 관대하게, 쓰기는 엄격하게.

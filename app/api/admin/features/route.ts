@@ -53,7 +53,7 @@ export const dynamic = 'force-dynamic'
 
 // ── 입력 스키마 ────────────────────────────────────────────────────────
 // upsert 원소는 `featurePolicyItemSchema` 를 **그대로** 쓴다. gate_mode 별
-// params 규약(예: partial 의 visibleRows)이 거기 있고,
+// params 규약(예: partial 의 hiddenRows)이 거기 있고,
 // 쓰기 경로는 엄격해야 한다 — `parseParams` 는 읽기용이라 실패를 `{}` 로
 // 흡수하므로 저장 검증에 쓰면 오타난 파라미터가 조용히 "0건 노출"이 된다.
 const saveSchema = z

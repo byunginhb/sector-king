@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  PARTIAL_DEFAULT_VISIBLE_ROWS,
+  PARTIAL_DEFAULT_HIDDEN_ROWS,
   decideGate,
   maskList,
   maskValue,
@@ -68,7 +68,7 @@ describe('decideGate — 판정 순서', () => {
   })
 
   it('params 는 판정 결과에 그대로 실린다', () => {
-    const params: GateParams = { visibleRows: 3, ctaLabel: '업그레이드' }
+    const params: GateParams = { hiddenRows: 3, ctaLabel: '업그레이드' }
     const d = decideGate(policy({ minTier: 'pro', gateMode: 'partial', params }), 'free')
     expect(d.params).toEqual(params)
   })
@@ -101,33 +101,21 @@ describe('maskList — hidden', () => {
   })
 })
 
-describe('maskList — partial + visibleRows', () => {
-  it('상위 N개만 실값으로 남는다', () => {
+describe('maskList — partial 은 상위를 가린다', () => {
+  it('상위 N개를 제거하고 N+1번째부터 실값', () => {
     const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'partial', params: { visibleRows: 2 } }),
+      policy({ minTier: 'pro', gateMode: 'partial', params: { hiddenRows: 2 } }),
       'free'
     )
     const out = maskList(ROWS, d)
-    expect(out.items).toEqual(['a', 'b'])
-    expect(out.lockedCount).toBe(3)
+    expect(out.items).toEqual(['c', 'd', 'e'])
+    expect(out.lockedCount).toBe(2)
     expect(out.gated).toBe(true)
   })
 
-  it('N이 길이보다 크면 전부 남고 lockedCount=0', () => {
+  it('N이 길이 이상이면 전부 제거된다', () => {
     const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'partial', params: { visibleRows: 99 } }),
-      'free'
-    )
-    const out = maskList(ROWS, d)
-    expect(out.items).toEqual(ROWS)
-    expect(out.lockedCount).toBe(0)
-    // 값은 다 나갔지만 게이트가 걸린 상태라는 사실은 유지된다
-    expect(out.gated).toBe(true)
-  })
-
-  it('N=0 이면 전부 제거된다', () => {
-    const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'partial', params: { visibleRows: 0 } }),
+      policy({ minTier: 'pro', gateMode: 'partial', params: { hiddenRows: 99 } }),
       'free'
     )
     const out = maskList(ROWS, d)
@@ -135,38 +123,38 @@ describe('maskList — partial + visibleRows', () => {
     expect(out.lockedCount).toBe(5)
   })
 
-  it('음수·NaN 같은 이상값은 미지정과 같게 취급된다 (기본 노출 건수)', () => {
+  it('N=0 은 명시적 전량 공개다 (기본값으로 되돌아가지 않는다)', () => {
+    const d = decideGate(
+      policy({ minTier: 'pro', gateMode: 'partial', params: { hiddenRows: 0 } }),
+      'free'
+    )
+    const out = maskList(ROWS, d)
+    expect(out.items).toEqual(ROWS)
+    expect(out.lockedCount).toBe(0)
+  })
+
+  it('hiddenRows 미지정이면 상위 3건이 가려진다', () => {
+    const d = decideGate(policy({ minTier: 'pro', gateMode: 'partial' }), 'free')
+    const out = maskList(ROWS, d)
+    expect(PARTIAL_DEFAULT_HIDDEN_ROWS).toBe(3)
+    expect(out.items).toEqual(['d', 'e'])
+    expect(out.lockedCount).toBe(3)
+  })
+
+  it('음수·NaN 같은 이상값은 미지정과 같게 취급된다 (기본 가림 건수)', () => {
     for (const bad of [-1, Number.NaN, Infinity, '3' as unknown as number]) {
       const d = decideGate(
         policy({
           minTier: 'pro',
           gateMode: 'partial',
-          params: { visibleRows: bad },
+          params: { hiddenRows: bad },
         }),
         'free'
       )
       // 이상값이 "전량 개방"으로 새지 않는 것이 핵심이다. zod 가 저장 시점에
       // min(0) 으로 막으므로 여기 오는 값은 psql 직접 수정 정도뿐이다.
-      expect(maskList(ROWS, d).items).toEqual(['a', 'b', 'c'])
+      expect(maskList(ROWS, d).items).toEqual(['d', 'e'])
     }
-  })
-})
-
-describe('maskList — partial 기본값', () => {
-  it('visibleRows 미지정이면 기본 3건이 실값으로 남는다', () => {
-    const d = decideGate(policy({ minTier: 'pro', gateMode: 'partial' }), 'free')
-    const out = maskList(ROWS, d)
-    expect(PARTIAL_DEFAULT_VISIBLE_ROWS).toBe(3)
-    expect(out.items).toEqual(['a', 'b', 'c'])
-    expect(out.lockedCount).toBe(2)
-  })
-
-  it('visibleRows=0 은 명시적 전량 차단이다 (기본값으로 되돌아가지 않는다)', () => {
-    const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'partial', params: { visibleRows: 0 } }),
-      'free'
-    )
-    expect(maskList(ROWS, d).items).toEqual([])
   })
 })
 
@@ -182,7 +170,7 @@ describe('maskList — 경계', () => {
   it('원본 배열을 변형하지 않는다 (불변)', () => {
     const source = [...ROWS]
     const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'partial', params: { visibleRows: 1 } }),
+      policy({ minTier: 'pro', gateMode: 'partial', params: { hiddenRows: 1 } }),
       'free'
     )
     maskList(source, d)
@@ -205,14 +193,15 @@ describe('maskList — maskFn (형상 유지 더미 치환)', () => {
 
   it('제거 대신 더미로 치환하고 항목 수를 유지한다', () => {
     const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'partial', params: { visibleRows: 1 } }),
+      policy({ minTier: 'pro', gateMode: 'partial', params: { hiddenRows: 2 } }),
       'free'
     )
     const out = maskList(objRows, d, dummy)
     expect(out.items).toHaveLength(3)
-    expect(out.items[0]).toEqual(objRows[0])
+    // 상위 2건이 더미, 3위만 실값 — 순위 번호는 살아 있어 무엇을 놓치는지 보인다.
+    expect(out.items[0].name).toBe('●●●')
     expect(out.items[1].name).toBe('●●●')
-    expect(out.items[2].name).toBe('●●●')
+    expect(out.items[2]).toEqual(objRows[2])
     // 항목 수를 유지해도 "몇 개가 잠겼는지"는 같은 값이다
     expect(out.lockedCount).toBe(2)
   })
@@ -224,15 +213,6 @@ describe('maskList — maskFn (형상 유지 더미 치환)', () => {
     expect(serialized).not.toContain('엔비디아')
     expect(serialized).not.toContain('98')
     expect(out.lockedCount).toBe(3)
-  })
-
-  it('partial 은 앞쪽 실값을 남기고 뒤쪽만 더미로 바꾼다 (순서 유지)', () => {
-    const d = decideGate(
-      policy({ minTier: 'pro', gateMode: 'partial', params: { visibleRows: 1 } }),
-      'free'
-    )
-    const out = maskList(objRows, d, dummy)
-    expect(out.items.map((r) => r.name)).toEqual(['엔비디아', '●●●', '●●●'])
   })
 })
 
@@ -259,7 +239,7 @@ describe('featurePolicyBodySchema — 저장 시점 검증', () => {
     const r = featurePolicyBodySchema.safeParse({
       minTier: 'pro',
       gateMode: 'partial',
-      params: { visibleRow: 3 },
+      params: { hiddenRow: 3 },
     })
     expect(r.success).toBe(false)
   })
@@ -276,7 +256,7 @@ describe('featurePolicyBodySchema — 저장 시점 검증', () => {
       featurePolicyBodySchema.safeParse({
         minTier: 'pro',
         gateMode: 'partial',
-        params: { visibleRows: 3 },
+        params: { hiddenRows: 3 },
       }).success
     ).toBe(true)
   })
@@ -295,7 +275,7 @@ describe('featurePolicyBodySchema — 저장 시점 검증', () => {
       featurePolicyBodySchema.safeParse({
         minTier: 'free',
         gateMode: 'open',
-        params: { visibleRows: 3 },
+        params: { hiddenRows: 3 },
       }).success
     ).toBe(false)
   })
@@ -319,7 +299,7 @@ describe('featurePolicyBodySchema — 저장 시점 검증', () => {
 })
 
 describe('parseParams — 읽기는 관대하게', () => {
-  it('깨진 params 는 {} 로 떨어지고, 게이트는 기본 노출 건수를 쓴다', () => {
+  it('깨진 params 는 {} 로 떨어지고, 게이트는 기본 가림 건수를 쓴다', () => {
     expect(parseParams('partial', { nope: 1 })).toEqual({})
     expect(parseParams('hidden', null)).toEqual({})
 
@@ -327,7 +307,7 @@ describe('parseParams — 읽기는 관대하게', () => {
       policy({ minTier: 'pro', gateMode: 'partial', params: parseParams('partial', 'garbage') }),
       'free'
     )
-    expect(maskList(ROWS, d).items).toEqual(['a', 'b', 'c'])
+    expect(maskList(ROWS, d).items).toEqual(['d', 'e'])
   })
 
   it('깨진 params 여도 hidden 은 전량 차단이다', () => {

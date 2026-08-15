@@ -25,10 +25,11 @@
  * ────────────────────────────────────────────────────────────────────
  *
  * `maskList` 는 **응답에서 값을 실제로 지운다.** CSS blur 나 클라이언트 slice
- * 는 DevTools 로 벗겨지고 네트워크 탭에 원본이 그대로 남는다. `visibleRows`
- * 는 "서버가 몇 개를 실값으로 보낼지"이지 CSS 값이 아니다.
+ * 는 DevTools 로 벗겨지고 네트워크 탭에 원본이 그대로 남는다. `hiddenRows`
+ * 는 "서버가 상위 몇 개를 지우고 보낼지"이지 CSS 값이 아니다.
  *
- * `maskFn` 을 주면 제거 대신 **자릿수만 맞춘 더미로 치환**한다. 항목 수가
+ * `maskFn` 을 주면 제거 대신 **자릿수만 맞춘 더미로 치환**한다. partial 에서는
+ * 상위 N개가 더미가 되므로 순위 번호와 표 구조가 그대로 남는다. 항목 수가
  * 유지되므로 클라이언트가 해제 전후 레이아웃 높이를 같게 그릴 수 있다(CLS 0).
  * 더미 값은 원본에서 파생되면 안 된다 — 그러면 지운 의미가 없다.
  */
@@ -44,13 +45,13 @@ import type {
 } from './types'
 
 /**
- * `partial` 에서 `visibleRows` 미지정 시 실값으로 내보낼 건수.
+ * `partial` 에서 `hiddenRows` 미지정 시 **상위에서 가릴** 건수.
  *
- * 0(전량 차단)이 아니라 3인 이유: `partial` 을 고른 운영자의 의도는 "일부는
- * 보여준다"이고, 파라미터를 비웠을 때 결과가 `hidden` 과 같아지면 셀렉트가
- * 거짓말을 한다. 전량 차단이 필요하면 `hidden` 이라는 이름이 이미 있다.
+ * 0(전량 공개)이 아니라 3인 이유: `partial` 을 고른 운영자의 의도는 "일부는
+ * 가린다"이고, 파라미터를 비웠을 때 결과가 `open` 과 같아지면 셀렉트가
+ * 거짓말을 한다. 전량 공개가 필요하면 `open` 이라는 이름이 이미 있다.
  */
-export const PARTIAL_DEFAULT_VISIBLE_ROWS = 3
+export const PARTIAL_DEFAULT_HIDDEN_ROWS = 3
 
 /**
  * 정책 × 등급 → 판정.
@@ -72,7 +73,7 @@ export function decideGate(policy: FeaturePolicy, tier: Tier): GateDecision {
     return { ...base, allowed: true, gateMode: 'open' }
   }
 
-  // 4) 차단
+  // 3) 차단
   return { ...base, allowed: false, gateMode: policy.gateMode }
 }
 
@@ -86,8 +87,9 @@ function normalizeCount(value: unknown): number | null {
 /**
  * "i 번째 항목이 실값으로 나가는가" 판정기.
  *
- * 값이 이상하면(파라미터 누락·음수·NaN) **차단 쪽으로 떨어진다.** 정책 오타가
- * 유료 데이터 유출로 이어지지 않게 하는 fail-close 지점이다.
+ * 값이 이상하면(파라미터 누락·음수·NaN) **가리는 쪽으로 떨어진다.** 알 수 없는
+ * 모드는 전량 차단, partial 은 기본 건수만큼 상위를 가린다. 정책 오타가 유료
+ * 데이터 전량 개방으로 이어지지 않게 하는 지점이다.
  */
 function visibilityPredicate(
   gateMode: GateMode,
@@ -103,9 +105,11 @@ function visibilityPredicate(
       return () => false
 
     case 'partial': {
-      const visible =
-        normalizeCount(params.visibleRows) ?? PARTIAL_DEFAULT_VISIBLE_ROWS
-      return (i) => i < visible
+      // 상위 N개를 가리고 그 아래를 연다 — 순위표에서 가장 궁금한 자리가
+      // 상위이므로, 그 자리를 남겨 두면 게이트가 아무것도 지키지 못한다.
+      const hidden =
+        normalizeCount(params.hiddenRows) ?? PARTIAL_DEFAULT_HIDDEN_ROWS
+      return (i) => i >= hidden
     }
 
     default:

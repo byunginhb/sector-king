@@ -72,7 +72,7 @@ const CONTROL_MODES: readonly GateMode[] = ['open', 'hidden']
 const PERIOD_MODES: readonly GateMode[] = ['open', 'partial', 'hidden']
 
 /**
- * 리스트·표, 그리고 "일부만 실값" 이 성립하는 블록(지표 묶음·차원 분해).
+ * 리스트·표, 그리고 "상위 일부만 가림" 이 성립하는 블록(지표 묶음·차원 분해).
  * `partial` 을 고를 수 있는 유일한 부류다 — 어드민 셀렉트의 "일부" 선택지가
  * 여기 속한 기능에만 뜬다.
  */
@@ -1076,7 +1076,7 @@ export const FEATURES: Record<string, FeatureDef> = {
   'analysts.hit-rate': {
     label: '적중률·표본 컬럼',
     pageId: 'analysts',
-    description: '방향 적중률 % + 채점 건수. 상위 몇 건만 실값으로 여는 partial 대상',
+    description: '방향 적중률 % + 채점 건수. 상위 몇 건을 가리는 partial 대상',
     location: 'components/analysts/analysts-page.tsx',
     defaultPolicy: { minTier: 'anon', gateMode: 'open' },
     recommendedMinTier: 'free',
@@ -1662,9 +1662,9 @@ export const FEATURES: Record<string, FeatureDef> = {
     label: '월간 한국 커버리지',
     pageId: 'news-detail',
     description:
-      '종목·의견·코멘트 표 — 현행 코드는 상위 3건을 블러하고 4번째부터 공개한다(slice(0,3) 블러 + slice(3) 노출). 게이트는 정방향(상위 3건 공개)으로 통일하므로 배선 시 순서가 뒤집힌다',
+      '종목·의견·코멘트 표 — 현행 코드는 상위 3건을 블러하고 4번째부터 공개한다(slice(0,3) 블러 + slice(3) 노출). partial 의 정의와 정확히 일치한다',
     location: 'components/news/report/monthly-report-view.tsx',
-    defaultPolicy: { minTier: 'free', gateMode: 'partial', params: { visibleRows: 3 } },
+    defaultPolicy: { minTier: 'free', gateMode: 'partial', params: { hiddenRows: 3 } },
     recommendedMinTier: 'free',
     recommendedGateMode: 'partial',
     supportedGateModes: LIST_MODES,

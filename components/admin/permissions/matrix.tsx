@@ -101,7 +101,7 @@ export function MatrixLegend() {
       </span>
       <span className="inline-flex items-center gap-1">
         <Droplets className="h-3 w-3" aria-hidden />
-        일부 — 설정한 개수까지만 실값, 나머지는 흐림
+        일부 — 상위 설정 개수만 흐림, 그 아래는 실값
       </span>
       <span className="inline-flex items-center gap-1">
         <EyeOff className="h-3 w-3" aria-hidden />

@@ -11,7 +11,7 @@
 'use client'
 
 import { AlertTriangle, Undo2, RotateCcw, Lock } from 'lucide-react'
-import { PARTIAL_DEFAULT_VISIBLE_ROWS } from '@/lib/permissions/gate'
+import { PARTIAL_DEFAULT_HIDDEN_ROWS } from '@/lib/permissions/gate'
 import { TIER_LABEL, TIER_ORDER, type Tier } from '@/lib/permissions/tier'
 import {
   GATE_MODE_LABEL,
@@ -149,7 +149,7 @@ export function FeatureTable(props: FeatureTableProps) {
                     상세제어
                   </th>
                   <th scope="col" className="w-32 px-2 py-2 font-medium">
-                    노출 개수
+                    가릴 개수
                   </th>
                   {MATRIX_TIERS.map((t) => (
                     <th
@@ -392,7 +392,7 @@ function FeatureIdentity({
         {risky && (
           <span
             className="inline-flex items-center gap-1 rounded-md border border-warning/30 bg-warning/10 px-1.5 py-0.5 text-[11px] font-bold text-warning"
-            title="색인된 콘텐츠입니다 — 숨김 대신 일부 노출을 검토하세요"
+            title="색인된 콘텐츠입니다 — 숨김 대신 일부 가림을 검토하세요"
           >
             <AlertTriangle className="h-3 w-3" aria-hidden />
             색인
@@ -500,7 +500,7 @@ function GateSelect({
 }
 
 /**
- * "일부" 를 골랐을 때만 뜨는 단일 입력 — **서버가 몇 개를 실값으로 보낼지**다
+ * "일부" 를 골랐을 때만 뜨는 단일 입력 — **서버가 상위 몇 개를 지우고 보낼지**다
  * (CSS 값이 아니다). 비워 두면 기본 3건.
  */
 function ParamFields({
@@ -518,8 +518,8 @@ function ParamFields({
 
   const set = (raw: string) => {
     const next: GateParams = { ...draft.params }
-    if (raw === '') delete next.visibleRows
-    else next.visibleRows = Math.max(0, Math.floor(Number(raw) || 0))
+    if (raw === '') delete next.hiddenRows
+    else next.hiddenRows = Math.max(0, Math.floor(Number(raw) || 0))
     onChange(next)
   }
 
@@ -529,13 +529,13 @@ function ParamFields({
         type="number"
         min={0}
         inputMode="numeric"
-        placeholder={String(PARTIAL_DEFAULT_VISIBLE_ROWS)}
-        aria-label={`${row.label} 실값 노출 개수`}
-        value={draft.params.visibleRows ?? ''}
+        placeholder={String(PARTIAL_DEFAULT_HIDDEN_ROWS)}
+        aria-label={`${row.label} 상위 가림 개수`}
+        value={draft.params.hiddenRows ?? ''}
         onChange={(e) => set(e.target.value)}
         className="w-14 rounded-md border border-border-subtle bg-background px-1.5 py-1 text-xs text-foreground tabular-nums"
       />
-      개까지 보임
+      개 가림
     </label>
   )
 }
