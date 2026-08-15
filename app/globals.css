@@ -104,6 +104,16 @@
     --chart-10:         300 30% 44%;       /* magenta */
     --chart-11:         236 42% 50%;       /* indigo */
     --chart-12:         330 50% 46%;       /* pink */
+
+    /* ── Feature gate — 값을 가리는 흐림 파라미터 (라이트 기준값) ──
+     * 다크 오버라이드는 아래 .dark 블록 참조. 세 단계인 이유는 글자 크기마다
+     * 읽히는 한계가 다르기 때문 — 4px 이하면 짧은 숫자가 그대로 읽히고,
+     * 큰 헤드라인은 6px 로도 읽힌다. */
+    --sk-gate-blur:      6px;              /* 기본 — 표 숫자(mono, tabular) */
+    --sk-gate-blur-sm:   5px;              /* 본문 text-xs / text-sm */
+    --sk-gate-blur-lg:  10px;              /* 헤드라인 text-2xl 이상 */
+    --sk-gate-opacity:   0.55;
+    --sk-gate-saturate:  0.4;
   }
 
   .dark {
@@ -164,6 +174,16 @@
     --chart-10:         300 42% 64%;
     --chart-11:         236 56% 68%;
     --chart-12:         330 60% 64%;
+
+    /* ── Feature gate — 다크 보정 ──
+     * 다크는 배경-전경 대비가 낮아 라이트와 같은 blur 값이면 형상이 통째로
+     * 사라져 "빈 카드"로 읽힌다. 그러면 "잠겨 있다"가 아니라 "고장났다"가
+     * 전달된다. 그래서 흐림은 줄이고 불투명도는 올려 형상만 남긴다. */
+    --sk-gate-blur:      5px;
+    --sk-gate-blur-sm:   4px;
+    --sk-gate-blur-lg:   8px;
+    --sk-gate-opacity:   0.68;
+    --sk-gate-saturate:  0.5;
   }
 }
 
@@ -475,6 +495,47 @@
   @media (prefers-reduced-motion: reduce) {
     .sk-rise { animation: none; }
   }
+
+  /* ── Feature gate — 등급 게이팅 표시 레이어 ──
+   *
+   *  .sk-gated      게이트 루트. CSS 훅이 아니라 **계약**이다 — 페이월 구조화
+   *                 데이터(`isAccessibleForFree: false`)의 `cssSelector` 가 이
+   *                 클래스를 가리킨다. 이름을 바꾸면 SEO 마크업이 거짓 신고가
+   *                 된다. 문자열 SoT 는 lib/permissions/constants.ts 의
+   *                 GATED_ROOT_CLASS — 한쪽만 고치지 말 것.
+   *
+   *  .sk-gate-veil  가려진 콘텐츠 **자신**에게 거는 filter: blur().
+   *
+   *  ── Glassmorphism 안티패턴과의 경계 (헷갈리기 쉬운 지점) ──
+   *  금지 대상은 `backdrop-filter` 로 뒤 배경을 훔쳐 만드는 *장식용* frosted
+   *  패널이다. 여기 blur 는 (a) 배경이 아니라 콘텐츠 자신에 걸리고 (b) 목적이
+   *  장식이 아니라 정보 은닉이다. 그래서 이 위에 올라가는 업셀 오버레이 카드에는
+   *  `backdrop-blur` 를 절대 쓰지 않는다 — 오버레이는 불투명 .sk-card 이고,
+   *  대비는 그 아래 깔린 bg-background/72 베일이 만든다.
+   *
+   *  ── blur 는 보안이 아니다 ──
+   *  CSS 필터는 DevTools 한 줄로 벗겨진다. 그래서 이 클래스가 흐리게 만드는
+   *  대상은 언제나 **서버가 이미 값을 지우고 내려준 더미 형상**이다. 실제 값을
+   *  DOM 에 넣고 흐리게만 하면 유료 콘텐츠가 무료로 새는 것과 같다.
+   * ── */
+  .sk-gated {
+    position: relative;
+  }
+  .sk-gate-veil {
+    filter: blur(var(--sk-gate-blur)) saturate(var(--sk-gate-saturate));
+    opacity: var(--sk-gate-opacity);
+    user-select: none;
+  }
+  /* 글자 크기별 보정. 값을 인라인으로 덮지 않고 별도 토큰을 참조해야
+   * 라이트/다크 오버라이드가 그대로 따라온다. */
+  .sk-gate-veil[data-gate-scale='sm'] {
+    filter: blur(var(--sk-gate-blur-sm)) saturate(var(--sk-gate-saturate));
+  }
+  .sk-gate-veil[data-gate-scale='lg'] {
+    filter: blur(var(--sk-gate-blur-lg)) saturate(var(--sk-gate-saturate));
+  }
+  /* 게이트에는 진입 애니메이션을 넣지 않는다(sk-rise 미적용) — 잠긴 영역이
+   * 튀어오르면 광고처럼 읽힌다. prefers-reduced-motion 분기가 필요 없는 이유. */
 
   /* ── Selection — amber, like a highlighter on newsprint ── */
   ::selection {

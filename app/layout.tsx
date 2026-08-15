@@ -6,6 +6,9 @@ import { Providers } from '@/components/providers'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { WebSiteJsonLd } from '@/components/json-ld'
 import { Footer } from '@/components/footer'
+import { GateProvider } from '@/components/gate/gate-provider'
+import { PreviewBanner } from '@/components/gate/preview-banner'
+import { getPolicyMap } from '@/lib/permissions/policy-store'
 import 'driver.js/dist/driver.css'
 import './globals.css'
 import './onboarding.css'
@@ -135,11 +138,48 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+/*
+ * 렌더 모드 — 이 레이아웃은 쿠키를 읽지 않는다 (읽으면 전 사이트가 동적이 된다)
+ *
+ * 초안에서는 여기서 `getViewerTier()` / `getGateDecisionMap()` 을 불렀는데,
+ * 둘 다 쿠키(세션·미리보기)를 읽는다. 루트 레이아웃에서 동적 API 를 호출하면
+ * 그 아래 **모든 라우트가 동적 렌더로 떨어진다.** 추측이 아니라 실측이다 —
+ * 해당 버전으로 `pnpm build` 를 돌린 결과:
+ *
+ *   쿠키 미사용:  ○ Static 24 + ● SSG 6  (/sectors/[sectorId] 109개,
+ *                 /rankings·/[industryId]/rankings 는 revalidate 1h)
+ *   쿠키 사용:    페이지 프리렌더 0 — 전부 ƒ Dynamic
+ *                 (남은 ○ 6개는 opengraph-image·robots·sitemap 으로 트리 밖)
+ *
+ * 그래서 여기서는 **사용자와 무관한 정책 맵만** 내린다(`getPolicyMap()` 은
+ * 쿠키 없는 anon 클라이언트 + unstable_cache 라 정적 렌더에서 안전하다).
+ * 등급 판정은 `GateProvider` 가 클라이언트에서 마무리한다.
+ *
+ * 이 방향이 안전한 이유 — **잠금 해제 방향으로만 움직인다.**
+ * 서버 HTML 은 언제나 `anon` 기준(=가장 잠긴 상태)으로 렌더되고, 클라이언트가
+ * 세션을 확인한 뒤 등급이 높으면 **풀어준다**. 위험한 방향(유료 콘텐츠를 먼저
+ * 보여줬다가 뒤늦게 감추는 것)은 구조적으로 발생할 수 없다. 기획서 §B-3 이
+ * 경고한 CLS·유출 경로가 정확히 그 반대 방향이었다.
+ *
+ * 값의 실제 보호는 어차피 서버 마스킹이 한다(`FeatureDef.masking === 'server'`).
+ * 잠긴 값은 이 트리까지 오지 않으므로, 클라이언트가 등급을 늦게 알아도 유출될
+ * 값 자체가 없다. 이는 `components/auth/auth-button-client.tsx` 가 이미 쓰고 있는
+ * 패턴과 같다 — 정적 HTML 은 비로그인 기준, 개인화는 세션 확인 후.
+ *
+ * 부수 효과: `/rankings` 의 `revalidate = 3600` ISR HTML 과 CDN 캐시는 항상
+ * anon 렌더 결과라 기획서 §B-6 원칙 5("anon 렌더 결과만 공용 캐시")를 자동으로
+ * 만족한다. 미리보기 쿠키 요청은 middleware 가 `private, no-store` 로 격리한다.
+ */
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // 사용자와 무관한 정책 맵(featureId → 정책). 쿠키를 읽지 않으므로 정적 렌더 유지.
+  // DB 조회 실패 시의 폴백 정책은 `lib/permissions/policy-store.ts` 가 소유한다 —
+  // 여기서 try/catch 로 빈 맵을 만들면 장애가 곧 전면 개방이 되므로 감싸지 않는다.
+  const policies = await getPolicyMap()
+
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
@@ -157,12 +197,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} ${nanumMyeongjo.variable} antialiased font-sans`}
       >
-        <Providers>
-          <TooltipProvider delayDuration={0}>
-            {children}
-            <Footer />
-          </TooltipProvider>
-        </Providers>
+        <GateProvider policies={policies}>
+          <Providers>
+            <TooltipProvider delayDuration={0}>
+              {children}
+              <Footer />
+            </TooltipProvider>
+          </Providers>
+        </GateProvider>
+        {/* 문서 끝에 둔다 — 하단 고정 배너가 탭 순서의 마지막이어야 한다.
+            쿠키가 없으면 아무것도 렌더하지 않으므로 일반 사용자에겐 비용 0. */}
+        <PreviewBanner />
         <SpeedInsights />
       </body>
       {GA_MEASUREMENT_ID ? <GoogleAnalytics gaId={GA_MEASUREMENT_ID} /> : null}

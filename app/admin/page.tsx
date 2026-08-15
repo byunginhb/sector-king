@@ -9,6 +9,7 @@ import {
   Users,
   UserRound,
   CalendarClock,
+  ShieldCheck,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
@@ -55,6 +56,13 @@ export default async function AdminPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* 권한 사고는 즉시성이 가장 높다 — 그리드 첫 자리. */}
+        <AdminLinkCard
+          href="/admin/permissions"
+          icon={<ShieldCheck className="h-4 w-4 text-primary" aria-hidden />}
+          title="권한 관리"
+          description="구독 등급별로 페이지·기능의 노출 범위를 설정합니다."
+        />
         <AdminLinkCard
           href="/admin/economic-calendar"
           icon={<CalendarClock className="h-4 w-4 text-primary" aria-hidden />}
