@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { FileText } from 'lucide-react'
 import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { TargetLinesChart, type TargetSeries } from './target-lines-chart'
-import { PALETTE, PRICE_COLOR, CONSENSUS_COLOR, pct, hitRateTone, DIRECTION_META, STATUS_META } from './ui'
+import { PALETTE, PRICE_COLOR, CONSENSUS_COLOR, pct, hitRateTone, achievementTone, AchievementHint, DIRECTION_META, STATUS_META } from './ui'
 import type { AnalystDetailResponse, AnalystTickerSeries, AnalystTargetPoint } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -98,7 +98,11 @@ function TickerPanel({ series }: { series: AnalystTickerSeries }) {
         <span className="text-muted-foreground/70"> (표본 {series.scored}건)</span>
         {series.latestAchievement != null && (
           <>
-            {' · '}최신 목표 달성률 <span className="font-medium text-foreground">{pct(series.latestAchievement)}</span>
+            {' · '}목표가 도달률{' '}
+            <span className={cn('font-medium', achievementTone(series.latestAchievement))}>
+              {pct(series.latestAchievement)}
+            </span>
+            <AchievementHint className="ml-0.5 inline-flex align-middle text-muted-foreground/70 hover:text-foreground transition-colors" />
           </>
         )}
       </p>

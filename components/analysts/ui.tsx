@@ -52,6 +52,49 @@ export function pct(rate: number | null): string {
   return rate == null ? '—' : `${Math.round(rate * 100)}%`
 }
 
+/**
+ * 목표가 도달률 설명 — 라벨만으로는 절대 읽히지 않는 지표라 설명이 필수다.
+ *
+ * 산식: `(현재가 − 발표일 주가) / (목표가 − 발표일 주가)`.
+ * 100% 초과·음수가 정상적으로 나오는 값이라, 340% 같은 숫자가 설명 없이
+ * 떠 있으면 오독된다(회의에서 "기준이 뭐예요?" 가 나온 지점).
+ */
+export function AchievementHint({ className }: { className?: string }) {
+  return (
+    <HintPopover
+      label="목표가 도달률 설명"
+      className={className ?? 'inline-flex align-middle text-muted-foreground/70 hover:text-foreground transition-colors'}
+      content={
+        <span className="block space-y-1.5">
+          <span className="block font-semibold text-foreground">목표가 도달률이란?</span>
+          <span className="block">
+            리포트 <span className="font-medium text-foreground">발표일 주가에서 목표주가까지의 거리</span> 중, 현재가가 어디까지
+            왔는지입니다. 가장 최근 리포트 1건 기준입니다.
+          </span>
+          <span className="block">
+            <span className="font-medium text-success">100%를 넘으면</span> 이미 목표가를 넘어섰고,{' '}
+            <span className="font-medium text-danger">음수면</span> 목표와 반대 방향으로 움직였다는 뜻입니다.
+          </span>
+        </span>
+      }
+    >
+      <Info className="h-3.5 w-3.5" aria-hidden />
+    </HintPopover>
+  )
+}
+
+/**
+ * 도달률 색 — 적중률(`hitRateTone`)과 규칙이 다르다.
+ * 도달률은 "높을수록 좋다"가 아니라 **구간의 뜻이 다르다**: 100% 초과=목표 돌파,
+ * 0~100%=진행 중, 음수=반대 방향. 그래서 임계값이 아니라 부호·1.0 을 기준으로 나눈다.
+ */
+export function achievementTone(rate: number | null): string {
+  if (rate == null) return 'text-muted-foreground'
+  if (rate < 0) return 'text-danger'
+  if (rate >= 1) return 'text-success'
+  return 'text-foreground'
+}
+
 export function hitRateTone(rate: number | null): string {
   if (rate == null) return 'text-muted-foreground'
   if (rate >= 0.7) return 'text-success'
