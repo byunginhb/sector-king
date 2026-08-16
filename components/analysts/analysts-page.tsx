@@ -15,9 +15,51 @@ import { pct, fmtScore, scoreTone, scoreBar, ScoreHint, RowsSkeleton, DetailSkel
 import type { AnalystLeaderboardRow, AnalystStockListItem } from '@/types'
 import { useListView } from '@/hooks/use-list-view'
 import { ListViewFooter } from '@/components/ui/list-view-footer'
+import { ListFilterBar } from './list-filter-bar'
 import { cn } from '@/lib/utils'
 
 type Tab = 'analysts' | 'tickers'
+
+/**
+ * 목록 상태를 URL 쿼리에 실어 **공유·새로고침·뒤로가기**가 성립하게 한다.
+ *
+ * `router.replace` 를 쓰는 이유: 필터를 한 글자 칠 때마다 히스토리가 쌓이면
+ * 뒤로가기가 타이핑을 되감는 버튼이 된다. 이 화면은 `force-dynamic` 이라
+ * `useSearchParams` 가 정적 프리렌더를 깨뜨리지 않는다.
+ */
+function useQueryState(): {
+  get: (key: string, fallback?: string) => string
+  set: (patch: Record<string, string | null>) => void
+} {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const get = useCallback(
+    (key: string, fallback = '') => searchParams.get(key) ?? fallback,
+    [searchParams]
+  )
+
+  const set = useCallback(
+    (patch: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString())
+      for (const [key, value] of Object.entries(patch)) {
+        // 빈 값은 키를 지운다 — `?q=&firm=` 같은 껍데기가 공유 링크에 남지 않게.
+        if (value == null || value === '') params.delete(key)
+        else params.set(key, value)
+      }
+      router.replace(`${pathname}${params.toString() ? `?${params}` : ''}`, { scroll: false })
+    },
+    [searchParams, router, pathname]
+  )
+
+  return { get, set }
+}
+
+/** 검색어 정규화 — 공백·대소문자 차이로 놓치지 않게. */
+function norm(v: string): string {
+  return v.trim().toLowerCase()
+}
 
 /** 행 등장 스태거 — 첫 화면 몫만 지연을 주고 그 아래는 즉시(스크롤 시 이미 끝나 있어야 함). */
 const RISE_STEP_MS = 28
@@ -118,11 +160,51 @@ function AnalystTab() {
   const [openId, setOpenId] = useState<number | null>(null)
   const [rankBy, setRankBy] = useState<AnalystRank>('score')
   const toggle = (id: number) => setOpenId((cur) => (cur === id ? null : id))
+  const query = useQueryState()
 
-  // 정렬 칩·열 헤더는 데이터와 무관하니 로딩 중에도 그린다 — 나중에 끼어들면 목록이 통째로 밀린다(CLS).
-  const rows = data ? (rankBy === 'score' ? data.ranked : (data.byReports ?? data.ranked)) : []
+  const q = query.get('q')
+  const firmParam = query.get('firm')
+  const selectedFirms = useMemo(
+    () => new Set(firmParam ? firmParam.split(',').filter(Boolean) : []),
+    [firmParam]
+  )
+
+  // 매 렌더 새 배열이 되면 아래 useMemo 들이 전부 무효화된다(빈 배열 리터럴 포함).
+  const all = useMemo(
+    () => (data ? (rankBy === 'score' ? data.ranked : (data.byReports ?? data.ranked)) : []),
+    [data, rankBy]
+  )
+
+  /** 증권사 칩 목록 — 현재 순위 기준에 실제로 등장하는 곳만. */
+  const firms = useMemo(() => {
+    const set = new Set(all.map((r) => r.firm).filter(Boolean))
+    return [...set].sort((a, b) => a.localeCompare(b, 'ko'))
+  }, [all])
+
+  const rows = useMemo(() => {
+    const needle = norm(q)
+    return all.filter((r) => {
+      if (selectedFirms.size > 0 && !selectedFirms.has(r.firm)) return false
+      if (!needle) return true
+      return norm(r.name).includes(needle) || norm(r.firm).includes(needle)
+    })
+  }, [all, q, selectedFirms])
+
   // 133명을 한 번에 그리면 이름으로 사람을 찾을 수 없다 — PC 페이징 / 모바일 무한.
-  const view = useListView({ items: rows, pageSize: 20, resetKey: rankBy })
+  const view = useListView({
+    items: rows,
+    pageSize: 20,
+    resetKey: `${rankBy}|${q}|${firmParam}`,
+    page: Math.max(1, Number(query.get('page', '1')) || 1),
+    onPageChange: (p) => query.set({ page: p === 1 ? null : String(p) }),
+  })
+
+  const toggleFirm = (firm: string) => {
+    const next = new Set(selectedFirms)
+    if (next.has(firm)) next.delete(firm)
+    else next.add(firm)
+    query.set({ firm: [...next].join(','), page: null })
+  }
   const RANKS: { key: AnalystRank; label: string }[] = [
     { key: 'score', label: '예측력 점수' },
     { key: 'reports', label: '리포트 최다' },
@@ -148,6 +230,19 @@ function AnalystTab() {
           : '목표주가를 제시한 리포트를 가장 많이 낸 순. 아직 채점 표본이 없는 애널리스트도 포함합니다.'}
         <ScoreHint />
       </p>
+
+      <ListFilterBar
+        query={q}
+        onQueryChange={(v) => query.set({ q: v, page: null })}
+        placeholder="애널리스트 이름 · 증권사"
+        firms={firms}
+        selectedFirms={selectedFirms}
+        onToggleFirm={toggleFirm}
+        onClearFirms={() => query.set({ firm: null, page: null })}
+        resultCount={rows.length}
+        unit="명"
+      />
+
       <div className="hidden sm:grid grid-cols-[2.5rem_1fr_9rem_6rem_4rem_4rem_1rem] gap-3 px-4 pb-2 text-xs font-medium text-muted-foreground border-b">
         <span className="text-center">순위</span>
         <span>애널리스트</span>
@@ -165,13 +260,18 @@ function AnalystTab() {
       ) : error || !data ? (
         <p className="text-center text-sm text-danger py-10">랭킹을 불러오지 못했습니다.</p>
       ) : rows.length === 0 ? (
-        <p className="text-center text-sm text-muted-foreground py-10">아직 채점 가능한 애널리스트가 없습니다.</p>
+        <p className="py-10 text-center text-sm text-muted-foreground">
+          {q || selectedFirms.size > 0
+            ? '조건에 맞는 애널리스트가 없습니다. 검색어나 증권사 선택을 바꿔보세요.'
+            : '아직 채점 가능한 애널리스트가 없습니다.'}
+        </p>
       ) : (
         <div>
           {view.visible.map((row, i) => {
-            // 순위는 **전체 목록 기준**이다. 페이지마다 1위부터 다시 시작하면
-            // 2페이지 첫 줄이 1위로 보인다.
-            const rank = rows.indexOf(row) + 1
+            // 순위는 **필터 이전 전체 랭킹 기준**이다. 페이지마다 1위부터 다시
+            // 시작하거나 필터 결과 안에서 다시 매기면, 특정 증권사만 걸러본
+            // 사용자에게 그 증권사 1등이 전체 1위처럼 보인다.
+            const rank = all.indexOf(row) + 1
             return (
               <AnalystRow
                 key={row.analystId}
@@ -247,17 +347,30 @@ function StockTab() {
   const { data, isLoading, error } = useAnalystStocks()
   const [openTickers, setOpenTickers] = useState<Set<string> | null>(null)
   const [sort, setSort] = useState<StockSort>('analysts')
+  const query = useQueryState()
+  const q = query.get('q')
 
   const stocks = useMemo(() => {
     if (!data) return []
-    const arr = [...data.stocks]
+    const needle = norm(q)
+    const arr = needle
+      ? data.stocks.filter(
+          (s) => norm(s.businessName).includes(needle) || norm(s.ticker).includes(needle)
+        )
+      : [...data.stocks]
     if (sort === 'name') arr.sort((a, b) => a.businessName.localeCompare(b.businessName, 'ko'))
     else if (sort === 'upside') arr.sort((a, b) => (upsideOf(b) ?? -Infinity) - (upsideOf(a) ?? -Infinity))
     else if (sort === 'reports') arr.sort((a, b) => b.reportCount - a.reportCount || b.analystCount - a.analystCount)
     return arr // 'analysts' = API 기본 정렬 유지
-  }, [data, sort])
+  }, [data, sort, q])
 
-  const view = useListView({ items: stocks, pageSize: 20, resetKey: sort })
+  const view = useListView({
+    items: stocks,
+    pageSize: 20,
+    resetKey: `${sort}|${q}`,
+    page: Math.max(1, Number(query.get('page', '1')) || 1),
+    onPageChange: (p) => query.set({ page: p === 1 ? null : String(p) }),
+  })
 
   // 미토글 상태(null)면 첫 종목만 기본 열림. 이후엔 각 종목 독립 토글(여러 개 동시 가능).
   const defaultOpen = useMemo(() => new Set(stocks[0] ? [stocks[0].ticker] : []), [stocks])
@@ -292,6 +405,14 @@ function StockTab() {
           </button>
         ))}
       </div>
+      <ListFilterBar
+        query={q}
+        onQueryChange={(v) => query.set({ q: v, page: null })}
+        placeholder="종목명 · 티커"
+        resultCount={stocks.length}
+        unit="종목"
+      />
+
       <div className="hidden sm:grid grid-cols-[1fr_6rem_6rem_6rem_5rem_1rem] gap-3 px-4 pb-2 text-xs font-medium text-muted-foreground border-b">
         <span>종목</span>
         <span className="text-center">애널·리포트</span>
@@ -305,7 +426,9 @@ function StockTab() {
       ) : error || !data ? (
         <p className="text-center text-sm text-danger py-10">종목 목록을 불러오지 못했습니다.</p>
       ) : stocks.length === 0 ? (
-        <p className="text-center text-sm text-muted-foreground py-10">표시할 종목이 없습니다.</p>
+        <p className="py-10 text-center text-sm text-muted-foreground">
+          {q ? '조건에 맞는 종목이 없습니다. 검색어를 바꿔보세요.' : '표시할 종목이 없습니다.'}
+        </p>
       ) : (
         <div>
           {view.visible.map((s, i) => (

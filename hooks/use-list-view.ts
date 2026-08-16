@@ -47,6 +47,12 @@ export type UseListViewOptions<T> = {
    *  머물면 빈 화면이 뜬다.)
    */
   resetKey?: unknown
+  /**
+   * 페이지를 바깥에서 제어한다(controlled). URL 쿼리와 묶어 공유·새로고침에도
+   * 위치가 유지되게 할 때 쓴다. 미지정이면 훅이 자체 상태로 관리한다.
+   */
+  page?: number
+  onPageChange?: (page: number) => void
 }
 
 export type UseListView<T> = {
@@ -70,8 +76,25 @@ export function useListView<T>({
   items,
   pageSize = 20,
   resetKey,
+  page: controlledPage,
+  onPageChange,
 }: UseListViewOptions<T>): UseListView<T> {
-  const [page, setPageState] = useState(1)
+  const [uncontrolledPage, setUncontrolledPage] = useState(1)
+  const isControlled = controlledPage != null
+  const page = isControlled ? controlledPage : uncontrolledPage
+
+  /** controlled 면 바깥으로, 아니면 내부 상태로. 함수형 갱신을 둘 다 지원한다. */
+  const setPageState = useCallback(
+    (next: number | ((prev: number) => number)) => {
+      if (isControlled) {
+        const value = typeof next === 'function' ? next(controlledPage) : next
+        onPageChange?.(value)
+        return
+      }
+      setUncontrolledPage(next)
+    },
+    [isControlled, controlledPage, onPageChange]
+  )
   // SSR·초기 렌더는 페이징으로 고정한다(두 모드의 첫 화면이 같아 불일치가 없다).
   const [mode, setMode] = useState<ListViewMode>('pages')
 
@@ -115,12 +138,12 @@ export function useListView<T>({
     (next: number) => {
       setPageState(Math.max(1, next))
     },
-    []
+    [setPageState]
   )
 
   const loadMore = useCallback(() => {
     setPageState((p) => p + 1)
-  }, [])
+  }, [setPageState])
 
   /**
    * 센티넬은 **콜백 ref** 로 붙인다. 목록이 비었다가 채워지는 화면에서
@@ -160,7 +183,9 @@ export function useListView<T>({
     )
     observer.observe(node)
     observerRef.current = observer
-  }, [])
+    // controlled 모드에서는 페이지가 바뀔 때 `setPageState` 정체성이 바뀌어
+    // 관측자가 다시 붙는다. 재생성은 "더 불러온 직후" 뿐이라 비용이 없다.
+  }, [setPageState])
 
   useEffect(() => () => observerRef.current?.disconnect(), [])
 
