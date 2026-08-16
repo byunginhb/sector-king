@@ -84,9 +84,18 @@ export function useListView<T>({
     return () => mq.removeEventListener('change', apply)
   }, [])
 
-  useEffect(() => {
+  /**
+   * 필터·정렬이 바뀌면 1페이지로 되돌린다.
+   *
+   * effect 가 아니라 **렌더 중 조정**이다(React 의 "props 변경 시 state 조정"
+   * 패턴). effect 로 하면 옛 페이지로 한 번 그린 뒤 다시 그려서 잘못된 화면이
+   * 한 프레임 스쳐 지나간다.
+   */
+  const [lastResetKey, setLastResetKey] = useState(resetKey)
+  if (resetKey !== lastResetKey) {
+    setLastResetKey(resetKey)
     setPageState(1)
-  }, [resetKey])
+  }
 
   const totalCount = items.length
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
@@ -119,10 +128,18 @@ export function useListView<T>({
    * (2026-07-16 시총 지도에서 같은 문제를 겪었다).
    */
   const observerRef = useRef<IntersectionObserver | null>(null)
+
+  // 관측 콜백이 최신 값을 보게 하는 거울. **렌더 중에 쓰지 않는다** —
+  // 렌더 도중 ref 를 갱신하면 concurrent 렌더가 버려질 때 값이 어긋난다.
+  // 콜백은 비동기로 불리므로 커밋 후 반영으로 충분하다.
   const hasMoreRef = useRef(hasMore)
-  hasMoreRef.current = hasMore
-  const modeRef = useRef(mode)
-  modeRef.current = mode
+  const modeRef = useRef<ListViewMode>(mode)
+  useEffect(() => {
+    hasMoreRef.current = hasMore
+  }, [hasMore])
+  useEffect(() => {
+    modeRef.current = mode
+  }, [mode])
 
   const sentinelRef = useCallback((node: HTMLElement | null) => {
     observerRef.current?.disconnect()
