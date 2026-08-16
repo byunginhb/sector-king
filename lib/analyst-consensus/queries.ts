@@ -296,6 +296,7 @@ async function computeAnalystDetail(analystId: number): Promise<AnalystDetailRes
         target: toUsd(num(r.target_price)!, ticker),
         direction: preds[i].direction,
         status: preds[i].status,
+        endDate: preds[i].endDate,
         actualReturn: preds[i].actualReturn,
         inProgress: preds[i].inProgress,
         grade: r.grade_value,

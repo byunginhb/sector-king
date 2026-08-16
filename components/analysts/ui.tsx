@@ -134,12 +134,19 @@ export const DIRECTION_META: Record<Direction, { label: string; icon: typeof Tre
 }
 
 /** 적중=●, 빗나감=●(색+텍스트 병기로 색맹 대응). null=지표 없음(유지·신규). */
+/**
+ * 예측 상태 배지.
+ *
+ * 채점에서 빠지는 이유가 셋인데 예전에는 `평가 불가` 하나만 배지가 있고
+ * 유지·신규는 아무 표시가 없었다 — 사용자에겐 "왜 이 줄은 판정이 없지?" 로만
+ * 보인다. 세 이유를 각각 드러내야 분모가 왜 리포트 수보다 작은지 설명된다(#41).
+ */
 export const STATUS_META: Record<PredictionStatus, { label: string; tone: string } | null> = {
   hit: { label: '적중', tone: 'bg-success-bg text-success' },
   miss: { label: '빗나감', tone: 'bg-danger-bg text-danger' },
-  unscorable: { label: '평가 불가', tone: 'bg-muted text-muted-foreground' },
-  hold: null,
-  new: null,
+  unscorable: { label: '주가 없음', tone: 'bg-muted text-muted-foreground' },
+  hold: { label: '유지', tone: 'bg-muted text-muted-foreground' },
+  new: { label: '첫 리포트', tone: 'bg-muted text-muted-foreground' },
 }
 
 // ── 로딩 스켈레톤 ──────────────────────────────────────────────────

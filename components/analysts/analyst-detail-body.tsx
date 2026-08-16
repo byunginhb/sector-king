@@ -11,6 +11,33 @@ import { cn } from '@/lib/utils'
 /** 주인공 애널리스트 선 — 컨센서스와 같은 "기준선" 슬롯이라 색을 공유(팔레트와 미충돌). */
 const ME_COLOR = CONSENSUS_COLOR
 
+/**
+ * 채점 구간(발간일 → 다음 리포트일)과 그 구간의 실제 등락률.
+ *
+ * 툴팁이 아니라 행에 그대로 둔다 — "몇 달 뒤를 예측한 것이냐"에 답하는 핵심
+ * 정보라 숨길 값이 아니고, 툴팁은 터치 기기에서 열리지 않는 경우가 있다.
+ * 데스크탑은 한 줄 안에, 모바일은 둘째 줄에 같은 조각을 쓴다.
+ */
+function ScoringWindow({ p, className }: { p: AnalystTargetPoint; className?: string }) {
+  if (p.actualReturn == null) return null
+  return (
+    <span className={cn('shrink-0 items-center gap-1 text-[11px] text-muted-foreground', className)}>
+      <span className="tabular-nums">
+        {p.date.slice(5)}→{p.inProgress ? '현재' : p.endDate.slice(5)}
+      </span>
+      <span
+        className={cn(
+          'tabular-nums font-medium',
+          p.actualReturn > 0 ? 'text-success' : p.actualReturn < 0 ? 'text-danger' : ''
+        )}
+      >
+        {p.actualReturn > 0 ? '+' : ''}
+        {(p.actualReturn * 100).toFixed(1)}%
+      </span>
+    </span>
+  )
+}
+
 /** 리포트 이력 행 — 모바일 2줄(제목 오버플로우 방지), 데스크탑 1줄. */
 function TargetRow({ p }: { p: AnalystTargetPoint }) {
   const fmt = useCurrencyFormat()
@@ -32,6 +59,12 @@ function TargetRow({ p }: { p: AnalystTargetPoint }) {
             {p.inProgress && p.status !== 'unscorable' && ' · 진행중'}
           </span>
         )}
+        {/*
+          채점 구간과 그 구간의 실제 등락률. "몇 달 뒤를 예측한 것이냐"는 물음에
+          답하는 정보라, 툴팁이 아니라 행에 그대로 둔다(툴팁은 모바일에서 안 열리는
+          경우가 있고, 이 값은 숨겨둘 만큼 부차적이지 않다).
+        */}
+        <ScoringWindow p={p} className="hidden sm:inline-flex" />
         <span className="hidden sm:block min-w-0 flex-1 truncate text-xs text-muted-foreground">{p.reportTitle}</span>
         {p.pdfUrl && (
           <a
@@ -45,8 +78,9 @@ function TargetRow({ p }: { p: AnalystTargetPoint }) {
           </a>
         )}
       </div>
-      {(p.reportTitle || p.pdfUrl) && (
+      {(p.reportTitle || p.pdfUrl || p.actualReturn != null) && (
         <div className="sm:hidden flex items-center gap-1.5 mt-0.5 pl-16 text-xs text-muted-foreground">
+          <ScoringWindow p={p} className="inline-flex" />
           <span className="min-w-0 truncate">{p.reportTitle}</span>
           {p.pdfUrl && (
             <a href={p.pdfUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 hover:text-foreground" aria-label="원문 리포트 PDF">
@@ -155,8 +189,20 @@ function TickerPanel({ series }: { series: AnalystTickerSeries }) {
           <span>예측한 방향과 <span className="font-medium text-foreground">반대로</span> 주가가 움직인 경우</span>
         </p>
         <p className="flex items-start gap-1.5">
-          <span className={cn('shrink-0 rounded px-1.5 py-0.5 font-medium', STATUS_META.unscorable!.tone)}>평가 불가</span>
-          <span>보유한 주가 데이터 기간(위 차트 시작일) 이전이라 <span className="font-medium text-foreground">채점할 수 없는</span> 리포트. 신규·유지는 방향 예측이 아니라 채점에서 제외됩니다.</span>
+          <span className={cn('shrink-0 rounded px-1.5 py-0.5 font-medium', STATUS_META.hold!.tone)}>유지</span>
+          <span>목표가를 <span className="font-medium text-foreground">그대로 둔</span> 리포트. 방향 예측이 없어 채점 대상이 아닙니다.</span>
+        </p>
+        <p className="flex items-start gap-1.5">
+          <span className={cn('shrink-0 rounded px-1.5 py-0.5 font-medium', STATUS_META.new!.tone)}>첫 리포트</span>
+          <span>이 종목에 대한 <span className="font-medium text-foreground">첫 목표가</span>라 직전과 비교할 대상이 없습니다.</span>
+        </p>
+        <p className="flex items-start gap-1.5">
+          <span className={cn('shrink-0 rounded px-1.5 py-0.5 font-medium', STATUS_META.unscorable!.tone)}>주가 없음</span>
+          <span>보유한 주가 데이터 기간(위 차트 시작일) 이전이라 <span className="font-medium text-foreground">채점할 수 없는</span> 리포트.</span>
+        </p>
+        <p className="border-t border-border/50 pt-1.5">
+          채점 구간은 <span className="font-medium text-foreground">리포트 발간일부터 같은 애널리스트가 그 종목에 대해 낸 다음 리포트 발간일까지</span>입니다.
+          가장 최근 리포트는 <span className="font-medium text-foreground">진행중</span>으로 표시되며, 다음 리포트가 나올 때까지 적중률 계산(분모)에 들어가지 않습니다.
         </p>
       </div>
 

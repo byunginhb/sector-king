@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ClipboardCheck, Info, ChevronDown } from 'lucide-react'
+import { ClipboardCheck, Info, ChevronDown, CalendarRange } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 import { useAnalysts } from '@/hooks/use-analysts'
 import { useAnalystDetail } from '@/hooks/use-analyst-detail'
@@ -355,6 +355,22 @@ export function AnalystsPage() {
             <span className="font-medium text-foreground"> 예측 횟수</span>를 함께 반영한 0~100 점수입니다.
             소수 예측으로 100% 적중한 경우보다, 수십 건을 쌓으며 꾸준히 맞힌 경우를 더 높게 평가합니다.
             점수 옆에 원래 적중률·표본 수를 함께 보여줍니다.
+          </p>
+        </div>
+
+        {/*
+          채점 구간 정의 — "몇 달 뒤를 예측한 걸로 점수를 매기느냐"에 대한 답.
+          국내 리서치 리포트는 목표주가 달성 시점을 명시하지 않으므로(실제 리포트
+          대조로 확인), 시점 대신 다음 리포트까지의 방향으로 평가한다.
+          이 문장이 없어서 생긴 불신이라 화면에 상시 노출한다.
+        */}
+        <div className="flex items-start gap-2 rounded-lg border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground mb-4">
+          <CalendarRange className="h-4 w-4 shrink-0 mt-0.5" />
+          <p>
+            <span className="font-medium text-foreground">채점 구간</span>은 리포트 발간일부터, 같은 애널리스트가 그 종목에 대해 낸
+            <span className="font-medium text-foreground"> 다음 리포트 발간일</span>까지입니다. 목표주가에는 달성 시점이 명시되지
+            않기 때문에, 시점 대신 다음 리포트까지의 방향으로 평가합니다. 가장 최근 리포트는 아직 구간이 닫히지 않아
+            <span className="font-medium text-foreground"> 진행중</span>으로 표시되며 적중률 계산에 들어가지 않습니다.
           </p>
         </div>
 

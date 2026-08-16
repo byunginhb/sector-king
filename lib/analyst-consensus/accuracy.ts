@@ -33,8 +33,12 @@ export interface ScoredPrediction {
   target: number
   prevTarget: number | null
   direction: Direction
-  /** 채점 종점(다음 리포트일 또는 현재). */
-  endDate: string | null
+  /**
+   * 채점 종점 — 같은 (작성자, 종목)의 다음 리포트 발간일. 마지막 리포트는 `nowDate`.
+   * `scoreSeries` 가 두 경로 모두에서 값을 채우므로 null 이 될 수 없다
+   * (선언만 nullable 이던 것을 구현에 맞춰 조였다 — UI 마다 죽은 가드가 붙는다).
+   */
+  endDate: string
   priceStart: number | null
   priceEnd: number | null
   /** (priceEnd-priceStart)/priceStart, 채점 불가 시 null */

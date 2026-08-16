@@ -63,6 +63,14 @@ export interface AnalystLeaderboardResponse {
 /** 목표가 포인트(USD). */
 export interface AnalystTargetPoint {
   date: string
+  /**
+   * 채점 구간의 끝 — 같은 (애널리스트, 종목)의 **다음 리포트 발간일**.
+   * 마지막 리포트는 오늘이며 그때 `inProgress: true`.
+   *
+   * 목표주가에는 달성 시점이 명시되지 않으므로(국내 리서치 관행), 시점 대신
+   * "다음 리포트까지의 방향"으로 평가한다. 이 필드가 그 구간을 화면에 드러낸다.
+   */
+  endDate: string
   target: number
   direction: Direction
   status: PredictionStatus
