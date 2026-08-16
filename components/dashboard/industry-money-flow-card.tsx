@@ -11,6 +11,7 @@ import { buildTrendPath } from '@/lib/trend-path'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IndustryIcon } from '@/components/ui/industry-icon'
 import { CardError } from './card-error'
+import { DataAsOf } from '@/components/ui/data-as-of'
 import type { IndustryMoneyFlowSummary, RegionFilter } from '@/types'
 
 type PeriodType = 1 | 3 | 7 | 14 | 30
@@ -277,6 +278,7 @@ export function IndustryMoneyFlowCard({ region = 'all' }: IndustryMoneyFlowCardP
         </div>
         <p className="num-mono text-[10px] text-muted-foreground mt-1">
           최근 {data.period}일 · {data.dateRange.start} → {data.dateRange.end}
+          <DataAsOf date={data.dateRange.end} label="수집" hideIcon className="ml-2" />
         </p>
       </div>
 

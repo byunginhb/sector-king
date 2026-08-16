@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { DataAsOf } from '@/components/ui/data-as-of'
 import { TrendingUp, TrendingDown, Flame, ArrowRightLeft, Layers, ChevronRight } from 'lucide-react'
 import { MarketCapDetailModal } from './market-cap-detail-modal'
 import { useIndustries } from '@/hooks/use-industries'
@@ -187,8 +188,9 @@ export function MarketPulseStrip({ region = 'all' }: MarketPulseStripProps) {
             </span>
           }
           sub={
-            <span className="text-xs text-muted-foreground">
+            <span className="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
               추적 종목 시총 기준
+              <DataAsOf date={flowData?.dateRange?.end} hideIcon />
             </span>
           }
         />

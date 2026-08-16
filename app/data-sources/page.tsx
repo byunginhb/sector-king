@@ -130,7 +130,7 @@ export default async function DataSourcesPage() {
                       국내 공모주 청약일·상장일과 공모가(희망밴드·확정). 캘린더의 공모주
                       항목을 누르면 원본 상세로 이동합니다
                     </Cell>
-                    <Cell>평일 1일 4회</Cell>
+                    <Cell>{UPDATE_CADENCE}</Cell>
                   </tr>
                   <tr className="last:border-0">
                     <Cell>섹터킹 직접 입력</Cell>

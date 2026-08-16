@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { DataAsOf } from '@/components/ui/data-as-of'
 import { ArrowLeft, ShieldCheck, Star } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useCompany } from '@/hooks/use-company'
@@ -86,9 +87,12 @@ export function StockDetailPage({
               <span className="text-muted-foreground text-lg font-normal">({ticker})</span>
               <RegionBadge ticker={ticker} />
             </div>
-            {subName && subName !== displayName && (
-              <p className="text-sm text-muted-foreground mt-1">{subName}</p>
-            )}
+            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+              {subName && subName !== displayName && (
+                <span className="text-sm text-muted-foreground">{subName}</span>
+              )}
+              <DataAsOf date={data?.snapshot?.date} label="시세" />
+            </p>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">

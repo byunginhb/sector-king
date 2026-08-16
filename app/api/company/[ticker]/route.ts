@@ -199,6 +199,9 @@ export async function GET(
         // priceChange/volume/peRatio/pegRatio 는 통화 무관.
         snapshot: snapshot[0]
           ? {
+              // 데이터 기준일 — 화면의 `<DataAsOf>` 가 이 값을 표기한다.
+              // 통화 무관(날짜).
+              date: snapshot[0].date,
               marketCap:
                 snapshot[0].marketCap != null
                   ? toUsd(snapshot[0].marketCap, ticker)

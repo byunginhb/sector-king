@@ -22,6 +22,7 @@ import { TopPicks } from './top-picks'
 import { RankingTable } from './ranking-table'
 import { RankingCardList } from './ranking-card-list'
 import { InfoTip } from './info-tip'
+import { DataAsOf } from '@/components/ui/data-as-of'
 
 interface RankingsPageProps {
   /** 산업 스코프. 생략하면 전 종목(섹터킹 픽 전역 랭킹). */
@@ -164,11 +165,7 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
               <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
               추가 지표
             </button>
-            {data?.date && (
-              <p className="num-mono text-xs text-muted-foreground tabular-nums">
-                {data.date} 기준
-              </p>
-            )}
+            <DataAsOf date={data?.date} label="점수" />
           </div>
         </div>
 

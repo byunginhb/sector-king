@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { DataAsOf } from '@/components/ui/data-as-of'
 import { ArrowLeft, PieChart, TrendingUp, Target, BarChart2, CircleDot, LayoutGrid } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 import { RegionToggle } from '@/components/region-toggle'
@@ -249,11 +250,13 @@ export function MarketSizePage() {
               <PieChart className="w-5 h-5 text-primary" aria-hidden />
               시장 규모 · 성장 전망
             </h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              {data?.date ? `${data.date} 기준 · ` : ''}
-              {selectedCategory
-                ? `${selectedCategory.name} 섹터 ${metricNodes.length}개`
-                : `카테고리 ${metricNodes.length}개`}
+            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <DataAsOf date={data?.date} label="시총" hideIcon />
+              <span>
+                {selectedCategory
+                  ? `${selectedCategory.name} 섹터 ${metricNodes.length}개`
+                  : `카테고리 ${metricNodes.length}개`}
+              </span>
             </p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">

@@ -267,6 +267,8 @@ export interface CompanyDetailResponse {
     website: string | null
   } | null
   snapshot: {
+    /** 데이터 기준일 `YYYY-MM-DD` — 화면의 `<DataAsOf>` 가 표기한다. */
+    date: string
     marketCap: number | null
     price: number | null
     priceChange: number | null
