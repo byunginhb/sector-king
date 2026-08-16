@@ -468,6 +468,14 @@ export interface WatchlistItemDTO {
   itemType: WatchlistItemType
   itemKey: string
   displayName: string | null
+  /**
+   * 상세 페이지 경로. **서버가 확정한다** — null 이면 링크하지 않는다.
+   *
+   * 섹터는 종목 3개 미만이면 상세 페이지가 없고(`MIN_COMPANIES_FOR_PAGE`),
+   * 그 판단에 필요한 종목 수는 SQLite 에 있어 클라이언트가 알 수 없다.
+   * 화면마다 각자 추측하면 어떤 화면은 404 로 보내게 된다.
+   */
+  href: string | null
   note: string | null
   pinned: boolean
   createdAt: string

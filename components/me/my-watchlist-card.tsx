@@ -94,15 +94,30 @@ export function MyWatchlistCard() {
               <span className="truncate max-w-[10rem]">{i.displayName ?? i.itemKey}</span>
             </Link>
           ))}
-          {sectorItems.map((i) => (
-            <span
-              key={i.id}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-2 px-2 py-1 text-xs text-foreground"
-            >
-              <CategoryIcon iconKey={i.itemKey} className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="truncate max-w-[10rem]">{i.displayName ?? i.itemKey}</span>
-            </span>
-          ))}
+          {/* 섹터는 상세 페이지가 있을 때만 링크된다(서버가 href 로 확정). */}
+          {sectorItems.map((i) => {
+            const chip = (
+              <>
+                <CategoryIcon iconKey={i.itemKey} className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="truncate max-w-[10rem]">{i.displayName ?? i.itemKey}</span>
+              </>
+            )
+            const chipClass =
+              'inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-2 px-2 py-1 text-xs text-foreground'
+            return i.href ? (
+              <Link
+                key={i.id}
+                href={i.href}
+                className={`${chipClass} hover:bg-surface-3 transition-colors`}
+              >
+                {chip}
+              </Link>
+            ) : (
+              <span key={i.id} className={chipClass}>
+                {chip}
+              </span>
+            )
+          })}
         </div>
       )}
 

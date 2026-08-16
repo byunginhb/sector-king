@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { requireUserApi } from '@/lib/auth/require-user-api'
+import { getIndexableSectors } from '@/lib/sector-server'
 import {
   WATCHLIST_COLUMNS,
   rowToWatchlistDto,
@@ -17,6 +18,22 @@ import type { ApiResponse } from '@/types'
 import type { WatchlistItemDTO } from '@/drizzle/supabase-schema'
 
 export const dynamic = 'force-dynamic'
+
+/**
+ * 상세 페이지가 존재하는 섹터 id 집합.
+ *
+ * 실패해도 워치리스트 자체는 살린다 — 그때 섹터는 링크되지 않을 뿐이고,
+ * 그 방향이 404 로 보내는 것보다 낫다(fail-closed).
+ */
+async function linkableSectorIds(): Promise<ReadonlySet<string>> {
+  try {
+    const sectors = await getIndexableSectors()
+    return new Set(sectors.map((s) => s.id))
+  } catch (error) {
+    console.error('[watchlist] 섹터 목록 조회 실패 — 섹터는 비링크로 렌더', error)
+    return new Set()
+  }
+}
 
 interface WatchlistListResponse {
   items: WatchlistItemDTO[]
@@ -62,8 +79,15 @@ export async function GET(req: Request) {
       return NextResponse.json(body, { status: 500 })
     }
 
+    // 섹터는 상세 페이지가 있는 것만 링크한다(종목 3개 미만은 페이지가 없다).
+    // `/sectors` 인덱스·sitemap 과 같은 원천을 봐야 "목록엔 있는데 404" 가 없다.
+    const linkableSectors = await linkableSectorIds()
+
     const items = (data ?? []).map((row) =>
-      rowToWatchlistDto(row as Parameters<typeof rowToWatchlistDto>[0])
+      rowToWatchlistDto(
+        row as Parameters<typeof rowToWatchlistDto>[0],
+        linkableSectors
+      )
     )
     const body: ApiResponse<WatchlistListResponse> = {
       success: true,
@@ -129,7 +153,8 @@ export async function POST(req: Request) {
     }
 
     const item = rowToWatchlistDto(
-      data as Parameters<typeof rowToWatchlistDto>[0]
+      data as Parameters<typeof rowToWatchlistDto>[0],
+      await linkableSectorIds()
     )
     const body: ApiResponse<{ item: WatchlistItemDTO }> = {
       success: true,

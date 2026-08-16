@@ -4,6 +4,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Trash2, Star } from 'lucide-react'
 import { useWatchlist } from '@/hooks/me/use-watchlist'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -80,17 +81,38 @@ function WatchlistRow({
   item: WatchlistItemDTO
   onRemove: () => void
 }) {
+  const label = item.displayName ?? item.itemKey
+  const body = (
+    <>
+      <span className="block text-sm font-semibold text-foreground truncate">
+        {label}
+      </span>
+      <span className="block text-xs text-muted-foreground truncate tabular-nums">
+        {labelFor(item.itemType)} · {item.itemKey}
+      </span>
+    </>
+  )
+
   return (
     <li className="flex items-center gap-3 sk-card px-4 py-3 hover:bg-surface-2 transition-colors">
       <Star className="h-4 w-4 text-primary fill-primary shrink-0" aria-hidden />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground truncate">
-          {item.displayName ?? item.itemKey}
-        </p>
-        <p className="text-xs text-muted-foreground truncate tabular-nums">
-          {labelFor(item.itemType)} · {item.itemKey}
-        </p>
-      </div>
+      {/*
+        삭제 버튼은 앵커 **바깥**에 둔다 — 중첩 인터랙티브 요소는 마크업이
+        유효하지 않고, 삭제를 누르려다 이동하는 오클릭이 난다.
+        href 가 null 인 항목(상세 페이지가 없는 섹터)은 링크하지 않는다.
+      */}
+      {item.href ? (
+        <Link
+          href={item.href}
+          className="flex-1 min-w-0 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+        >
+          {body}
+        </Link>
+      ) : (
+        <div className="flex-1 min-w-0" title="상세 페이지가 없는 항목입니다">
+          {body}
+        </div>
+      )}
       <button
         type="button"
         aria-label="워치리스트에서 제거"

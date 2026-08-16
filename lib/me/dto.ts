@@ -67,11 +67,42 @@ export const NOTE_COLUMNS =
 export const EMAIL_SUB_COLUMNS =
   'user_id, daily_report, hour_kst, last_sent_at'
 
-export function rowToWatchlistDto(row: RawWatchlistRow): WatchlistItemDTO {
+/**
+ * 워치리스트 항목 → 상세 경로. 순수 함수(테스트 가능).
+ *
+ * @param linkableSectors 상세 페이지가 존재하는 섹터 id 집합. 미지정이면 섹터는
+ *   링크하지 않는다 — 모르는 상태에서 링크를 거는 쪽이 404 를 만든다(fail-closed).
+ */
+export function watchlistHref(
+  itemType: WatchlistItemType,
+  itemKey: string,
+  linkableSectors?: ReadonlySet<string>
+): string | null {
+  if (!itemKey) return null
+  switch (itemType) {
+    case 'ticker':
+      return `/stock/${encodeURIComponent(itemKey)}`
+    case 'industry':
+      return `/${encodeURIComponent(itemKey)}`
+    case 'sector':
+      return linkableSectors?.has(itemKey)
+        ? `/sectors/${encodeURIComponent(itemKey)}`
+        : null
+    default:
+      return null
+  }
+}
+
+export function rowToWatchlistDto(
+  row: RawWatchlistRow,
+  linkableSectors?: ReadonlySet<string>
+): WatchlistItemDTO {
+  const itemType = toWatchType(row.item_type)
   return {
     id: row.id,
-    itemType: toWatchType(row.item_type),
+    itemType,
     itemKey: row.item_key,
+    href: watchlistHref(itemType, row.item_key, linkableSectors),
     displayName: row.display_name,
     note: row.note,
     pinned: row.pinned,
