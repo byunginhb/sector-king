@@ -8,6 +8,7 @@ import { SectorKingLogo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { CurrencyToggle } from '@/components/currency-toggle'
 import { useCurrency } from '@/hooks/use-currency'
+import { SearchTrigger, SearchTriggerWide } from '@/components/search-trigger'
 import { ShareButton } from '@/components/share-button'
 import { AuthButtonClient } from '@/components/auth/auth-button-client'
 import {
@@ -167,6 +168,7 @@ export function GlobalTopBar({
           {showDesktop && (
             <div className="hidden lg:flex items-center gap-2 lg:gap-3 justify-end">
               {extraActions}
+              <SearchTrigger />
               <ShareButton title={shareTitle} description={shareDescription} />
               {!hideCurrencyToggle && <CurrencyToggleConnected />}
               <ThemeToggle />
@@ -178,6 +180,7 @@ export function GlobalTopBar({
           {showMobile && (
             <div className="lg:hidden flex items-center gap-2">
               {mobileLeading}
+              <SearchTrigger />
               <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
                   <button
@@ -201,6 +204,8 @@ export function GlobalTopBar({
                       메뉴·필터·도구·계정 액션 모음
                     </SheetDescription>
                   </SheetHeader>
+
+                  <SearchTriggerWide onNavigate={() => setOpen(false)} />
 
                   {/* 콘텐츠 진입 메뉴 (뉴스 등) */}
                   <section className="flex flex-col gap-2">
