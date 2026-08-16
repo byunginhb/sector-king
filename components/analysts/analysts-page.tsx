@@ -13,6 +13,8 @@ import { AnalystDetailBody } from './analyst-detail-body'
 import { StockDetailBody } from './stock-detail-body'
 import { pct, fmtScore, scoreTone, scoreBar, ScoreHint, RowsSkeleton, DetailSkeleton } from './ui'
 import type { AnalystLeaderboardRow, AnalystStockListItem } from '@/types'
+import { useListView } from '@/hooks/use-list-view'
+import { ListViewFooter } from '@/components/ui/list-view-footer'
 import { cn } from '@/lib/utils'
 
 type Tab = 'analysts' | 'tickers'
@@ -119,6 +121,8 @@ function AnalystTab() {
 
   // 정렬 칩·열 헤더는 데이터와 무관하니 로딩 중에도 그린다 — 나중에 끼어들면 목록이 통째로 밀린다(CLS).
   const rows = data ? (rankBy === 'score' ? data.ranked : (data.byReports ?? data.ranked)) : []
+  // 133명을 한 번에 그리면 이름으로 사람을 찾을 수 없다 — PC 페이징 / 모바일 무한.
+  const view = useListView({ items: rows, pageSize: 20, resetKey: rankBy })
   const RANKS: { key: AnalystRank; label: string }[] = [
     { key: 'score', label: '예측력 점수' },
     { key: 'reports', label: '리포트 최다' },
@@ -164,9 +168,22 @@ function AnalystTab() {
         <p className="text-center text-sm text-muted-foreground py-10">아직 채점 가능한 애널리스트가 없습니다.</p>
       ) : (
         <div>
-          {rows.map((row, i) => (
-            <AnalystRow key={row.analystId} row={row} rank={i + 1} index={i} open={openId === row.analystId} onToggle={() => toggle(row.analystId)} />
-          ))}
+          {view.visible.map((row, i) => {
+            // 순위는 **전체 목록 기준**이다. 페이지마다 1위부터 다시 시작하면
+            // 2페이지 첫 줄이 1위로 보인다.
+            const rank = rows.indexOf(row) + 1
+            return (
+              <AnalystRow
+                key={row.analystId}
+                row={row}
+                rank={rank}
+                index={i}
+                open={openId === row.analystId}
+                onToggle={() => toggle(row.analystId)}
+              />
+            )
+          })}
+          <ListViewFooter view={view} unit="명" />
         </div>
       )}
     </>
@@ -240,6 +257,8 @@ function StockTab() {
     return arr // 'analysts' = API 기본 정렬 유지
   }, [data, sort])
 
+  const view = useListView({ items: stocks, pageSize: 20, resetKey: sort })
+
   // 미토글 상태(null)면 첫 종목만 기본 열림. 이후엔 각 종목 독립 토글(여러 개 동시 가능).
   const defaultOpen = useMemo(() => new Set(stocks[0] ? [stocks[0].ticker] : []), [stocks])
   const openSet = openTickers ?? defaultOpen
@@ -289,9 +308,10 @@ function StockTab() {
         <p className="text-center text-sm text-muted-foreground py-10">표시할 종목이 없습니다.</p>
       ) : (
         <div>
-          {stocks.map((s, i) => (
+          {view.visible.map((s, i) => (
             <StockRow key={s.ticker} stock={s} index={i} open={openSet.has(s.ticker)} onToggle={() => toggle(s.ticker)} />
           ))}
+          <ListViewFooter view={view} unit="종목" />
         </div>
       )}
     </>
