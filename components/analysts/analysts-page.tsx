@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ClipboardCheck, Info, ChevronDown, CalendarRange } from 'lucide-react'
@@ -349,6 +350,8 @@ function StockTab() {
   const [sort, setSort] = useState<StockSort>('analysts')
   const query = useQueryState()
   const q = query.get('q')
+  // 기본 켜짐 — 섹터로 묶여 있으면 초기 스크롤 길이가 크게 줄어든다.
+  const grouped = query.get('group', 'sector') !== 'off'
 
   const stocks = useMemo(() => {
     if (!data) return []
@@ -364,13 +367,60 @@ function StockTab() {
     return arr // 'analysts' = API 기본 정렬 유지
   }, [data, sort, q])
 
+  /**
+   * 그룹 모드에서는 **같은 섹터가 인접하도록 재배열**한다.
+   *
+   * 정렬만 적용하면 섹터가 흩어져 "종목 1개짜리 그룹"이 줄줄이 생기고, 그러면
+   * 헤더만 늘어나 오히려 목록이 길어진다(그룹핑을 넣은 이유와 정반대).
+   *
+   * 그룹 순서는 **그룹 안 최상위 종목의 정렬 순위**를 따른다 — 커버 애널 수로
+   * 정렬했다면 가장 많이 커버되는 종목이 속한 섹터가 맨 위다. 정렬의 의미가
+   * 그룹 축에서도 보존된다.
+   */
+  const ordered = useMemo(() => {
+    if (!grouped) return stocks
+    const buckets = new Map<string, AnalystStockListItem[]>()
+    for (const s of stocks) {
+      const key = s.sector?.sectorId ?? '__none__'
+      const bucket = buckets.get(key)
+      if (bucket) bucket.push(s)
+      else buckets.set(key, [s])
+    }
+    // Map 은 삽입 순서를 보존하므로, 최상위 종목이 먼저 나온 섹터가 앞선다.
+    return [...buckets.values()].flat()
+  }, [stocks, grouped])
+
   const view = useListView({
-    items: stocks,
+    items: ordered,
     pageSize: 20,
-    resetKey: `${sort}|${q}`,
+    resetKey: `${sort}|${q}|${grouped ? 'g' : 'f'}`,
     page: Math.max(1, Number(query.get('page', '1')) || 1),
     onPageChange: (p) => query.set({ page: p === 1 ? null : String(p) }),
   })
+
+  /**
+   * 섹터 그룹 — **현재 페이지에 보이는 종목만** 묶는다.
+   *
+   * 전체를 묶고 그룹 단위로 페이징하면 그룹 크기가 제각각이라 한 페이지가
+   * 2종목이었다 40종목이었다 한다. 페이지 크기를 일정하게 두고 그 안에서
+   * 섹터 헤더를 얹으면 "끝없이 내려가는" 문제와 "무엇이 뭉쳐 있는지"가
+   * 동시에 해결된다.
+   */
+  const groups = useMemo(() => {
+    const out: { key: string; sector: AnalystStockListItem['sector']; items: AnalystStockListItem[] }[] = []
+    const index = new Map<string, number>()
+    for (const s of view.visible) {
+      const key = s.sector?.sectorId ?? '__none__'
+      let at = index.get(key)
+      if (at == null) {
+        at = out.length
+        index.set(key, at)
+        out.push({ key, sector: s.sector, items: [] })
+      }
+      out[at].items.push(s)
+    }
+    return out
+  }, [view.visible])
 
   // 미토글 상태(null)면 첫 종목만 기본 열림. 이후엔 각 종목 독립 토글(여러 개 동시 가능).
   const defaultOpen = useMemo(() => new Set(stocks[0] ? [stocks[0].ticker] : []), [stocks])
@@ -405,6 +455,26 @@ function StockTab() {
           </button>
         ))}
       </div>
+      <div className="mb-2 flex items-center gap-1.5 text-xs">
+        <span className="text-muted-foreground">보기</span>
+        {/*
+          그룹핑은 정렬과 독립이다 — 그룹 안에서 선택한 정렬이 그대로 적용된다.
+          끄면 순수 목록이 되므로 "상승여력 상위 20"처럼 섹터를 가로지르는
+          탐색이 가능하다.
+        */}
+        <button
+          type="button"
+          aria-pressed={grouped}
+          onClick={() => query.set({ group: grouped ? 'off' : null, page: null })}
+          className={cn(
+            'rounded-full px-2.5 py-1 transition-colors',
+            grouped ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
+          )}
+        >
+          섹터로 묶기
+        </button>
+      </div>
+
       <ListFilterBar
         query={q}
         onQueryChange={(v) => query.set({ q: v, page: null })}
@@ -431,13 +501,66 @@ function StockTab() {
         </p>
       ) : (
         <div>
-          {view.visible.map((s, i) => (
-            <StockRow key={s.ticker} stock={s} index={i} open={openSet.has(s.ticker)} onToggle={() => toggle(s.ticker)} />
-          ))}
+          {grouped
+            ? groups.map((g) => (
+                <section key={g.key}>
+                  <SectorGroupHeader group={g} />
+                  {g.items.map((s, i) => (
+                    <StockRow
+                      key={s.ticker}
+                      stock={s}
+                      index={i}
+                      open={openSet.has(s.ticker)}
+                      onToggle={() => toggle(s.ticker)}
+                    />
+                  ))}
+                </section>
+              ))
+            : view.visible.map((s, i) => (
+                <StockRow key={s.ticker} stock={s} index={i} open={openSet.has(s.ticker)} onToggle={() => toggle(s.ticker)} />
+              ))}
           <ListViewFooter view={view} unit="종목" />
         </div>
       )}
     </>
+  )
+}
+
+/**
+ * 섹터 그룹 헤더 — 종목 수·커버 애널 수 요약 + 섹터 상세 링크.
+ *
+ * 섹터 단위 **집계 적중률은 내지 않는다.** 섹터별 표본이 얇아(종목 3~5개 ×
+ * 애널 몇 명) 숫자가 우연에 휘둘리고, 그 숫자가 "이 섹터 애널들은 못 맞힌다"로
+ * 읽히면 근거 없는 낙인이 된다. 1차는 탐색·그룹핑 목적으로만 쓴다.
+ */
+function SectorGroupHeader({
+  group,
+}: {
+  group: { sector: AnalystStockListItem['sector']; items: AnalystStockListItem[] }
+}) {
+  const { sector, items } = group
+  const analystTotal = items.reduce((sum, s) => sum + s.analystCount, 0)
+  // 상세 페이지가 없는 섹터는 링크하지 않는다(404 방지) — 서버가 실은 종목 수로 판단.
+  const linkable = sector != null && sector.companyCount >= 3
+
+  return (
+    <div className="sticky top-0 z-10 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 bg-background/95 px-3 pb-1 pt-3 backdrop-blur sm:px-4">
+      {linkable ? (
+        <Link
+          href={`/sectors/${sector!.sectorId}`}
+          className="text-sm font-semibold text-foreground hover:text-primary hover:underline"
+        >
+          {sector!.sectorName}
+        </Link>
+      ) : (
+        <span className="text-sm font-semibold text-foreground">
+          {sector?.sectorName ?? '미분류'}
+        </span>
+      )}
+      <span className="text-[11px] text-muted-foreground tabular-nums">
+        종목 {items.length} · 커버 애널 {analystTotal}명
+      </span>
+    </div>
   )
 }
 

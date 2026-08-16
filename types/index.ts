@@ -127,6 +127,11 @@ export interface AnalystStockListItem {
   reportCount: number
   latestPrice: number | null // USD
   consensusTarget: number | null // USD, 애널별 최신 목표가 평균
+  /**
+   * 대표 섹터 — 종목 탭의 그룹 축. 매핑이 없으면 null(미분류로 묶인다).
+   * `companyCount` 는 상세 페이지 존재 여부 판단용(3종목 미만이면 링크 금지).
+   */
+  sector: { sectorId: string; sectorName: string; companyCount: number } | null
 }
 
 export interface AnalystStockListResponse {
