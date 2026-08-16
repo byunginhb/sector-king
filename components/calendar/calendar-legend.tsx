@@ -1,6 +1,6 @@
 'use client'
 
-import { Star, Circle } from 'lucide-react'
+import { Star, Circle, Clock } from 'lucide-react'
 import { CATEGORY_META } from './category-meta'
 import { CountryBadge } from './event-pill'
 
@@ -38,6 +38,14 @@ export function CalendarLegend() {
       <span className="inline-flex items-center gap-1">
         <Circle className="h-3 w-3 text-warning" aria-hidden />
         보통
+      </span>
+      {/*
+        미국 장마감 후 실적은 KST 로 다음날 새벽(예: 05:00)에 찍히는 것이 정상이다.
+        이 라벨이 없으면 데이터 오류로 읽힌다.
+      */}
+      <span className="inline-flex items-center gap-1">
+        <Clock className="h-3 w-3" aria-hidden />
+        모든 시각은 한국시간(KST)
       </span>
     </div>
   )

@@ -221,6 +221,17 @@ export function EventPill({ event, variant }: EventPillProps) {
       >
         <CategoryIcon category={event.category} />
         <CountryBadge country={event.country} />
+        {/*
+          시각은 제목 앞 접두다. 셀이 좁아 제목 뒤에 두면 truncate 에 먼저 잘린다.
+          `time` 이 없는 종일 이벤트는 자리를 비워 두지 않는다 — 좁은 셀에서
+          정렬을 맞추자고 남기는 빈칸이 제목 폭을 먹는다.
+          모든 시각은 KST 다(범례에 명시).
+        */}
+        {event.time && (
+          <span className="num-mono shrink-0 text-[10px] leading-tight text-muted-foreground">
+            {event.time}
+          </span>
+        )}
         <span className={cn('truncate text-[11px] leading-tight text-foreground/90', titleHover)}>
           {event.title}
         </span>
