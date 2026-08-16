@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { subscriptionGrantSchema } from '@/lib/permissions/schema'
 import {
   TIER_ORDER,
   TIER_RANK,
@@ -176,5 +177,63 @@ describe('resolveTier — 두 축(role/subscription)을 한 축으로 접기', (
     expect(Date.parse(utc)).toBe(Date.parse(kst))
     expect(resolveTier(subject({ subscriptionExpiresAt: utc }), NOW)).toBe('free')
     expect(resolveTier(subject({ subscriptionExpiresAt: kst }), NOW)).toBe('free')
+  })
+})
+
+/**
+ * 등급 부여 API(`PATCH /api/admin/users/subscription`)의 신뢰 경계.
+ *
+ * 이 스키마가 무르면 관리자 실수 하나가 곧바로 권한 사고가 된다 —
+ * 'admin' 저장은 두 번째 관리자 원천을 만들고(tier.ts §3), 타임존 없는
+ * 만료일은 서버 해석에 따라 하루치 권한을 새게 한다.
+ */
+describe('subscriptionGrantSchema — 등급 부여 입력', () => {
+  const base = {
+    userId: '11111111-2222-4333-8444-555555555555',
+    tier: 'pro',
+  }
+
+  it('저장 가능한 등급만 받는다 (admin·anon 거부)', () => {
+    for (const tier of ['free', 'basic', 'pro']) {
+      expect(subscriptionGrantSchema.safeParse({ ...base, tier }).success).toBe(true)
+    }
+    for (const tier of ['admin', 'anon', 'enterprise']) {
+      expect(subscriptionGrantSchema.safeParse({ ...base, tier }).success).toBe(false)
+    }
+  })
+
+  it('만료일은 오프셋이 있는 절대시각만 받는다', () => {
+    const ok = subscriptionGrantSchema.safeParse({
+      ...base,
+      expiresAt: '2026-12-31T14:59:59.000Z',
+    })
+    expect(ok.success).toBe(true)
+
+    // 날짜만 주면 서버가 KST/UTC 중 무엇으로 읽을지 정해야 하고, 그 결정이
+    // `expires_at <= now()` 와 어긋나면 하루치 권한이 새거나 사라진다.
+    for (const bad of ['2026-12-31', '2026-12-31T23:59:59', 'tomorrow']) {
+      expect(
+        subscriptionGrantSchema.safeParse({ ...base, expiresAt: bad }).success
+      ).toBe(false)
+    }
+  })
+
+  it('만료 없음은 null 로 표현되고 빈 문자열도 null 로 접힌다', () => {
+    expect(
+      subscriptionGrantSchema.parse({ ...base, expiresAt: null }).expiresAt
+    ).toBe(null)
+    expect(
+      subscriptionGrantSchema.parse({ ...base, expiresAt: '' }).expiresAt
+    ).toBe(null)
+  })
+
+  it('userId 는 uuid 여야 하고 알 수 없는 키는 거부한다', () => {
+    expect(
+      subscriptionGrantSchema.safeParse({ ...base, userId: 'me' }).success
+    ).toBe(false)
+    // `role: 'admin'` 같은 키가 조용히 통과해 update 에 실리면 권한 상승이 된다.
+    expect(
+      subscriptionGrantSchema.safeParse({ ...base, role: 'admin' }).success
+    ).toBe(false)
   })
 })

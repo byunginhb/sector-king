@@ -2146,7 +2146,8 @@ export const FEATURES: Record<string, FeatureDef> = {
   'admin.users': {
     label: '사용자 관리',
     pageId: 'admin-users',
-    description: 'requireAdmin 적용 중. 등급 부여 화면이 붙을 자리',
+    description:
+      'requireAdmin 적용 중. 구독 등급 부여·회수(PATCH /api/admin/users/subscription)와 메일 구독 현황',
     location: 'app/admin/users/page.tsx',
     defaultPolicy: { minTier: 'admin', gateMode: 'hidden' },
     recommendedMinTier: 'admin',
