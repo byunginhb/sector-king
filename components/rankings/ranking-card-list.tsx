@@ -7,6 +7,7 @@ import { formatPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { ScoreBar } from './score-bar'
 import { RecommendationBadge } from './recommendation-badge'
+import { CompanyIndustryIcon } from '@/components/company-industry-icon'
 
 interface RankingCardListProps {
   items: RankingItem[]
@@ -75,8 +76,11 @@ export function RankingCardList({ items, horizon, onCardClick }: RankingCardList
                     <span className="block font-semibold leading-tight text-foreground line-clamp-1">
                       {displayName}
                     </span>
-                    <span className="num-mono mt-0.5 block text-[11px] text-muted-foreground">
-                      {item.ticker}
+                    <span className="mt-0.5 flex items-center gap-1.5">
+                      <CompanyIndustryIcon industry={item.industry} className="h-3 w-3" />
+                      <span className="num-mono text-[11px] text-muted-foreground">
+                        {item.ticker}
+                      </span>
                     </span>
                     {/* 한 줄 설명 — 없으면 섹터명으로 폴백. */}
                     {(item.summaryKo || item.sector) && (

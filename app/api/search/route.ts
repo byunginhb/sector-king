@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
-import { companies, dailySnapshots } from '@/drizzle/schema'
+import { companies, companyProfiles, dailySnapshots } from '@/drizzle/schema'
 import { or, like, desc, eq, sql } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
+import { getCompanySummaries } from '@/lib/company-summaries'
 import type { ApiResponse, SearchResponse } from '@/types'
 
 export async function GET(request: NextRequest) {
@@ -59,8 +60,12 @@ export async function GET(request: NextRequest) {
         price: latestSnapshotSubquery.price,
         priceChange: latestSnapshotSubquery.priceChange,
         marketCap: latestSnapshotSubquery.marketCap,
+        // 업종 아이콘용(issue#49). 검색은 "이 이름이 뭐 하는 회사였지"를 확인하는
+        // 자리라 티커·이름만으로는 부족하다.
+        industry: companyProfiles.industry,
       })
       .from(companies)
+      .leftJoin(companyProfiles, eq(companies.ticker, companyProfiles.ticker))
       .leftJoin(
         latestSnapshotSubquery,
         eq(companies.ticker, latestSnapshotSubquery.ticker)
@@ -75,6 +80,8 @@ export async function GET(request: NextRequest) {
       .orderBy(desc(latestSnapshotSubquery.marketCap))
       .limit(limit)
 
+    const summaries = getCompanySummaries(results.map((r) => r.ticker))
+
     return NextResponse.json<ApiResponse<SearchResponse>>({
       success: true,
       data: {
@@ -86,6 +93,8 @@ export async function GET(request: NextRequest) {
           price: r.price != null ? toUsd(r.price, r.ticker) : null,
           priceChange: r.priceChange,
           marketCap: r.marketCap != null ? toUsd(r.marketCap, r.ticker) : null,
+          summaryKo: summaries.get(r.ticker) ?? null,
+          industry: r.industry,
         })),
         query,
         total: results.length,

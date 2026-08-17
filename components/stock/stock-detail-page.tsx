@@ -27,6 +27,7 @@ import { PriceChartSection } from '@/components/stock/insights/price-chart-secti
 import { PeBandChart } from '@/components/stock/insights/pe-band-chart'
 import { ValuationCompare } from '@/components/stock/insights/valuation-compare'
 import type { CompanyDetailResponse } from '@/types'
+import { CompanyIndustryIcon } from '@/components/company-industry-icon'
 
 interface StockDetailPageProps {
   ticker: string
@@ -81,6 +82,7 @@ export function StockDetailPage({
               홈
             </Link>
             <div className="flex flex-wrap items-center gap-2">
+              <CompanyIndustryIcon industry={data?.industry} className="h-5 w-5" />
               <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground truncate">
                 {displayName}
               </h1>

@@ -44,6 +44,8 @@ import {
 } from '@/lib/site-search'
 import { cn } from '@/lib/utils'
 import type { SearchResultItem } from '@/types'
+import { CompanyIndustryIcon } from '@/components/company-industry-icon'
+import { getCompanyIndustryIcon } from '@/lib/company-industry-icons'
 
 /** 평탄화된 커서가 가리키는 대상. 섹션이 둘이어도 이동은 한 줄로 흐른다. */
 type Selectable =
@@ -287,7 +289,15 @@ function StockRow({
         active ? 'bg-surface-3' : 'hover:bg-surface-2'
       )}
     >
-      <TrendingUp className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+      {/*
+        업종 아이콘이 있으면 그것으로 대체한다 — 전 행이 같은 TrendingUp 이면
+        아이콘이 아무것도 구분하지 않는다. 없을 때만 기존 아이콘으로 자리를 지킨다.
+      */}
+      {getCompanyIndustryIcon(item.industry) ? (
+        <CompanyIndustryIcon industry={item.industry} className="h-4 w-4" />
+      ) : (
+        <TrendingUp className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+      )}
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2">
           <span className="font-mono text-sm font-medium text-foreground">
@@ -297,6 +307,12 @@ function StockRow({
             {item.nameKo || item.name}
           </span>
         </span>
+        {/* 한 줄 설명 — "이 이름이 뭐 하는 회사였지"가 검색의 실제 질문이다. */}
+        {item.summaryKo && (
+          <span className="mt-0.5 block truncate text-xs text-muted-foreground/80">
+            {item.summaryKo}
+          </span>
+        )}
       </span>
       <span className="shrink-0 text-right">
         {marketCapLabel && (

@@ -198,6 +198,8 @@ export async function GET(
         profile: profile[0] || null,
         // 사람이 쓴 한 줄 설명(영문 원문 `profile.description` 과 별개).
         summaryKo: getCompanySummary(ticker),
+        // 업종 아이콘용(issue#49). 문자열 자체는 표시하지 않는다.
+        industry: profile[0]?.industry ?? null,
         // 가격 필드(marketCap/price/week52High/week52Low/history.price) 는 USD 정규화.
         // priceChange/volume/peRatio/pegRatio 는 통화 무관.
         snapshot: snapshot[0]

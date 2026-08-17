@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { ScoreBar } from './score-bar'
 import { InfoTip } from './info-tip'
 import { PickProfileToggle } from './pick-profile-toggle'
+import { CompanyIndustryIcon } from '@/components/company-industry-icon'
 
 interface TopPicksProps {
   items: RankingItem[]
@@ -95,8 +96,17 @@ export function TopPicks({ items, onSelect, profile, onProfileChange }: TopPicks
                       <span className="block font-semibold leading-tight text-foreground line-clamp-1">
                         {name}
                       </span>
-                      <span className="num-mono mt-0.5 block text-[11px] text-muted-foreground">
-                        {item.ticker}
+                      <span className="mt-0.5 flex items-center gap-1.5">
+                        <CompanyIndustryIcon industry={item.industry} className="h-3 w-3" />
+                        <span className="num-mono shrink-0 text-[11px] text-muted-foreground">
+                          {item.ticker}
+                        </span>
+                        {/* 한 줄 설명 — 없으면 섹터명으로 폴백(빈칸 없음). */}
+                        {(item.summaryKo || item.sector) && (
+                          <span className="line-clamp-1 text-[11px] text-muted-foreground/80">
+                            {item.summaryKo ?? item.sector?.sectorName}
+                          </span>
+                        )}
                       </span>
                     </button>
                   </td>
@@ -141,9 +151,17 @@ export function TopPicks({ items, onSelect, profile, onProfileChange }: TopPicks
                       <span className="block font-semibold leading-tight text-foreground line-clamp-1">
                         {name}
                       </span>
-                      <span className="num-mono mt-0.5 block text-[11px] text-muted-foreground">
-                        {item.ticker}
+                      <span className="mt-0.5 flex items-center gap-1.5">
+                        <CompanyIndustryIcon industry={item.industry} className="h-3 w-3" />
+                        <span className="num-mono text-[11px] text-muted-foreground">
+                          {item.ticker}
+                        </span>
                       </span>
+                      {(item.summaryKo || item.sector) && (
+                        <span className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-muted-foreground/80">
+                          {item.summaryKo ?? item.sector?.sectorName}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-col items-end">

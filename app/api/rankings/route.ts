@@ -89,6 +89,11 @@ export interface RankingItem {
    * 폴백한다(빈칸이 생기지 않는다).
    */
   summaryKo: string | null
+  /**
+   * 업종 원문(yfinance `company_profiles.industry`, 영문). 화면에는 문자열이 아니라
+   * 이 값으로 고른 아이콘만 나간다(`lib/industry-icons.ts`). 매핑이 없으면 생략.
+   */
+  industry: string | null
 }
 
 export interface RankingsResponse {
@@ -260,6 +265,8 @@ export async function getRankings({
         // 금융주 DCF 제외용. company_profiles 는 약 1/3 종목만 보유(sector 다수 NULL) →
         // sector 기반 제외는 일부만 작동(알려진 한계). 음수 FCF 가드가 주 방어선.
         sector: companyProfiles.sector,
+        // 업종 아이콘용(issue#49). 문자열 자체는 표시하지 않는다.
+        industry: companyProfiles.industry,
       })
       .from(companyScores)
       .leftJoin(companies, eq(companyScores.ticker, companies.ticker))
@@ -368,6 +375,9 @@ export async function getRankings({
         beta: row.beta ?? null,
         debtToEquity: row.debtToEquity ?? null,
         dataQuality: row.dataQuality ?? 0,
+        // 업종 아이콘용(issue#49). 아래 `as RankingItem` 캐스트 때문에 여기서
+        // 빠뜨려도 tsc 가 잡지 못한다 — 필드를 늘릴 때 이 목록을 직접 확인할 것.
+        industry: row.industry ?? null,
         // 정렬 보조(응답에는 미노출): smoothedScore, marketCapUsd 는 타이브레이커로 보관
         _smoothedScore: row.smoothedScore ?? null,
       } as RankingItem & { _smoothedScore: number | null }

@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import { ScoreBar } from './score-bar'
 import { RecommendationBadge } from './recommendation-badge'
 import { InfoTip } from './info-tip'
+import { CompanyIndustryIcon } from '@/components/company-industry-icon'
 
 /** DCF 빈값 사유별 초보자 친화 캡션. */
 function dcfReasonCaption(reason: string | null): string {
@@ -353,7 +354,8 @@ export function RankingTable({
                       그 회사가 뭘 하는지 알려주지 않으면 판단할 수가 없다.
                       한 줄 설명이 없으면 섹터명으로 폴백하므로 빈칸이 없다.
                     */}
-                    <span className="mt-0.5 flex items-baseline gap-1.5">
+                    <span className="mt-0.5 flex items-center gap-1.5">
+                      <CompanyIndustryIcon industry={item.industry} className="h-3 w-3" />
                       <span className="num-mono shrink-0 text-[11px] text-muted-foreground">
                         {item.ticker}
                       </span>

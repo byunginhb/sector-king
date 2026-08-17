@@ -291,6 +291,8 @@ export interface CompanyDetailResponse {
   } | null
   /** 사람이 쓴 한 줄 설명. 없으면 null(화면은 섹터명으로 폴백). */
   summaryKo?: string | null
+  /** 업종 원문(영문). 업종 아이콘을 고르는 데만 쓴다 — 문자열은 표시하지 않는다. */
+  industry?: string | null
   snapshot: {
     /** 데이터 기준일 `YYYY-MM-DD` — 화면의 `<DataAsOf>` 가 표기한다. */
     date: string
@@ -679,6 +681,10 @@ export interface SearchResultItem {
   price: number | null
   priceChange: number | null
   marketCap: number | null
+  /** 사람이 쓴 한 줄 설명. 없으면 null(그 줄을 렌더하지 않는다). */
+  summaryKo: string | null
+  /** 업종 원문(영문). 업종 아이콘을 고르는 데만 쓴다 — 문자열은 표시하지 않는다. */
+  industry: string | null
 }
 
 export interface SearchResponse {

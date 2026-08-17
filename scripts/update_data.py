@@ -94,6 +94,17 @@ def fetch_stock_data(ticker: str, target_date: str) -> dict | None:
             "recommendation_trend": fetch_recommendation_trend(stock, ticker),
             # 실적발표 일정. 같은 .info dict 안에 있어 추가 호출 0.
             "earnings_dates": parse_earnings_dates(info),
+            # 회사 프로필(issue#49). 전부 같은 .info dict 이라 추가 호출 0.
+            "profile": {
+                "sector": info.get("sector"),
+                "industry": info.get("industry"),
+                "country": info.get("country"),
+                "employees": info.get("fullTimeEmployees"),
+                "revenue": info.get("totalRevenue"),
+                "net_income": info.get("netIncomeToCommon"),
+                "description": info.get("longBusinessSummary"),
+                "website": info.get("website"),
+            },
         }
     except Exception as e:
         print(f"  Error fetching {ticker}: {e}")
@@ -186,6 +197,53 @@ def upsert_earnings_calendar(conn: sqlite3.Connection, data: dict):
         """,
             (data["ticker"], row["date"], row["time"], row["is_estimate"]),
         )
+
+
+def upsert_company_profile(conn: sqlite3.Connection, data: dict):
+    """UPSERT the company profile for one ticker (issue#49).
+
+    Until now `company_profiles` was only written by add_ticker.py, so it held
+    197/602 rows — the two thirds added before that script existed had no
+    sector/industry/description at all. Every field here comes from the `.info`
+    dict fetch_stock_data already pulled, so this costs zero extra API calls.
+
+    COALESCE on update: Yahoo intermittently omits fields (notably
+    longBusinessSummary for KR tickers). Without it a single thin response
+    would wipe a good description and the next run would have nothing to
+    restore it from.
+    """
+    profile = data.get("profile")
+    if not profile:
+        return
+    conn.execute(
+        """
+        INSERT INTO company_profiles
+        (ticker, sector, industry, country, employees, revenue, net_income,
+         description, website, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        ON CONFLICT(ticker) DO UPDATE SET
+            sector = COALESCE(excluded.sector, company_profiles.sector),
+            industry = COALESCE(excluded.industry, company_profiles.industry),
+            country = COALESCE(excluded.country, company_profiles.country),
+            employees = COALESCE(excluded.employees, company_profiles.employees),
+            revenue = COALESCE(excluded.revenue, company_profiles.revenue),
+            net_income = COALESCE(excluded.net_income, company_profiles.net_income),
+            description = COALESCE(excluded.description, company_profiles.description),
+            website = COALESCE(excluded.website, company_profiles.website),
+            updated_at = datetime('now')
+    """,
+        (
+            data["ticker"],
+            profile.get("sector"),
+            profile.get("industry"),
+            profile.get("country"),
+            profile.get("employees"),
+            profile.get("revenue"),
+            profile.get("net_income"),
+            profile.get("description"),
+            profile.get("website"),
+        ),
+    )
 
 
 def upsert_snapshot(conn: sqlite3.Connection, data: dict):
@@ -470,6 +528,7 @@ def main():
             upsert_company_scores(conn, data)
             upsert_recommendation_trend(conn, data)
             upsert_earnings_calendar(conn, data)
+            upsert_company_profile(conn, data)
             results.append(ticker)
             print("OK")
         else:

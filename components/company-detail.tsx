@@ -10,6 +10,7 @@ import {
   StockDetailError,
 } from '@/components/stock/stock-detail-sections'
 import { RegionBadge } from '@/components/stock/stock-price-banner'
+import { CompanyIndustryIcon } from '@/components/company-industry-icon'
 
 interface CompanyDetailProps {
   ticker: string
@@ -37,6 +38,7 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
       <DialogHeader>
         <DialogTitle className="text-xl font-bold text-foreground">
           <span className="inline-flex flex-wrap items-center gap-2">
+            <CompanyIndustryIcon industry={data.industry} className="h-4 w-4" />
             {company.nameKo || company.name}
             <span className="text-muted-foreground text-base font-normal">
               ({company.ticker})
