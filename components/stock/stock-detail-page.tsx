@@ -87,6 +87,13 @@ export function StockDetailPage({
               <span className="text-muted-foreground text-lg font-normal">({ticker})</span>
               <RegionBadge ticker={ticker} />
             </div>
+            {/* 한 줄 설명 — 이름 바로 아래. 없으면 렌더하지 않는다(상세는
+                아래에 섹터 칩이 따로 있어 폴백이 필요 없다). */}
+            {data?.summaryKo && (
+              <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">
+                {data.summaryKo}
+              </p>
+            )}
             <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
               {subName && subName !== displayName && (
                 <span className="text-sm text-muted-foreground">{subName}</span>

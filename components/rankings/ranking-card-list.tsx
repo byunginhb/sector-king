@@ -78,6 +78,12 @@ export function RankingCardList({ items, horizon, onCardClick }: RankingCardList
                     <span className="num-mono mt-0.5 block text-[11px] text-muted-foreground">
                       {item.ticker}
                     </span>
+                    {/* 한 줄 설명 — 없으면 섹터명으로 폴백. */}
+                    {(item.summaryKo || item.sector) && (
+                      <span className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-muted-foreground/80">
+                        {item.summaryKo ?? item.sector?.sectorName}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <RecommendationBadge

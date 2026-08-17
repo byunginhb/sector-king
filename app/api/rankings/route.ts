@@ -21,6 +21,7 @@ import { resolveIndustryFilter } from '@/lib/api-helpers'
 import { computeRankingScores, computeMomentumDelta } from '@/lib/ranking-score'
 import { computeDcf } from '@/lib/dcf'
 import { getPrimarySectors } from '@/lib/sector-server'
+import { getCompanySummaries } from '@/lib/company-summaries'
 import {
   PICK_PROFILES,
   weightedPickScore,
@@ -83,6 +84,11 @@ export interface RankingItem {
    * 쓰는 것과 같은 분류라 화면 사이에서 같은 이름이 같은 묶음을 뜻한다.
    */
   sector: { sectorId: string; sectorName: string } | null
+  /**
+   * 한 줄 설명 — "이 회사가 뭐 하는 곳인지". 없으면 null 이고 화면은 섹터명으로
+   * 폴백한다(빈칸이 생기지 않는다).
+   */
+  summaryKo: string | null
 }
 
 export interface RankingsResponse {
@@ -372,6 +378,7 @@ export async function getRankings({
 
     // 대표 섹터 — 필터 축. 정렬 뒤 한 번에 조회한다(티커 목록이 확정된 시점).
     const primarySectors = getPrimarySectors(sorted.map((i) => i.ticker))
+    const summaries = getCompanySummaries(sorted.map((i) => i.ticker))
 
     // 정렬 보조 필드 제거
     const cleaned: RankingItem[] = sorted.map((item) => {
@@ -383,6 +390,7 @@ export async function getRankings({
       return {
         ...rest,
         sector: s ? { sectorId: s.sectorId, sectorName: s.sectorName } : null,
+        summaryKo: summaries.get(item.ticker) ?? null,
       }
     })
 

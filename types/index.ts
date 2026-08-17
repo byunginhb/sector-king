@@ -289,6 +289,8 @@ export interface CompanyDetailResponse {
     description: string | null
     website: string | null
   } | null
+  /** 사람이 쓴 한 줄 설명. 없으면 null(화면은 섹터명으로 폴백). */
+  summaryKo?: string | null
   snapshot: {
     /** 데이터 기준일 `YYYY-MM-DD` — 화면의 `<DataAsOf>` 가 표기한다. */
     date: string

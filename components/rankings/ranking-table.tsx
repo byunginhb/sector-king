@@ -348,8 +348,20 @@ export function RankingTable({
                     <span className="block font-semibold leading-tight text-foreground line-clamp-1">
                       {displayName}
                     </span>
-                    <span className="num-mono mt-0.5 block text-[11px] text-muted-foreground">
-                      {item.ticker}
+                    {/*
+                      티커 옆에 "무슨 회사인지"를 붙인다 — 추천 종목을 보여주면서
+                      그 회사가 뭘 하는지 알려주지 않으면 판단할 수가 없다.
+                      한 줄 설명이 없으면 섹터명으로 폴백하므로 빈칸이 없다.
+                    */}
+                    <span className="mt-0.5 flex items-baseline gap-1.5">
+                      <span className="num-mono shrink-0 text-[11px] text-muted-foreground">
+                        {item.ticker}
+                      </span>
+                      {(item.summaryKo || item.sector) && (
+                        <span className="line-clamp-1 text-[11px] text-muted-foreground/80">
+                          {item.summaryKo ?? item.sector?.sectorName}
+                        </span>
+                      )}
                     </span>
                   </button>
                 </td>
