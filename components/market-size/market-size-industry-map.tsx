@@ -42,6 +42,38 @@ interface Props {
   colorLabel: string
 }
 
+/**
+ * 진입 시 잠깐 강조할 타일 — **가장 크게 오른 곳과 내린 곳**.
+ *
+ * 등락률이 있는 뷰(`change`)에서만 의미가 있다. 성장률(`growth`)은 부호가
+ * "오늘 무슨 일이 있었나"를 뜻하지 않으므로 강조하지 않는다.
+ *
+ * 최대 2개만 고른다. 셋 이상 깜빡이면 "무엇을 먼저 볼지"라는 목적 자체가
+ * 사라지고 그냥 시끄러운 화면이 된다.
+ */
+function pickFlagged(
+  groups: MapGroup[],
+  colorScale: ColorScale
+): { ids: Set<string>; topGain: MapTile | null; topLoss: MapTile | null } {
+  const empty = { ids: new Set<string>(), topGain: null, topLoss: null }
+  if (colorScale !== 'change') return empty
+
+  let topGain: MapTile | null = null
+  let topLoss: MapTile | null = null
+  for (const g of groups) {
+    for (const t of g.tiles) {
+      const v = t.colorValue
+      if (v == null || v === 0) continue
+      if (v > 0 && (topGain == null || v > topGain.colorValue!)) topGain = t
+      if (v < 0 && (topLoss == null || v < topLoss.colorValue!)) topLoss = t
+    }
+  }
+  const ids = new Set<string>()
+  if (topGain) ids.add(topGain.id)
+  if (topLoss) ids.add(topLoss.id)
+  return { ids, topGain, topLoss }
+}
+
 // 시퀀셜 팔레트 — 저(청록) → 고(보라). 검정·순빨강 배제.
 const LOW = { r: 0x14, g: 0xb8, b: 0xa6 } // teal-500
 const HIGH = { r: 0x8b, g: 0x5c, b: 0xf6 } // violet-500
@@ -209,6 +241,8 @@ export function MarketSizeIndustryMap({
     })
   }, [groups, size, colorScale])
 
+  const flagged = useMemo(() => pickFlagged(groups, colorScale), [groups, colorScale])
+
   if (groups.length === 0) {
     return (
       <div className="h-[28rem] bg-muted/30 rounded-lg flex items-center justify-center">
@@ -273,10 +307,17 @@ export function MarketSizeIndustryMap({
                 showSub &&
                 t.h > fs + subFs * 2 + 10 &&
                 t.w > 54
+              const flagReason =
+                flagged.topGain?.id === t.id
+                  ? '기간 내 가장 크게 오른 종목'
+                  : flagged.topLoss?.id === t.id
+                    ? '기간 내 가장 크게 내린 종목'
+                    : null
               const title = [
                 `${group.name} · ${t.name}`,
                 `시총 ${fmt.marketCap(t.marketCap)}`,
                 `${colorLabel} ${formatPercent(t.colorValue)}`,
+                flagReason,
                 t.detail,
               ]
                 .filter(Boolean)
@@ -312,8 +353,12 @@ export function MarketSizeIndustryMap({
                   )}
                 </>
               )
-              const className =
-                'absolute overflow-hidden rounded-[2px] px-1 text-left leading-tight transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-foreground'
+              const className = [
+                'absolute overflow-hidden rounded-[2px] px-1 text-left leading-tight transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-foreground',
+                flagged.ids.has(t.id) && 'sk-tile-flag',
+              ]
+                .filter(Boolean)
+                .join(' ')
               const style = {
                 left: t.x,
                 top: t.y,
