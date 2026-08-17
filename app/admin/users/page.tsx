@@ -48,7 +48,7 @@ interface SubRow {
 }
 
 export default async function AdminUsersPage() {
-  await requireAdmin('/admin/users')
+  const me = await requireAdmin('/admin/users')
 
   const admin = createAdminClient()
 
@@ -138,7 +138,7 @@ export default async function AdminUsersPage() {
         </div>
       ) : null}
 
-      <UsersTable users={users} />
+      <UsersTable users={users} currentUserId={me.id} />
     </div>
   )
 }

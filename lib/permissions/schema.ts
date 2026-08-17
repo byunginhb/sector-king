@@ -287,3 +287,24 @@ export const subscriptionGrantSchema = z
   .strict()
 
 export type SubscriptionGrant = z.infer<typeof subscriptionGrantSchema>
+
+/**
+ * `/admin/users` 의 관리자 권한 부여/회수 입력.
+ *
+ * `role` 은 구독과 **다른 축**이다(tier.ts §3) — 만료가 없고, 결제 웹훅이
+ * 건드리지 않으며, RLS 정책 15개 이상이 `is_admin()` 으로 이 값을 본다.
+ * 그래서 등급 부여와 스키마를 합치지 않는다: 한 요청으로 둘 다 바꿀 수 있게
+ * 만들면 "구독을 주려다 관리자를 만드는" 실수가 가능해진다.
+ */
+export const roleChangeSchema = z
+  .object({
+    userId: z.string().uuid(),
+    role: z.enum(['user', 'admin']),
+    note: z.preprocess(
+      (v) => (v === '' ? null : v),
+      z.string().max(500).nullable().optional()
+    ),
+  })
+  .strict()
+
+export type RoleChange = z.infer<typeof roleChangeSchema>

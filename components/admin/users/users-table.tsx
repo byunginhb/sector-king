@@ -84,11 +84,19 @@ function addMonths(months: number): string {
   return toLocalInputValue(d)
 }
 
-export function UsersTable({ users }: { users: AdminUserRow[] }) {
+export function UsersTable({
+  users,
+  currentUserId,
+}: {
+  users: AdminUserRow[]
+  /** 로그인한 관리자 id — 본인 행의 권한 버튼을 숨기는 데 쓴다. */
+  currentUserId: string
+}) {
   const router = useRouter()
   const [query, setQuery] = useState('')
   const [tierFilter, setTierFilter] = useState<Tier | 'all'>('all')
   const [editing, setEditing] = useState<AdminUserRow | null>(null)
+  const [roleTarget, setRoleTarget] = useState<AdminUserRow | null>(null)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -154,6 +162,7 @@ export function UsersTable({ users }: { users: AdminUserRow[] }) {
               <tr className="text-left">
                 <th className="px-4 py-3 font-medium">이메일</th>
                 <th className="px-4 py-3 font-medium">이름</th>
+                <th className="px-4 py-3 font-medium">역할</th>
                 <th className="px-4 py-3 font-medium">등급</th>
                 <th className="px-4 py-3 font-medium">만료</th>
                 <th className="px-4 py-3 text-center font-medium">메일</th>
@@ -164,19 +173,36 @@ export function UsersTable({ users }: { users: AdminUserRow[] }) {
             <tbody className="divide-y divide-border-subtle">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">
                     조건에 맞는 사용자가 없습니다.
                   </td>
                 </tr>
               ) : (
                 filtered.map((u) => (
-                  <UserRow key={u.id} user={u} onEdit={() => setEditing(u)} />
+                  <UserRow
+                    key={u.id}
+                    user={u}
+                    isSelf={u.id === currentUserId}
+                    onEdit={() => setEditing(u)}
+                    onEditRole={() => setRoleTarget(u)}
+                  />
                 ))
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {roleTarget && (
+        <RoleDialog
+          user={roleTarget}
+          onClose={() => setRoleTarget(null)}
+          onSaved={() => {
+            setRoleTarget(null)
+            router.refresh()
+          }}
+        />
+      )}
 
       {editing && (
         <GrantDialog
@@ -194,7 +220,18 @@ export function UsersTable({ users }: { users: AdminUserRow[] }) {
   )
 }
 
-function UserRow({ user, onEdit }: { user: AdminUserRow; onEdit: () => void }) {
+function UserRow({
+  user,
+  onEdit,
+  onEditRole,
+  isSelf,
+}: {
+  user: AdminUserRow
+  onEdit: () => void
+  onEditRole: () => void
+  /** 로그인한 관리자 본인인가 — 본인 권한은 바꿀 수 없다. */
+  isSelf: boolean
+}) {
   // 저장된 등급은 유료인데 실효는 free = 만료됨. 둘을 함께 보여줘야
   // "Pro 라고 적혀 있는데 왜 안 열리죠" 문의가 생기지 않는다.
   const expired =
@@ -204,6 +241,16 @@ function UserRow({ user, onEdit }: { user: AdminUserRow; onEdit: () => void }) {
     <tr className="hover:bg-surface-2">
       <td className="px-4 py-3 font-medium text-foreground">{user.email}</td>
       <td className="px-4 py-3 text-foreground">{user.name ?? '-'}</td>
+      <td className="px-4 py-3">
+        {user.role === 'admin' ? (
+          <span className="inline-flex items-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+            <Shield className="h-3 w-3" aria-hidden />
+            관리자
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">일반</span>
+        )}
+      </td>
       <td className="px-4 py-3">
         <span className="flex flex-wrap items-center gap-1.5">
           <span
@@ -254,13 +301,26 @@ function UserRow({ user, onEdit }: { user: AdminUserRow; onEdit: () => void }) {
         {format(new Date(user.createdAt), 'yyyy-MM-dd')}
       </td>
       <td className="px-4 py-3 text-right">
-        <button
-          type="button"
-          onClick={onEdit}
-          className="rounded-md border border-border-subtle bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-surface-3"
-        >
-          등급 변경
-        </button>
+        <span className="inline-flex flex-wrap justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="rounded-md border border-border-subtle bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-surface-3"
+          >
+            등급 변경
+          </button>
+          {/* 본인 행에는 버튼을 두지 않는다 — 서버도 막지만, 누를 수 있게 두면
+              "왜 안 되지"를 눌러본 뒤에야 알게 된다. */}
+          {!isSelf && (
+            <button
+              type="button"
+              onClick={onEditRole}
+              className="rounded-md border border-border-subtle bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-surface-3"
+            >
+              {user.role === 'admin' ? '관리자 해제' : '관리자 지정'}
+            </button>
+          )}
+        </span>
       </td>
     </tr>
   )
@@ -436,6 +496,141 @@ function GrantDialog({
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
             저장
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+/**
+ * 관리자 권한 변경 확인 — **되돌리기 어려운 동작이라 결과를 먼저 말한다.**
+ *
+ * 등급 변경 모달과 달리 여기엔 고를 값이 없다(user ↔ admin 뿐). 그래서 폼이
+ * 아니라 확인 절차이고, 화면의 대부분은 "이 사람이 무엇을 할 수 있게 되는가"다.
+ */
+function RoleDialog({
+  user,
+  onClose,
+  onSaved,
+}: {
+  user: AdminUserRow
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const promote = user.role !== 'admin'
+  const [note, setNote] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const submit = async () => {
+    setSaving(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/admin/users/role', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          role: promote ? 'admin' : 'user',
+          note: note.trim() || null,
+        }),
+      })
+      const body = await res.json()
+      if (!res.ok || !body.success) throw new Error(body.error ?? '변경에 실패했습니다')
+      onSaved()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '변경에 실패했습니다')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{promote ? '관리자로 지정' : '관리자 권한 해제'}</DialogTitle>
+          <DialogDescription>{user.email}</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          <div
+            className={cn(
+              'rounded-md border p-3 text-sm',
+              promote
+                ? 'border-warning/40 bg-warning/10 text-warning'
+                : 'border-border-subtle bg-surface-2 text-muted-foreground'
+            )}
+          >
+            {promote ? (
+              <>
+                <p className="font-semibold text-foreground">
+                  이 사용자는 관리자 권한을 갖게 됩니다.
+                </p>
+                <ul className="mt-1.5 list-inside list-disc space-y-0.5 text-[13px]">
+                  <li>전체 가입자 정보 열람 및 구독 등급 변경</li>
+                  <li>다른 사용자에게 관리자 권한 부여·해제</li>
+                  <li>뉴스·경제 캘린더 발행, 기능 권한 정책 변경</li>
+                </ul>
+                <p className="mt-1.5 text-[13px]">
+                  구독 등급과 무관하게 모든 기능에 접근합니다.
+                </p>
+              </>
+            ) : (
+              <p>
+                관리자 화면에 더 이상 접근할 수 없게 됩니다. 구독 등급은 그대로
+                유지됩니다.
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              사유 (선택)
+            </label>
+            <input
+              type="text"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={500}
+              placeholder="운영 담당자 추가 · 퇴사 등"
+              className="w-full rounded-md border border-border-subtle bg-background px-2 py-1.5 text-sm text-foreground"
+            />
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              변경 이력에 함께 기록됩니다.
+            </p>
+          </div>
+
+          {error && (
+            <p role="alert" className="text-sm text-danger">
+              {error}
+            </p>
+          )}
+        </div>
+
+        <DialogFooter>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="rounded-md border border-border-subtle bg-background px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-surface-2 disabled:opacity-40"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={submit}
+            disabled={saving}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold disabled:opacity-60',
+              promote
+                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                : 'bg-danger text-white hover:bg-danger/90'
+            )}
+          >
+            {saving && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+            {promote ? '관리자로 지정' : '권한 해제'}
           </button>
         </DialogFooter>
       </DialogContent>
