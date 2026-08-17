@@ -17,6 +17,7 @@ import { CalendarFilters } from '@/components/calendar/calendar-filters'
 import { CalendarMonthGrid } from '@/components/calendar/calendar-month-grid'
 import { CalendarWeekList } from '@/components/calendar/calendar-week-list'
 import { CalendarDayView } from '@/components/calendar/calendar-day-view'
+import { CalendarDayDialog } from '@/components/calendar/calendar-day-dialog'
 import { CalendarSkeleton } from '@/components/calendar/calendar-skeleton'
 import { CalendarEmpty } from '@/components/calendar/calendar-empty'
 import type { CalendarCountry, CalendarCategory } from '@/types'
@@ -26,7 +27,8 @@ import type { CalendarCountry, CalendarCategory } from '@/types'
  * 필터 상태는 전역 useRegion 과 분리된 캘린더 로컬 상태(국가 축이 다름).
  * 데스크탑(lg+)=월 그리드/주별 리스트, 모바일=하루 보기(스와이프·날짜 선택).
  * 값은 문자열 원문 표시(toUsd 무관).
- * 이벤트 항목 클릭 시 출처(sourceUrl)로 이동 — 날짜 상세 팝업은 없다.
+ * 이벤트 항목 클릭 시 출처(sourceUrl)로 이동하고, 월 그리드 칸의 "+N개 더" 는
+ * 그 하루 전량을 담은 상세 창을 연다(칸은 2건까지만 그린다).
  */
 export function EconomicCalendarSection() {
   const [view, setView] = useState<'week' | 'month'>('month')
@@ -35,6 +37,8 @@ export function EconomicCalendarSection() {
   const [anchor, setAnchor] = useState<string>(() => kstToday())
   /** 모바일 하루 보기에서 보고 있는 날짜 */
   const [selected, setSelected] = useState<string>(() => kstToday())
+  /** 월 그리드에서 "+N개 더" 로 연 날짜(null=닫힘) */
+  const [openDay, setOpenDay] = useState<string | null>(null)
 
   const todayKey = kstToday()
   const range = useMemo(() => getCalendarRange(view, anchor), [view, anchor])
@@ -133,6 +137,7 @@ export function EconomicCalendarSection() {
                   todayKey={todayKey}
                   events={events}
                   onShiftMonth={handleShift}
+                  onOpenDay={setOpenDay}
                 />
               ) : (
                 <CalendarWeekList groups={groups} />
@@ -148,6 +153,13 @@ export function EconomicCalendarSection() {
                 filtered={filtered}
               />
             </div>
+
+            <CalendarDayDialog
+              dateKey={openDay}
+              todayKey={todayKey}
+              events={openDay ? (eventsByDate[openDay] ?? []) : []}
+              onClose={() => setOpenDay(null)}
+            />
           </>
         )}
       </div>

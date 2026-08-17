@@ -17,6 +17,8 @@ interface CalendarMonthGridProps {
   events: EconomicEvent[]
   /** PageUp/PageDown 로 이전/다음 달 이동 */
   onShiftMonth: (dir: -1 | 1) => void
+  /** 하루 상세 창 열기("+N개 더" 클릭 · 셀에서 Enter/Space) */
+  onOpenDay: (dateKey: string) => void
 }
 
 /** anchor 를 42셀 배열에서 항상 유효한 첫 초점 셀로 매핑. */
@@ -36,6 +38,7 @@ export function CalendarMonthGrid({
   todayKey,
   events,
   onShiftMonth,
+  onOpenDay,
 }: CalendarMonthGridProps) {
   const cells = useMemo(() => buildMonthCells(anchor, todayKey), [anchor, todayKey])
   const eventsByDate = useMemo(() => groupEventsByDate(events), [events])
@@ -113,11 +116,17 @@ export function CalendarMonthGrid({
           e.preventDefault()
           onShiftMonth(1)
           break
+        // "+N개 더" 버튼은 Tab 순서 밖(로빙 tabindex)이라 키보드 진입로가 여기다.
+        case 'Enter':
+        case ' ':
+          e.preventDefault()
+          onOpenDay(dateKey)
+          break
         default:
           break
       }
     },
-    [dateKeys, moveFocus, onShiftMonth]
+    [dateKeys, moveFocus, onShiftMonth, onOpenDay]
   )
 
   return (
@@ -150,6 +159,7 @@ export function CalendarMonthGrid({
                 events={eventsByDate[cell.dateKey] ?? []}
                 isFocusable={cell.dateKey === focusKey}
                 onKeyDown={handleKeyDown}
+                onOpenDay={onOpenDay}
               />
             ))}
           </div>
