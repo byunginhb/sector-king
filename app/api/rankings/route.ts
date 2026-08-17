@@ -20,6 +20,7 @@ import {
 import { resolveIndustryFilter } from '@/lib/api-helpers'
 import { computeRankingScores, computeMomentumDelta } from '@/lib/ranking-score'
 import { computeDcf } from '@/lib/dcf'
+import { getPrimarySectors } from '@/lib/sector-server'
 import {
   PICK_PROFILES,
   weightedPickScore,
@@ -74,6 +75,14 @@ export interface RankingItem {
   debtToEquity: number | null
   /** 0~1 데이터 커버리지. */
   dataQuality: number
+  /**
+   * 대표 섹터 — 화면의 섹터 필터 축.
+   *
+   * `company_profiles.sector`(Yahoo 원문, 197/602 커버)가 아니라
+   * `sector_companies` 기준이다. 커버리지가 훨씬 넓고, 시총 지도·성적표가
+   * 쓰는 것과 같은 분류라 화면 사이에서 같은 이름이 같은 묶음을 뜻한다.
+   */
+  sector: { sectorId: string; sectorName: string } | null
 }
 
 export interface RankingsResponse {
@@ -361,13 +370,20 @@ export async function getRankings({
     // 메모리 정렬 — 1차 sortKey, 타이브레이커: smoothedScore desc → marketCap(USD) desc → ticker asc
     const sorted = sortItems(items, sortKey, sortDir)
 
+    // 대표 섹터 — 필터 축. 정렬 뒤 한 번에 조회한다(티커 목록이 확정된 시점).
+    const primarySectors = getPrimarySectors(sorted.map((i) => i.ticker))
+
     // 정렬 보조 필드 제거
     const cleaned: RankingItem[] = sorted.map((item) => {
       const { _smoothedScore, ...rest } = item as RankingItem & {
         _smoothedScore: number | null
       }
       void _smoothedScore
-      return rest
+      const s = primarySectors.get(item.ticker)
+      return {
+        ...rest,
+        sector: s ? { sectorId: s.sectorId, sectorName: s.sectorName } : null,
+      }
     })
 
     // 종합(단기·장기 평균) 상위 5 — 현재 정렬·limit 과 무관, 필터 적용 후 전체에서 선정

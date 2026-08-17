@@ -296,3 +296,55 @@ export const getSectorDetail = cache(
     }
   }
 )
+
+/**
+ * 종목 → **대표 섹터** 1개. 성적표 그룹 축과 랭킹 섹터 필터가 함께 쓴다.
+ *
+ * 한 종목이 여러 섹터에 속할 수 있는데(구글은 10개), 그룹핑은 배타적 귀속을
+ * 요구한다. 기준은 `sector_companies.rank` — 그 섹터 안에서 이 종목이 몇 번째
+ * 대표 종목인지다. rank 가 가장 앞선 섹터를 고르면 "그 섹터를 대표하는 곳"에
+ * 묶인다. 동률이면 섹터 id 로 안정 정렬해 렌더마다 그룹이 바뀌지 않게 한다.
+ *
+ * `companyCount` 를 함께 싣는 이유: 상세 페이지가 없는 섹터
+ * (`MIN_COMPANIES_FOR_PAGE` 미만)를 링크하면 404 다. 판단은 서버가 한다.
+ */
+export interface StockSectorRef {
+  sectorId: string
+  sectorName: string
+  companyCount: number
+}
+
+export function getPrimarySectors(tickers: string[]): Map<string, StockSectorRef> {
+  const map = new Map<string, StockSectorRef>()
+  if (tickers.length === 0) return map
+  const inList = sql.join(tickers.map((x) => sql`${x}`), sql`, `)
+  const rows = getDb().all<{
+    ticker: string
+    sector_id: string
+    sector_name: string
+    company_count: number
+  }>(sql`
+    select sc.ticker      as ticker,
+           s.id           as sector_id,
+           s.name         as sector_name,
+           cnt.n          as company_count
+    from sector_companies sc
+    join sectors s on s.id = sc.sector_id
+    join (
+      select sector_id, count(distinct ticker) as n
+      from sector_companies group by sector_id
+    ) cnt on cnt.sector_id = sc.sector_id
+    where sc.ticker in (${inList})
+    order by sc.ticker, sc.rank asc, s.id asc
+  `)
+  // 정렬이 (ticker, rank, id) 이므로 각 티커의 첫 행이 대표 섹터다.
+  for (const r of rows) {
+    if (map.has(r.ticker)) continue
+    map.set(r.ticker, {
+      sectorId: r.sector_id,
+      sectorName: r.sector_name,
+      companyCount: r.company_count,
+    })
+  }
+  return map
+}

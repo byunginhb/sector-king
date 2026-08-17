@@ -22,6 +22,14 @@ import { TopPicks } from './top-picks'
 import { RankingTable } from './ranking-table'
 import { RankingCardList } from './ranking-card-list'
 import { InfoTip } from './info-tip'
+import { RankingScreener } from './ranking-screener'
+import {
+  applyFilter,
+  EMPTY_FILTER,
+  hasAnyCondition,
+  type RankingFilterState,
+} from '@/lib/ranking-filter'
+import { formatRecommendation } from '@/lib/format'
 import { DataAsOf } from '@/components/ui/data-as-of'
 
 interface RankingsPageProps {
@@ -95,7 +103,40 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
     []
   )
 
-  const items = useMemo(() => data?.items ?? [], [data])
+  const allItems = useMemo(() => data?.items ?? [], [data])
+
+  /**
+   * 조건 스크리너 — 정렬은 순서만 바꾸고 개수를 줄이지 못한다. 조건을 겹쳐
+   * 좁히는 것이 실제로 종목을 추리는 방식이다(#40).
+   *
+   * URL 에 싣지 않는다: 조건이 여덟 필드 × 최소/최대라 쿼리스트링이 금세
+   * 읽을 수 없게 길어지고, 이 화면은 이미 `sort`·`region` 을 URL 로 쓰고 있어
+   * 섞이면 어느 것이 무엇인지 구분이 안 된다. 공유가 필요해지면 조건 묶음에
+   * 짧은 키를 붙이는 별도 작업으로 다룬다.
+   */
+  const [filter, setFilter] = useState<RankingFilterState>(EMPTY_FILTER)
+
+  const items = useMemo(() => applyFilter(allItems, filter), [allItems, filter])
+
+  /** 필터 선택지는 **필터 이전** 목록에서 뽑는다 — 고르는 순간 사라지지 않게. */
+  const sectorOptions = useMemo(() => {
+    const counts = new Map<string, { id: string; name: string; count: number }>()
+    for (const i of allItems) {
+      if (!i.sector) continue
+      const cur = counts.get(i.sector.sectorId)
+      if (cur) cur.count += 1
+      else counts.set(i.sector.sectorId, { id: i.sector.sectorId, name: i.sector.sectorName, count: 1 })
+    }
+    return [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'ko'))
+  }, [allItems])
+
+  const recommendationOptions = useMemo(() => {
+    const set = new Set<string>()
+    for (const i of allItems) {
+      if (i.recommendationKey && i.recommendationKey !== 'none') set.add(i.recommendationKey)
+    }
+    return [...set].sort()
+  }, [allItems])
 
   const toolbar = (
     <>
@@ -169,13 +210,23 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
           </div>
         </div>
 
-        {/* 섹터킹 픽 — 성향별 가중 종합 점수 상위 5 */}
-        <TopPicks
-          items={data?.topPicksByProfile?.[pickProfile] ?? []}
-          onSelect={setSelectedTicker}
-          profile={pickProfile}
-          onProfileChange={setPickProfile}
-        />
+        {/*
+          섹터킹 픽 — 성향별 가중 종합 점수 상위 5.
+
+          **조건 필터가 걸리면 감춘다.** 픽은 조건과 무관하게 전체에서 뽑히는
+          별도 코너인데, 아래 표만 4종목으로 좁혀진 상태에서 조건에 맞지 않는
+          픽 5개가 그 위에 남아 있으면 "필터가 안 걸렸나" 또는 "이게 조건을
+          통과한 픽인가"로 읽힌다. 픽에 필터를 적용하지 않는 이유는 그러면
+          "섹터킹 픽"이 조건마다 달라지는 다른 지표가 되기 때문이다.
+        */}
+        {!hasAnyCondition(filter) && (
+          <TopPicks
+            items={data?.topPicksByProfile?.[pickProfile] ?? []}
+            onSelect={setSelectedTicker}
+            profile={pickProfile}
+            onProfileChange={setPickProfile}
+          />
+        )}
 
         {/* 점수 산출 방식 안내 — 초보자용, 기본 접힘 */}
         <details className="mb-5 sk-card/50 px-4 py-3 text-sm">
@@ -230,21 +281,57 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
 
         {isLoading && !data && <RankingsSkeleton />}
 
+        {/* 스크리너는 결과가 0건이어도 남는다 — 조건 때문에 비었다면 여기서 푼다. */}
+        {data && (
+          <div className="mb-3">
+            <RankingScreener
+              filter={filter}
+              onChange={setFilter}
+              sectors={sectorOptions}
+              recommendations={recommendationOptions}
+              recommendationLabel={formatRecommendation}
+              matchedCount={items.length}
+              totalCount={allItems.length}
+            />
+          </div>
+        )}
+
         {!isLoading && data && items.length === 0 && (
           <div className="sk-card flex flex-col items-center gap-2 py-12 text-center p-5">
             <SearchX className="h-7 w-7 text-muted-foreground" aria-hidden />
-            <p className="text-sm font-medium text-foreground">아직 점수가 매겨진 종목이 없어요</p>
-            <p className="max-w-xs text-xs text-muted-foreground">
-              지금 고른 산업·지역 조건에 맞는 종목이 없습니다. 조건을 넓혀 보세요.
-            </p>
-            {region !== 'all' && (
-              <button
-                type="button"
-                onClick={() => setRegion('all')}
-                className="mt-1 text-sm font-medium text-primary hover:underline"
-              >
-                전체 지역으로 보기
-              </button>
+            {hasAnyCondition(filter) ? (
+              <>
+                <p className="text-sm font-medium text-foreground">
+                  조건에 맞는 종목이 없어요
+                </p>
+                <p className="max-w-xs text-xs text-muted-foreground">
+                  건 조건을 모두 만족하는 종목이 {allItems.length.toLocaleString()}개 중
+                  0개입니다. 조건 하나를 빼거나 기준을 낮춰 보세요.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setFilter(EMPTY_FILTER)}
+                  className="mt-1 text-sm font-medium text-primary hover:underline"
+                >
+                  조건 전체 초기화
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-foreground">아직 점수가 매겨진 종목이 없어요</p>
+                <p className="max-w-xs text-xs text-muted-foreground">
+                  지금 고른 산업·지역 조건에 맞는 종목이 없습니다. 조건을 넓혀 보세요.
+                </p>
+                {region !== 'all' && (
+                  <button
+                    type="button"
+                    onClick={() => setRegion('all')}
+                    className="mt-1 text-sm font-medium text-primary hover:underline"
+                  >
+                    전체 지역으로 보기
+                  </button>
+                )}
+              </>
             )}
           </div>
         )}
