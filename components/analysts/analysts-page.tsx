@@ -350,25 +350,42 @@ function StockTab() {
   const [sort, setSort] = useState<StockSort>('analysts')
   const query = useQueryState()
   const q = query.get('q')
-  // 기본 켜짐 — 섹터로 묶여 있으면 초기 스크롤 길이가 크게 줄어든다.
-  const grouped = query.get('group', 'sector') !== 'off'
+  /** 빈 문자열 = 전체. 특정 섹터를 고르면 그 섹터 종목만 남는다. */
+  const sectorFilter = query.get('sector')
 
   const stocks = useMemo(() => {
     if (!data) return []
     const needle = norm(q)
-    const arr = needle
-      ? data.stocks.filter(
-          (s) => norm(s.businessName).includes(needle) || norm(s.ticker).includes(needle)
-        )
-      : [...data.stocks]
+    const arr = data.stocks.filter((s) => {
+      if (sectorFilter && s.sector?.sectorId !== sectorFilter) return false
+      if (!needle) return true
+      return norm(s.businessName).includes(needle) || norm(s.ticker).includes(needle)
+    })
     if (sort === 'name') arr.sort((a, b) => a.businessName.localeCompare(b.businessName, 'ko'))
     else if (sort === 'upside') arr.sort((a, b) => (upsideOf(b) ?? -Infinity) - (upsideOf(a) ?? -Infinity))
     else if (sort === 'reports') arr.sort((a, b) => b.reportCount - a.reportCount || b.analystCount - a.analystCount)
     return arr // 'analysts' = API 기본 정렬 유지
-  }, [data, sort, q])
+  }, [data, sort, q, sectorFilter])
 
   /**
-   * 그룹 모드에서는 **같은 섹터가 인접하도록 재배열**한다.
+   * 셀렉트 선택지 — **필터 이전 전체**에서 뽑는다.
+   *
+   * 현재 결과에서 뽑으면 섹터를 하나 고르는 순간 나머지 선택지가 목록에서
+   * 사라져 다른 섹터로 갈아탈 수 없다(전체로 되돌린 뒤 다시 골라야 한다).
+   */
+  const sectorOptions = useMemo(() => {
+    const counts = new Map<string, { id: string; name: string; n: number }>()
+    for (const s of data?.stocks ?? []) {
+      if (!s.sector) continue
+      const cur = counts.get(s.sector.sectorId)
+      if (cur) cur.n += 1
+      else counts.set(s.sector.sectorId, { id: s.sector.sectorId, name: s.sector.sectorName, n: 1 })
+    }
+    return [...counts.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'ko'))
+  }, [data])
+
+  /**
+   * **같은 섹터가 인접하도록 재배열**한다.
    *
    * 정렬만 적용하면 섹터가 흩어져 "종목 1개짜리 그룹"이 줄줄이 생기고, 그러면
    * 헤더만 늘어나 오히려 목록이 길어진다(그룹핑을 넣은 이유와 정반대).
@@ -378,7 +395,6 @@ function StockTab() {
    * 그룹 축에서도 보존된다.
    */
   const ordered = useMemo(() => {
-    if (!grouped) return stocks
     const buckets = new Map<string, AnalystStockListItem[]>()
     for (const s of stocks) {
       const key = s.sector?.sectorId ?? '__none__'
@@ -388,12 +404,12 @@ function StockTab() {
     }
     // Map 은 삽입 순서를 보존하므로, 최상위 종목이 먼저 나온 섹터가 앞선다.
     return [...buckets.values()].flat()
-  }, [stocks, grouped])
+  }, [stocks])
 
   const view = useListView({
     items: ordered,
     pageSize: 20,
-    resetKey: `${sort}|${q}|${grouped ? 'g' : 'f'}`,
+    resetKey: `${sort}|${q}|${sectorFilter}`,
     page: Math.max(1, Number(query.get('page', '1')) || 1),
     onPageChange: (p) => query.set({ page: p === 1 ? null : String(p) }),
   })
@@ -455,24 +471,35 @@ function StockTab() {
           </button>
         ))}
       </div>
-      <div className="mb-2 flex items-center gap-1.5 text-xs">
-        <span className="text-muted-foreground">보기</span>
-        {/*
-          그룹핑은 정렬과 독립이다 — 그룹 안에서 선택한 정렬이 그대로 적용된다.
-          끄면 순수 목록이 되므로 "상승여력 상위 20"처럼 섹터를 가로지르는
-          탐색이 가능하다.
-        */}
-        <button
-          type="button"
-          aria-pressed={grouped}
-          onClick={() => query.set({ group: grouped ? 'off' : null, page: null })}
-          className={cn(
-            'rounded-full px-2.5 py-1 transition-colors',
-            grouped ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
-          )}
+      {/*
+        섹터 선택 — on/off 토글이 아니라 목록이다. 토글은 "묶기/풀기" 두 상태뿐이라
+        "방산만 보고 싶다"에 답하지 못했다. 전체를 고르면 섹터별로 묶여 나오고,
+        하나를 고르면 그 섹터만 남는다.
+      */}
+      <div className="mb-2 flex flex-wrap items-center gap-1.5 text-xs">
+        <span className="text-muted-foreground">섹터</span>
+        <select
+          value={sectorFilter}
+          onChange={(e) => query.set({ sector: e.target.value, page: null })}
+          aria-label="섹터 선택"
+          className="rounded-md border border-border-subtle bg-background px-2 py-1 text-xs text-foreground"
         >
-          섹터로 묶기
-        </button>
+          <option value="">전체 ({data?.stocks.length ?? 0}종목)</option>
+          {sectorOptions.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name} ({s.n})
+            </option>
+          ))}
+        </select>
+        {sectorFilter && (
+          <button
+            type="button"
+            onClick={() => query.set({ sector: null, page: null })}
+            className="rounded-full px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+          >
+            전체 보기
+          </button>
+        )}
       </div>
 
       <ListFilterBar
@@ -501,24 +528,20 @@ function StockTab() {
         </p>
       ) : (
         <div>
-          {grouped
-            ? groups.map((g) => (
-                <section key={g.key}>
-                  <SectorGroupHeader group={g} />
-                  {g.items.map((s, i) => (
-                    <StockRow
-                      key={s.ticker}
-                      stock={s}
-                      index={i}
-                      open={openSet.has(s.ticker)}
-                      onToggle={() => toggle(s.ticker)}
-                    />
-                  ))}
-                </section>
-              ))
-            : view.visible.map((s, i) => (
-                <StockRow key={s.ticker} stock={s} index={i} open={openSet.has(s.ticker)} onToggle={() => toggle(s.ticker)} />
+          {groups.map((g) => (
+            <section key={g.key}>
+              <SectorGroupHeader group={g} />
+              {g.items.map((s, i) => (
+                <StockRow
+                  key={s.ticker}
+                  stock={s}
+                  index={i}
+                  open={openSet.has(s.ticker)}
+                  onToggle={() => toggle(s.ticker)}
+                />
               ))}
+            </section>
+          ))}
           <ListViewFooter view={view} unit="종목" />
         </div>
       )}
@@ -690,9 +713,21 @@ function FirmTab() {
 }
 
 function FirmRow({ row, rank, index }: { row: FirmLeaderboardRow; rank: number; index: number }) {
+  /**
+   * 증권사 행 → 그 증권사 소속 애널리스트 목록.
+   *
+   * 기관 점수를 본 다음 궁금한 것은 언제나 "그래서 누구 때문인가"다. 별도
+   * 상세 페이지를 만들지 않고 **애널리스트 탭의 기존 증권사 필터**(#43)로
+   * 보낸다 — 같은 목록·같은 정렬·같은 필터 UI 를 쓰므로 화면이 하나 늘지 않고,
+   * 도착한 뒤 필터를 풀거나 다른 증권사를 더하는 조작도 그대로 이어진다.
+   *
+   * `<Link>` 라서 새 탭·주소 복사가 기본 동작 그대로 살아 있다.
+   */
   return (
-    <div
-      className="sk-rise grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg px-3 py-3 sm:grid-cols-[2.5rem_1fr_9rem_6rem_4rem_4rem] sm:gap-3 sm:px-4"
+    <Link
+      href={`/analysts?tab=analysts&firm=${encodeURIComponent(row.firm)}`}
+      aria-label={`${row.firm} 소속 애널리스트 보기`}
+      className="sk-rise grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg px-3 py-3 transition-colors hover:bg-muted/50 sm:grid-cols-[2.5rem_1fr_9rem_6rem_4rem_4rem] sm:gap-3 sm:px-4"
       style={riseStyle(index)}
     >
       <span className={cn('hidden text-center text-sm font-semibold tabular-nums sm:block', rankTone(rank))}>
@@ -721,7 +756,7 @@ function FirmRow({ row, rank, index }: { row: FirmLeaderboardRow; rank: number; 
       </span>
       <span className="hidden text-center text-sm tabular-nums sm:block">{row.analystCount}</span>
       <span className="hidden text-center text-sm tabular-nums sm:block">{row.reportCount}</span>
-    </div>
+    </Link>
   )
 }
 
