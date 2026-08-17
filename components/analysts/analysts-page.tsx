@@ -751,7 +751,9 @@ function FirmRow({ row, rank, index }: { row: FirmLeaderboardRow; rank: number; 
         </span>
       </span>
       <span className="text-right text-sm tabular-nums text-muted-foreground sm:text-center">
-        <span className={cn('font-semibold sm:hidden', scoreTone(row.score))}>{fmtScore(row.score)}점 </span>
+        <span className={cn('font-semibold sm:hidden', scoreTone(row.score))}>
+          {fmtScore(row.score)}{' '}
+        </span>
         {pct(row.hitRate)} · {row.scored}건
       </span>
       <span className="hidden text-center text-sm tabular-nums sm:block">{row.analystCount}</span>
