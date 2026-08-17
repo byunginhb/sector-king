@@ -44,6 +44,13 @@ export function CompanyDetail({ ticker }: CompanyDetailProps) {
             <RegionBadge ticker={company.ticker} />
           </span>
         </DialogTitle>
+        {/*
+          한 줄 설명 — 이름 바로 아래, 종목 상세 페이지와 같은 자리·같은 순서
+          (이름 → 한 줄 설명 → 영문명). 없으면 렌더하지 않는다.
+        */}
+        {data.summaryKo && (
+          <p className="text-sm leading-relaxed text-foreground/85">{data.summaryKo}</p>
+        )}
         <DialogDescription className="text-muted-foreground">{company.name}</DialogDescription>
       </DialogHeader>
 
