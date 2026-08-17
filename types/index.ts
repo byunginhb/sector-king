@@ -55,9 +55,27 @@ export interface AnalystLeaderboardRow {
   reportCount: number
 }
 
+/**
+ * 증권사(기관) 단위 롤업 행. 소속 애널리스트의 예측을 합산한 결과이며
+ * 점수 산식은 개인과 동일(Wilson 하한).
+ */
+export interface FirmLeaderboardRow {
+  firm: string
+  analystCount: number
+  reportCount: number
+  scored: number
+  hits: number
+  hitRate: number | null
+  score: number
+  /** 소속 애널들의 커버 종목 수 합(중복 포함) — 커버 활동량 지표. */
+  tickersCovered: number
+}
+
 export interface AnalystLeaderboardResponse {
   ranked: AnalystLeaderboardRow[] // 예측력 점수 내림차순 (표본 부족 별도 분리 없음)
   byReports: AnalystLeaderboardRow[] // 리포트 수 내림차순 (채점 표본 없는 애널도 포함)
+  /** 증권사 롤업 — 점수 내림차순. 표본 하한 필터는 화면이 적용한다. */
+  firms: FirmLeaderboardRow[]
 }
 
 /** 목표가 포인트(USD). */

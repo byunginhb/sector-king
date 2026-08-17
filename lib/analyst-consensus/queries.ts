@@ -21,6 +21,7 @@ import {
   type ReportPoint,
 } from './accuracy'
 import type {
+  FirmLeaderboardRow,
   AnalystLeaderboardResponse,
   AnalystLeaderboardRow,
   AnalystDetailResponse,
@@ -185,7 +186,60 @@ async function computeLeaderboard(): Promise<AnalystLeaderboardResponse> {
   // 리포트 최다 랭킹 — 채점 표본이 아직 없는 애널(전량 유지·신규)도 포함해야 "가장 많이 쓴 순"이 맞다.
   const byReports = [...rows].sort((a, b) => b.reportCount - a.reportCount || b.score - a.score)
 
-  return { ranked, byReports }
+  return { ranked, byReports, firms: rollUpFirms(rows) }
+}
+
+/**
+ * 증권사 롤업 — 개인 랭킹과 **같은 원자료·같은 산식**에서 파생한다. 추가 조회 0.
+ *
+ * 점수는 개인과 동일하게 Wilson 하한을 쓴다. 표본이 커지는 만큼 하한이 실제
+ * 적중률에 가까워지므로, 4건으로 100% 인 소형사가 1위에 오르는 일이 자연히
+ * 막힌다 — 개인 랭킹에서 같은 이유로 채택한 규칙이 그대로 적용된다.
+ *
+ * 다만 하한만으로는 부족해서 **채점 표본 N 미만은 순위에서 빼고 따로 담는다**.
+ * 기관 단위 비교는 "어느 증권사가 낫다"로 읽히기 때문에, 표본이 얇은 곳을
+ * 섞어 두면 그 자체가 잘못된 정보다.
+ */
+function rollUpFirms(rows: AnalystLeaderboardRow[]): FirmLeaderboardRow[] {
+  interface Acc {
+    firm: string
+    analysts: number
+    hits: number
+    scored: number
+    reportCount: number
+    tickers: number
+  }
+  const byFirm = new Map<string, Acc>()
+  for (const r of rows) {
+    const firm = r.firm?.trim()
+    if (!firm) continue
+    let acc = byFirm.get(firm)
+    if (!acc) {
+      acc = { firm, analysts: 0, hits: 0, scored: 0, reportCount: 0, tickers: 0 }
+      byFirm.set(firm, acc)
+    }
+    acc.analysts += 1
+    acc.hits += r.hits
+    acc.scored += r.scored
+    acc.reportCount += r.reportCount
+    // 커버 종목은 애널별 합이다 — 같은 종목을 여럿이 커버하면 중복이지만,
+    // 원자료(analystId×ticker)를 다시 펼치지 않고도 "커버 활동량"을 나타낸다.
+    // 정확한 유니크 종목 수가 필요해지면 그때 원자료에서 다시 센다.
+    acc.tickers += r.tickersCovered
+  }
+
+  return [...byFirm.values()]
+    .map((a) => ({
+      firm: a.firm,
+      analystCount: a.analysts,
+      reportCount: a.reportCount,
+      scored: a.scored,
+      hits: a.hits,
+      hitRate: a.scored === 0 ? null : a.hits / a.scored,
+      score: predictionScore(a.hits, a.scored) ?? 0,
+      tickersCovered: a.tickers,
+    }))
+    .sort((a, b) => b.score - a.score || b.scored - a.scored)
 }
 
 /** GET /api/analysts/[id] — 애널리스트 상세(종목별 목표가 vs 실제 + 겹쳐보기). null=없음. */

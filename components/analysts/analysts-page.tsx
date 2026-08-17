@@ -13,13 +13,13 @@ import { useCurrencyFormat } from '@/hooks/use-currency-format'
 import { AnalystDetailBody } from './analyst-detail-body'
 import { StockDetailBody } from './stock-detail-body'
 import { pct, fmtScore, scoreTone, scoreBar, ScoreHint, RowsSkeleton, DetailSkeleton } from './ui'
-import type { AnalystLeaderboardRow, AnalystStockListItem } from '@/types'
+import type { AnalystLeaderboardRow, AnalystStockListItem, FirmLeaderboardRow } from '@/types'
 import { useListView } from '@/hooks/use-list-view'
 import { ListViewFooter } from '@/components/ui/list-view-footer'
 import { ListFilterBar } from './list-filter-bar'
 import { cn } from '@/lib/utils'
 
-type Tab = 'analysts' | 'tickers'
+type Tab = 'analysts' | 'tickers' | 'firms'
 
 /**
  * 목록 상태를 URL 쿼리에 실어 **공유·새로고침·뒤로가기**가 성립하게 한다.
@@ -564,13 +564,175 @@ function SectorGroupHeader({
   )
 }
 
+// ── 증권사 탭 ────────────────────────────────────────────────────
+
+/**
+ * 채점 표본 하한 — 이 미만은 순위에서 빼고 "표본 부족" 구역에 따로 담는다.
+ *
+ * 개인 랭킹의 취지(소표본 고적중률을 1위로 올리지 않는다)를 기관 단위로 옮긴
+ * 값이다. Wilson 하한이 이미 벌점을 주지만, 기관 비교는 "어느 증권사가 낫다"로
+ * 읽히기 때문에 얇은 표본을 아예 섞지 않는 편이 정직하다.
+ */
+const FIRM_MIN_SCORED = 10
+
+function FirmTab() {
+  const { data, isLoading, error } = useAnalysts()
+  const query = useQueryState()
+  const q = query.get('q')
+  // 회의 요청: "가장 점수 낮은 것부터" 볼 수 있어야 한다.
+  const asc = query.get('order') === 'asc'
+
+  const { ranked, thin } = useMemo(() => {
+    const all = data?.firms ?? []
+    const needle = norm(q)
+    const matched = needle ? all.filter((f) => norm(f.firm).includes(needle)) : all
+    const ranked = matched.filter((f) => f.scored >= FIRM_MIN_SCORED)
+    const thin = matched.filter((f) => f.scored < FIRM_MIN_SCORED)
+    return { ranked: asc ? [...ranked].reverse() : ranked, thin }
+  }, [data, q, asc])
+
+  const view = useListView({
+    items: ranked,
+    pageSize: 20,
+    resetKey: `${q}|${asc}`,
+    page: Math.max(1, Number(query.get('page', '1')) || 1),
+    onPageChange: (p) => query.set({ page: p === 1 ? null : String(p) }),
+  })
+
+  return (
+    <>
+      <div className="mb-2 flex flex-wrap items-center gap-1.5 text-xs">
+        <span className="text-muted-foreground">순위</span>
+        <button
+          type="button"
+          aria-pressed={!asc}
+          onClick={() => query.set({ order: null, page: null })}
+          className={cn(
+            'rounded-full px-2.5 py-1 transition-colors',
+            !asc ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
+          )}
+        >
+          점수 높은 순
+        </button>
+        <button
+          type="button"
+          aria-pressed={asc}
+          onClick={() => query.set({ order: 'asc', page: null })}
+          className={cn(
+            'rounded-full px-2.5 py-1 transition-colors',
+            asc ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
+          )}
+        >
+          낮은 순
+        </button>
+      </div>
+      <p className="mb-2 flex items-center gap-1 text-[11px] text-muted-foreground">
+        소속 애널리스트의 예측을 합산해 기관 단위로 채점합니다. 점수 산식은 개인과 같습니다.
+        <ScoreHint />
+      </p>
+
+      <ListFilterBar
+        query={q}
+        onQueryChange={(v) => query.set({ q: v, page: null })}
+        placeholder="증권사"
+        resultCount={ranked.length}
+        unit="곳"
+      />
+
+      <div className="hidden sm:grid grid-cols-[2.5rem_1fr_9rem_6rem_4rem_4rem] gap-3 border-b px-4 pb-2 text-xs font-medium text-muted-foreground">
+        <span className="text-center">순위</span>
+        <span>증권사</span>
+        <span className="flex items-center justify-center gap-1">
+          예측력
+          <ScoreHint />
+        </span>
+        <span className="text-center">적중률·표본</span>
+        <span className="text-center">애널</span>
+        <span className="text-center">리포트</span>
+      </div>
+
+      {isLoading ? (
+        <RowsSkeleton variant="analysts" />
+      ) : error || !data ? (
+        <p className="py-10 text-center text-sm text-danger">증권사 랭킹을 불러오지 못했습니다.</p>
+      ) : ranked.length === 0 ? (
+        <p className="py-10 text-center text-sm text-muted-foreground">
+          {q ? '조건에 맞는 증권사가 없습니다.' : '아직 채점 가능한 증권사가 없습니다.'}
+        </p>
+      ) : (
+        <div>
+          {view.visible.map((f, i) => (
+            <FirmRow key={f.firm} row={f} rank={ranked.indexOf(f) + 1} index={i} />
+          ))}
+          <ListViewFooter view={view} unit="곳" />
+        </div>
+      )}
+
+      {thin.length > 0 && (
+        <section className="mt-4 rounded-lg bg-muted/40 px-3 py-2.5">
+          <p className="mb-1.5 text-[11px] text-muted-foreground">
+            표본 부족 — 채점 표본 {FIRM_MIN_SCORED}건 미만이라 순위에 넣지 않습니다.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {thin.map((f) => (
+              <span
+                key={f.firm}
+                className="rounded-full bg-background px-2.5 py-1 text-[11px] text-muted-foreground tabular-nums"
+              >
+                {f.firm} · 표본 {f.scored}건
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  )
+}
+
+function FirmRow({ row, rank, index }: { row: FirmLeaderboardRow; rank: number; index: number }) {
+  return (
+    <div
+      className="sk-rise grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg px-3 py-3 sm:grid-cols-[2.5rem_1fr_9rem_6rem_4rem_4rem] sm:gap-3 sm:px-4"
+      style={riseStyle(index)}
+    >
+      <span className={cn('hidden text-center text-sm font-semibold tabular-nums sm:block', rankTone(rank))}>
+        {rank}
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate font-medium">
+          <span className="mr-1.5 text-xs text-muted-foreground tabular-nums sm:hidden">{rank}</span>
+          {row.firm}
+        </span>
+        <span className="block text-xs text-muted-foreground tabular-nums sm:hidden">
+          애널 {row.analystCount}명 · 리포트 {row.reportCount}
+        </span>
+      </span>
+      <span className="hidden items-center gap-2 sm:flex">
+        <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+          <span className={cn('block h-full rounded-full', scoreBar(row.score))} style={{ width: `${row.score}%` }} />
+        </span>
+        <span className={cn('w-8 text-right text-sm font-semibold tabular-nums', scoreTone(row.score))}>
+          {fmtScore(row.score)}
+        </span>
+      </span>
+      <span className="text-right text-sm tabular-nums text-muted-foreground sm:text-center">
+        <span className={cn('font-semibold sm:hidden', scoreTone(row.score))}>{fmtScore(row.score)}점 </span>
+        {pct(row.hitRate)} · {row.scored}건
+      </span>
+      <span className="hidden text-center text-sm tabular-nums sm:block">{row.analystCount}</span>
+      <span className="hidden text-center text-sm tabular-nums sm:block">{row.reportCount}</span>
+    </div>
+  )
+}
+
 // ── 페이지 ────────────────────────────────────────────────────────
 export function AnalystsPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
   // 종목 탭이 기본 활성 — 애널리스트 탭만 ?tab=analysts 로 표기.
-  const tab: Tab = searchParams.get('tab') === 'analysts' ? 'analysts' : 'tickers'
+  const tabParam = searchParams.get('tab')
+  const tab: Tab = tabParam === 'analysts' || tabParam === 'firms' ? tabParam : 'tickers'
 
   const setTab = useCallback(
     (t: Tab) => {
@@ -585,6 +747,7 @@ export function AnalystsPage() {
   const TABS: { key: Tab; label: string }[] = [
     { key: 'tickers', label: '종목' },
     { key: 'analysts', label: '애널리스트' },
+    { key: 'firms', label: '증권사' },
   ]
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   function onTabKey(e: React.KeyboardEvent, i: number) {
@@ -668,7 +831,7 @@ export function AnalystsPage() {
         </div>
 
         <div role="tabpanel" id={`analysts-panel-${tab}`} aria-labelledby={`analysts-tab-${tab}`}>
-          {tab === 'analysts' ? <AnalystTab /> : <StockTab />}
+          {tab === 'analysts' ? <AnalystTab /> : tab === 'firms' ? <FirmTab /> : <StockTab />}
         </div>
       </main>
     </div>
