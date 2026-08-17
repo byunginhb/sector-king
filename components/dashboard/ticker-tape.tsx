@@ -1,10 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { useDailyMovers } from '@/hooks/use-daily-movers'
-import { CompanyDetail } from '@/components/company-detail'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import type { RegionFilter } from '@/types'
 
@@ -12,6 +11,15 @@ interface TickerTapeProps {
   region?: RegionFilter
   /** 핫 종목 개수 (상승+하락 합계). 기본 20 */
   limit?: number
+  /**
+   * 산업 스코프. 지정하면 그 산업 종목만 흐른다 — 자금 흐름 카드 안에서
+   * "이 산업에 뭐가 들어 있는지"를 카드를 열기 전에 보여주는 용도.
+   */
+  industryId?: string
+  /** 시총 하한(USD). 잡주가 흐르면 정보가 아니라 소음이다. */
+  minMarketCapUsd?: number
+  /** 얇은 띠(카드 내부용) — 여백과 글자를 줄인다. */
+  compact?: boolean
 }
 
 interface TickerItem {
@@ -32,8 +40,38 @@ interface TickerItem {
  * 데이터 소스: `useDailyMovers` (`daily_snapshots.price_change` percent 컬럼).
  * `usePriceChanges({ days: 1 })` 의 0% 캐리 이슈(한국 휴장일)를 우회한다.
  */
-export function TickerTape({ region = 'all', limit = 20 }: TickerTapeProps) {
-  const { data, isLoading } = useDailyMovers({ region, limit })
+export function TickerTape({
+  region = 'all',
+  limit = 20,
+  industryId,
+  minMarketCapUsd,
+  compact = false,
+}: TickerTapeProps) {
+  const { data, isLoading } = useDailyMovers({
+    region,
+    limit,
+    industryId,
+    minMarketCapUsd,
+  })
+
+  /**
+   * 뷰포트 밖에서는 애니메이션을 멈춘다.
+   *
+   * 홈에 산업 카드가 9개면 띠도 9개다. 전부 동시에 돌면 저사양 기기에서
+   * 페인트 비용이 그대로 쌓인다. 보이지 않는 띠는 움직일 이유가 없다.
+   */
+  const [visible, setVisible] = useState(true)
+  const attachVisibility = useCallback((node: HTMLDivElement | null) => {
+    if (!node || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) setVisible(e.isIntersecting)
+      },
+      { rootMargin: '100px' }
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
 
   const items = useMemo<TickerItem[]>(() => {
     if (!data?.items) return []
@@ -45,9 +83,10 @@ export function TickerTape({ region = 'all', limit = 20 }: TickerTapeProps) {
     }))
   }, [data?.items])
 
-  const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
-
   if (isLoading || items.length === 0) {
+    // 카드 안 띠는 비어 있으면 아무것도 그리지 않는다 — 빈 껍데기가 카드
+    // 높이를 먹으면 정작 카드 본문이 밀린다.
+    if (compact) return null
     return (
       <div className="sk-card px-4 py-3 overflow-hidden">
         <div className="text-xs text-muted-foreground num-mono">
@@ -65,23 +104,37 @@ export function TickerTape({ region = 'all', limit = 20 }: TickerTapeProps) {
   return (
     <>
       <div
-        className="ticker-tape group sk-card overflow-hidden"
-        aria-label="오늘의 핫 종목"
+        ref={attachVisibility}
+        className={cn(
+          'ticker-tape group overflow-hidden',
+          compact ? 'border-t border-border-subtle/60' : 'sk-card'
+        )}
+        aria-label={industryId ? '이 산업의 종목 시세' : '오늘의 핫 종목'}
         aria-live="off"
       >
-        <div className="ticker-track flex gap-6 px-4 py-3 will-change-transform">
+        <div
+          className={cn(
+            'ticker-track flex will-change-transform',
+            compact ? 'gap-4 px-3 py-1.5' : 'gap-6 px-4 py-3'
+          )}
+          style={visible ? undefined : { animationPlayState: 'paused' }}
+        >
+          {/*
+            항목은 앵커다 — 새 탭·주소 복사 같은 기본 동작이 그대로 살아 있고,
+            흐르는 항목을 잡아 누르는 상황에서 그 편이 안전하다.
+            (예전 모달은 흐름 위에서 열려 원본 위치를 잃었다.)
+          */}
           {dualItems.map((item, i) => (
-            <button
+            <Link
               key={`${item.ticker}-${i}`}
-              type="button"
-              onClick={() => setSelectedTicker(item.ticker)}
+              href={`/stock/${encodeURIComponent(item.ticker)}`}
               aria-label={`${item.nameKo || item.name || item.ticker} 상세 보기, ${item.percentChange > 0 ? '+' : ''}${item.percentChange.toFixed(2)}%`}
               className="inline-flex items-baseline gap-2 shrink-0 rounded-sm px-2 py-1 hover:bg-surface-2 transition-colors text-left border-l border-border-subtle/0 hover:border-primary/40"
             >
-              <span className="font-mono text-xs font-bold text-foreground tabular-nums tracking-tight">
+              <span className={cn('font-mono font-bold text-foreground tabular-nums tracking-tight', compact ? 'text-[11px]' : 'text-xs')}>
                 {item.ticker.replace(/\.(KS|KQ)$/, '')}
               </span>
-              <span className="text-xs text-muted-foreground line-clamp-1 max-w-[120px]">
+              <span className={cn('text-muted-foreground line-clamp-1 max-w-[120px]', compact ? 'text-[11px]' : 'text-xs')}>
                 {item.nameKo || item.name}
               </span>
               <span
@@ -102,19 +155,10 @@ export function TickerTape({ region = 'all', limit = 20 }: TickerTapeProps) {
                 {item.percentChange > 0 ? '+' : ''}
                 {item.percentChange.toFixed(2)}%
               </span>
-            </button>
+            </Link>
           ))}
         </div>
       </div>
-
-      <Dialog
-        open={!!selectedTicker}
-        onOpenChange={(open) => !open && setSelectedTicker(null)}
-      >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          {selectedTicker && <CompanyDetail ticker={selectedTicker} />}
-        </DialogContent>
-      </Dialog>
     </>
   )
 }

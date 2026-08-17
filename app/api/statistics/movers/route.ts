@@ -3,8 +3,9 @@ import { eq, desc } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { dailySnapshots, companies } from '@/drizzle/schema'
 import { matchesRegion, resolveRegion } from '@/lib/region'
+
 import { toUsd } from '@/lib/currency'
-import { clampIntParam } from '@/lib/api-helpers'
+import { resolveIndustryFilter, clampIntParam } from '@/lib/api-helpers'
 import type { ApiResponse, RegionFilter } from '@/types'
 
 export const revalidate = 3600
@@ -41,6 +42,26 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams
     const region = resolveRegion(searchParams)
 
+    /**
+     * 산업 스코프 — 자금 흐름 카드 안의 시세 띠가 그 산업 종목만 흘리기 위한 것.
+     * 다른 API 와 같은 `?industry=` 규약·같은 헬퍼를 쓴다(생략 시 전체 = 기존 동작).
+     */
+    const industryResult = await resolveIndustryFilter(searchParams)
+    if ('errorResponse' in industryResult) {
+      return industryResult.errorResponse as NextResponse<ApiResponse<DailyMoversResponse>>
+    }
+    const industryTickers = industryResult.filter?.tickers ?? null
+
+    /**
+     * 시총 하한(USD) — 띠에 잡주가 흐르면 정보가 아니라 소음이다.
+     * 기본 0(제한 없음)이라 기존 호출자는 동작이 바뀌지 않는다.
+     */
+    const minMarketCapUsd = clampIntParam(searchParams, 'minMarketCap', {
+      fallback: 0,
+      min: 0,
+      max: 5_000_000_000_000,
+    })
+
     const limit = clampIntParam(searchParams, 'limit', {
       fallback: 30,
       min: 1,
@@ -75,6 +96,7 @@ export async function GET(
         ticker: dailySnapshots.ticker,
         price: dailySnapshots.price,
         priceChange: dailySnapshots.priceChange,
+        marketCap: dailySnapshots.marketCap,
         name: companies.name,
         nameKo: companies.nameKo,
       })
@@ -88,6 +110,13 @@ export async function GET(
     } => {
       if (!row.ticker) return false
       if (typeof row.priceChange !== 'number') return false
+      if (industryTickers && !industryTickers.includes(row.ticker)) return false
+      // 시총은 네이티브 통화라 비교 전에 USD 로 맞춘다 — 안 하면 원화 종목이
+      // 1450배 부풀어 하한을 무조건 통과한다.
+      if (minMarketCapUsd > 0) {
+        if (row.marketCap == null) return false
+        if (toUsd(row.marketCap, row.ticker) < minMarketCapUsd) return false
+      }
       return matchesRegion(row.ticker, region)
     })
 

@@ -11,6 +11,7 @@ import { buildTrendPath } from '@/lib/trend-path'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IndustryIcon } from '@/components/ui/industry-icon'
 import { CardError } from './card-error'
+import { TickerTape } from './ticker-tape'
 import { DataAsOf } from '@/components/ui/data-as-of'
 import type { IndustryMoneyFlowSummary, RegionFilter } from '@/types'
 
@@ -315,8 +316,13 @@ function IndustryFlowItem({
   const fmt = useCurrencyFormat()
 
   return (
-    <Link href={`/${industry.industryId}/money-flow`} className="block">
-      <motion.div
+    /*
+      띠는 카드 링크 **바깥**의 형제다 — 카드 전체가 앵커라 그 안에 종목 앵커를
+      넣으면 마크업이 유효하지 않고 클릭 대상이 꼬인다.
+    */
+    <div className="overflow-hidden rounded-lg">
+      <Link href={`/${industry.industryId}/money-flow`} className="block">
+        <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ scale: 1.02 }}
@@ -441,8 +447,21 @@ function IndustryFlowItem({
             </div>
           </div>
         </div>
-      </motion.div>
-    </Link>
+        </motion.div>
+      </Link>
+
+      {/*
+        구성 종목 시세 띠 — 카드를 열기 전에 "이 산업에 뭐가 들어 있는지"를
+        보여준다. 시총 하한으로 잡주를 빼고 8종목까지만 흘린다(카드당 상한).
+        비어 있으면 아무것도 렌더하지 않는다(compact).
+      */}
+      <TickerTape
+        industryId={industry.industryId}
+        minMarketCapUsd={5_000_000_000}
+        limit={8}
+        compact
+      />
+    </div>
   )
 }
 
