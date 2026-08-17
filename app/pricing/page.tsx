@@ -6,8 +6,9 @@
  * 먼저 서 있어야 한다.
  *
  * ⚠️ **가격을 지어내지 않는다.** 금액·할인·무료 체험 기간은 운영자가 정할 사항이고,
- * 여기에 임시 숫자를 적으면 그 숫자가 스크린샷으로 돌아다닌다. 정해지기 전까지는
- * "준비 중" 과 문의 채널만 둔다.
+ * 여기에 임시 숫자를 적으면 그 숫자가 스크린샷으로 돌아다닌다. 상품 정의는
+ * `lib/permissions/plans.ts` 에 있고 `priceKrw: null` 이면 화면이 "오픈 예정"을
+ * 그린다 — 금액이 정해지면 그 파일의 숫자만 채우면 되고 이 파일은 손대지 않는다.
  *
  * 기능 목록은 `lib/permissions/features.ts` 레지스트리에서 파생한다 — 손으로 적은
  * 목록은 반드시 실제 게이트 설정과 어긋나고, 그 어긋남을 아무도 발견하지 못한다.
@@ -16,10 +17,15 @@
  */
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Check, Mail } from 'lucide-react'
+import { Check, Mail, Sparkle } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 import { FEATURES } from '@/lib/permissions/features'
 import { TIER_LABEL, type Tier } from '@/lib/permissions/tier'
+import {
+  BILLING_PERIOD_LABEL,
+  PLANS,
+  formatPlanPrice,
+} from '@/lib/permissions/plans'
 import type { FeatureDef } from '@/lib/permissions/types'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
@@ -98,35 +104,66 @@ export default function PricingPage() {
 
         <div className="sk-rule my-8" />
 
-        {/* 가격 — 정해지기 전까지 숫자를 두지 않는다. */}
+        {/* 상품 안내 — 금액은 `plans.ts` 가 정하고, null 이면 "오픈 예정". */}
         <section className="sk-card p-5">
-          <h2 className="text-base font-semibold text-foreground">가격 정책 준비 중</h2>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+            <Sparkle className="h-3.5 w-3.5" aria-hidden />
+            오픈 예정
+          </span>
+          <h2 className="mt-2 text-base font-semibold text-foreground">
+            {BILLING_PERIOD_LABEL.monthly} 2종을 준비하고 있습니다
+          </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            금액과 결제 방식은 아직 확정되지 않았습니다. 확정 전까지 아래 기능은
-            현재 공개 범위 그대로 이용하실 수 있습니다. 먼저 안내받고 싶으시면
-            문의를 남겨 주세요.
+            <b className="font-semibold text-foreground">Basic</b> 과{' '}
+            <b className="font-semibold text-foreground">Pro</b> 두 가지 월 구독으로
+            열립니다. 금액과 결제 방식은 아직 확정되지 않았고, 확정 전까지 아래
+            기능은 현재 공개 범위 그대로 이용하실 수 있습니다. 먼저 안내받고
+            싶으시면 문의를 남겨 주세요.
           </p>
           <Link
             href="/contact"
             className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <Mail className="h-4 w-4" aria-hidden />
-            구독 문의
+            오픈 알림 문의
           </Link>
         </section>
 
         <div className="mt-10 grid gap-4 md:grid-cols-3">
           {PLAN_TIERS.map((tier) => {
             const items = buckets[tier] ?? []
+            const plan = PLANS.find((p) => p.tier === tier) ?? null
             return (
               <section key={tier} className="sk-card flex flex-col p-5">
-                <h2 className="text-base font-semibold text-foreground">
-                  {TIER_LABEL[tier]}
+                <h2 className="flex flex-wrap items-center gap-1.5 text-base font-semibold text-foreground">
+                  {plan?.name ?? TIER_LABEL[tier]}
+                  {plan?.status === 'coming_soon' && (
+                    <span className="rounded-full border border-border-subtle bg-surface-2 px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+                      오픈 예정
+                    </span>
+                  )}
                 </h2>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  {PLAN_SUMMARY[tier]}
+                  {plan?.summary ?? PLAN_SUMMARY[tier]}
                 </p>
-                <p className="mt-4 text-sm text-muted-foreground">가격 준비 중</p>
+                {/*
+                  무료는 상품이 아니라 로그인만 하면 열리는 기본 범위다 —
+                  가격 자리를 두면 "0원 상품"처럼 읽힌다.
+                */}
+                {plan ? (
+                  <p className="mt-4">
+                    <span className="text-sm font-semibold text-foreground">
+                      {formatPlanPrice(plan) ?? '오픈 예정'}
+                    </span>
+                    <span className="ml-1.5 text-xs text-muted-foreground">
+                      {BILLING_PERIOD_LABEL[plan.billingPeriod]}
+                    </span>
+                  </p>
+                ) : (
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    로그인하면 바로 이용
+                  </p>
+                )}
 
                 <ul className="mt-4 space-y-2 text-sm">
                   {items.map(([id, def]) => (
@@ -139,8 +176,15 @@ export default function PricingPage() {
                     </li>
                   ))}
                   {items.length === 0 ? (
-                    <li className="text-xs text-muted-foreground">
-                      이 등급에 배정된 기능이 아직 없습니다.
+                    /*
+                      상위 등급은 하위 등급을 모두 포함하므로(페이지 상단 안내),
+                      전용 기능이 아직 없다는 것이지 "아무것도 없다"가 아니다.
+                      전용 기능 배정은 제품 결정이라 화면이 지어내지 않는다.
+                    */
+                    <li className="text-xs leading-relaxed text-muted-foreground">
+                      {plan
+                        ? '하위 등급의 모든 기능을 포함합니다. 전용 기능은 오픈 전까지 정리하고 있습니다.'
+                        : '이 등급에 배정된 기능이 아직 없습니다.'}
                     </li>
                   ) : null}
                 </ul>
