@@ -48,6 +48,39 @@ const PLAN_SUMMARY: Record<string, string> = {
 }
 
 /**
+ * 상품 목록에서 빼는 **계정 운영 기능**.
+ *
+ * 프로필 수정·구독 설정·온보딩·로그인 유도는 등급을 나눠 파는 성질이 아니라
+ * 서비스를 쓰기 위한 기본 절차다. 상품 카드에 섞이면 "무료 등급에 프로필
+ * 수정이 포함"처럼 읽혀 목록이 길기만 하고 값어치를 흐린다.
+ *
+ * 워치리스트·메모·최근 본 종목은 여기 없다 — 그건 로그인해야 열리는 **혜택**이라
+ * 무료 등급의 값어치를 설명한다.
+ */
+const ACCOUNT_UTILITY = new Set([
+  'me.settings-profile',
+  'me.email-subscription',
+  'me.onboarding',
+  'me.login-prompt',
+  'me.home',
+])
+
+/**
+ * 이 기능이 "등급으로 팔 수 있는 것"인가.
+ *
+ * 잠글 수 없도록 봉인된 기능(`supportedGateModes: ['open']`)은 등급과 무관하게
+ * 항상 열려 있다 — 법적 고지·이용 안내·SEO 착지면·로그인 버튼이 그렇다.
+ * 항상 열려 있는 것을 상품 목록에 적으면 그 자체가 거짓 광고다.
+ */
+function isSellable(id: string, def: FeatureDef): boolean {
+  if (def.retired) return false
+  if (ACCOUNT_UTILITY.has(id)) return false
+  const modes = def.supportedGateModes
+  if (modes && modes.length === 1 && modes[0] === 'open') return false
+  return true
+}
+
+/**
  * 기능을 등급 버킷으로 나눈다.
  *
  * `anon`(누구나)은 무료 카드로 접는다 — 별도 카드로 세우면 "가입하지 않는 것"이
@@ -61,7 +94,7 @@ function bucketFeatures(): Record<string, Array<[string, FeatureDef]>> {
   }
 
   for (const [id, def] of Object.entries(FEATURES)) {
-    if (def.retired) continue
+    if (!isSellable(id, def)) continue
     const tier = def.recommendedMinTier ?? def.defaultPolicy.minTier
     const bucket = tier === 'anon' || tier === 'free' ? 'free' : tier
     if (buckets[bucket]) buckets[bucket].push([id, def])
@@ -70,8 +103,25 @@ function bucketFeatures(): Record<string, Array<[string, FeatureDef]>> {
   return buckets
 }
 
+/**
+ * 등급별 **누적** 기능 수 — 상위는 하위를 포함하므로 카드에 적히는 수는
+ * 그 등급에서 실제로 열리는 전체 개수여야 한다.
+ *
+ * 전용 기능 수만 적으면 무료 100여 개 · 유료 10여 개가 되어 "위로 갈수록
+ * 줄어드는" 것처럼 보인다. 실제로는 반대다.
+ */
+function cumulativeCounts(
+  buckets: Record<string, Array<[string, FeatureDef]>>
+): Record<string, number> {
+  const free = buckets.free?.length ?? 0
+  const basic = free + (buckets.basic?.length ?? 0)
+  const pro = basic + (buckets.pro?.length ?? 0)
+  return { free, basic, pro }
+}
+
 export default function PricingPage() {
   const buckets = bucketFeatures()
+  const totals = cumulativeCounts(buckets)
   const hasCatalog = Object.values(buckets).some((list) => list.length > 0)
 
   return (
@@ -165,7 +215,30 @@ export default function PricingPage() {
                   </p>
                 )}
 
-                <ul className="mt-4 space-y-2 text-sm">
+                {/*
+                  누적 수 + 포함 관계. "이 등급에서 열리는 전체"와 "여기서
+                  새로 열리는 것"을 함께 보여야 위계가 읽힌다.
+                */}
+                <p className="mt-3 border-t border-border-subtle pt-3 text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground tabular-nums">
+                    {totals[tier]}개
+                  </span>{' '}
+                  기능 이용
+                  {tier !== 'free' && (
+                    <>
+                      {' · '}
+                      {tier === 'basic' ? '무료' : 'Basic'}의 모든 기능 포함
+                    </>
+                  )}
+                </p>
+
+                {items.length > 0 && (
+                  <p className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {tier === 'free' ? '이용 가능' : '여기서 추가로 열리는 것'}
+                  </p>
+                )}
+
+                <ul className="mt-2 space-y-2 text-sm">
                   {items.map(([id, def]) => (
                     <li key={id} className="flex items-start gap-2">
                       <Check
