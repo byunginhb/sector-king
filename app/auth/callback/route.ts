@@ -45,21 +45,28 @@ export async function GET(request: NextRequest) {
   // ?error=... 로 되돌아온다. 그대로 두면 전부 "인증 코드 누락"으로 보여
   // 사용자가 무엇을 다시 해야 할지 알 수 없다.
   const errorCode = searchParams.get('error_code') ?? searchParams.get('error')
+
+  const supabase = await createClient()
+
   if (errorCode) {
-    const reason = errorCode.includes('expired') ? 'link_expired' : 'oauth_failed'
-    return NextResponse.redirect(`${origin}/login?error=${reason}`)
+    return NextResponse.redirect(
+      await errorRedirect(supabase, origin, redirectParam, reasonFor(errorCode))
+    )
   }
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/login?error=missing_code`)
+    return NextResponse.redirect(
+      await errorRedirect(supabase, origin, redirectParam, 'missing_code')
+    )
   }
 
-  const supabase = await createClient()
   const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error) {
     console.error('[auth/callback] exchangeCodeForSession 실패:', error.message)
-    return NextResponse.redirect(`${origin}/login?error=oauth_failed`)
+    return NextResponse.redirect(
+      await errorRedirect(supabase, origin, redirectParam, 'oauth_failed')
+    )
   }
 
   // ADMIN_EMAILS 자동 부여 (trigger fallback)
@@ -70,4 +77,36 @@ export async function GET(request: NextRequest) {
   // 자체를 `lib/safe-redirect` 로 옮긴다.
   const safeNext = safeRedirectPath(redirectParam, origin)
   return NextResponse.redirect(new URL(safeNext, origin))
+}
+
+function reasonFor(errorCode: string): string {
+  if (errorCode.includes('expired')) return 'link_expired'
+  if (errorCode.includes('identity_already_exists')) return 'identity_taken'
+  return 'oauth_failed'
+}
+
+/**
+ * 오류를 **흐름이 시작된 화면**으로 되돌린다.
+ *
+ * 이 라우트는 로그인과 계정 연결(`linkIdentity`)이 함께 착지한다. 연결 실패를
+ * `/login` 으로 보내면 오류가 조용히 사라진다 — 그 화면은 이미 로그인된
+ * 사용자를 곧장 redirect 대상으로 돌려보내기 때문이다. 세션 유무가 두 흐름을
+ * 정확히 가른다(연결은 로그인 상태에서만 시작된다).
+ */
+async function errorRedirect(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  origin: string,
+  redirectParam: string | null,
+  reason: string
+): Promise<URL> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const target = new URL(
+    user ? safeRedirectPath(redirectParam, origin) : '/login',
+    origin
+  )
+  target.searchParams.set('error', reason)
+  return target
 }

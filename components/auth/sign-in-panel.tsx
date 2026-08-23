@@ -2,8 +2,13 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, Mail, MailCheck } from 'lucide-react'
+import { Loader2, MailCheck } from 'lucide-react'
 import type { EnabledAuthProviders } from '@/lib/auth/enabled-providers'
+import {
+  PROVIDER_BUTTON_CLASS,
+  PROVIDER_LABEL,
+  ProviderLogo,
+} from '@/components/auth/provider-meta'
 
 /**
  * 로그인 제공자 선택 패널.
@@ -127,26 +132,24 @@ export function SignInPanel({
       <div className="space-y-2.5">
         {providers.google && (
           <ProviderButton
-            label="Google로 계속하기"
+            label={`${PROVIDER_LABEL.google}로 계속하기`}
             ariaLabel="Google 계정으로 로그인"
             loading={pending === 'google'}
             disabled={pending !== null}
             onClick={() => handleOAuth('google')}
-            className="border border-border bg-background hover:bg-accent text-foreground"
-            icon={<GoogleLogo />}
+            className={PROVIDER_BUTTON_CLASS.google}
+            icon={<ProviderLogo provider="google" />}
           />
         )}
         {providers.kakao && (
           <ProviderButton
-            label="카카오로 계속하기"
+            label={`${PROVIDER_LABEL.kakao}로 계속하기`}
             ariaLabel="카카오 계정으로 로그인"
             loading={pending === 'kakao'}
             disabled={pending !== null}
             onClick={() => handleOAuth('kakao')}
-            // 카카오 브랜드 가이드가 지정한 고정 색(#FEE500 / 검정 85%)이라
-            // 테마 토큰을 쓰지 않는다. 다크 모드에서도 동일해야 한다.
-            className="bg-[#FEE500] hover:brightness-95 text-[rgba(0,0,0,0.85)]"
-            icon={<KakaoLogo />}
+            className={PROVIDER_BUTTON_CLASS.kakao}
+            icon={<ProviderLogo provider="kakao" />}
           />
         )}
       </div>
@@ -180,8 +183,8 @@ export function SignInPanel({
               ariaLabel="이메일로 로그인 링크 받기"
               loading={pending === 'email'}
               disabled={pending !== null}
-              className="border border-border bg-background hover:bg-accent text-foreground"
-              icon={<Mail className="h-[18px] w-[18px]" aria-hidden />}
+              className={PROVIDER_BUTTON_CLASS.email}
+              icon={<ProviderLogo provider="email" />}
             />
           </form>
         </>
@@ -230,51 +233,5 @@ function ProviderButton({
       )}
       <span>{loading ? '처리 중...' : label}</span>
     </button>
-  )
-}
-
-function GoogleLogo() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        fill="#4285F4"
-        d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"
-      />
-      <path
-        fill="#34A853"
-        d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.997 8.997 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"
-      />
-      <path
-        fill="#EA4335"
-        d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.167 6.656 3.58 9 3.58z"
-      />
-    </svg>
-  )
-}
-
-function KakaoLogo() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        fill="rgba(0,0,0,0.85)"
-        d="M9 1.5C4.58 1.5 1 4.31 1 7.78c0 2.23 1.48 4.19 3.71 5.3-.16.57-.6 2.17-.68 2.5-.11.42.15.42.32.3.13-.09 2.09-1.42 2.94-2 .55.08 1.12.12 1.71.12 4.42 0 8-2.81 8-6.28S13.42 1.5 9 1.5z"
-      />
-    </svg>
   )
 }

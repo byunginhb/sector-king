@@ -13,6 +13,15 @@
  */
 export type AuthProviderId = 'google' | 'kakao' | 'email'
 
+/**
+ * 로그인 후 계정에 **추가로 붙일 수 있는** 제공자. 이메일이 빠진 건 우리가
+ * 비밀번호를 두지 않기 때문이다 — Supabase 의 `linkIdentity()` 는 OAuth 전용이고,
+ * 이메일을 계정에 더하는 공식 경로는 `updateUser({ password })` 뿐이라
+ * 패스워드리스 정책과 충돌한다.
+ */
+export const OAUTH_PROVIDER_IDS = ['google', 'kakao'] as const
+export type OAuthProviderId = (typeof OAUTH_PROVIDER_IDS)[number]
+
 export type EnabledAuthProviders = Record<AuthProviderId, boolean>
 
 /**
@@ -25,7 +34,7 @@ const FALLBACK: EnabledAuthProviders = {
   email: false,
 }
 
-const PROVIDER_IDS: AuthProviderId[] = ['google', 'kakao', 'email']
+const PROVIDER_IDS: AuthProviderId[] = [...OAUTH_PROVIDER_IDS, 'email']
 
 /** settings 응답 → 제공자 on/off. 응답 형태가 어긋나면 기준값. */
 export function parseEnabledProviders(settings: unknown): EnabledAuthProviders {
