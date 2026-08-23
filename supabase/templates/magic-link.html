@@ -1,0 +1,80 @@
+<!--
+  Supabase Auth 메일 템플릿 — 로그인 링크(매직링크).
+
+  이 파일이 SoT 다. 여기를 고친 뒤 Supabase 대시보드
+  Authentication > Emails 의 Magic Link / Confirm signup 두 곳에 붙여 넣는다
+  (대시보드에서 먼저 고치면 다음 붙여넣기에 조용히 덮어써진다).
+
+  Magic Link 와 Confirm signup 두 템플릿에 같은 내용을 넣는다 — Supabase 는
+  기존 사용자에게 Magic Link 를, 처음 보는 이메일에는 Confirm signup 을
+  보내는데, 우리 UX 상 둘 다 "버튼 눌러 로그인" 하나뿐이라 문구가 같다.
+  하나만 브랜딩하면 신규 가입자만 Supabase 기본 영문 메일을 받는다.
+
+  Go 템플릿 변수: {{ .ConfirmationURL }} {{ .SiteURL }} {{ .Email }}
+                  {{ .Token }} {{ .TokenHash }} {{ .RedirectTo }}
+
+  이메일 클라이언트 제약: 인라인 CSS 만, 웹폰트·외부 이미지·SVG 사용 안 함
+  (Gmail 이 <style>·SVG 를 걷어내고 원격 이미지는 기본 차단한다).
+  색은 lib/email/templates/daily-news.tsx 의 팔레트와 같은 값을 쓴다.
+-->
+<div style="background-color:#f8fafc;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Malgun Gothic','Noto Sans KR',sans-serif;color:#0f172a;">
+  <div style="max-width:640px;margin:0 auto;padding:24px 16px;">
+
+    <div style="padding:8px 0 16px 0;border-bottom:1px solid #e2e8f0;">
+      <p style="margin:0;font-size:13px;letter-spacing:1px;color:#b45309;font-weight:700;text-transform:uppercase;">
+        Sector King
+      </p>
+      <p style="margin:2px 0 0 0;font-size:12px;color:#64748b;">
+        마켓 인사이트, 한 곳에서
+      </p>
+    </div>
+
+    <div style="padding:24px 0 8px 0;">
+      <h1 style="margin:0;font-size:22px;line-height:1.35;font-weight:700;color:#0f172a;letter-spacing:-0.01em;">
+        로그인 링크가 도착했습니다
+      </h1>
+      <p style="margin:12px 0 0 0;font-size:14px;line-height:1.7;color:#475569;">
+        아래 버튼을 누르면 <strong style="color:#0f172a;">{{ .Email }}</strong> 계정으로
+        Sector King 에 로그인됩니다. 비밀번호는 필요하지 않습니다.
+      </p>
+    </div>
+
+    <div style="padding:20px 0 4px 0;">
+      <a href="{{ .ConfirmationURL }}"
+         style="display:inline-block;background-color:#b45309;color:#ffffff;font-size:15px;font-weight:700;padding:13px 28px;border-radius:8px;text-decoration:none;">
+        Sector King 로그인
+      </a>
+    </div>
+
+    <div style="padding:16px 0 0 0;">
+      <p style="margin:0;font-size:12px;line-height:1.7;color:#64748b;">
+        버튼이 눌리지 않으면 아래 주소를 브라우저 주소창에 붙여 넣으세요.
+      </p>
+      <p style="margin:6px 0 0 0;font-size:12px;line-height:1.6;word-break:break-all;">
+        <a href="{{ .ConfirmationURL }}" style="color:#b45309;text-decoration:underline;">{{ .ConfirmationURL }}</a>
+      </p>
+    </div>
+
+    <div style="margin-top:20px;background-color:#fef3c7;border-radius:8px;padding:12px 14px;">
+      <p style="margin:0;font-size:12px;line-height:1.7;color:#0f172a;">
+        링크는 <strong>1시간</strong> 뒤 만료되고 한 번만 쓸 수 있습니다.
+        로그인을 요청한 <strong>그 브라우저에서</strong> 열어 주세요.
+      </p>
+    </div>
+
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0 16px 0;" />
+
+    <div>
+      <p style="margin:0;font-size:11px;line-height:1.6;color:#64748b;">
+        본인이 로그인을 요청하지 않았다면 이 메일을 무시하셔도 됩니다.
+        링크를 누르지 않는 한 아무 일도 일어나지 않습니다.
+      </p>
+      <p style="margin:10px 0 0 0;font-size:11px;color:#64748b;">
+        <a href="{{ .SiteURL }}" style="color:#b45309;text-decoration:underline;">sector-king.com</a>
+        &middot;
+        <a href="{{ .SiteURL }}/contact" style="color:#b45309;text-decoration:underline;">문의</a>
+      </p>
+    </div>
+
+  </div>
+</div>
