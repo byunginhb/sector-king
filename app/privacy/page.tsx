@@ -1,7 +1,10 @@
 /**
  * /privacy — 개인정보 처리방침.
  *
- * 정적 페이지. Google OAuth 로그인으로 수집되는 최소 정보 고지.
+ * 정적 페이지. 소셜 로그인·이메일 로그인으로 수집되는 최소 정보 고지.
+ *
+ * 제공자를 추가·제거하면 여기 1·4항을 함께 고친다 — 실제로 받는 항목이
+ * 제공자마다 다르므로 목록을 뭉뚱그리면 고지 내용이 사실과 어긋난다.
  */
 import { ShieldCheck } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
@@ -14,7 +17,7 @@ export const metadata = {
   alternates: { canonical: `${BASE_URL}/privacy` },
 }
 
-const UPDATED_AT = '2025년 7월 6일'
+const UPDATED_AT = '2026년 8월 23일'
 
 export default function PrivacyPage() {
   return (
@@ -38,14 +41,22 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-base font-semibold mb-2">1. 수집하는 개인정보 항목</h2>
             <p className="text-muted-foreground">
-              Sector King(이하 &quot;서비스&quot;)은 Google 계정을 통한 로그인 시
-              다음 정보를 수집합니다.
+              Sector King(이하 &quot;서비스&quot;)은 로그인 시 아래 항목을
+              수집합니다. 수집 항목은 이용자가 선택한 로그인 수단에 따라
+              다릅니다.
             </p>
             <ul className="mt-2 list-disc pl-5 space-y-1 text-muted-foreground">
-              <li>이메일 주소</li>
-              <li>프로필 이름 및 프로필 이미지(Google 제공 시)</li>
+              <li>Google 로그인: 이메일 주소, 프로필 이름, 프로필 이미지</li>
+              <li>
+                카카오 로그인: 카카오계정 이메일(동의 시), 닉네임, 프로필 이미지
+              </li>
+              <li>이메일 로그인(링크 방식): 이메일 주소</li>
               <li>서비스 이용 기록(문의·제보 내용 등 이용자가 직접 입력한 정보)</li>
             </ul>
+            <p className="mt-2 text-muted-foreground">
+              비밀번호는 수집하지 않으며, 이메일 로그인은 메일로 전송된 일회용
+              링크로만 이루어집니다.
+            </p>
           </section>
 
           <section>
@@ -74,7 +85,8 @@ export default function PrivacyPage() {
             </p>
             <ul className="mt-2 list-disc pl-5 space-y-1 text-muted-foreground">
               <li>Google(로그인 인증)</li>
-              <li>Supabase(인증·데이터 저장 인프라)</li>
+              <li>Kakao(로그인 인증)</li>
+              <li>Supabase(인증·데이터 저장 인프라, 로그인 메일 발송)</li>
             </ul>
           </section>
 

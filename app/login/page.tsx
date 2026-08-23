@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { Suspense } from 'react'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { SectorKingLogo } from '@/components/logo'
-import { GoogleSignInButton } from '@/components/auth/google-sign-in-button'
+import { SignInPanel } from '@/components/auth/sign-in-panel'
+import { getEnabledAuthProviders } from '@/lib/auth/enabled-providers'
 import { getCurrentUser } from '@/lib/auth/get-user'
 import { safeRedirectPath } from '@/lib/safe-redirect'
 
@@ -32,6 +32,8 @@ export default async function LoginPage({
   if (user) {
     redirect(redirectTarget)
   }
+
+  const providers = await getEnabledAuthProviders()
 
   const errorCode = params.error
   const errorMessage = errorMessageFor(errorCode)
@@ -71,19 +73,10 @@ export default async function LoginPage({
               </div>
             )}
 
-            <Suspense
-              fallback={
-                <button
-                  type="button"
-                  className="w-full h-11 rounded-lg border border-border bg-background flex items-center justify-center text-sm text-muted-foreground"
-                  disabled
-                >
-                  불러오는 중...
-                </button>
-              }
-            >
-              <GoogleSignInButton redirectTarget={redirectTarget} />
-            </Suspense>
+            <SignInPanel
+              redirectTarget={redirectTarget}
+              providers={providers}
+            />
 
             <p className="text-xs text-muted-foreground text-center mt-6 leading-relaxed">
               로그인 시{' '}
@@ -110,7 +103,9 @@ function errorMessageFor(code: string | undefined): string | null {
     case 'missing_code':
       return '인증 코드가 누락되었습니다. 다시 시도해 주세요.'
     case 'oauth_failed':
-      return '구글 인증에 실패했습니다. 다시 시도해 주세요.'
+      return '인증에 실패했습니다. 다시 시도해 주세요.'
+    case 'link_expired':
+      return '로그인 링크가 만료되었거나 이미 사용되었습니다. 다시 요청해 주세요.'
     case 'forbidden':
       return '관리자 권한이 필요한 페이지입니다.'
     default:

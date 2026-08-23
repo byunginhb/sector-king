@@ -1,9 +1,9 @@
 /**
- * Google OAuth 콜백 라우트.
+ * 인증 콜백 라우트 — OAuth(구글·카카오)와 이메일 매직링크가 함께 착지한다.
  *
  * 흐름:
- * 1. /login 에서 supabase.auth.signInWithOAuth 호출 → Google 로 redirect
- * 2. Google 인증 성공 → Supabase Auth Provider 가 ?code=... 로 본 라우트에 redirect
+ * 1. /login 에서 signInWithOAuth 또는 signInWithOtp 호출
+ * 2. 제공자 인증 성공(또는 메일 링크 클릭) → Supabase Auth 가 ?code=... 로 본 라우트에 redirect
  * 3. exchangeCodeForSession 으로 httpOnly 세션 쿠키 SET
  * 4. ADMIN_EMAILS 매칭 시 admin role 자동 부여 (트리거가 처리하지만 fallback)
  * 5. ?redirect=... 가 안전한 same-origin path 면 그곳으로, 아니면 /
@@ -40,6 +40,15 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const redirectParam = searchParams.get('redirect') ?? searchParams.get('next')
+
+  // 만료·재사용된 매직링크와 사용자가 취소한 OAuth 동의는 code 없이
+  // ?error=... 로 되돌아온다. 그대로 두면 전부 "인증 코드 누락"으로 보여
+  // 사용자가 무엇을 다시 해야 할지 알 수 없다.
+  const errorCode = searchParams.get('error_code') ?? searchParams.get('error')
+  if (errorCode) {
+    const reason = errorCode.includes('expired') ? 'link_expired' : 'oauth_failed'
+    return NextResponse.redirect(`${origin}/login?error=${reason}`)
+  }
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=missing_code`)
