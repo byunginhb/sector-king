@@ -19,7 +19,7 @@ export default async function MePage() {
 
   return (
     <div className="min-h-screen">
-      <GlobalTopBar subtitle={`내 페이지 · ${profile.email}`} />
+      <GlobalTopBar subtitle={`내 페이지 · ${profile.email ?? profile.name ?? ''}`} />
 
       <main className="container mx-auto px-4 py-8 space-y-8">
         <section>

@@ -51,7 +51,9 @@ export default async function SettingsPage({
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-muted-foreground">이메일</dt>
-                <dd className="text-foreground font-medium">{profile.email}</dd>
+                <dd className="text-foreground font-medium">
+                  {profile.email ?? '—'}
+                </dd>
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-muted-foreground">역할</dt>

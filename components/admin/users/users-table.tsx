@@ -43,7 +43,8 @@ import { cn } from '@/lib/utils'
 
 export type AdminUserRow = {
   id: string
-  email: string
+  /** 이메일 없는 제공자(네이버 등)로 가입한 계정은 null 이다. */
+  email: string | null
   name: string | null
   role: 'user' | 'admin'
   createdAt: string
@@ -104,7 +105,7 @@ export function UsersTable({
       if (tierFilter !== 'all' && u.effectiveTier !== tierFilter) return false
       if (!q) return true
       return (
-        u.email.toLowerCase().includes(q) ||
+        (u.email ?? '').toLowerCase().includes(q) ||
         (u.name ?? '').toLowerCase().includes(q)
       )
     })
@@ -239,7 +240,9 @@ function UserRow({
 
   return (
     <tr className="hover:bg-surface-2">
-      <td className="px-4 py-3 font-medium text-foreground">{user.email}</td>
+      <td className="px-4 py-3 font-medium text-foreground">
+        {user.email ?? '이메일 미제공'}
+      </td>
       <td className="px-4 py-3 text-foreground">{user.name ?? '-'}</td>
       <td className="px-4 py-3">
         {user.role === 'admin' ? (
@@ -381,7 +384,7 @@ function GrantDialog({
         <DialogHeader>
           <DialogTitle>구독 등급 변경</DialogTitle>
           <DialogDescription>
-            {user.email}
+            {user.email ?? user.name ?? user.id}
             {user.role === 'admin' && ' · 관리자 계정'}
           </DialogDescription>
         </DialogHeader>
@@ -551,7 +554,7 @@ function RoleDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{promote ? '관리자로 지정' : '관리자 권한 해제'}</DialogTitle>
-          <DialogDescription>{user.email}</DialogDescription>
+          <DialogDescription>{user.email ?? user.name ?? user.id}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">

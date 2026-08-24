@@ -75,7 +75,7 @@ export default async function PreviewEmailPage({ params }: PageProps) {
 
       <PreviewEmailClient
         reportId={report.id}
-        adminEmail={profile.email}
+        adminEmail={profile.email ?? ''}
         resendConfigured={resendConfigured}
       />
     </div>

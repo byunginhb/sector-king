@@ -30,7 +30,12 @@ import { isStorableTier } from '@/lib/permissions/tier'
 
 export type CurrentProfile = {
   id: string
-  email: string
+  /**
+   * **null 일 수 있다.** 네이버처럼 이메일을 안 넘기는 제공자, 그리고 카카오의
+   * account_email(선택 동의)을 거부한 사용자가 여기에 해당한다. 0017 이전에는
+   * profiles.email 이 NOT NULL 이라 그런 가입이 통째로 실패했다.
+   */
+  email: string | null
   name: string | null
   avatarUrl: string | null
   role: 'user' | 'admin'
@@ -101,7 +106,7 @@ export const getCurrentProfile = cache(
         // 트리거가 아직 실행되지 않은 케이스 등 — auth 사용자 정보로 폴백
         return {
           id: user.id,
-          email: user.email ?? '',
+          email: user.email ?? null,
           name:
             (user.user_metadata?.full_name as string | undefined) ??
             (user.user_metadata?.name as string | undefined) ??
@@ -120,7 +125,7 @@ export const getCurrentProfile = cache(
 
     return {
       id: data.id as string,
-      email: data.email as string,
+      email: (data.email as string | null) ?? null,
       name: (data.name as string | null) ?? null,
       avatarUrl: (data.avatar_url as string | null) ?? null,
       role: data.role === 'admin' ? 'admin' : 'user',

@@ -72,7 +72,7 @@ export function UserMenu({ profile }: { profile: CurrentProfile }) {
             {displayName}
           </span>
           <span className="text-xs font-normal text-muted-foreground truncate">
-            {profile.email}
+            {profile.email ?? '이메일 미제공'}
           </span>
           {isAdmin && (
             <span
