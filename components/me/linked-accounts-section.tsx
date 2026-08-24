@@ -7,9 +7,14 @@ import { createClient } from '@/lib/supabase/client'
 import {
   PROVIDER_LABEL,
   PROVIDER_BUTTON_CLASS,
+  PROVIDER_MARK_CLASS,
   ProviderLogo,
 } from '@/components/auth/provider-meta'
-import type { AuthProviderId, OAuthProviderId } from '@/lib/auth/enabled-providers'
+import {
+  toSupabaseProvider,
+  type AuthProviderId,
+  type OAuthProviderId,
+} from '@/lib/auth/enabled-providers'
 import type { LinkedAccountsView } from '@/lib/auth/linked-accounts'
 
 /**
@@ -32,7 +37,7 @@ export function LinkedAccountsSection({ view }: { view: LinkedAccountsView }) {
       callbackUrl.searchParams.set('redirect', '/me/settings')
 
       const { error: linkError } = await supabase.auth.linkIdentity({
-        provider,
+        provider: toSupabaseProvider(provider),
         options: { redirectTo: callbackUrl.toString() },
       })
       if (linkError) {
@@ -88,7 +93,12 @@ export function LinkedAccountsSection({ view }: { view: LinkedAccountsView }) {
             className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-background">
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                  PROVIDER_MARK_CLASS[account.provider as AuthProviderId] ??
+                  'bg-surface-2 border border-border'
+                }`}
+              >
                 <ProviderLogo
                   provider={account.provider as AuthProviderId}
                   className="h-4 w-4 text-muted-foreground"

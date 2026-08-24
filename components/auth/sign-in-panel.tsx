@@ -3,7 +3,12 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, MailCheck } from 'lucide-react'
-import type { EnabledAuthProviders } from '@/lib/auth/enabled-providers'
+import {
+  OAUTH_PROVIDER_IDS,
+  toSupabaseProvider,
+  type EnabledAuthProviders,
+  type OAuthProviderId,
+} from '@/lib/auth/enabled-providers'
 import {
   PROVIDER_BUTTON_CLASS,
   PROVIDER_LABEL,
@@ -28,9 +33,7 @@ export function SignInPanel({
   redirectTarget?: string
   providers: EnabledAuthProviders
 }) {
-  const [pending, setPending] = useState<'google' | 'kakao' | 'email' | null>(
-    null
-  )
+  const [pending, setPending] = useState<OAuthProviderId | 'email' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [sentTo, setSentTo] = useState<string | null>(null)
 
@@ -40,13 +43,13 @@ export function SignInPanel({
     return url.toString()
   }
 
-  async function handleOAuth(provider: 'google' | 'kakao') {
+  async function handleOAuth(provider: OAuthProviderId) {
     setPending(provider)
     setError(null)
     try {
       const supabase = createClient()
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: toSupabaseProvider(provider),
         options: {
           redirectTo: callbackUrl(),
           // refresh token 재발급 강제는 구글 전용 파라미터다. 카카오에 넘기면
@@ -125,33 +128,23 @@ export function SignInPanel({
     )
   }
 
-  const hasOAuth = providers.google || providers.kakao
+  const hasOAuth = OAUTH_PROVIDER_IDS.some((p) => providers[p])
 
   return (
     <div>
       <div className="space-y-2.5">
-        {providers.google && (
+        {OAUTH_PROVIDER_IDS.filter((p) => providers[p]).map((provider) => (
           <ProviderButton
-            label={`${PROVIDER_LABEL.google}로 계속하기`}
-            ariaLabel="Google 계정으로 로그인"
-            loading={pending === 'google'}
+            key={provider}
+            label={`${PROVIDER_LABEL[provider]}로 계속하기`}
+            ariaLabel={`${PROVIDER_LABEL[provider]} 계정으로 로그인`}
+            loading={pending === provider}
             disabled={pending !== null}
-            onClick={() => handleOAuth('google')}
-            className={PROVIDER_BUTTON_CLASS.google}
-            icon={<ProviderLogo provider="google" />}
+            onClick={() => handleOAuth(provider)}
+            className={PROVIDER_BUTTON_CLASS[provider]}
+            icon={<ProviderLogo provider={provider} />}
           />
-        )}
-        {providers.kakao && (
-          <ProviderButton
-            label={`${PROVIDER_LABEL.kakao}로 계속하기`}
-            ariaLabel="카카오 계정으로 로그인"
-            loading={pending === 'kakao'}
-            disabled={pending !== null}
-            onClick={() => handleOAuth('kakao')}
-            className={PROVIDER_BUTTON_CLASS.kakao}
-            icon={<ProviderLogo provider="kakao" />}
-          />
-        )}
+        ))}
       </div>
 
       {providers.email && (

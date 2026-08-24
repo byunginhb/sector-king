@@ -9,6 +9,7 @@
  */
 import {
   OAUTH_PROVIDER_IDS,
+  fromSupabaseProvider,
   type AuthProviderId,
   type EnabledAuthProviders,
   type OAuthProviderId,
@@ -51,7 +52,10 @@ export function buildLinkedAccountsView(
   const linked: LinkedAccount[] = list
     .map((i) => ({
       identityId: i.identity_id ?? '',
-      provider: i.provider,
+      // 커스텀 제공자는 `custom:naver` 로 온다. 여기서 한 번 벗겨두지 않으면
+      // 라벨·아이콘 조회가 전부 빗나가고, "이미 연결됨" 판정도 실패해
+      // 네이버 연결 버튼이 연결된 뒤에도 계속 남는다.
+      provider: fromSupabaseProvider(i.provider),
       email: i.identity_data?.email ?? null,
       canUnlink:
         // 마지막 수단을 떼면 계정에 다시 들어올 방법이 없다. Supabase 도

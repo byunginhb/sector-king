@@ -10,7 +10,12 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
 }))
 
-const ALL_ON: EnabledAuthProviders = { google: true, kakao: true, email: true }
+const ALL_ON: EnabledAuthProviders = {
+  google: true,
+  kakao: true,
+  naver: true,
+  email: true,
+}
 
 function identity(provider: string, email: string | null = null) {
   return { identity_id: `id-${provider}`, provider, identity_data: { email } }
@@ -38,7 +43,7 @@ describe('LinkedAccountsSection', () => {
     expect(screen.queryByRole('button', { name: /연결 해제/ })).toBeNull()
   })
 
-  it('둘 이상이면 해제 버튼이 생기고, 더 붙일 게 없으면 연결 버튼은 사라진다', () => {
+  it('둘 이상이면 해제 버튼이 생긴다', () => {
     renderWith([identity('google', 'a@gmail.com'), identity('kakao')])
 
     expect(
@@ -47,6 +52,16 @@ describe('LinkedAccountsSection', () => {
     expect(
       screen.getByRole('button', { name: '카카오 연결 해제' })
     ).toBeInTheDocument()
+  })
+
+  it('셋 다 연결되면 연결 버튼이 사라진다', () => {
+    renderWith([
+      identity('google', 'a@gmail.com'),
+      identity('kakao'),
+      identity('custom:naver', 'a@naver.com'),
+    ])
+
+    expect(screen.getByText('네이버')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^\S+ 연결$/ })).toBeNull()
   })
 

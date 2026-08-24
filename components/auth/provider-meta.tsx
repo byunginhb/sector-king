@@ -11,17 +11,32 @@ import type { AuthProviderId } from '@/lib/auth/enabled-providers'
 export const PROVIDER_LABEL: Record<AuthProviderId, string> = {
   google: 'Google',
   kakao: '카카오',
+  naver: '네이버',
   email: '이메일',
 }
 
 /**
- * 브랜드가 색을 지정한 제공자만 여기 값을 쓴다(카카오 #FEE500 + 검정 85%).
- * 나머지는 테마 토큰을 그대로 따른다 — 라이트·다크 양쪽에서 자동으로 맞는다.
+ * 전폭 로그인 버튼. 브랜드가 색을 지정한 제공자(카카오 #FEE500, 네이버 #03C75A)만
+ * 고정값을 쓰고 나머지는 테마 토큰을 따른다 — 라이트·다크 양쪽에서 자동으로 맞는다.
  */
 export const PROVIDER_BUTTON_CLASS: Record<AuthProviderId, string> = {
   google: 'border border-border bg-background hover:bg-accent text-foreground',
   kakao: 'bg-[#FEE500] hover:brightness-95 text-[rgba(0,0,0,0.85)]',
+  naver: 'bg-[#03C75A] hover:brightness-95 text-white',
   email: 'border border-border bg-background hover:bg-accent text-foreground',
+}
+
+/**
+ * 목록의 원형 칩. **버튼 색과 같은 판을 깔아야 한다** — 카카오 심볼은 검정,
+ * 네이버 심볼은 흰색이라 중립 배경에 놓으면 각각 다크·라이트 모드에서 사라진다.
+ * 브랜드 판 위에 얹으면 두 모드 모두에서 대비가 보장된다.
+ */
+export const PROVIDER_MARK_CLASS: Record<AuthProviderId, string> = {
+  // 구글 심볼은 흰 바탕 전용이다(다크 모드에서 배경이 어두우면 대비가 깨진다).
+  google: 'bg-white border border-border',
+  kakao: 'bg-[#FEE500]',
+  naver: 'bg-[#03C75A]',
+  email: 'bg-surface-2 border border-border',
 }
 
 export function ProviderLogo({
@@ -33,6 +48,7 @@ export function ProviderLogo({
 }) {
   if (provider === 'google') return <GoogleLogo />
   if (provider === 'kakao') return <KakaoLogo />
+  if (provider === 'naver') return <NaverLogo />
   return <Mail className={className ?? 'h-[18px] w-[18px]'} aria-hidden />
 }
 
@@ -77,6 +93,23 @@ function KakaoLogo() {
       <path
         fill="rgba(0,0,0,0.85)"
         d="M9 1.5C4.58 1.5 1 4.31 1 7.78c0 2.23 1.48 4.19 3.71 5.3-.16.57-.6 2.17-.68 2.5-.11.42.15.42.32.3.13-.09 2.09-1.42 2.94-2 .55.08 1.12.12 1.71.12 4.42 0 8-2.81 8-6.28S13.42 1.5 9 1.5z"
+      />
+    </svg>
+  )
+}
+
+function NaverLogo() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 18 18"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        fill="#FFFFFF"
+        d="M11.34 9.62 6.44 2.7H2.7v12.6h4.02V8.36l4.9 6.94h3.68V2.7h-4.02v6.92z"
       />
     </svg>
   )

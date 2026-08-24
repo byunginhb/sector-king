@@ -2,7 +2,12 @@ import { describe, it, expect } from 'vitest'
 import { buildLinkedAccountsView } from '@/lib/auth/linked-accounts'
 import type { EnabledAuthProviders } from '@/lib/auth/enabled-providers'
 
-const ALL_ON: EnabledAuthProviders = { google: true, kakao: true, email: true }
+const ALL_ON: EnabledAuthProviders = {
+  google: true,
+  kakao: true,
+  naver: true,
+  email: true,
+}
 
 function identity(provider: string, email: string | null = null) {
   return {
@@ -18,7 +23,7 @@ describe('buildLinkedAccountsView', () => {
       [identity('google', 'a@gmail.com')],
       ALL_ON
     )
-    expect(view.linkable).toEqual(['kakao'])
+    expect(view.linkable).toEqual(['kakao', 'naver'])
     expect(view.linked.map((a) => a.provider)).toEqual(['google'])
   })
 
@@ -26,6 +31,7 @@ describe('buildLinkedAccountsView', () => {
     const view = buildLinkedAccountsView([identity('google')], {
       google: true,
       kakao: false,
+      naver: false,
       email: true,
     })
     expect(view.linkable).toEqual([])
@@ -78,6 +84,28 @@ describe('buildLinkedAccountsView', () => {
     expect(buildLinkedAccountsView(null, ALL_ON).linkable).toEqual([
       'google',
       'kakao',
+      'naver',
     ])
+  })
+
+  // Supabase 는 커스텀 제공자를 `custom:naver` 로 돌려준다. 벗기지 않으면
+  // 라벨이 깨지고 "이미 연결됨" 판정이 실패해 연결 버튼이 계속 남는다.
+  it('custom: 접두어를 벗겨 네이버로 인식한다', () => {
+    const view = buildLinkedAccountsView(
+      [identity('google'), identity('custom:naver', 'me@naver.com')],
+      ALL_ON
+    )
+    expect(view.linked.map((a) => a.provider)).toEqual(['google', 'naver'])
+    expect(view.linkable).toEqual(['kakao'])
+  })
+
+  it('네이버가 꺼져 있으면 연결 후보에 없다', () => {
+    const view = buildLinkedAccountsView([identity('google')], {
+      google: true,
+      kakao: true,
+      naver: false,
+      email: true,
+    })
+    expect(view.linkable).toEqual(['kakao'])
   })
 })
