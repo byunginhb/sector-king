@@ -17,7 +17,7 @@ export const metadata = {
   alternates: { canonical: `${BASE_URL}/privacy` },
 }
 
-const UPDATED_AT = '2026년 8월 23일'
+const UPDATED_AT = '2026년 8월 24일'
 
 export default function PrivacyPage() {
   return (
@@ -49,6 +49,9 @@ export default function PrivacyPage() {
               <li>Google 로그인: 이메일 주소, 프로필 이름, 프로필 이미지</li>
               <li>
                 카카오 로그인: 카카오계정 이메일(동의 시), 닉네임, 프로필 이미지
+              </li>
+              <li>
+                네이버 로그인: 네이버 계정 이메일, 이름(미제공 시 별명), 프로필 이미지
               </li>
               <li>이메일 로그인(링크 방식): 이메일 주소</li>
               <li>서비스 이용 기록(문의·제보 내용 등 이용자가 직접 입력한 정보)</li>
@@ -86,6 +89,7 @@ export default function PrivacyPage() {
             <ul className="mt-2 list-disc pl-5 space-y-1 text-muted-foreground">
               <li>Google(로그인 인증)</li>
               <li>Kakao(로그인 인증)</li>
+              <li>NAVER(로그인 인증)</li>
               <li>Supabase(인증·데이터 저장 인프라, 로그인 메일 발송)</li>
             </ul>
           </section>
