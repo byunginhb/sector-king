@@ -79,22 +79,48 @@ export function useListView<T>({
   page: controlledPage,
   onPageChange,
 }: UseListViewOptions<T>): UseListView<T> {
-  const [uncontrolledPage, setUncontrolledPage] = useState(1)
+  /**
+   * 페이지는 **훅 안의 state 하나**로 관리하고, 바깥(URL·라우터)과는 effect 로
+   * 동기화한다. controlled/uncontrolled 를 서로 다른 경로로 다루던 구조를 접은 것이다.
+   *
+   * 이렇게 나눈 이유:
+   *  - 화면은 **이번 렌더부터** 옳아야 한다. 정렬이 바뀌었는데 옛 페이지를 한 프레임
+   *    그리면 잘못된 목록이 스쳐 지나간다.
+   *  - 그런데 렌더 중에 건드려도 되는 건 자기 state 뿐이다. 예전엔 렌더 도중
+   *    `onPageChange` 를 불러서 React 가 거부했다
+   *    ("Cannot update a component (Router) while rendering ...").
+   *
+   * 그래서 렌더 중에는 `innerPage` 만 조정하고(자기 state라 안전), 바깥에 알리는 건
+   * effect 로 미룬다. 바깥이 되돌아오면 아래 else-if 가 다시 받아 적는다.
+   */
   const isControlled = controlledPage != null
-  const page = isControlled ? controlledPage : uncontrolledPage
+  const [innerPage, setInnerPage] = useState(controlledPage ?? 1)
+  const [lastResetKey, setLastResetKey] = useState(resetKey)
+  const [lastControlled, setLastControlled] = useState(controlledPage)
 
-  /** controlled 면 바깥으로, 아니면 내부 상태로. 함수형 갱신을 둘 다 지원한다. */
-  const setPageState = useCallback(
-    (next: number | ((prev: number) => number)) => {
-      if (isControlled) {
-        const value = typeof next === 'function' ? next(controlledPage) : next
-        onPageChange?.(value)
-        return
-      }
-      setUncontrolledPage(next)
-    },
-    [isControlled, controlledPage, onPageChange]
-  )
+  if (resetKey !== lastResetKey) {
+    // 필터·정렬이 바뀌었다 → 1페이지. 바깥 값이 아직 옛 페이지여도 무시한다.
+    setLastResetKey(resetKey)
+    setLastControlled(controlledPage)
+    setInnerPage(1)
+  } else if (isControlled && controlledPage !== lastControlled) {
+    // 뒤로가기·주소 직접 입력 등 바깥에서 페이지가 바뀐 경우.
+    setLastControlled(controlledPage)
+    setInnerPage(controlledPage)
+  }
+
+  const page = innerPage
+
+  // 바깥에 알리기만 한다 — 여기서 setState 를 부르면 연쇄 렌더가 된다.
+  useEffect(() => {
+    if (isControlled && controlledPage !== innerPage) onPageChange?.(innerPage)
+  }, [isControlled, controlledPage, innerPage, onPageChange])
+
+  /** 함수형 갱신을 지원한다. 바깥 반영은 위 effect 가 맡는다. */
+  const setPageState = useCallback((next: number | ((prev: number) => number)) => {
+    setInnerPage((prev) => (typeof next === 'function' ? next(prev) : next))
+  }, [])
+
   // SSR·초기 렌더는 페이징으로 고정한다(두 모드의 첫 화면이 같아 불일치가 없다).
   const [mode, setMode] = useState<ListViewMode>('pages')
 
@@ -106,19 +132,6 @@ export function useListView<T>({
     mq.addEventListener('change', apply)
     return () => mq.removeEventListener('change', apply)
   }, [])
-
-  /**
-   * 필터·정렬이 바뀌면 1페이지로 되돌린다.
-   *
-   * effect 가 아니라 **렌더 중 조정**이다(React 의 "props 변경 시 state 조정"
-   * 패턴). effect 로 하면 옛 페이지로 한 번 그린 뒤 다시 그려서 잘못된 화면이
-   * 한 프레임 스쳐 지나간다.
-   */
-  const [lastResetKey, setLastResetKey] = useState(resetKey)
-  if (resetKey !== lastResetKey) {
-    setLastResetKey(resetKey)
-    setPageState(1)
-  }
 
   const totalCount = items.length
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
