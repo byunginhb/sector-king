@@ -294,6 +294,9 @@ function AnalystTab() {
 // ── 종목 탭 ──────────────────────────────────────────────────────
 type StockSort = 'analysts' | 'reports' | 'upside' | 'name'
 
+/** 한 페이지 종목 수. 순위 오프셋 계산이 같은 값을 봐야 한다. */
+const PAGE_SIZE = 20
+
 function upsideOf(s: AnalystStockListItem): number | null {
   if (s.latestPrice == null || s.consensusTarget == null || s.latestPrice === 0) return null
   return (s.consensusTarget - s.latestPrice) / s.latestPrice
@@ -306,7 +309,14 @@ function StockExpanded({ ticker }: { ticker: string }) {
   return <StockDetailBody data={data} />
 }
 
-function StockRow({ stock, index, open, onToggle }: { stock: AnalystStockListItem; index: number; open: boolean; onToggle: () => void }) {
+/**
+ * 종목 한 줄.
+ *
+ * `rank` 를 찍는 이유: 정렬 칩만으로는 "지금 무슨 순서인지"가 화면에 안 남는다.
+ * 앞서 섹터 그룹핑이 순서를 흩어 놓았을 때 아무도 알아채지 못한 것도 같은 이유다.
+ * 순위가 1,2,3… 으로 이어지면 정렬이 깨지는 순간 바로 눈에 띈다.
+ */
+function StockRow({ stock, index, rank, open, onToggle }: { stock: AnalystStockListItem; index: number; rank: number; open: boolean; onToggle: () => void }) {
   const fmt = useCurrencyFormat()
   const ref = useRef<HTMLButtonElement>(null)
   const up = upsideOf(stock)
@@ -319,11 +329,17 @@ function StockRow({ stock, index, open, onToggle }: { stock: AnalystStockListIte
         ref={ref}
         onClick={onToggle}
         aria-expanded={open}
-        className="w-full grid grid-cols-[1fr_auto_1rem] sm:grid-cols-[1fr_6rem_6rem_6rem_5rem_1rem] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
+        className="w-full grid grid-cols-[1.75rem_1fr_auto_1rem] sm:grid-cols-[2.25rem_1fr_6rem_6rem_6rem_5rem_1rem] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
       >
+        <span className="text-xs tabular-nums text-muted-foreground">{rank}</span>
         <span className="min-w-0">
           <span className="block font-medium truncate">{stock.businessName}</span>
-          <span className="block text-xs text-muted-foreground truncate">{stock.ticker}</span>
+          {/* 섹터는 그룹 헤더 대신 여기 붙는다 — 행이 버튼이라 링크를 넣으면
+              중첩 인터랙티브가 되므로 텍스트로만 둔다(섹터 이동은 위 셀렉트). */}
+          <span className="block text-xs text-muted-foreground truncate">
+            {stock.ticker}
+            {stock.sector ? ` · ${stock.sector.sectorName}` : ''}
+          </span>
         </span>
         <span className="hidden sm:flex flex-col items-center leading-tight tabular-nums">
           <span className="text-sm">{stock.analystCount}명</span>
@@ -364,7 +380,10 @@ function StockTab() {
     if (sort === 'name') arr.sort((a, b) => a.businessName.localeCompare(b.businessName, 'ko'))
     else if (sort === 'upside') arr.sort((a, b) => (upsideOf(b) ?? -Infinity) - (upsideOf(a) ?? -Infinity))
     else if (sort === 'reports') arr.sort((a, b) => b.reportCount - a.reportCount || b.analystCount - a.analystCount)
-    return arr // 'analysts' = API 기본 정렬 유지
+    else arr.sort((a, b) => b.analystCount - a.analystCount || b.reportCount - a.reportCount)
+    // 이 배열 순서가 곧 화면 순서다. 중간에 다시 묶거나 흩는 단계를 두지 않는다 —
+    // 예전엔 여기서 섹터별로 재배열해 "리포트 43, 42, 41, 42" 처럼 정렬이 깨져 보였다.
+    return arr
   }, [data, sort, q, sectorFilter])
 
   /**
@@ -384,59 +403,19 @@ function StockTab() {
     return [...counts.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'ko'))
   }, [data])
 
-  /**
-   * **같은 섹터가 인접하도록 재배열**한다.
-   *
-   * 정렬만 적용하면 섹터가 흩어져 "종목 1개짜리 그룹"이 줄줄이 생기고, 그러면
-   * 헤더만 늘어나 오히려 목록이 길어진다(그룹핑을 넣은 이유와 정반대).
-   *
-   * 그룹 순서는 **그룹 안 최상위 종목의 정렬 순위**를 따른다 — 커버 애널 수로
-   * 정렬했다면 가장 많이 커버되는 종목이 속한 섹터가 맨 위다. 정렬의 의미가
-   * 그룹 축에서도 보존된다.
-   */
-  const ordered = useMemo(() => {
-    const buckets = new Map<string, AnalystStockListItem[]>()
-    for (const s of stocks) {
-      const key = s.sector?.sectorId ?? '__none__'
-      const bucket = buckets.get(key)
-      if (bucket) bucket.push(s)
-      else buckets.set(key, [s])
-    }
-    // Map 은 삽입 순서를 보존하므로, 최상위 종목이 먼저 나온 섹터가 앞선다.
-    return [...buckets.values()].flat()
-  }, [stocks])
-
   const view = useListView({
-    items: ordered,
-    pageSize: 20,
+    items: stocks,
+    pageSize: PAGE_SIZE,
     resetKey: `${sort}|${q}|${sectorFilter}`,
     page: Math.max(1, Number(query.get('page', '1')) || 1),
     onPageChange: (p) => query.set({ page: p === 1 ? null : String(p) }),
   })
 
   /**
-   * 섹터 그룹 — **현재 페이지에 보이는 종목만** 묶는다.
-   *
-   * 전체를 묶고 그룹 단위로 페이징하면 그룹 크기가 제각각이라 한 페이지가
-   * 2종목이었다 40종목이었다 한다. 페이지 크기를 일정하게 두고 그 안에서
-   * 섹터 헤더를 얹으면 "끝없이 내려가는" 문제와 "무엇이 뭉쳐 있는지"가
-   * 동시에 해결된다.
+   * 화면에 찍을 순위의 시작값. 페이지 모드는 현재 페이지 구간만 보여주므로
+   * 2페이지 첫 줄이 21위여야 한다(무한 모드는 누적이라 항상 1부터).
    */
-  const groups = useMemo(() => {
-    const out: { key: string; sector: AnalystStockListItem['sector']; items: AnalystStockListItem[] }[] = []
-    const index = new Map<string, number>()
-    for (const s of view.visible) {
-      const key = s.sector?.sectorId ?? '__none__'
-      let at = index.get(key)
-      if (at == null) {
-        at = out.length
-        index.set(key, at)
-        out.push({ key, sector: s.sector, items: [] })
-      }
-      out[at].items.push(s)
-    }
-    return out
-  }, [view.visible])
+  const rankOffset = view.mode === 'pages' ? (view.page - 1) * PAGE_SIZE : 0
 
   // 미토글 상태(null)면 첫 종목만 기본 열림. 이후엔 각 종목 독립 토글(여러 개 동시 가능).
   const defaultOpen = useMemo(() => new Set(stocks[0] ? [stocks[0].ticker] : []), [stocks])
@@ -510,7 +489,8 @@ function StockTab() {
         unit="종목"
       />
 
-      <div className="hidden sm:grid grid-cols-[1fr_6rem_6rem_6rem_5rem_1rem] gap-3 px-4 pb-2 text-xs font-medium text-muted-foreground border-b">
+      <div className="hidden sm:grid grid-cols-[2.25rem_1fr_6rem_6rem_6rem_5rem_1rem] gap-3 px-4 pb-2 text-xs font-medium text-muted-foreground border-b">
+        <span>#</span>
         <span>종목</span>
         <span className="text-center">애널·리포트</span>
         <span className="text-right">컨센서스</span>
@@ -528,70 +508,22 @@ function StockTab() {
         </p>
       ) : (
         <div>
-          {groups.map((g) => (
-            <section key={g.key}>
-              <SectorGroupHeader group={g} />
-              {/* 행 사이 얇은 구분선 — 헤더의 굵은 경계선과 대비되어 "그룹 안의
-                  항목들"로 읽힌다. 마지막 행은 다음 헤더의 border-t 와 겹치므로 뺀다. */}
-              <div className="divide-y divide-border-subtle">
-              {g.items.map((s, i) => (
-                <StockRow
-                  key={s.ticker}
-                  stock={s}
-                  index={i}
-                  open={openSet.has(s.ticker)}
-                  onToggle={() => toggle(s.ticker)}
-                />
-              ))}
-              </div>
-            </section>
-          ))}
+          <div className="divide-y divide-border-subtle">
+            {view.visible.map((s, i) => (
+              <StockRow
+                key={s.ticker}
+                stock={s}
+                index={i}
+                rank={rankOffset + i + 1}
+                open={openSet.has(s.ticker)}
+                onToggle={() => toggle(s.ticker)}
+              />
+            ))}
+          </div>
           <ListViewFooter view={view} unit="종목" />
         </div>
       )}
     </>
-  )
-}
-
-/**
- * 섹터 그룹 헤더 — 종목 수·커버 애널 수 요약 + 섹터 상세 링크.
- *
- * 섹터 단위 **집계 적중률은 내지 않는다.** 섹터별 표본이 얇아(종목 3~5개 ×
- * 애널 몇 명) 숫자가 우연에 휘둘리고, 그 숫자가 "이 섹터 애널들은 못 맞힌다"로
- * 읽히면 근거 없는 낙인이 된다. 1차는 탐색·그룹핑 목적으로만 쓴다.
- */
-function SectorGroupHeader({
-  group,
-}: {
-  group: { sector: AnalystStockListItem['sector']; items: AnalystStockListItem[] }
-}) {
-  const { sector, items } = group
-  const analystTotal = items.reduce((sum, s) => sum + s.analystCount, 0)
-  // 상세 페이지가 없는 섹터는 링크하지 않는다(404 방지) — 서버가 실은 종목 수로 판단.
-  const linkable = sector != null && sector.companyCount >= 3
-
-  return (
-    // 배경이 리스트 표면과 같으면(이전 `bg-background/95`) 띠로 읽히지 않아
-    // 헤더가 종목 행과 같은 평면에 떠 버린다. 여기서 계층을 만드는 건 글자
-    // 크기가 아니라 **면과 경계선**이다 — 헤더 글자는 행보다 작은 게 맞고
-    // (iOS 섹션 헤더와 같은 관계), 대신 면이 바뀌어야 한다.
-    <div className="sticky top-0 z-10 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 border-y border-border bg-surface-2 px-3 py-2 sm:px-4">
-      {linkable ? (
-        <Link
-          href={`/sectors/${sector!.sectorId}`}
-          className="text-sm font-semibold text-foreground hover:text-primary hover:underline"
-        >
-          {sector!.sectorName}
-        </Link>
-      ) : (
-        <span className="text-sm font-semibold text-foreground">
-          {sector?.sectorName ?? '미분류'}
-        </span>
-      )}
-      <span className="text-[11px] text-muted-foreground tabular-nums">
-        종목 {items.length} · 커버 애널 {analystTotal}명
-      </span>
-    </div>
   )
 }
 
