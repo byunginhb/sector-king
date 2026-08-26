@@ -531,6 +531,9 @@ function StockTab() {
           {groups.map((g) => (
             <section key={g.key}>
               <SectorGroupHeader group={g} />
+              {/* 행 사이 얇은 구분선 — 헤더의 굵은 경계선과 대비되어 "그룹 안의
+                  항목들"로 읽힌다. 마지막 행은 다음 헤더의 border-t 와 겹치므로 뺀다. */}
+              <div className="divide-y divide-border-subtle">
               {g.items.map((s, i) => (
                 <StockRow
                   key={s.ticker}
@@ -540,6 +543,7 @@ function StockTab() {
                   onToggle={() => toggle(s.ticker)}
                 />
               ))}
+              </div>
             </section>
           ))}
           <ListViewFooter view={view} unit="종목" />
@@ -567,7 +571,11 @@ function SectorGroupHeader({
   const linkable = sector != null && sector.companyCount >= 3
 
   return (
-    <div className="sticky top-0 z-10 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 bg-background/95 px-3 pb-1 pt-3 backdrop-blur sm:px-4">
+    // 배경이 리스트 표면과 같으면(이전 `bg-background/95`) 띠로 읽히지 않아
+    // 헤더가 종목 행과 같은 평면에 떠 버린다. 여기서 계층을 만드는 건 글자
+    // 크기가 아니라 **면과 경계선**이다 — 헤더 글자는 행보다 작은 게 맞고
+    // (iOS 섹션 헤더와 같은 관계), 대신 면이 바뀌어야 한다.
+    <div className="sticky top-0 z-10 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 border-y border-border bg-surface-2 px-3 py-2 sm:px-4">
       {linkable ? (
         <Link
           href={`/sectors/${sector!.sectorId}`}
