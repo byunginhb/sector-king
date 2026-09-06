@@ -62,11 +62,11 @@ function KrRow({ k }: { k: KoreanStockItem }) {
   const op = OPINION[k.opinion]
   return (
     <tr className="border-b border-border-subtle/60 last:border-0">
-      <td className="px-3 py-2.5 align-top">
+      <td className="px-4 py-3 align-top">
         <div className="font-medium text-foreground">{k.name}</div>
         <div className="text-[11px] text-muted-foreground tabular-nums">{k.code}</div>
       </td>
-      <td className="px-3 py-2.5 align-top">
+      <td className="px-4 py-3 align-top">
         <span
           className={cn(
             'inline-block rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
@@ -76,7 +76,7 @@ function KrRow({ k }: { k: KoreanStockItem }) {
           {op.label}
         </span>
       </td>
-      <td className="px-3 py-2.5 align-top text-xs text-foreground/80 leading-relaxed">
+      <td className="px-4 py-3 align-top text-xs text-foreground/80 leading-relaxed">
         {k.rationale}
       </td>
     </tr>
@@ -85,7 +85,7 @@ function KrRow({ k }: { k: KoreanStockItem }) {
 
 function SectionHeader({ no, title, en }: { no: string; title: string; en?: string }) {
   return (
-    <div className="flex items-baseline gap-3 border-b border-border-subtle pb-2 mb-4">
+    <div className="flex items-baseline gap-3 border-b border-border-subtle pb-2.5 mb-5">
       <span className="text-xs font-bold tabular-nums text-primary">{no}</span>
       <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
         {title}
@@ -111,7 +111,7 @@ function StatTile({
   const color =
     tone === 'up' ? 'text-success' : tone === 'down' ? 'text-danger' : 'text-foreground'
   return (
-    <div className="sk-card px-3 py-2.5">
+    <div className="sk-card p-4">
       <div className="text-[11px] text-muted-foreground mb-0.5">{label}</div>
       <div className={cn('text-lg font-bold tabular-nums leading-none', color)}>
         {value}
@@ -247,7 +247,7 @@ export function MonthlyReportView({
   )
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-6 sm:py-10">
+    <div className="container mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10">
       {/* 액션 바 (PDF는 캡처 대상 밖) */}
       <div className="flex justify-end mb-4">
         {locked ? (
@@ -276,7 +276,7 @@ export function MonthlyReportView({
 
       <div ref={bodyRef} className="bg-background rounded-md">
         {/* ── 리포트 헤더 ─────────────────────────────── */}
-        <header data-pdf-block className="border-b-2 border-foreground/80 pb-4 mb-6">
+        <header data-pdf-block className="border-b-2 border-foreground/80 pb-5 mb-8">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
               Sector King Research
@@ -301,7 +301,7 @@ export function MonthlyReportView({
         </header>
 
         {/* ── 요약 지표 ─────────────────────────────── */}
-        <div data-pdf-block className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+        <div data-pdf-block className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           <StatTile
             label="추적 종목 시총 변화"
             value={fmtPct(charts.marketPct)}
@@ -329,19 +329,19 @@ export function MonthlyReportView({
         {/* ── 이달의 일별 시장 흐름(#28) — 라이브 조회라 PDF(data-pdf-block) 제외 ── */}
         {/* 로딩 중엔 스켈레톤으로 영역을 잡아 레이아웃 점프 방지. 데이터가 없으면(보관기간 밖) 숨김. */}
         {dailyMarket.isLoading ? (
-          <section className="mb-8">
+          <section className="mb-10">
             <SectionHeader no="—" title="이달의 일별 시장 흐름" en="Daily Market Trend" />
             <DailyMarketChartSkeleton />
           </section>
         ) : dailyMarket.data && dailyMarket.data.points.length >= 2 ? (
-          <section className="mb-8">
+          <section className="mb-10">
             <SectionHeader no="—" title="이달의 일별 시장 흐름" en="Daily Market Trend" />
             <DailyMarketChart data={dailyMarket.data} />
           </section>
         ) : null}
 
         {/* ── 1. 총평 ─────────────────────────────── */}
-        <section data-pdf-block className="mb-8">
+        <section data-pdf-block className="mb-10">
           <SectionHeader no="01" title="총평" en="Executive Summary" />
           <p className="text-[15px] leading-relaxed text-foreground/90 whitespace-pre-line">
             {ev.thirtySecBrief.replace(/\s*\[수집방법:[^\]]*\]/g, '')}
@@ -349,9 +349,9 @@ export function MonthlyReportView({
         </section>
 
         {/* ── 2. 자금 흐름 ─────────────────────────── */}
-        <section data-pdf-block className="mb-8">
+        <section data-pdf-block className="mb-10">
           <SectionHeader no="02" title="섹터 자금 흐름" en="Fund Flows" />
-          <div className="sk-card p-3 mb-4">
+          <div className="sk-card p-5 mb-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
               <ArrowRightLeft className="h-3.5 w-3.5" aria-hidden />
               섹터별 시총 변화액 (USD, 유입 + / 유출 −)
@@ -365,11 +365,11 @@ export function MonthlyReportView({
 
         {/* ── 3. 섹터 로테이션 ─────────────────────── */}
         {ev.themeFlows.length > 0 && (
-          <section data-pdf-block className="mb-8">
+          <section data-pdf-block className="mb-10">
             <SectionHeader no="03" title="섹터 로테이션" en="Sector Rotation" />
             <div className="space-y-4">
               {ev.themeFlows.map((t) => (
-                <div key={t.index} className="rounded-lg border border-border-subtle p-4">
+                <div key={t.index} className="rounded-lg border border-border-subtle p-5">
                   <h3 className="font-semibold text-foreground mb-1.5">{t.title}</h3>
                   <p className="text-xs text-muted-foreground mb-2 tabular-nums">
                     {t.evidence}
@@ -388,9 +388,9 @@ export function MonthlyReportView({
         )}
 
         {/* ── 4. 주요 종목 ─────────────────────────── */}
-        <section data-pdf-block className="mb-8">
+        <section data-pdf-block className="mb-10">
           <SectionHeader no="04" title="주요 등락 종목" en="Key Movers" />
-          <div className="sk-card p-3 mb-4">
+          <div className="sk-card p-5 mb-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
               <TrendingUp className="h-3.5 w-3.5 text-success" aria-hidden />
               <TrendingDown className="h-3.5 w-3.5 text-danger" aria-hidden />
@@ -400,7 +400,7 @@ export function MonthlyReportView({
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
             {ev.headlines.slice(0, 6).map((h) => (
-              <div key={h.index} className="rounded-lg border border-border-subtle p-3">
+              <div key={h.index} className="rounded-lg border border-border-subtle p-4">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[11px] font-medium text-muted-foreground">
                     {h.category}
@@ -415,7 +415,7 @@ export function MonthlyReportView({
 
         {/* ── 5. 한국 주식 ─────────────────────────── */}
         {ev.koreanStocks.length > 0 && (
-          <section data-pdf-block className="mb-8">
+          <section data-pdf-block className="mb-10">
             <SectionHeader no="05" title="한국 주식 커버리지" en="Korea Coverage" />
             {/* 헤더 최상단 + 잠금 블러(상위3) + 표본(나머지)을 하나의 컨테이너로 */}
             <div className="overflow-hidden rounded-lg border border-border-subtle">
@@ -423,9 +423,9 @@ export function MonthlyReportView({
                 <KrCols />
                 <thead>
                   <tr className="border-b border-border-subtle bg-surface-1 text-left text-xs text-muted-foreground">
-                    <th className="px-3 py-2 font-medium">종목</th>
-                    <th className="px-3 py-2 font-medium">의견</th>
-                    <th className="px-3 py-2 font-medium">코멘트</th>
+                    <th className="px-4 py-2.5 font-medium">종목</th>
+                    <th className="px-4 py-2.5 font-medium">의견</th>
+                    <th className="px-4 py-2.5 font-medium">코멘트</th>
                   </tr>
                 </thead>
               </table>
@@ -467,7 +467,7 @@ export function MonthlyReportView({
         )}
 
         {/* ── 6. 전망 (forecast) ───────────────────── */}
-        <section data-pdf-block className="mb-8">
+        <section data-pdf-block className="mb-10">
           <SectionHeader no="06" title="전망" en="Outlook" />
           <div className="flex items-center gap-2 mb-3">
             <Telescope className="h-4 w-4 text-primary" aria-hidden />
@@ -503,7 +503,7 @@ export function MonthlyReportView({
         </section>
 
         {/* ── 면책 ─────────────────────────────── */}
-        <footer data-pdf-block className="border-t border-border-subtle pt-4 mt-8">
+        <footer data-pdf-block className="border-t border-border-subtle pt-5 mt-10">
           <div className="flex gap-2 text-[11px] text-muted-foreground leading-relaxed">
             <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" aria-hidden />
             <p>

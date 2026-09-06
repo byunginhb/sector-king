@@ -42,7 +42,7 @@ function MoverCard({ kind, mover }: { kind: 'spike' | 'drop'; mover: DailyMarket
   const tone = isUp ? 'text-success' : 'text-danger'
 
   return (
-    <div className="sk-card p-3">
+    <div className="sk-card p-4">
       <div className="flex items-center gap-2">
         <Icon className={`h-4 w-4 shrink-0 ${tone}`} aria-hidden />
         <span className="text-xs text-muted-foreground">{isUp ? '급등일' : '급락일'}</span>
@@ -83,12 +83,12 @@ function MoverCard({ kind, mover }: { kind: 'spike' | 'drop'; mover: DailyMarket
 export function DailyMarketChartSkeleton() {
   return (
     <div className="space-y-3" aria-hidden>
-      <div className="sk-card p-3">
+      <div className="sk-card p-4 sm:p-5">
         <Skeleton className="h-56 w-full" />
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
         {[0, 1].map((i) => (
-          <div key={i} className="sk-card p-3">
+          <div key={i} className="sk-card p-4">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="mt-2 h-4 w-full" />
             <Skeleton className="mt-1.5 h-3 w-full" />
@@ -110,10 +110,14 @@ export function DailyMarketChart({ data }: { data: DailyMarketResponse }) {
   // 최고/최저 지점(누적 라인의 정점·저점) — 그래프에 값 표기.
   const maxPoint = points.reduce((a, b) => (b.pct > a.pct ? b : a))
   const minPoint = points.reduce((a, b) => (b.pct < a.pct ? b : a))
+  // 첫 점은 정의상 항상 0%(기간 시작 대비 누적)라 극점으로 표기할 값이 없다.
+  // 상승장이면 최저=첫 점이 되어 라벨이 Y축 "+0%" 눈금 위에 겹치기만 한다.
+  const showMax = maxPoint.date !== points[0].date
+  const showMin = minPoint.date !== points[0].date
 
   return (
     <div className="space-y-3">
-      <div className="sk-card p-3">
+      <div className="sk-card p-4 sm:p-5">
         <div className="h-56 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={points} margin={{ top: 18, right: 16, left: 0, bottom: 0 }}>
@@ -154,36 +158,40 @@ export function DailyMarketChart({ data }: { data: DailyMarketResponse }) {
                 activeDot={{ r: 3 }}
               />
               {/* 최고/최저 지점 — 값 라벨 표기 */}
-              <ReferenceDot
-                x={maxPoint.date}
-                y={maxPoint.pct}
-                r={3}
-                fill="hsl(var(--muted-foreground))"
-                stroke="hsl(var(--background))"
-                strokeWidth={1.5}
-                label={{
-                  value: `최고 ${fmtPct1(maxPoint.pct)}`,
-                  position: 'top',
-                  fill: 'hsl(var(--foreground))',
-                  fontSize: 10,
-                  fontWeight: 600,
-                }}
-              />
-              <ReferenceDot
-                x={minPoint.date}
-                y={minPoint.pct}
-                r={3}
-                fill="hsl(var(--muted-foreground))"
-                stroke="hsl(var(--background))"
-                strokeWidth={1.5}
-                label={{
-                  value: `최저 ${fmtPct1(minPoint.pct)}`,
-                  position: 'bottom',
-                  fill: 'hsl(var(--foreground))',
-                  fontSize: 10,
-                  fontWeight: 600,
-                }}
-              />
+              {showMax && (
+                <ReferenceDot
+                  x={maxPoint.date}
+                  y={maxPoint.pct}
+                  r={3}
+                  fill="hsl(var(--muted-foreground))"
+                  stroke="hsl(var(--background))"
+                  strokeWidth={1.5}
+                  label={{
+                    value: `최고 ${fmtPct1(maxPoint.pct)}`,
+                    position: 'top',
+                    fill: 'hsl(var(--foreground))',
+                    fontSize: 10,
+                    fontWeight: 600,
+                  }}
+                />
+              )}
+              {showMin && (
+                <ReferenceDot
+                  x={minPoint.date}
+                  y={minPoint.pct}
+                  r={3}
+                  fill="hsl(var(--muted-foreground))"
+                  stroke="hsl(var(--background))"
+                  strokeWidth={1.5}
+                  label={{
+                    value: `최저 ${fmtPct1(minPoint.pct)}`,
+                    position: 'bottom',
+                    fill: 'hsl(var(--foreground))',
+                    fontSize: 10,
+                    fontWeight: 600,
+                  }}
+                />
+              )}
               {/* 급등/급락일 — 전일대비 최대 변동일 */}
               {spike && (
                 <ReferenceDot x={spike.date} y={spike.pct} r={4} fill={CHART_POSITIVE} stroke="none" />
