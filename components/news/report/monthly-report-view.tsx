@@ -274,7 +274,7 @@ export function MonthlyReportView({
         )}
       </div>
 
-      <div ref={bodyRef} className="bg-background rounded-md">
+      <div ref={bodyRef} className="bg-background rounded-md p-4 sm:p-8">
         {/* ── 리포트 헤더 ─────────────────────────────── */}
         <header data-pdf-block className="border-b-2 border-foreground/80 pb-5 mb-8">
           <div className="flex items-center justify-between mb-3">
