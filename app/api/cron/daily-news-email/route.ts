@@ -4,7 +4,7 @@
  * 일별 마켓 리포트 메일 발송 cron 엔드포인트.
  *
  * 호출자: GitHub Actions (`.github/workflows/daily-news-email.yml`)
- *   - 매시 0분(UTC) 호출 → 사용자별 `hour_kst` 매칭 발송
+ *   - 매시 호출 → 사용자별 `hour_kst` 가 이미 지났고 오늘 아직 못 받은 구독자에게 발송
  *
  * 인증: `Authorization: Bearer <CRON_SECRET>` (또는 `X-API-Key`)
  *   - timing-safe compare (`requireApiKey` 재사용)
@@ -14,7 +14,7 @@
  *   1. 요청 시점 KST hour 추출 (또는 body `{hour_kst}` 디버그 override)
  *   2. 발행된 최신 `news_reports` 1건 조회 (status='published')
  *      - 없으면 `{success:true, sent:0, reason:'no_published_report'}` 반환
- *   3. `email_subscriptions` 에서 daily_report=true AND hour_kst=현재시간
+ *   3. `email_subscriptions` 에서 daily_report=true AND hour_kst<=현재시간
  *      AND (last_sent_at IS NULL OR last_sent_at::date < today_kst) 조회
  *   4. profiles 와 join 해 email 가져온 뒤, 직렬 발송 (Resend rate limit 보호)
  *   5. 결과를 email_log 적재 + 성공 시 last_sent_at 갱신 (멱등성 가드)
@@ -189,7 +189,10 @@ export async function POST(req: Request) {
       'user_id, hour_kst, last_sent_at, unsubscribe_token, profiles!inner(email, name)'
     )
     .eq('daily_report', true)
-    .eq('hour_kst', targetHour)
+    // 정확 매칭(eq)이 아니라 "구독 시각이 이미 지난 사람" 전부. GitHub 스케줄은 매시 돌지
+    // 않고(실측 하루 ~8회) 리포트도 시각이 밀릴 수 있어, 늦게 돈 실행이 밀린 발송을 따라잡는다.
+    // 하루 1회 보장은 아래 last_sent_at 가드 몫.
+    .lte('hour_kst', targetHour)
 
   if (subErr) {
     console.error('[cron.daily-news-email] subscriptions lookup', subErr)

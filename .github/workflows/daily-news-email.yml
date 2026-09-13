@@ -1,16 +1,16 @@
 name: Daily News Email
 
-# 매시 0분(UTC)에 호출 → endpoint 가 현재 KST hour 와 매칭되는 구독자에게만 발송.
-# 사용자별 hour_kst 컬럼을 그대로 활용하기 위해 hourly 호출.
+# 매시 호출 → endpoint 가 "hour_kst 가 이미 지났고 오늘 아직 못 받은" 구독자에게 발송(캐치업).
+# 정각(0분)은 GitHub 혼잡 시간대라 실행이 자주 누락된다(실측 하루 ~8회) → 23분으로 비켜 둠.
 # Resend rate limit 보호는 endpoint 내부에서 직렬 발송 + delay 로 처리.
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '23 * * * *'
   workflow_dispatch:
     inputs:
       hour_kst:
-        description: '디버그/수동 호출용 KST hour (0~23). 비우면 endpoint 가 현재 KST hour 사용'
+        description: '디버그/수동 호출용 KST hour (0~23) — 이 시각 이하 구독자 대상. 비우면 endpoint 가 현재 KST hour 사용'
         required: false
         type: string
 
