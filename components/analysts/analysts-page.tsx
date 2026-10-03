@@ -6,6 +6,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ClipboardCheck, Info, ChevronDown, CalendarRange } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
+import { ShareButton } from '@/components/share-button'
 import { useAnalysts } from '@/hooks/use-analysts'
 import { useAnalystDetail } from '@/hooks/use-analyst-detail'
 import { useAnalystStocks, useAnalystStockDetail } from '@/hooks/use-analyst-stocks'
@@ -63,6 +64,9 @@ function norm(v: string): string {
 }
 
 /** 행 등장 스태거 — 첫 화면 몫만 지연을 주고 그 아래는 즉시(스크롤 시 이미 끝나 있어야 함). */
+const ANALYSTS_SHARE_TITLE = '애널리스트 성적표 | Sector King'
+const ANALYSTS_SHARE_DESCRIPTION = '목표주가 방향이 실제 주가와 맞았는지로 채점한 애널리스트 예측력 순위'
+
 const RISE_STEP_MS = 28
 const RISE_MAX_STEPS = 12
 const riseStyle = (i: number) => ({ '--sk-rise-delay': `${Math.min(i, RISE_MAX_STEPS) * RISE_STEP_MS}ms` }) as React.CSSProperties
@@ -742,15 +746,24 @@ export function AnalystsPage() {
 
   return (
     <div className="min-h-screen">
-      <GlobalTopBar />
+      <GlobalTopBar
+        shareTitle={ANALYSTS_SHARE_TITLE}
+        shareDescription={ANALYSTS_SHARE_DESCRIPTION}
+      />
       <main className="mx-auto max-w-4xl px-4 py-6 sm:py-8">
         <div className="flex items-start gap-3 mb-2">
           <ClipboardCheck className="h-7 w-7 text-primary shrink-0 mt-0.5" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">애널리스트 성적표</h1>
             <p className="text-sm text-muted-foreground mt-1">
               애널리스트가 목표주가를 올렸는지 내렸는지, 그 방향대로 주가가 실제로 움직였는지로 예측력을 채점합니다.
             </p>
+          </div>
+          <div className="shrink-0 lg:hidden">
+            <ShareButton
+              title={ANALYSTS_SHARE_TITLE}
+              description={ANALYSTS_SHARE_DESCRIPTION}
+            />
           </div>
         </div>
 

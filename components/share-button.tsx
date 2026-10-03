@@ -15,14 +15,9 @@ import { useShare } from '@/hooks/use-share'
 interface ShareButtonProps {
   title: string
   description: string
-}
-
-function KakaoIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 3C6.48 3 2 6.58 2 10.9c0 2.78 1.8 5.22 4.5 6.6-.2.73-.72 2.65-.82 3.06-.13.5.18.5.38.36.16-.1 2.5-1.7 3.52-2.38.46.06.93.1 1.42.1 5.52 0 10-3.58 10-7.9S17.52 3 12 3z" />
-    </svg>
-  )
+  /** GA `share` 이벤트 분류. 생략하면 현재 경로에서 추론한다. */
+  contentType?: string
+  itemId?: string
 }
 
 function XTwitterIcon({ className }: { className?: string }) {
@@ -49,7 +44,7 @@ function LinkedInIcon({ className }: { className?: string }) {
   )
 }
 
-export function ShareButton({ title, description }: ShareButtonProps) {
+export function ShareButton({ title, description, contentType, itemId }: ShareButtonProps) {
   const {
     isCopied,
     isNativeShareSupported,
@@ -58,15 +53,14 @@ export function ShareButton({ title, description }: ShareButtonProps) {
     handleTwitterShare,
     handleFacebookShare,
     handleLinkedInShare,
-    handleKakaoShare,
-  } = useShare({ title, description })
+  } = useShare({ title, description, contentType, itemId })
 
-  const [showToast, setShowToast] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
   const onCopyUrl = async () => {
-    await handleCopyUrl()
-    setShowToast(true)
-    setTimeout(() => setShowToast(false), 2000)
+    const copied = await handleCopyUrl()
+    setToast(copied ? 'URL이 클립보드에 복사되었습니다' : 'URL을 복사하지 못했습니다')
+    setTimeout(() => setToast(null), 2000)
   }
 
   if (isNativeShareSupported) {
@@ -78,7 +72,7 @@ export function ShareButton({ title, description }: ShareButtonProps) {
         className="relative"
         aria-label="공유"
       >
-        <Share2 className="h-5 w-5" />
+        <Share2 className="h-5 w-5" aria-hidden />
         <span className="sr-only">공유</span>
       </Button>
     )
@@ -89,7 +83,7 @@ export function ShareButton({ title, description }: ShareButtonProps) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="relative" aria-label="공유">
-            <Share2 className="h-5 w-5" />
+            <Share2 className="h-5 w-5" aria-hidden />
             <span className="sr-only">공유</span>
           </Button>
         </DropdownMenuTrigger>
@@ -101,11 +95,6 @@ export function ShareButton({ title, description }: ShareButtonProps) {
               <Copy className="w-4 h-4 mr-2" />
             )}
             {isCopied ? 'URL 복사됨!' : 'URL 복사'}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleKakaoShare}>
-            <KakaoIcon className="w-4 h-4 mr-2" />
-            카카오톡
-            <ExternalLink className="w-3 h-3 ml-auto text-muted-foreground" />
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleTwitterShare}>
             <XTwitterIcon className="w-4 h-4 mr-2" />
@@ -127,14 +116,15 @@ export function ShareButton({ title, description }: ShareButtonProps) {
 
       {/* Toast */}
       <AnimatePresence>
-        {showToast && (
+        {toast && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
+            role="status"
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-lg bg-surface-3 text-foreground text-sm font-medium shadow-lg"
           >
-            URL이 클립보드에 복사되었습니다
+            {toast}
           </motion.div>
         )}
       </AnimatePresence>

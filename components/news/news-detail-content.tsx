@@ -10,6 +10,7 @@ import { NoviceReportView } from './novice-report-view'
 import { ViewToggle, type ReportView } from './view-toggle'
 import { StickyToc } from './sticky-toc'
 import { NewsSubscribeCta } from './news-subscribe-cta'
+import { ShareButton } from '@/components/share-button'
 import { MonthlyReportView } from './report/monthly-report-view'
 import { resolveReportKind } from '@/lib/news/report-kind'
 import type { NewsReportDTO } from '@/drizzle/supabase-schema'
@@ -63,9 +64,17 @@ export function NewsDetailContent({
             ? format(new Date(report.publishedAt), 'yyyy-MM-dd HH:mm')
             : report.reportDate}
         </p>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight leading-tight">
-          {report.title}
-        </h1>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="min-w-0 text-2xl sm:text-3xl font-bold text-foreground tracking-tight leading-tight">
+            {report.title}
+          </h1>
+          <div className="shrink-0 lg:hidden">
+            <ShareButton
+              title={`${report.title} | Sector King`}
+              description={report.oneLineConclusion ?? '섹터킹 일별 마켓 리포트'}
+            />
+          </div>
+        </div>
         {report.coverKeywords.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
             {report.coverKeywords.map((kw) => (

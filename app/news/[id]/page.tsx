@@ -107,6 +107,8 @@ export default async function NewsDetailPage({ params, searchParams }: PageProps
       />
       <GlobalTopBar
         subtitle="마켓 리포트"
+        shareTitle={`${report.title} | Sector King`}
+        shareDescription={description}
         mobileLeading={
           <Link
             href="/news"

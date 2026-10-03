@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { DataAsOf } from '@/components/ui/data-as-of'
 import { ArrowLeft, PieChart, TrendingUp, Target, BarChart2, CircleDot, LayoutGrid } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
+import { ShareButton } from '@/components/share-button'
 import { RegionToggle } from '@/components/region-toggle'
 import { useRegion } from '@/hooks/use-region'
 import { useIndustries } from '@/hooks/use-industries'
@@ -280,6 +281,12 @@ export function MarketSizePage() {
               ))}
             </select>
             <RegionToggle value={region} onChange={setRegion} size="sm" />
+            <div className="lg:hidden">
+              <ShareButton
+                title="시장 규모 | Sector King"
+                description="섹터·카테고리별 시장 규모(시총·매출)와 성장 전망 시각화"
+              />
+            </div>
           </div>
         </div>
 

@@ -9,6 +9,7 @@ import {
   type EnabledAuthProviders,
   type OAuthProviderId,
 } from '@/lib/auth/enabled-providers'
+import { trackEvent } from '@/lib/analytics'
 import {
   PROVIDER_BUTTON_CLASS,
   PROVIDER_LABEL,
@@ -46,6 +47,9 @@ export function SignInPanel({
   async function handleOAuth(provider: OAuthProviderId) {
     setPending(provider)
     setError(null)
+    // 성공하면 곧바로 제공자 페이지로 떠나므로 호출 전에 보낸다. 의미는 "로그인 시작" —
+    // 완료 여부는 서버 콜백에서 결정되어 여기서는 알 수 없다.
+    trackEvent('login_start', { method: provider })
     try {
       const supabase = createClient()
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
@@ -90,6 +94,7 @@ export function SignInPanel({
         setError(otpError.message || '메일 발송에 실패했습니다.')
       } else {
         setSentTo(email)
+        trackEvent('login_start', { method: 'email' })
       }
     } catch (err) {
       console.error('[SignInPanel] magic link error:', err)

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
+import { ShareButton } from '@/components/share-button'
 import { BreadcrumbJsonLd, ItemListJsonLd } from '@/components/json-ld'
 import { getIndexableSectors, getSectorDetail } from '@/lib/sector-server'
 import { DATA_SOURCE, UPDATE_CADENCE } from '@/lib/site-facts'
@@ -73,6 +74,8 @@ export default async function SectorPage({
     .join(', ')
   const krCount = sector.companies.filter((c) => c.isKorean).length
   const usCount = sector.companies.length - krCount
+  const shareTitle = `${sector.name} 섹터 대표 종목과 시가총액 | Sector King`
+  const shareDescription = `${sector.name} 섹터 ${sector.companies.length}종목의 시가총액과 등락 — 대표 종목 ${top3}`
 
   return (
     <div className="min-h-screen">
@@ -96,7 +99,11 @@ export default async function SectorPage({
         }))}
       />
 
-      <GlobalTopBar subtitle={`${sector.name} 섹터`} />
+      <GlobalTopBar
+        subtitle={`${sector.name} 섹터`}
+        shareTitle={shareTitle}
+        shareDescription={shareDescription}
+      />
 
       <main className="container mx-auto px-4 py-8 sm:py-10">
         <nav className="mb-4 text-sm" aria-label="상위 페이지">
@@ -110,9 +117,14 @@ export default async function SectorPage({
         </nav>
 
         <header className="max-w-3xl">
-          <h1 className="font-display text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">
-            {sector.name} 섹터 — 대표 종목과 시가총액
-          </h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="min-w-0 font-display text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">
+              {sector.name} 섹터 — 대표 종목과 시가총액
+            </h1>
+            <div className="shrink-0 lg:hidden">
+              <ShareButton title={shareTitle} description={shareDescription} />
+            </div>
+          </div>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             {sector.name} 섹터에는 섹터킹이 추적하는 종목 {sector.companies.length}곳
             {krCount > 0 && usCount > 0

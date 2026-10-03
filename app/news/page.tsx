@@ -23,7 +23,11 @@ export const metadata = {
   title: '마켓 리포트',
   description:
     '섹터킹이 발행하는 일별·월별 마켓 리포트 목록. 그날의 시장 요약과 섹터 자금 흐름 해설을 무료로 제공합니다.',
-  alternates: { canonical: `${BASE_URL}/news` },
+  alternates: {
+    canonical: `${BASE_URL}/news`,
+    // RSS 자동 발견 — 브라우저·피드 리더·네이버 서치어드바이저가 이 <link> 로 피드를 찾는다.
+    types: { 'application/rss+xml': `${BASE_URL}/news/rss.xml` },
+  },
 }
 
 // 요일 라벨 매핑 (Date.getDay(): 0=일~6=토)

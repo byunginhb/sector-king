@@ -12,6 +12,7 @@ import type {
   WatchlistItemDTO,
   WatchlistItemType,
 } from '@/drizzle/supabase-schema'
+import { trackEvent } from '@/lib/analytics'
 
 interface ListResponse {
   items: WatchlistItemDTO[]
@@ -78,7 +79,11 @@ export function useWatchlist(options: UseWatchlistOptions = {}) {
 
   const addMutation = useMutation({
     mutationFn: postWatchlist,
-    onSuccess: () => {
+    onSuccess: (item) => {
+      // 별 토글·온보딩 선택 등 모든 추가 경로가 이 mutation 을 지난다.
+      trackEvent('add_to_wishlist', {
+        items: [{ item_id: item.itemKey, item_category: item.itemType }],
+      })
       qc.invalidateQueries({ queryKey: QUERY_KEY })
       qc.invalidateQueries({ queryKey: ['me', 'summary'] })
     },

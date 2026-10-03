@@ -11,6 +11,7 @@ import type { RankingsResponse } from '@/app/api/rankings/route'
 import { useRegion } from '@/hooks/use-region'
 import type { RankingHorizon, RankingSortDir } from '@/lib/api-helpers'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
+import { ShareButton } from '@/components/share-button'
 import { IndustryContextBar } from '@/components/layout/industry-context-bar'
 import { IndustryTitle } from '@/components/industry-title'
 import { RegionToggle } from '@/components/region-toggle'
@@ -207,6 +208,12 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
               추가 지표
             </button>
             <DataAsOf date={data?.date} label="점수" />
+            <div className="lg:hidden">
+              <ShareButton
+                title="점수 랭킹 | Sector King"
+                description="단기·장기 점수로 보는 종목 랭킹"
+              />
+            </div>
           </div>
         </div>
 

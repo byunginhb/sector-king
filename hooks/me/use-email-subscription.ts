@@ -8,6 +8,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ApiResponse } from '@/types'
 import type { EmailSubscriptionDTO } from '@/drizzle/supabase-schema'
+import { trackEvent } from '@/lib/analytics'
 
 interface PatchInput {
   dailyReport?: boolean
@@ -55,7 +56,19 @@ export function useEmailSubscription(options: { enabled?: boolean } = {}) {
 
   const patchMutation = useMutation({
     mutationFn: patchSubscription,
-    onSuccess: (data) => {
+    onSuccess: (data, input) => {
+      // 구독 진입점(뉴스 CTA·설정 토글·로그인 후 자동 구독)이 전부 이 mutation 을 지나므로
+      // 전환은 여기서 한 번만 센다. 꺼짐→켜짐 전환만 — 발송 시각 변경·해지는 제외.
+      const previous = qc.getQueryData<EmailSubscriptionDTO>(QUERY_KEY)
+      if (
+        input.dailyReport === true &&
+        data.dailyReport &&
+        data.emailEnabled &&
+        previous !== undefined &&
+        !previous.dailyReport
+      ) {
+        trackEvent('generate_lead', { lead_source: 'daily_report_email' })
+      }
       qc.setQueryData(QUERY_KEY, data)
     },
   })

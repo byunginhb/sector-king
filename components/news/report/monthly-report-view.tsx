@@ -25,6 +25,7 @@ import type {
   KoreanStockItem,
 } from '@/drizzle/supabase-schema'
 import { downloadReportPdf } from '@/lib/reports/download-pdf'
+import { ShareButton } from '@/components/share-button'
 import { LockedSection } from '../locked-section'
 import { SectorFlowChart, MoversChart } from './monthly-charts'
 import { DailyMarketChart, DailyMarketChartSkeleton } from './daily-market-chart'
@@ -249,7 +250,13 @@ export function MonthlyReportView({
   return (
     <div className="container mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10">
       {/* 액션 바 (PDF는 캡처 대상 밖) */}
-      <div className="flex justify-end mb-4">
+      <div className="flex items-center justify-end gap-2 mb-4">
+        <div className="lg:hidden">
+          <ShareButton
+            title={`${report.title} | Sector King`}
+            description={report.oneLineConclusion ?? '섹터킹 월간 마켓 리포트'}
+          />
+        </div>
         {locked ? (
           <Link
             href={loginHref}
