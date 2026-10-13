@@ -23,11 +23,12 @@ const CONTENT_UPDATED_AT: Record<string, string> = {
   '/terms': '2025-07-06',
   '/privacy': '2025-07-06',
   // 아래 값은 각 페이지 파일의 UPDATED_AT 상수와 같아야 한다(본문 표시일 = lastmod).
-  '/data-sources': '2026-08-08',
+  '/data-sources': '2026-10-13',
   '/editorial-policy': '2026-08-08',
   '/guide/market-cap-change-vs-net-buying': '2026-08-08',
   '/guide/how-to-read-money-flow': '2026-08-08',
   '/guide/sector-rotation': '2026-08-08',
+  '/guide/cross-asset-flow': '2026-10-13',
 }
 
 /** 발행된 마켓 리포트 URL — 목록에서 상세로 가는 링크는 있지만 sitemap 에 빠져 있었다. */
@@ -96,6 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     data('/market-size', 0.8),
     data('/analysts', 0.8),
     data('/indices', 0.8),
+    data('/global-flow', 0.9),
     data('/news', 0.8),
     data('/sectors', 0.9),
     // 신뢰·설명 페이지 — E-E-A-T 신호라 반드시 색인 대상에 넣는다.
@@ -108,6 +110,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     doc('/guide/market-cap-change-vs-net-buying', 0.7),
     doc('/guide/how-to-read-money-flow', 0.7),
     doc('/guide/sector-rotation', 0.7),
+    doc('/guide/cross-asset-flow', 0.7),
     doc('/contact', 0.4),
     doc('/terms', 0.3),
     doc('/privacy', 0.3),

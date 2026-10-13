@@ -55,6 +55,12 @@ jobs:
         run: python scripts/update_indices.py
         continue-on-error: true
 
+      # 글로벌 자금 지도(/global-flow) — 자산 가격·FRED·스테이블코인·고객예탁금·외국인 순매수·ETF 좌수.
+      # 키 불필요. 소스별로 격리돼 있어 일부 실패해도 나머지는 적재되고, 잡 전체도 막지 않는다.
+      - name: Update global flow
+        run: python scripts/update_global_flow.py
+        continue-on-error: true
+
       # db-snapshot 을 단일 커밋으로 force-push (히스토리 미보존 → git 팽창 없음).
       # 플러밍으로 커밋을 만들어 working tree/HEAD 를 건드리지 않는다.
       - name: Push DB to db-snapshot

@@ -40,6 +40,10 @@ interface Props {
   onSelectTile?: (tile: MapTile) => void
   /** 툴팁의 색 기준값 라벨 (예: '매출 성장률') */
   colorLabel: string
+  /** 강조 툴팁의 대상 명사 (기본 '종목' — 글로벌 자금 지도는 '자산') */
+  tileNoun?: string
+  /** href 없는 타일 버튼의 접근성 라벨 (기본 '<이름> 하위 항목 보기') */
+  tileActionLabel?: (tile: MapTile) => string
 }
 
 /**
@@ -135,6 +139,8 @@ export function MarketSizeIndustryMap({
   colorScale,
   onSelectTile,
   colorLabel,
+  tileNoun = '종목',
+  tileActionLabel = (t) => `${t.name} 하위 항목 보기`,
 }: Props) {
   const fmt = useCurrencyFormat()
   // 콜백 ref — 컨테이너가 조건부로 마운트되므로 ref.current 를 effect 에서 읽으면
@@ -309,9 +315,9 @@ export function MarketSizeIndustryMap({
                 t.w > 54
               const flagReason =
                 flagged.topGain?.id === t.id
-                  ? '기간 내 가장 크게 오른 종목'
+                  ? `기간 내 가장 크게 오른 ${tileNoun}`
                   : flagged.topLoss?.id === t.id
-                    ? '기간 내 가장 크게 내린 종목'
+                    ? `기간 내 가장 크게 내린 ${tileNoun}`
                     : null
               const title = [
                 `${group.name} · ${t.name}`,
@@ -384,7 +390,7 @@ export function MarketSizeIndustryMap({
                   type="button"
                   onClick={() => onSelectTile?.(t)}
                   title={title}
-                  aria-label={`${t.name} 하위 항목 보기`}
+                  aria-label={tileActionLabel(t)}
                   className={className}
                   style={style}
                 >

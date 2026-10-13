@@ -46,7 +46,7 @@
  *    지키고 있고 신규 시스템이 손대면 회귀 위험만 생긴다(카탈로그 §N).
  *
  * 전수 카탈로그 근거: `_workspace/01_plan/permission-catalog.md`
- * (페이지 50 라우트 + 비라우트 제품면 2 = 52, 기능 160)
+ * (페이지 50 라우트 + 비라우트 제품면 2 = 52, 기능 160) + 2026-10 글로벌 자금 지도(페이지 2·기능 8) = 54·168
  */
 
 import type { FeatureDef, GateMode, PageDef } from './types'
@@ -121,6 +121,7 @@ export const PAGES: readonly PageDef[] = [
   { id: 'analysts', label: '애널리스트 성적표', route: '/analysts', order: 12 },
   { id: 'analyst-detail', label: '애널리스트 상세', route: '/analysts/[id]', order: 13 },
   { id: 'indices', label: '세계 지수', route: '/indices', order: 14 },
+  { id: 'global-flow', label: '글로벌 자금 지도', route: '/global-flow', order: 53 },
   {
     // 라우트가 없는 독립 제품면 — 홈에만 마운트된다(카탈로그 §A-1, §6.2).
     id: 'calendar',
@@ -169,6 +170,12 @@ export const PAGES: readonly PageDef[] = [
     label: '가이드: 섹터 로테이션',
     route: '/guide/sector-rotation',
     order: 28,
+  },
+  {
+    id: 'guide-cross-asset',
+    label: '가이드: 주식 밖 자금 흐름',
+    route: '/guide/cross-asset-flow',
+    order: 54,
   },
   { id: 'methodology', label: '방법론', route: '/methodology', order: 29 },
   { id: 'data-sources', label: '데이터 출처', route: '/data-sources', order: 30 },
@@ -1498,6 +1505,101 @@ export const FEATURES: Record<string, FeatureDef> = {
     recommendedGateMode: 'hidden',
     supportedGateModes: BLOCK_MODES,
     masking: 'server',
+  },
+
+  // ══════════════════════════════════════════════════════════════════
+  //  글로벌 자금 지도 `/global-flow` — 6 (+ 홈 띠 1)
+  //  결론·조류는 SEO 착지면이라 공개 유지 권장, 회전 궤적·통로는 Pro 후보.
+  // ══════════════════════════════════════════════════════════════════
+
+  'global-flow.verdict': {
+    label: '한 줄 결론 + 잣대 띠',
+    pageId: 'global-flow',
+    description: '규칙 기반 위험 선호·유동성·달러 판정 문장, 최강·최약 자산',
+    location: 'components/global-flow/verdict-header.tsx',
+    defaultPolicy: { minTier: 'anon', gateMode: 'open' },
+    recommendedMinTier: 'anon',
+    recommendedGateMode: 'open',
+    supportedGateModes: BLOCK_MODES,
+    masking: 'display',
+  },
+  'global-flow.liquidity': {
+    label: '미국 순유동성',
+    pageId: 'global-flow',
+    description: '연준 총자산 − TGA − 역레포 1년 차트 + M2·MMF 총자산',
+    location: 'components/global-flow/liquidity-panel.tsx',
+    defaultPolicy: { minTier: 'anon', gateMode: 'open' },
+    recommendedMinTier: 'anon',
+    recommendedGateMode: 'open',
+    supportedGateModes: BLOCK_MODES,
+    masking: 'display',
+  },
+  'global-flow.asset-map': {
+    label: '자산군 지도·가치 증감',
+    pageId: 'global-flow',
+    description: '자산군 트리맵 + 기간 시가 가치 변화 발산 막대',
+    location: 'components/global-flow/value-change-bars.tsx + market-size-industry-map',
+    defaultPolicy: { minTier: 'anon', gateMode: 'open' },
+    recommendedMinTier: 'anon',
+    recommendedGateMode: 'open',
+    supportedGateModes: BLOCK_MODES,
+    masking: 'display',
+  },
+  'global-flow.rotation': {
+    label: '회전 궤적(RRG)',
+    pageId: 'global-flow',
+    description: '자산군 상대 강도·모멘텀 8주 꼬리',
+    location: 'components/global-flow/rotation-chart.tsx',
+    defaultPolicy: { minTier: 'anon', gateMode: 'open' },
+    recommendedMinTier: 'pro',
+    recommendedGateMode: 'hidden',
+    supportedGateModes: BLOCK_MODES,
+    masking: 'server',
+  },
+  'global-flow.channels': {
+    label: '실제 자금 통로',
+    pageId: 'global-flow',
+    description: '스테이블코인·MMF·고객예탁금·외국인 순매수·ETF 순설정',
+    location: 'components/global-flow/flow-channels.tsx',
+    defaultPolicy: { minTier: 'anon', gateMode: 'open' },
+    recommendedMinTier: 'free',
+    recommendedGateMode: 'partial',
+    supportedGateModes: LIST_MODES,
+    masking: 'server',
+  },
+  'global-flow.period': {
+    label: '기간 선택(1주~1년)',
+    pageId: 'global-flow',
+    description: '1주·1개월·3개월·1년 — 1년만 게이트 후보',
+    location: 'components/global-flow/global-flow-page.tsx',
+    defaultPolicy: { minTier: 'anon', gateMode: 'open' },
+    recommendedMinTier: 'anon',
+    recommendedGateMode: 'partial',
+    supportedGateModes: PERIOD_MODES,
+    masking: 'display',
+  },
+  'home.global-flow-strip': {
+    label: '홈 글로벌 자금 한 줄',
+    pageId: 'home',
+    description: '1개월 판정 문장 + 강세·약세 자산, /global-flow 진입',
+    location: 'components/dashboard/global-flow-strip.tsx',
+    defaultPolicy: { minTier: 'anon', gateMode: 'open' },
+    recommendedMinTier: 'anon',
+    recommendedGateMode: 'open',
+    supportedGateModes: BLOCK_MODES,
+    masking: 'display',
+  },
+  'guide.cross-asset': {
+    label: '주식 밖 자금 흐름',
+    pageId: 'guide-cross-asset',
+    description: '비브랜드 유입 가이드 (세 층 구분·RRG 읽는 법)',
+    location: 'app/guide/cross-asset-flow/page.tsx',
+    defaultPolicy: { minTier: 'anon', gateMode: 'open' },
+    recommendedMinTier: 'anon',
+    recommendedGateMode: 'open',
+    supportedGateModes: SEALED_OPEN,
+    masking: 'display',
+    seoIndexed: true,
   },
 
   // ══════════════════════════════════════════════════════════════════

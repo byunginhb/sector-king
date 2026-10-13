@@ -35,6 +35,11 @@ const DEEP_DIVES = [
     summary: '반대로 움직이는 섹터 짝 찾기. 시장 전체 등락과 구분하는 법.',
   },
   {
+    href: '/guide/cross-asset-flow',
+    label: '주식 밖 자금 흐름 읽는 법 — 달러·금·채권·비트코인',
+    summary: '"돈이 흘렀다"의 세 가지 뜻(유동성·가치 변화·실제 유출입)과 회전 궤적 보는 법.',
+  },
+  {
     href: '/data-sources',
     label: '데이터 출처와 수집 방식',
     summary: '어떤 숫자가 어디서 오고, 무엇이 섹터킹이 직접 계산한 값인지.',

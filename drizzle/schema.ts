@@ -335,3 +335,32 @@ export const marketIndexHistory = sqliteTable(
 
 export type MarketIndexHistory = typeof marketIndexHistory.$inferSelect
 export type NewMarketIndexHistory = typeof marketIndexHistory.$inferInsert
+
+// ─── 글로벌 자금 지도 (/global-flow) ───
+// 둘 다 scripts/update_global_flow.py 의 ensure_tables 가 만든다(db-snapshot 이 SoT).
+
+/** 자산군 가격 이력 — yfinance 배당 조정 종가. 크립토는 주말 행도 있다. */
+export const globalAssetHistory = sqliteTable(
+  'global_asset_history',
+  {
+    symbol: text('symbol').notNull(),
+    date: text('date').notNull(),
+    close: real('close').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.symbol, table.date] })]
+)
+
+/**
+ * 매크로·자금 통로 시계열. series_id 는 출처 접두어로 구분한다:
+ * `FRED:<id>`(원 단위 그대로), `STABLECOIN_USD`, `KR_CUSTOMER_DEPOSIT`(원),
+ * `KR_FOREIGN_NET`(원), `BTC_SUPPLY`, `ETH_SUPPLY`, `ETF_SHARES:<sym>`, `ETF_AUM:<sym>`.
+ */
+export const macroSeries = sqliteTable(
+  'macro_series',
+  {
+    seriesId: text('series_id').notNull(),
+    date: text('date').notNull(),
+    value: real('value').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.seriesId, table.date] })]
+)

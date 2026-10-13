@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Menu, Newspaper, Info, Trophy, Globe, PieChart, ClipboardCheck, type LucideIcon } from 'lucide-react'
+import { Menu, Newspaper, Info, Trophy, Globe, PieChart, ClipboardCheck, Waves, type LucideIcon } from 'lucide-react'
 import { SectorKingLogo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { CurrencyToggle } from '@/components/currency-toggle'
@@ -55,9 +55,10 @@ interface NavItem {
 const NAV_ITEMS: readonly NavItem[] = [
   { href: '/about', label: '소개', icon: Info },
   { href: '/news', label: '뉴스', icon: Newspaper },
+  { href: '/global-flow', label: '글로벌 자금', icon: Waves, badge: 'NEW' },
   { href: '/market-size', label: '시장 규모', icon: PieChart },
   { href: '/rankings', label: '섹터킹 픽', icon: Trophy },
-  { href: '/analysts', label: '애널리스트 성적표', icon: ClipboardCheck, badge: 'NEW' },
+  { href: '/analysts', label: '애널리스트 성적표', icon: ClipboardCheck },
   { href: '/indices', label: '세계 지수', icon: Globe },
 ] as const
 
@@ -154,7 +155,8 @@ export function GlobalTopBar({
                         : 'text-foreground/70 hover:bg-surface-2 hover:text-foreground'
                     )}
                   >
-                    <Icon className="h-4 w-4" aria-hidden />
+                    {/* 메뉴가 7개라 2xl 미만에선 아이콘을 빼야 한 줄에 들어간다(1328px 실측 744px→오버플로) */}
+                    <Icon className="hidden h-4 w-4 2xl:block" aria-hidden />
                     {item.label}
                     {item.badge && <NewBadge />}
                   </Link>

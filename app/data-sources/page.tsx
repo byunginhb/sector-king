@@ -6,11 +6,11 @@ import { getSiteFacts, UPDATE_CADENCE } from '@/lib/site-facts'
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
 /** 본문 개정일. 출처·주기가 바뀌면 이 값도 올린다(JSON-LD dateModified 와 공유). */
-const UPDATED_AT = '2026-08-08'
+const UPDATED_AT = '2026-10-13'
 
 const TITLE = '데이터 출처와 수집 방식'
 const LEAD =
-  '섹터킹 화면의 숫자가 어디서 오고 언제 갱신되는지, 무엇이 원본 데이터이고 무엇이 섹터킹이 직접 계산한 값인지 밝힙니다. 주가·재무는 Yahoo Finance, 애널리스트 리포트는 한경 컨센서스, 미국 경제지표 일정은 FRED에서 가져오며, 섹터 분류와 각종 점수는 섹터킹이 자체 산출합니다.'
+  '섹터킹 화면의 숫자가 어디서 오고 언제 갱신되는지, 무엇이 원본 데이터이고 무엇이 섹터킹이 직접 계산한 값인지 밝힙니다. 주가·재무는 Yahoo Finance, 애널리스트 리포트는 한경 컨센서스, 미국 경제지표 일정은 FRED에서, 자금 통로 지표는 DefiLlama·네이버 증권에서 가져오며, 섹터 분류와 각종 점수는 섹터킹이 자체 산출합니다.'
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -77,7 +77,11 @@ export default async function DataSourcesPage() {
                     </Cell>
                     <Cell>
                       주가·시가총액·거래량·52주 고저, 재무 지표(PER·PBR·ROE 등), 애널리스트
-                      투자의견과 목표주가, 의견 분포 추이, 실적 발표 일정, 세계 주요 지수
+                      투자의견과 목표주가, 의견 분포 추이, 실적 발표 일정, 세계 주요 지수,{' '}
+                      <Link href="/global-flow" className="text-info hover:underline">
+                        글로벌 자금 지도
+                      </Link>
+                      의 자산군 가격(채권·금·원자재·크립토·달러)과 ETF 운용자산
                     </Cell>
                     <Cell>{UPDATE_CADENCE}</Cell>
                   </tr>
@@ -112,8 +116,11 @@ export default async function DataSourcesPage() {
                         FRED (세인트루이스 연은)
                       </a>
                     </Cell>
-                    <Cell>미국 경제지표 발표 일정(고용보고서, CPI 등)</Cell>
-                    <Cell>평일 1일 1회 (KST 06:00)</Cell>
+                    <Cell>
+                      미국 경제지표 발표 일정(고용보고서, CPI 등). 글로벌 자금 지도의 연준
+                      총자산·재무부 계좌·역레포·M2·MMF 잔고
+                    </Cell>
+                    <Cell>발표 일정 평일 1일 1회 (KST 06:00) · 지표 값 {UPDATE_CADENCE}</Cell>
                   </tr>
                   <tr className="border-b border-border-subtle">
                     <Cell>
@@ -130,6 +137,34 @@ export default async function DataSourcesPage() {
                       국내 공모주 청약일·상장일과 공모가(희망밴드·확정). 캘린더의 공모주
                       항목을 누르면 원본 상세로 이동합니다
                     </Cell>
+                    <Cell>{UPDATE_CADENCE}</Cell>
+                  </tr>
+                  <tr className="border-b border-border-subtle">
+                    <Cell>
+                      <a
+                        href="https://defillama.com/stablecoins"
+                        rel="nofollow noopener"
+                        target="_blank"
+                        className="text-info hover:underline"
+                      >
+                        DefiLlama
+                      </a>
+                    </Cell>
+                    <Cell>스테이블코인 총발행량(크립토 시장에 들어온 달러)</Cell>
+                    <Cell>{UPDATE_CADENCE}</Cell>
+                  </tr>
+                  <tr className="border-b border-border-subtle">
+                    <Cell>
+                      <a
+                        href="https://stock.naver.com/market/stock/kr/deposit"
+                        rel="nofollow noopener"
+                        target="_blank"
+                        className="text-info hover:underline"
+                      >
+                        네이버 증권
+                      </a>
+                    </Cell>
+                    <Cell>고객예탁금, 외국인 순매수(코스피+코스닥)</Cell>
                     <Cell>{UPDATE_CADENCE}</Cell>
                   </tr>
                   <tr className="last:border-0">

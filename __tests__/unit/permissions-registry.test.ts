@@ -110,8 +110,8 @@ describe('permissions registry — featureId 형식', () => {
     expect([...FEATURE_IDS].sort()).toEqual(featureEntries.map(([id]) => id).sort())
   })
 
-  it('카탈로그 전수 이관 — 기능 160개가 등록돼 있다', () => {
-    expect(FEATURE_IDS).toHaveLength(160)
+  it('카탈로그 전수 이관 — 기능 168개가 등록돼 있다 (160 + 글로벌 자금 지도 8)', () => {
+    expect(FEATURE_IDS).toHaveLength(168)
   })
 })
 
@@ -319,6 +319,7 @@ describe('permissions registry — 잠금 봉인 (카탈로그 §5)', () => {
     'guide.money-flow',
     'guide.mcap-vs-netbuy',
     'guide.sector-rotation',
+    'guide.cross-asset',
     'methodology.doc',
     'data-sources.doc',
     'editorial-policy.doc',
@@ -343,12 +344,12 @@ describe('permissions registry — 잠금 봉인 (카탈로그 §5)', () => {
     }
   })
 
-  it('봉인된 기능 수가 22개다 — 조용히 줄어들면 금지 목록이 무력화된다', () => {
+  it('봉인된 기능 수가 23개다 — 조용히 줄어들면 금지 목록이 무력화된다', () => {
     const sealed = featureEntries
       .filter(([, def]) => def.supportedGateModes?.length === 1 && def.supportedGateModes[0] === 'open')
       .map(([id]) => id)
     expect(sealed.sort()).toEqual([...SEALED].sort())
-    expect(sealed).toHaveLength(22)
+    expect(sealed).toHaveLength(23)
   })
 
   it('admin.* 는 hidden 으로 고정돼 운영자가 바꿀 수 없다', () => {
@@ -384,7 +385,7 @@ describe('permissions registry — 조회 헬퍼', () => {
 
   it('카탈로그 §7.2 의 페이지 그룹별 기능 개수와 일치한다', () => {
     const counts: Record<string, number> = {
-      home: 18, // 카탈로그 16 + 미마운트 me.home-slot·me.login-prompt
+      home: 19, // 카탈로그 16 + 미마운트 me.home-slot·me.login-prompt + global-flow-strip
       calendar: 7,
       industry: 5,
       'industry-money-flow': 6,
@@ -399,6 +400,7 @@ describe('permissions registry — 조회 헬퍼', () => {
       sectors: 1,
       'sector-detail': 3,
       indices: 2,
+      'global-flow': 6,
       shell: 6,
       news: 2,
       'news-detail': 10, // news 계 합계 12

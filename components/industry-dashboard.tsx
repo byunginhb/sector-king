@@ -27,6 +27,7 @@ import { KoreanPicksCard } from '@/components/dashboard/korean-picks-card'
 import { SectorKingPickCard } from '@/components/dashboard/sector-king-pick-card'
 import { AnalystScorecardCard } from '@/components/dashboard/analyst-scorecard-card'
 import { QuickNavCards } from '@/components/dashboard/quick-nav-cards'
+import { GlobalFlowStrip } from '@/components/dashboard/global-flow-strip'
 import type { IndustryOverview } from '@/types'
 
 export function IndustryDashboard() {
@@ -85,6 +86,11 @@ export function IndustryDashboard() {
 
         <div className="mt-4">
           <OnboardingHintStrip />
+        </div>
+
+        {/* 주식 밖 큰 그림 한 줄 → 바로 아래 주식 안(산업) 자금 흐름으로 좁혀 들어간다 */}
+        <div className="mt-8">
+          <GlobalFlowStrip />
         </div>
 
         {/* 리드 기사 — 이 서비스가 답하는 질문 그 자체라 단독으로 크게 둔다 */}
