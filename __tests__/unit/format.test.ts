@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   formatMarketCap,
   formatPrice,
@@ -6,6 +6,7 @@ import {
   formatVolume,
   formatNumber,
   formatDate,
+  formatRelativeTime,
   formatScore,
   sumScoreDimensions,
 } from '@/lib/format'
@@ -107,6 +108,52 @@ describe('formatDate', () => {
     expect(result).toMatch(/01/)
     expect(result).toMatch(/15/)
   })
+
+  for (const timeZone of ['America/Toronto', 'UTC', 'Asia/Seoul']) {
+    it(`preserves calendar dates and legacy input behavior in ${timeZone}`, () => {
+      const previousTZ = process.env.TZ
+      process.env.TZ = timeZone
+      try {
+        for (const input of [
+          '2026-10-20', '2024-02-29', '2026-01-01',
+          '2026-03-08', '2026-11-01',
+        ]) {
+          expect(formatDate(input).replace(/[^0-9]/g, '')).toBe(input.replaceAll('-', ''))
+        }
+
+        for (const input of [
+          '2026-10-20T00:00:00Z',
+          '2026-10-20T23:30:00Z',
+          '2026-10-20T00:30:00+09:00',
+          '2026-10-20T00:30:00',
+          '2024-02-30',
+          '2023-02-29',
+          '2024-13-01',
+          '2024-01-32',
+          '2024-1-15',
+          ' 2024-01-15 ',
+          'not-a-date',
+          '',
+        ]) {
+          expect(formatDate(input)).toBe(new Date(input).toLocaleDateString('ko-KR', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+          }))
+        }
+        expect(formatDate('not-a-date')).toBe('Invalid Date')
+
+        vi.useFakeTimers()
+        vi.setSystemTime(new Date('2026-10-20T12:00:00Z'))
+        expect(formatRelativeTime('2026-10-01').replace(/[^0-9]/g, '')).toBe('20261001')
+        expect(formatRelativeTime('2026-11-01').replace(/[^0-9]/g, '')).toBe('20261101')
+        expect(formatRelativeTime('2026-10-20T10:00:00Z')).toBe('2시간 전')
+        expect(formatRelativeTime('not-a-date')).toBe('not-a-date')
+      } finally {
+        vi.useRealTimers()
+        if (previousTZ === undefined) delete process.env.TZ
+        else process.env.TZ = previousTZ
+      }
+    })
+  }
 })
 
 describe('sumScoreDimensions', () => {

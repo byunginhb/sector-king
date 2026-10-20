@@ -69,10 +69,17 @@ export function formatNumber(value: number | null): string {
 
 export function formatDate(dateStr: string): string {
   const date = new Date(dateStr)
+  // 정상 YYYY-MM-DD만 달력 날짜로 취급한다. 자동 보정된 잘못된 날짜는 기존 동작 유지.
+  const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr)
+  const isCalendarDate = parts !== null &&
+    date.getUTCFullYear() === Number(parts[1]) &&
+    date.getUTCMonth() + 1 === Number(parts[2]) &&
+    date.getUTCDate() === Number(parts[3])
   return date.toLocaleDateString('ko-KR', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
+    ...(isCalendarDate ? { timeZone: 'UTC' } : {}),
   })
 }
 
