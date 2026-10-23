@@ -1,6 +1,6 @@
 # sector-king
 
-Next.js 15 + TypeScript + Drizzle/SQLite + React Query + framer-motion + recharts 기반의 멀티 산업 주식 대시보드.
+Next.js 16 + React 19 + TypeScript + Drizzle/SQLite + React Query + framer-motion + recharts 기반의 멀티 산업 주식 대시보드.
 
 ## 패키지 매니저
 
@@ -8,7 +8,7 @@ Next.js 15 + TypeScript + Drizzle/SQLite + React Query + framer-motion + rechart
 
 ## 통화 정규화 규칙 (필수)
 
-**`dailySnapshots` 와 `companyScores` 의 가격성 필드는 네이티브 통화로 저장된다.** 클라이언트는 모든 응답을 USD($)로 표시하므로, **API 응답 직전 반드시 `toUsd(value, ticker)` 로 변환**해야 한다. 누락 시 .KS/.KQ/.T/.TW/.HK/.PA 티커가 raw 원·엔·NT달러 값으로 노출되어 `$1.82M` 같은 이중 환산 버그가 발생한다(2026-05-09, 2026-05-18 두 번 재발).
+**`dailySnapshots` 와 `companyScores` 의 가격성 필드는 네이티브 통화로 저장된다.** API의 가격 응답 계약은 USD이며 클라이언트는 원/달러 표시를 선택하므로, **API 응답 직전 반드시 `toUsd(value, ticker)` 로 변환**해야 한다. 누락 시 .KS/.KQ/.T/.TW/.HK/.PA 티커가 raw 원·엔·NT달러 값으로 노출되어 `$1.82M` 같은 이중 환산 버그가 발생한다(2026-05-09, 2026-05-18 두 번 재발).
 
 **변환 필수 필드:**
 - `dailySnapshots`: `price`, `marketCap`, `week52High`, `week52Low`, `dayHigh`, `dayLow`, `firstPrice`, `latestPrice`, `priceChange`(절댓값 차이일 때만 — 원 컬럼 `daily_snapshots.price_change` 는 %라 변환 불요)
@@ -41,7 +41,7 @@ Next.js 15 + TypeScript + Drizzle/SQLite + React Query + framer-motion + rechart
 
 단순 질문·단일 파일 편집은 직접 응답한다.
 
-**에이전트 (`.Codex/agents/`):** sk-data-modeler, sk-ticker-curator, sk-filter-architect, sk-ui-planner, sk-implementer, sk-verifier
+**실제 저장된 정의 (`.claude/agents/`):** sk-data-modeler, sk-ticker-curator, sk-filter-architect, sk-ui-planner, sk-implementer, sk-verifier
 
 **작업 디렉토리:** `_workspace/01_plan/`, `_workspace/02_impl/`, `_workspace/03_verify/` (gitignore 권장)
 

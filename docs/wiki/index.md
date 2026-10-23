@@ -22,3 +22,9 @@ LLM·사람이 함께 읽는 프로젝트 지식 베이스. 코드에서 바로 
 | [글로벌 자금 지도 — 기획](features/global-flow/plan.md) | 운영 중 | 주식 밖(달러·금·채권·비트코인·현금)까지 포함한 자산군 간 자금 흐름 페이지 `/global-flow`. 설계 원칙·로드맵·결정 로그 |
 | [글로벌 자금 지도 — 구현 지도](features/global-flow/implementation.md) | 운영 중 | 파일 위치·데이터 흐름·바꿀 때 같이 바꿀 것·운영 주의점 |
 | [글로벌 자금 지도 — 데이터 소스](features/global-flow/data-sources.md) | 운영 중 | 자산별 심볼·FRED·DefiLlama·네이버 API 파라미터·규모 상수와 실측 함정 |
+
+## 지침 변경 이력
+
+| 문서 | 상태 | 요약 |
+|------|------|------|
+| [CLAUDE 변경 이력 원문](history/claude-changelog-through-2026-10-13.md) | 이력 보관 | 2026-05~10월 변경 표 원문. 현재 실행 지침은 루트 CLAUDE·AGENTS, 기능별 현재 계약은 위키·코드와 대조한다. |
