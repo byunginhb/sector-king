@@ -65,6 +65,7 @@ export function StockDetailPage({
   return (
     <div className="min-h-screen">
       <GlobalTopBar
+        hasPageHeading
         shareTitle={`${displayName} (${ticker}) | Sector King`}
         shareDescription={`${displayName}의 시가총액·섹터 지배력·패권 점수 분석`}
       />

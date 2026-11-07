@@ -149,6 +149,7 @@ export function RankingsPage({ industryId, initialData }: RankingsPageProps) {
   return (
     <div className="min-h-screen">
       <GlobalTopBar
+        hasPageHeading
         shareTitle="점수 랭킹 | Sector King"
         shareDescription="단기·장기 점수로 보는 종목 랭킹"
         subtitle={

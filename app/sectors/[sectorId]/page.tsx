@@ -100,6 +100,7 @@ export default async function SectorPage({
       />
 
       <GlobalTopBar
+        hasPageHeading
         subtitle={`${sector.name} 섹터`}
         shareTitle={shareTitle}
         shareDescription={shareDescription}

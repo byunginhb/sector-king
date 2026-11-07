@@ -1,13 +1,18 @@
 /**
- * AEO(AI 검색)·FAQ 리치결과용 질문-답변. FaqJsonLd 에 주입한다.
- * 답변은 페이지 본문(점수 설명 등)과 의미가 일치해야 한다.
+ * 가시 FAQ와 JSON-LD가 공유하는 질문·답변. 검색 노출·인용을 보장하지 않는다.
  */
+import { PICK_PROFILES, PICK_PROFILE_META, PICK_WEIGHTS } from '@/lib/pick-profile'
+
+const profileWeights = PICK_PROFILES.map((profile) => {
+  const weights = PICK_WEIGHTS[profile]
+  return `${PICK_PROFILE_META[profile].label} 성향은 ${weights.short * 100}%·${weights.long * 100}%·${weights.dcf * 100}%`
+}).join(', ')
 
 export const RANKINGS_FAQ = [
   {
     question: '섹터킹 픽이 무엇인가요?',
     answer:
-      '단기 점수와 장기 점수를 합쳐 가장 균형 있게 높은 종목을 골라 보여주는 무료 종목 랭킹입니다. 정렬·필터와 무관하게 전체에서 상위 종목을 선정합니다.',
+      `단기·장기·DCF 점수를 투자 성향별로 가중평균해 상위 종목을 보여줍니다. 단기·장기·DCF 순서로 ${profileWeights}를 반영합니다. 산출되지 않은 점수의 가중치는 나머지 유효 점수에 재분배합니다. 표의 단기·장기 점수 정렬과 픽 종합점수는 별개이며, 점수는 투자 권유가 아닙니다.`,
   },
   {
     question: '단기 점수는 어떻게 계산하나요?',

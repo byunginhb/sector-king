@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/json-ld'
+import { WatchlistPrompt } from '@/components/me/watchlist-prompt'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
@@ -63,7 +64,7 @@ export function GuideArticle({
         ]}
       />
 
-      <GlobalTopBar subtitle={parent.label} />
+      <GlobalTopBar subtitle={parent.label} hasPageHeading />
 
       <main className="container mx-auto max-w-3xl px-4 py-8 sm:py-10">
         <nav className="mb-4 text-sm" aria-label="상위 페이지">
@@ -141,6 +142,8 @@ export function GuideArticle({
             </li>
           </ul>
         </nav>
+
+        <WatchlistPrompt />
 
         <p className="mt-8 text-xs leading-relaxed text-muted-foreground">
           이 문서는 지표를 어떻게 읽는지 설명하는 자료이며 투자 권유가 아닙니다. 투자 판단과

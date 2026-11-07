@@ -2,7 +2,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
 
 /**
  * 사이트 전반에 노출되는 WebSite + Organization 구조화 데이터.
- * Google 검색 결과의 sitelinks searchbox / Knowledge Panel 후보에 활용.
+ * 사이트 이름·검색 경로·운영 조직을 설명한다. 검색 기능 노출을 보장하지 않는다.
  */
 export function WebSiteJsonLd() {
   const graph = {
@@ -215,7 +215,7 @@ export function BreadcrumbJsonLd({ items }: BreadcrumbJsonLdProps) {
 
 /**
  * ItemList JSON-LD — 순위 목록(종목 랭킹·국가 지수)을 AI/검색이
- * 순서 있는 리스트로 인식해 답변에 인용하게 한다.
+ * 순서 있는 리스트로 읽을 수 있도록 설명한다. 답변 인용을 보장하지 않는다.
  */
 interface ItemListJsonLdProps {
   name: string
@@ -247,8 +247,8 @@ export function ItemListJsonLd({ name, description, items }: ItemListJsonLdProps
 }
 
 /**
- * FAQPage JSON-LD — AI 검색(AI Overviews/AI Mode)·Google FAQ 리치결과에서
- * 질문-답변을 직접 인용하도록 한다. 답변 텍스트는 페이지 본문과 일치해야 한다.
+ * FAQPage JSON-LD — 페이지에 보이는 질문·답변을 기계가 읽도록 설명한다.
+ * 검색 노출·AI 인용을 보장하지 않으며, 답변은 가시 본문과 일치해야 한다.
  */
 interface FaqJsonLdProps {
   items: { question: string; answer: string }[]

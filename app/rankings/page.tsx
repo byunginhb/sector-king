@@ -1,7 +1,8 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { RankingsPage } from '@/components/rankings/rankings-page'
-import { FaqJsonLd, BreadcrumbJsonLd, ItemListJsonLd } from '@/components/json-ld'
+import { BreadcrumbJsonLd, ItemListJsonLd } from '@/components/json-ld'
+import { PageFaq } from '@/components/seo/page-faq'
 import { RANKINGS_FAQ } from '@/lib/seo-faq'
 import { getRankings } from '@/app/api/rankings/route'
 import { SeoSummary } from '@/components/seo/seo-summary'
@@ -48,10 +49,9 @@ export default async function GlobalRankingsRoute() {
 
   return (
     <>
-      <FaqJsonLd items={RANKINGS_FAQ} />
       <ItemListJsonLd
         name="섹터킹 픽 — 장기 점수 상위 종목"
-        description="단기·장기 점수로 줄 세운 무료 종목 랭킹의 상위 종목"
+        description="단기·장기 점수로 줄 세운 종목 랭킹의 상위 종목"
         items={data.items.slice(0, 20).map((it) => ({
           name: it.nameKo ?? it.name ?? it.ticker,
           url: `${BASE_URL}/stock/${it.ticker}`,
@@ -72,7 +72,7 @@ export default async function GlobalRankingsRoute() {
         fallback={
           <SeoSummary
             h1="한국·미국 전 종목 점수 랭킹 (섹터킹 픽)"
-            answer={`섹터킹이 추적하는 한국·미국 상장 종목 ${data.total.toLocaleString('ko-KR')}곳을 단기·장기 점수로 줄 세운 무료 랭킹입니다. 점수는 규모·성장성·수익성·시장심리 지표를 0~100 으로 환산해 가중 합산한 값이며, 산출식은 방법론 페이지에 전부 공개되어 있습니다. 아래 표는 장기 점수 상위 ${Math.min(20, data.items.length)}종목입니다.`}
+            answer={`섹터킹이 추적하는 한국·미국 상장 종목 ${data.total.toLocaleString('ko-KR')}곳을 단기·장기 점수로 줄 세운 랭킹입니다. 점수는 규모·성장성·수익성·시장심리 지표를 0~100 으로 환산해 가중 합산한 값이며, 산출식은 방법론 페이지에 전부 공개되어 있습니다. 아래 표는 장기 점수 상위 ${Math.min(20, data.items.length)}종목입니다.`}
             interpretation="장기 점수는 재무 체력과 규모에, 단기 점수는 최근 추세와 시장심리에 더 무게를 둡니다. 두 점수가 갈리는 종목은 그 이유를 종목 상세에서 확인하세요."
             caveat="점수는 매수·매도 신호가 아니며 목표 수익률을 예측하지 않습니다. 공개된 재무·주가 데이터를 같은 기준으로 환산해 비교 가능하게 만든 값일 뿐입니다."
             dataDate={data.date}
@@ -100,6 +100,7 @@ export default async function GlobalRankingsRoute() {
       >
         <RankingsPage initialData={data} />
       </Suspense>
+      <PageFaq items={RANKINGS_FAQ} />
     </>
   )
 }

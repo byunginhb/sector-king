@@ -60,7 +60,7 @@ export default async function SectorsIndexPage() {
         }))}
       />
 
-      <GlobalTopBar subtitle="섹터 목록" />
+      <GlobalTopBar subtitle="섹터 목록" hasPageHeading />
 
       <main className="container mx-auto px-4 py-8 sm:py-10">
         <header className="max-w-3xl">

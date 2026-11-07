@@ -37,6 +37,8 @@ interface GlobalTopBarProps {
   mobileLeading?: React.ReactNode
   /** 통화 토글을 페이지 본문에서 직접 렌더할 때 헤더에서 감춘다 (중복 방지) */
   hideCurrencyToggle?: boolean
+  /** 본문에 H1이 있는 화면에서 브랜드 제목의 중복을 피한다. */
+  hasPageHeading?: boolean
 }
 
 // 인라인 바(메뉴 + 밀도 높은 우측 액션)는 lg(1024px)+에서만. 그 아래는 햄버거 Sheet.
@@ -91,7 +93,9 @@ export function GlobalTopBar({
   subtitle,
   mobileLeading,
   hideCurrencyToggle = false,
+  hasPageHeading = false,
 }: GlobalTopBarProps) {
+  const BrandTag = hasPageHeading ? 'span' : 'h1'
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -127,9 +131,9 @@ export function GlobalTopBar({
               </Link>
               <div className="min-w-0">
                 <Link href="/" className="group">
-                  <h1 className="font-display text-xl md:text-2xl font-bold text-foreground leading-none tracking-tight">
+                  <BrandTag className="block font-display text-xl md:text-2xl font-bold text-foreground leading-none tracking-tight">
                     Sector King
-                  </h1>
+                  </BrandTag>
                 </Link>
                 <TagLine subtitle={subtitle} lastUpdated={lastUpdated} />
               </div>

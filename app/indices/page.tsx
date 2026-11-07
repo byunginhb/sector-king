@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { IndicesPage } from '@/components/indices/indices-page'
-import { FaqJsonLd, BreadcrumbJsonLd, DatasetJsonLd, ItemListJsonLd } from '@/components/json-ld'
+import { BreadcrumbJsonLd, DatasetJsonLd, ItemListJsonLd } from '@/components/json-ld'
+import { PageFaq } from '@/components/seo/page-faq'
 import { INDICES_FAQ } from '@/lib/seo-faq'
 import { getMarketIndices } from '@/lib/indices-server'
 
@@ -54,7 +55,6 @@ export default async function IndicesRoute() {
         description={description}
         items={items.map((it) => ({ name: `${it.country} ${it.name}` }))}
       />
-      <FaqJsonLd items={INDICES_FAQ} />
       <BreadcrumbJsonLd
         items={[
           { name: '홈', url: BASE_URL },
@@ -62,6 +62,7 @@ export default async function IndicesRoute() {
         ]}
       />
       <IndicesPage initialItems={items} />
+      <PageFaq items={INDICES_FAQ} />
     </>
   )
 }

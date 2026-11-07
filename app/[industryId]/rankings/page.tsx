@@ -2,7 +2,8 @@ import { Suspense, cache } from 'react'
 import type { Metadata } from 'next'
 import { getAllIndustries, getIndustryFilter } from '@/lib/industry'
 import { RankingsPage } from '@/components/rankings/rankings-page'
-import { FaqJsonLd, BreadcrumbJsonLd, ItemListJsonLd } from '@/components/json-ld'
+import { BreadcrumbJsonLd, ItemListJsonLd } from '@/components/json-ld'
+import { PageFaq } from '@/components/seo/page-faq'
 import { RANKINGS_FAQ } from '@/lib/seo-faq'
 import { getRankings } from '@/app/api/rankings/route'
 import { SeoSummary } from '@/components/seo/seo-summary'
@@ -71,7 +72,6 @@ export default async function RankingsPageRoute({
 
   return (
     <>
-      <FaqJsonLd items={RANKINGS_FAQ} />
       <ItemListJsonLd
         name={`${industry?.name ?? '산업'} 점수 랭킹 — 장기 점수 상위 종목`}
         items={data.items.slice(0, 20).map((it) => ({
@@ -120,6 +120,7 @@ export default async function RankingsPageRoute({
       >
         <RankingsPage industryId={industryId} initialData={data} />
       </Suspense>
+      <PageFaq items={RANKINGS_FAQ} />
     </>
   )
 }

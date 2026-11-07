@@ -25,9 +25,9 @@ const CONTENT_UPDATED_AT: Record<string, string> = {
   // 아래 값은 각 페이지 파일의 UPDATED_AT 상수와 같아야 한다(본문 표시일 = lastmod).
   '/data-sources': '2026-10-13',
   '/editorial-policy': '2026-08-08',
-  '/guide/market-cap-change-vs-net-buying': '2026-08-08',
-  '/guide/how-to-read-money-flow': '2026-08-08',
-  '/guide/sector-rotation': '2026-08-08',
+  '/guide/market-cap-change-vs-net-buying': '2026-11-07',
+  '/guide/how-to-read-money-flow': '2026-11-07',
+  '/guide/sector-rotation': '2026-11-07',
   '/guide/cross-asset-flow': '2026-10-13',
 }
 
