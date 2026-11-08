@@ -146,6 +146,11 @@ export default async function SectorsIndexPage() {
             <li>
               <Link href="/rankings" className="text-info hover:underline">전 종목 점수 랭킹</Link>
             </li>
+            {process.env.WEEKLY_MATCH_ENABLED === 'true' && (
+              <li>
+                <Link href="/weekly-match" className="text-info hover:underline">주간 섹터 매치</Link>
+              </li>
+            )}
             <li>
               <Link href="/methodology" className="text-info hover:underline">분류·산출 방법론</Link>
             </li>

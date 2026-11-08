@@ -1,0 +1,9 @@
+/* Hallmark v2.0.0 · shape: app screen · theme: existing Sector King · nav: project top bar · footer: rules · signature: weekly sector matchup · job: choose a sector */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V3 · weakest: V, retained the established shell and made the two-sector ballot the focal control. */
+.page {
+  min-width: 0;
+}
+:global(html):has(.page),
+:global(body):has(.page) {
+  overflow-x: clip;
+}
