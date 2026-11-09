@@ -10,6 +10,7 @@ const sql = postgres(connection, { max: 12, onnotice: () => {} })
 const first = '11111111-1111-4111-8111-111111111111'
 const second = '22222222-2222-4222-8222-222222222222'
 const migration = await readFile(new URL('../supabase/migrations/0018_weekly_match.sql', import.meta.url), 'utf8')
+const automaticGuard = await readFile(new URL('../supabase/migrations/20261109014835_weekly_match_automatic_guard.sql', import.meta.url), 'utf8')
 let checks = 0
 const denied = async (work, pattern = /permission denied/) => {
   await assert.rejects(work, pattern)
@@ -38,6 +39,8 @@ try {
   `)
   await sql.unsafe(migration)
   await sql.unsafe(migration)
+  await sql.unsafe(automaticGuard)
+  await sql.unsafe(automaticGuard)
   checks++
   await sql`truncate public.weekly_match_entries, public.weekly_match_settlements, public.weekly_match_rounds`
   await sql`insert into auth.users(id) values(${first}), (${second}) on conflict do nothing`
@@ -123,6 +126,25 @@ try {
   const expiry = await asRole('service_role', null, (tx) => tx`select (public.record_weekly_match_settlement('old-pending', ${'b'.repeat(64)}, 'void', null, null, 'missing', '{"prices":[]}', null)).*`)
   assert.equal(expiry[0].version, 2)
   assert.match(expiry[0].reason, /7일/)
+  checks++
+  const automatic = (id, hash, outcome, correction = null) => asRole('service_role', null, (tx) => tx`select (public.record_weekly_match_settlement(${id}, ${hash.repeat(64)}, ${outcome}, ${outcome === 'left' ? 1 : null}, ${outcome === 'left' ? 0 : null}, null, '{"prices":[]}', ${correction}, true)).*`)
+  // The scheduler's earlier read can race with a committed manual final result.
+  for (const outcome of ['pending', 'void', 'left']) {
+    assert.equal((await automatic('old-winner', 'c', outcome))[0].version, 1)
+  }
+  assert.equal((await sql`select count(*) from public.weekly_match_settlements where round_id='old-winner'`)[0].count, '1')
+  checks++
+  await fixture('auto-pending', new Date(now - 120000), new Date(now - 60000))
+  assert.equal((await automatic('auto-pending', 'a', 'pending'))[0].version, 1)
+  await denied(automatic('auto-pending', 'b', 'void'), /AUTOMATIC_VOID_TOO_EARLY/)
+  await denied(automatic('auto-pending', 'b', 'pending', '수동 정정 사유'), /AUTOMATIC_OVERRIDE_FORBIDDEN/)
+  assert.equal((await automatic('auto-pending', 'b', 'pending'))[0].version, 2)
+  assert.equal((await automatic('auto-pending', 'c', 'left'))[0].version, 3)
+  assert.equal((await automatic('auto-pending', 'd', 'pending'))[0].version, 3)
+  checks++
+  await fixture('auto-expired', new Date(now - 9 * 86400_000), new Date(now - 8 * 86400_000))
+  await automatic('auto-expired', 'a', 'pending')
+  assert.equal((await automatic('auto-expired', 'b', 'void'))[0].version, 2)
   checks++
   console.log('PASS ' + checks + ' isolated database checks: migration, RLS, grants, own pick, cutoff lock, concurrent upsert, append-only/idempotent correction')
 } finally {

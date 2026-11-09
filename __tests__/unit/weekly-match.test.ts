@@ -71,4 +71,11 @@ describe('weekly match evidence and settlement', () => {
     changed.prices[0].close = 111
     expect(semanticHash(changed)).not.toBe(semanticHash(input))
   })
+  it('accepts automatic retries without manual overrides and excludes intent from the evidence hash', () => {
+    expect(settleSchema.safeParse({ ...input, automatic: true }).success).toBe(true)
+    expect(settleSchema.safeParse({ ...input, automatic: 'true' }).success).toBe(false)
+    expect(settleSchema.safeParse({ ...input, automatic: true, voidReason: '수동 무효화 사유' }).success).toBe(false)
+    expect(settleSchema.safeParse({ ...input, automatic: true, correctionReason: '수동 정정 사유' }).success).toBe(false)
+    expect(semanticHash({ ...input, automatic: true })).toBe(semanticHash(input))
+  })
 })

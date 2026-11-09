@@ -81,4 +81,17 @@ describe('weekly match API boundaries', () => {
     expect(response.status).toBe(503)
     expect(JSON.stringify(await response.json())).not.toContain('secret')
   })
+  it('forwards automatic intent to the atomic database guard', async () => {
+    const base = { ticker: '000001.KS', name: 'stock', close: 100, volume: 100, priceDate: '2026-10-01', source: 'https://query1.finance.yahoo.com/', retrievedAt: '2026-10-01T09:00:00Z' }
+    const audit = {
+      id: 'a', title: 'match', baseDate: '2026-10-01', endDate: '2026-10-09', opensAt: '2026-10-01T09:01:00Z', closesAt: '2026-10-05T00:00:00Z', endsAt: '2026-10-09T09:00:00Z',
+      calendarSource: 'https://global.krx.co.kr/', calendarVerifiedAt: '2026-10-01T00:00:00Z',
+      left: { id: 'left', name: 'left', tickers: [base] }, right: { id: 'right', name: 'right', tickers: [{ ...base, ticker: '000002.KS' }] },
+    }
+    const rpc = vi.fn().mockResolvedValue({ data: { round_id: 'a', version: 1, outcome: 'left' }, error: null })
+    mocks.createAdminClient.mockReturnValue({ rpc, from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: { audit }, error: null }) }) }) }) })
+    const response = await sync(request({ operation: 'settle', roundId: 'a', prices: [], automatic: true }))
+    expect(response.status).toBe(200)
+    expect(rpc).toHaveBeenCalledWith('record_weekly_match_settlement', expect.objectContaining({ p_automatic: true, p_correction_reason: null }))
+  })
 })

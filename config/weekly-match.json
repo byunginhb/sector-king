@@ -1,0 +1,74 @@
+{
+  "enabled": true,
+  "round": {
+    "baseDate": "2026-11-13",
+    "endDate": "2026-11-20",
+    "closesAt": "2026-11-16T00:00:00Z",
+    "endsAt": "2026-11-20T09:00:00Z",
+    "calendarSource": "https://open.krx.co.kr/contents/OPN/05/05000000/OPN05000000T1.jsp",
+    "calendarVerifiedAt": "2026-11-09T01:43:54.786830+00:00",
+    "left": {
+      "id": "korea_banks",
+      "name": "한국 은행",
+      "tickers": [
+        {
+          "ticker": "105560.KS",
+          "name": "KB금융"
+        },
+        {
+          "ticker": "086790.KS",
+          "name": "하나금융지주"
+        },
+        {
+          "ticker": "055550.KS",
+          "name": "신한지주"
+        },
+        {
+          "ticker": "024110.KS",
+          "name": "기업은행"
+        },
+        {
+          "ticker": "316140.KS",
+          "name": "우리금융지주"
+        },
+        {
+          "ticker": "175330.KS",
+          "name": "JB금융지주"
+        },
+        {
+          "ticker": "138930.KS",
+          "name": "BNK금융지주"
+        }
+      ]
+    },
+    "right": {
+      "id": "korea_shipbuilding",
+      "name": "조선",
+      "tickers": [
+        {
+          "ticker": "329180.KS",
+          "name": "HD현대중공업"
+        },
+        {
+          "ticker": "009540.KS",
+          "name": "HD한국조선해양"
+        },
+        {
+          "ticker": "443060.KS",
+          "name": "HD현대마린솔루션"
+        },
+        {
+          "ticker": "010140.KS",
+          "name": "삼성중공업"
+        },
+        {
+          "ticker": "082740.KS",
+          "name": "한화엔진"
+        }
+      ]
+    },
+    "id": "kr-2026-11-16",
+    "title": "한국 은행 vs 조선",
+    "opensAt": "2026-11-13T09:00:00Z"
+  }
+}

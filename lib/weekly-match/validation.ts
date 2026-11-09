@@ -69,9 +69,13 @@ export const settleSchema = z.object({
   operation: z.literal('settle'),
   roundId: id,
   prices: z.array(finalQuoteSchema).max(200),
+  automatic: z.boolean().optional(),
   correctionReason: z.string().trim().min(5).max(500).optional(),
   voidReason: z.string().trim().min(5).max(500).optional(),
 }).strict().superRefine((input, ctx) => {
+  if (input.automatic && (input.voidReason || input.correctionReason)) {
+    ctx.addIssue({ code: 'custom', message: '자동 정산에는 수동 정정·무효 사유를 지정할 수 없습니다' })
+  }
   if (new Set(input.prices.map((quote) => quote.ticker)).size !== input.prices.length) {
     ctx.addIssue({ code: 'custom', message: '정산 종목은 중복될 수 없습니다' })
   }

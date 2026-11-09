@@ -5,7 +5,7 @@ export function semanticHash(input: unknown): string {
   const canonical = (value: unknown): unknown => {
     if (Array.isArray(value)) return value.map(canonical)
     if (value && typeof value === 'object') {
-      return Object.fromEntries(Object.entries(value).filter(([key]) => key !== 'retrievedAt' && key !== 'correctionReason').sort(([a], [b]) => a.localeCompare(b)).map(([key, child]) => [key, canonical(child)]))
+      return Object.fromEntries(Object.entries(value).filter(([key]) => !['retrievedAt', 'correctionReason', 'automatic'].includes(key)).sort(([a], [b]) => a.localeCompare(b)).map(([key, child]) => [key, canonical(child)]))
     }
     return value
   }

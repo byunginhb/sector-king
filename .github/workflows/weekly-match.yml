@@ -1,0 +1,74 @@
+name: Weekly Match
+
+on:
+  schedule:
+    - cron: '10 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: weekly-match-single-round
+  cancel-in-progress: false
+
+jobs:
+  operate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate runner
+        run: python3 -m unittest discover -s scripts -p 'test_run_weekly_match.py' -v
+      - name: Restore trusted immutable baseline
+        id: restore
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/run_weekly_match.py restore
+      - name: Probe and prepare reviewed round
+        id: prepare
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          CRON_TARGET_URL: ${{ secrets.CRON_TARGET_URL }}
+        run: python3 scripts/run_weekly_match.py prepare
+      - name: Persist baseline before publication
+        if: steps.prepare.outputs.upload_baseline == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.restore.outputs.artifact_name }}
+          path: |
+            .weekly-match-audit/publication.json
+            .weekly-match-audit/publication.sources.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 90
+      - name: Persist settlement evidence before ingestion
+        if: steps.prepare.outputs.action == 'settle'
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-match-settlement-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .weekly-match-audit/settlement/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 90
+      - name: Apply stored input
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          CRON_TARGET_URL: ${{ secrets.CRON_TARGET_URL }}
+        run: python3 scripts/run_weekly_match.py apply
+      - name: Retain operation result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-match-operation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .weekly-match-audit/plan.json
+            .weekly-match-audit/receipt.json
+          if-no-files-found: ignore
+          include-hidden-files: true
+          retention-days: 90

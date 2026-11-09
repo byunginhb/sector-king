@@ -41,6 +41,7 @@ export async function POST(req: Request) {
       p_reason: result.reason,
       p_audit: input,
       p_correction_reason: input.correctionReason ?? null,
+      p_automatic: input.automatic ?? false,
     })
     if (error) {
       if (error.message === 'CORRECTION_REASON_REQUIRED') return NextResponse.json({ success: false, error: '변경된 정산에는 정정 사유가 필요합니다' }, { status: 409, headers })
