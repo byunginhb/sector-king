@@ -29,3 +29,12 @@
 - 11월 13일 기준 종가는 미래 데이터다. 최초 수집·게시와 11월 20일 최초 정산의 실제 성공을 미리 주장하지 않는다.
 - 브라우저 연결이 없어 실제 OAuth 로그인 → 선택 저장 검사는 미실행이다. 합성 claims를 사용하는 DB 검사와 브라우저 fixture 검사는 OAuth 검증을 대신하지 않는다.
 - GitHub 실패 상태·요약은 제공하지만 실제 사용자 알림 수신, 검색 색인·검색 노출 증가·참여 전환 성과는 미확인이다.
+
+## 원격 배포와 첫 실행
+
+- 제품 커밋 [`a7e8af4`](https://github.com/byunginhb/sector-king/commit/a7e8af4115b4aca0bbb896d33cfb6145c5eca071)을 `main`에 푸시했다. Vercel production `dpl_6wMVNSbAdp8Yjk7hst5jcXZW2WuS`가 정확히 이 커밋으로 `READY`이며 `sector-king.com` / `www.sector-king.com`에 연결됨을 확인했다. 원격 전체 빌드는 배포 상태로 확인했고, 빌드 로그 조회는 connector 팀 권한 403으로 확인하지 못했다. 다른 인증 경로로 우회하지 않았다.
+- [실제 Actions 실행 42548725108](https://github.com/byunginhb/sector-king/actions/runs/42548725108)이 **success**로 끝났다. 유닛·기준 원본 복원 조회·인증 프로브·준비·무쓰기 적용·운영 artifact 저장 단계가 통과했다. 기준 원본과 정산 artifact 단계는 미래 날짜라 실행하지 않았다.
+- `weekly-match-operation-42548725108-1` artifact를 실제로 내려받아 `plan.json`의 `action: waiting-base`를 확인했다. 코드상 성공한 인증 프로브는 `{}` 본문에 대한 HTTP 400을 요구한다. 따라서 기존 Actions cron 비밀과 운영 서버의 인증 연결을 확인했고, DB 쓰기는 하지 않았다. 이는 실제 첫 기준 가격 게시나 첫 정산 성공을 뜻하지 않는다.
+- 실제 운영 URL의 Chrome 1440px / 390px 검사에서 빈 대진 안내·섹터 탐색 연결·H1 1개·가로 넘침 없음·브라우저 예외 0건을 확인했다. 공개 API HTTP 200, 본인 API GET/POST와 무인증 운영 POST HTTP 401 및 private/no-store, noindex·sitemap 제외·섹터 진입 링크 숨김을 확인했다.
+- 첫 자동 수집 예정은 **2026-11-13 18:10 KST**다. GitHub 실행 지연이나 원천 데이터 지연 가능성이 있으며, 모든 기준 종가가 확보돼야 게시된다. 이번 단일 라운드 이후 날짜는 자동 생성하지 않는다.
+- 증거는 `.harness/weekly-live/`의 배포 metadata, `production-smoke.json`·화면 이미지, Actions 실행 metadata·다운로드 artifact에 보관했다. 기존 개인 로그인 브라우저 연결이 없어 실제 OAuth 접수는 아직 미실행이다. 위 Chrome 검사는 로그인 세션 없는 별도 브라우저에서 수행했다.
