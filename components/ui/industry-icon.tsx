@@ -1,3 +1,4 @@
+import { createElement } from 'react'
 import {
   Cpu,
   Stethoscope,
@@ -44,5 +45,9 @@ interface IndustryIconProps {
 
 export function IndustryIcon({ iconKey, className, ...rest }: IndustryIconProps) {
   const Icon = resolveIndustryIcon(iconKey)
-  return <Icon className={cn('h-5 w-5', className)} aria-hidden {...rest} />
+  return createElement(Icon, {
+    className: cn('h-5 w-5', className),
+    'aria-hidden': true,
+    ...rest,
+  })
 }

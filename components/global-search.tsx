@@ -54,9 +54,13 @@ type Selectable =
 
 export function GlobalSearch() {
   const { isOpen, close } = useSearchContext()
+
+  return isOpen ? <SearchDialog close={close} /> : null
+}
+
+function SearchDialog({ close }: { close: () => void }) {
   const router = useRouter()
   const [query, setQuery] = useState('')
-  const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -85,23 +89,23 @@ export function GlobalSearch() {
     [stocks, features]
   )
 
-  useEffect(() => {
-    if (isOpen) {
-      setQuery('')
-      setSelectedIndex(0)
-      requestAnimationFrame(() => inputRef.current?.focus())
-    }
-  }, [isOpen])
+  const [selection, setSelection] = useState({ items: selectables, index: 0 })
+  const selectedIndex = selection.items === selectables ? selection.index : 0
+  const selectIndex = useCallback(
+    (index: number) => setSelection({ items: selectables, index }),
+    [selectables]
+  )
 
   useEffect(() => {
-    setSelectedIndex(0)
-  }, [data, features])
+    const frame = requestAnimationFrame(() => inputRef.current?.focus())
+    return () => cancelAnimationFrame(frame)
+  }, [])
 
   useEffect(() => {
     if (!listRef.current) return
     const items = listRef.current.querySelectorAll('[data-search-item]')
     items[selectedIndex]?.scrollIntoView({ block: 'nearest' })
-  }, [selectedIndex])
+  }, [selectedIndex, selectables])
 
   const go = useCallback(
     (target: Selectable) => {
@@ -119,10 +123,10 @@ export function GlobalSearch() {
     (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault()
-        setSelectedIndex((prev) => Math.min(prev + 1, selectables.length - 1))
+        selectIndex(Math.max(0, Math.min(selectedIndex + 1, selectables.length - 1)))
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
-        setSelectedIndex((prev) => Math.max(prev - 1, 0))
+        selectIndex(Math.max(selectedIndex - 1, 0))
       } else if (e.key === 'Enter') {
         const target = selectables[selectedIndex]
         if (!target) return
@@ -133,10 +137,8 @@ export function GlobalSearch() {
         close()
       }
     },
-    [selectables, selectedIndex, close, go]
+    [selectables, selectedIndex, selectIndex, close, go]
   )
-
-  if (!isOpen) return null
 
   const hasQuery = query.trim().length >= 1
   const nothingFound = hasQuery && !isLoading && selectables.length === 0
@@ -208,7 +210,7 @@ export function GlobalSearch() {
                     item={item}
                     active={i === selectedIndex}
                     onSelect={() => go({ kind: 'stock', item })}
-                    onHover={() => setSelectedIndex(i)}
+                    onHover={() => selectIndex(i)}
                     marketCapLabel={
                       item.marketCap != null ? fmt.marketCap(item.marketCap) : null
                     }
@@ -235,7 +237,7 @@ export function GlobalSearch() {
                       item={item}
                       active={index === selectedIndex}
                       onSelect={() => go({ kind: 'feature', item })}
-                      onHover={() => setSelectedIndex(index)}
+                      onHover={() => selectIndex(index)}
                     />
                   )
                 })}

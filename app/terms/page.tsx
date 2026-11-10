@@ -4,6 +4,7 @@
  * 정적 페이지. 투자정보 대시보드 성격에 맞춘 면책·이용조건 고지.
  */
 import { FileText } from 'lucide-react'
+import Link from 'next/link'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
@@ -94,9 +95,9 @@ export default function TermsPage() {
             <h2 className="text-base font-semibold mb-2">제7조 (문의)</h2>
             <p className="text-muted-foreground">
               본 약관에 관한 문의는{' '}
-              <a href="/contact" className="text-info hover:underline">
+              <Link href="/contact" className="text-info hover:underline">
                 문의 / 제보
-              </a>{' '}
+              </Link>{' '}
               페이지를 통해 접수합니다.
             </p>
           </section>

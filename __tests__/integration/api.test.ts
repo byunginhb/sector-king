@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, vi } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 
 // Integration tests for API endpoints
 // These tests verify the response structure and basic functionality

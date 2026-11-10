@@ -11,6 +11,7 @@ interface FlowRiverProps {
   maxFlow: number
 }
 
+// Stable index variation keeps particle geometry and timing equal during SSR and rerenders.
 // Dollar sign particle component for inflow
 function DollarParticle({
   flowId,
@@ -21,10 +22,11 @@ function DollarParticle({
   index: number
   flowRatio: number
 }) {
-  const size = 10 + Math.random() * 6 + flowRatio * 4
-  const speed = 2 + Math.random() * 1.5
-  const delay = index * 0.4 + Math.random() * 0.3
-  const yOffset = (Math.random() - 0.5) * 16
+  const variation = ((index * 7 + 3) % 11) / 11
+  const size = 10 + variation * 6 + flowRatio * 4
+  const speed = 2 + variation * 1.5
+  const delay = index * 0.4 + variation * 0.3
+  const yOffset = (variation - 0.5) * 16
 
   return (
     <motion.text
@@ -65,11 +67,12 @@ function FlyingMoneyParticle({
   index: number
   flowRatio: number
 }) {
-  const size = 10 + Math.random() * 6 + flowRatio * 4
-  const speed = 1.8 + Math.random() * 1.2
-  const delay = index * 0.35 + Math.random() * 0.25
-  const yOffset = (Math.random() - 0.5) * 20
-  const yDrift = (Math.random() - 0.5) * 15
+  const variation = ((index * 7 + 3) % 11) / 11
+  const size = 10 + variation * 6 + flowRatio * 4
+  const speed = 1.8 + variation * 1.2
+  const delay = index * 0.35 + variation * 0.25
+  const yOffset = (variation - 0.5) * 20
+  const yDrift = (variation - 0.5) * 15
 
   return (
     <motion.text
@@ -114,11 +117,11 @@ function CoinParticle({
   flowRatio: number
   colors: { particle: string; particleLight: string }
 }) {
-  // Randomize particle properties for variety
-  const size = 4 + Math.random() * 5 + flowRatio * 4
-  const speed = 1.8 + Math.random() * 1.2
-  const delay = index * (0.3 + Math.random() * 0.2)
-  const yOffset = (Math.random() - 0.5) * 14
+  const variation = ((index * 7 + 3) % 11) / 11
+  const size = 4 + variation * 5 + flowRatio * 4
+  const speed = 1.8 + variation * 1.2
+  const delay = index * (0.3 + variation * 0.2)
+  const yOffset = (variation - 0.5) * 14
 
   return (
     <motion.g key={index}>
@@ -165,17 +168,10 @@ function CoinParticle({
 }
 
 // Sparkle effect
-function Sparkle({
-  flowId,
-  isInflow,
-  index,
-}: {
-  flowId: string
-  isInflow: boolean
-  index: number
-}) {
-  const x = 50 + Math.random() * 300
-  const y = 12 + Math.random() * 24
+function Sparkle({ index }: { index: number }) {
+  const variation = ((index * 7 + 3) % 11) / 11
+  const x = 50 + variation * 300
+  const y = 12 + variation * 24
 
   return (
     <motion.circle
@@ -190,9 +186,9 @@ function Sparkle({
       }}
       transition={{
         duration: 0.8,
-        delay: index * 0.4 + Math.random() * 2,
+        delay: index * 0.4 + variation * 2,
         repeat: Infinity,
-        repeatDelay: 1 + Math.random() * 2,
+        repeatDelay: 1 + variation * 2,
       }}
     />
   )
@@ -266,7 +262,7 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
 
       {/* River SVG */}
       <div className="relative h-14">
-        <svg className="w-full h-full" viewBox="0 0 400 48" preserveAspectRatio="none">
+        <svg aria-hidden className="w-full h-full" viewBox="0 0 400 48" preserveAspectRatio="none">
           <defs>
             {/* Gradient for river */}
             <linearGradient
@@ -381,7 +377,7 @@ export function FlowRiver({ flow, index, maxFlow }: FlowRiverProps) {
 
           {/* Sparkles */}
           {Array.from({ length: sparkleCount }).map((_, i) => (
-            <Sparkle key={`sparkle-${i}`} flowId={flow.id} isInflow={isInflow} index={i} />
+            <Sparkle key={`sparkle-${i}`} index={i} />
           ))}
 
           {/* Dollar/Money Particles based on flow direction */}

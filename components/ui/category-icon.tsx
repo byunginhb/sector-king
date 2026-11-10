@@ -1,3 +1,4 @@
+import { createElement } from 'react'
 import {
   MemoryStick,
   Brain,
@@ -20,7 +21,6 @@ import {
   Gem,
   UtensilsCrossed,
   Store,
-  Stethoscope,
   Pill,
   Microscope,
   HeartPulse,
@@ -165,5 +165,9 @@ interface CategoryIconProps {
 
 export function CategoryIcon({ iconKey, className, ...rest }: CategoryIconProps) {
   const Icon = resolveCategoryIcon(iconKey)
-  return <Icon className={cn('h-5 w-5', className)} aria-hidden {...rest} />
+  return createElement(Icon, {
+    className: cn('h-5 w-5', className),
+    'aria-hidden': true,
+    ...rest,
+  })
 }

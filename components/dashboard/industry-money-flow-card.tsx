@@ -18,6 +18,7 @@ import type { IndustryMoneyFlowSummary, RegionFilter } from '@/types'
 type PeriodType = 1 | 3 | 7 | 14 | 30
 
 /* ─── Rising / Falling Arrow Animations ─── */
+// Stable index variation keeps SSR, rerenders and paused arrows in the same positions.
 
 interface ArrowProps {
   index: number
@@ -28,8 +29,9 @@ interface ArrowProps {
 }
 
 function RisingArrow({ index, delay, total, paused }: ArrowProps) {
-  const x = 5 + (index / total) * 80 + Math.random() * 10
-  const size = 20 + Math.random() * 12
+  const variation = ((index * 7 + 3) % 11) / 11
+  const x = 5 + (index / total) * 80 + variation * 10
+  const size = 20 + variation * 12
   const icon = (
     <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
       <path d="M10 0 L19 12 L13 12 L13 30 L7 30 L7 12 L1 12 Z" fill="hsl(var(--success) / 0.7)" />
@@ -39,6 +41,7 @@ function RisingArrow({ index, delay, total, paused }: ArrowProps) {
   if (paused) {
     return (
       <div
+        aria-hidden
         className="absolute pointer-events-none z-10"
         style={{ left: `${x}%`, top: `${18 + (index / total) * 52}%`, opacity: 0.5 }}
       >
@@ -49,12 +52,13 @@ function RisingArrow({ index, delay, total, paused }: ArrowProps) {
 
   return (
     <motion.div
+      aria-hidden
       className="absolute pointer-events-none z-10"
       style={{ left: `${x}%`, bottom: -10 }}
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: -120, opacity: [0, 0.85, 0.85, 0] }}
       transition={{
-        duration: 1.1 + Math.random() * 0.4,
+        duration: 1.1 + variation * 0.4,
         delay: delay + index * 0.3,
         repeat: Infinity,
         ease: 'linear',
@@ -66,8 +70,9 @@ function RisingArrow({ index, delay, total, paused }: ArrowProps) {
 }
 
 function FallingArrow({ index, delay, total, paused }: ArrowProps) {
-  const x = 5 + (index / total) * 80 + Math.random() * 10
-  const size = 20 + Math.random() * 12
+  const variation = ((index * 7 + 3) % 11) / 11
+  const x = 5 + (index / total) * 80 + variation * 10
+  const size = 20 + variation * 12
   const icon = (
     <svg width={size} height={size * 1.5} viewBox="0 0 20 30" fill="none">
       <path d="M7 0 L13 0 L13 18 L19 18 L10 30 L1 18 L7 18 Z" fill="hsl(var(--danger) / 0.7)" />
@@ -77,6 +82,7 @@ function FallingArrow({ index, delay, total, paused }: ArrowProps) {
   if (paused) {
     return (
       <div
+        aria-hidden
         className="absolute pointer-events-none z-10"
         style={{ left: `${x}%`, top: `${18 + (index / total) * 52}%`, opacity: 0.5 }}
       >
@@ -87,12 +93,13 @@ function FallingArrow({ index, delay, total, paused }: ArrowProps) {
 
   return (
     <motion.div
+      aria-hidden
       className="absolute pointer-events-none z-10"
       style={{ left: `${x}%`, top: -10 }}
       initial={{ y: -30, opacity: 0 }}
       animate={{ y: 120, opacity: [0, 0.85, 0.85, 0] }}
       transition={{
-        duration: 1.1 + Math.random() * 0.4,
+        duration: 1.1 + variation * 0.4,
         delay: delay + index * 0.3,
         repeat: Infinity,
         ease: 'linear',
@@ -374,7 +381,7 @@ function IndustryFlowItem({
           gradientId={`flow-trend-${industry.industryId}`}
         />
 
-        {/* Rising / Falling arrows (5~7 random) */}
+        {/* Rising / Falling arrows (5~7 per card) */}
         {isInflow
           ? Array.from({ length: 5 + (index % 3) }).map((_, i, arr) => (
               <RisingArrow key={`a-${i}`} index={i} delay={index * 0.1} total={arr.length} paused={paused} />

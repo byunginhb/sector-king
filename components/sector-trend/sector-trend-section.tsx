@@ -74,23 +74,24 @@ export function SectorTrendSection({ industryId }: SectorTrendSectionProps = {})
   const [sortPeriod, setSortPeriod] = useState(30)
   const [sortAsc, setSortAsc] = useState(false)
   const [showAll, setShowAll] = useState(false)
+  const sectors = data?.sectors
 
   const sortedSectors = useMemo(() => {
-    if (!data?.sectors) return []
-    return [...data.sectors].sort((a, b) => {
+    if (!sectors) return []
+    return [...sectors].sort((a, b) => {
       const aVal = getFlowPercent(a, sortPeriod)
       const bVal = getFlowPercent(b, sortPeriod)
       return sortAsc ? aVal - bVal : bVal - aVal
     })
-  }, [data?.sectors, sortPeriod, sortAsc])
+  }, [sectors, sortPeriod, sortAsc])
 
   const chartSectors = useMemo(() => {
-    if (!data?.sectors) return []
-    const sorted = [...data.sectors].sort(
+    if (!sectors) return []
+    const sorted = [...sectors].sort(
       (a, b) => Math.abs(getFlowPercent(b, 30)) - Math.abs(getFlowPercent(a, 30))
     )
     return showAll ? sorted : sorted.slice(0, DEFAULT_VISIBLE_COUNT)
-  }, [data?.sectors, showAll])
+  }, [sectors, showAll])
 
   const chartData = useMemo(() => {
     return PERIODS.map((period) => {

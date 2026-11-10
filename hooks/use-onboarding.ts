@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback, useSyncExternalStore } from 'react'
 
 const STORAGE_KEY = 'sector-king-onboarding'
 const CURRENT_VERSION = 1
+const subscribeNever = () => () => {}
 
 interface OnboardingState {
   welcomeCompleted: boolean
@@ -40,14 +41,8 @@ function writeState(state: OnboardingState): void {
 }
 
 export function useOnboarding() {
-  const [state, setState] = useState<OnboardingState>(DEFAULT_STATE)
-  const [isHydrated, setIsHydrated] = useState(false)
-
-  // Read from localStorage after hydration
-  useEffect(() => {
-    setState(readState())
-    setIsHydrated(true)
-  }, [])
+  const [state, setState] = useState<OnboardingState>(readState)
+  const isHydrated = useSyncExternalStore(subscribeNever, () => true, () => false)
 
   const persistState = useCallback((newState: OnboardingState) => {
     setState(newState)
@@ -84,7 +79,8 @@ export function useOnboarding() {
   const resetPageTour = useCallback(
     (pageId: string) => {
       const current = readState()
-      const { [pageId]: _, ...rest } = current.pageToursCompleted
+      const rest = { ...current.pageToursCompleted }
+      delete rest[pageId]
       persistState({ ...current, pageToursCompleted: rest })
     },
     [persistState]

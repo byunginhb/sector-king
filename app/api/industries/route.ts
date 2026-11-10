@@ -8,7 +8,7 @@ import {
   companies,
   dailySnapshots,
 } from '@/drizzle/schema'
-import { eq, inArray, desc, gte } from 'drizzle-orm'
+import { eq, desc, gte } from 'drizzle-orm'
 import { toUsd } from '@/lib/currency'
 import { resolveRegion, regionFilterToValue } from '@/lib/region'
 import type { ApiResponse, IndustriesResponse, IndustryOverview } from '@/types'

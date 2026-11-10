@@ -143,7 +143,7 @@ export function PreviewEmailClient({
               className="w-full text-sm rounded-md bg-surface-2 border border-border-subtle px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
             <p className="text-[11px] text-muted-foreground">
-              제목 앞에 "[테스트]" 가 붙습니다.
+              제목 앞에 &quot;[테스트]&quot; 가 붙습니다.
             </p>
           </div>
 

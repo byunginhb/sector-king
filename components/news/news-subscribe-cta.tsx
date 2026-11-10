@@ -13,7 +13,8 @@
  */
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Mail, CheckCircle2, ArrowRight } from 'lucide-react'
 import { useEmailSubscription } from '@/hooks/me/use-email-subscription'
@@ -30,6 +31,15 @@ interface NewsSubscribeCtaProps {
 }
 
 const DISMISS_KEY = 'news_subscribe_banner_dismissed'
+const subscribeNever = () => () => {}
+
+function readDismissed() {
+  try {
+    return localStorage.getItem(DISMISS_KEY) === '1'
+  } catch {
+    return false
+  }
+}
 
 export function NewsSubscribeCta({
   variant = 'compact',
@@ -46,16 +56,7 @@ export function NewsSubscribeCta({
 
   const [dismissed, setDismissed] = useState(false)
   const [justSubscribed, setJustSubscribed] = useState(false)
-
-  useEffect(() => {
-    if (!dismissible) return
-    try {
-      const v = localStorage.getItem(DISMISS_KEY)
-      if (v === '1') setDismissed(true)
-    } catch {
-      // ignore
-    }
-  }, [dismissible])
+  const storedDismissed = useSyncExternalStore(subscribeNever, readDismissed, () => false)
 
   function handleDismiss() {
     setDismissed(true)
@@ -87,7 +88,7 @@ export function NewsSubscribeCta({
   }
 
   // dismiss 처리
-  if (dismissible && dismissed) return null
+  if (dismissible && (dismissed || storedDismissed)) return null
 
   // 로그인 + 이미 구독 중
   const alreadySubscribed = Boolean(
@@ -211,21 +212,21 @@ export function NewsSubscribeCta({
       </div>
       <div className="shrink-0">
         {alreadySubscribed ? (
-          <a
+          <Link
             href="/me/settings"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
           >
             구독 관리
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-          </a>
+          </Link>
         ) : justSubscribed ? (
-          <a
+          <Link
             href="/me/settings"
             className="inline-flex items-center gap-1.5 text-sm text-success font-medium"
           >
             <CheckCircle2 className="h-4 w-4" aria-hidden />
             구독 중
-          </a>
+          </Link>
         ) : (
           <button
             type="button"

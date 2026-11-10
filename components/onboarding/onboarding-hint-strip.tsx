@@ -1,35 +1,33 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { X } from 'lucide-react'
 
 // localStorage 키 — 버전 suffix 로 카피 변경 시 strip 재노출 가능
 const STORAGE_KEY = 'sk:hint-strip-dismissed-v1'
+const subscribeNever = () => () => {}
+
+function readVisible() {
+  try {
+    return !window.localStorage.getItem(STORAGE_KEY)
+  } catch {
+    return false
+  }
+}
 
 /**
  * 온보딩 힌트 strip.
  *
  * - 자동 페이지 투어 폐기 후 신규 진입자 안내용으로 도입.
  * - localStorage 에 dismiss 플래그가 없으면 표시, 있으면 null 반환.
- * - SSR/CSR mismatch 방지를 위해 mounted flag 사용.
+ * - SSR/초기 hydration에서는 숨기고 브라우저 저장값으로 표시 여부 결정.
  * - 투어 진입은 우상단 도움말 버튼에 일임 (strip 에서는 "둘러보기" 생략).
  */
 export function OnboardingHintStrip() {
-  const [mounted, setMounted] = useState(false)
-  const [visible, setVisible] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
+  const visible = useSyncExternalStore(subscribeNever, readVisible, () => false)
 
-  useEffect(() => {
-    setMounted(true)
-    try {
-      const dismissed = window.localStorage.getItem(STORAGE_KEY)
-      setVisible(!dismissed)
-    } catch {
-      // 비공개 모드/접근 거부 환경에서는 표시 시도하지 않음 (조용히 무시)
-      setVisible(false)
-    }
-  }, [])
-
-  if (!mounted || !visible) return null
+  if (dismissed || !visible) return null
 
   function dismiss() {
     try {
@@ -37,7 +35,7 @@ export function OnboardingHintStrip() {
     } catch {
       // 저장 실패해도 세션 내에서는 닫힘 상태 유지
     }
-    setVisible(false)
+    setDismissed(true)
   }
 
   return (

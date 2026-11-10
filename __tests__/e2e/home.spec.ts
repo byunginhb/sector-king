@@ -126,8 +126,6 @@ test.describe('Error Handling', () => {
     const main = page.locator('main')
     await expect(main).toBeVisible()
 
-    // Should display error message or the page should still be functional
-    const hasErrorOrContent = await page.locator('text=Something went wrong, text=error, h1, h2').first().isVisible({ timeout: 5000 }).catch(() => false)
     // Page should at least render something
     expect(await main.isVisible()).toBeTruthy()
   })

@@ -18,38 +18,28 @@ interface CompanyRankingTableProps {
   isLoading?: boolean
 }
 
-export function CompanyRankingTable({
-  companies,
-  total,
-  page,
-  totalPages,
+function SortHeader({
+  column,
+  label,
+  className,
   sort,
   order,
   onSortChange,
-  onPageChange,
-  onCompanyClick,
-  isLoading,
-}: CompanyRankingTableProps) {
-  const fmt = useCurrencyFormat()
-  const handleSort = (newSort: 'count' | 'marketCap' | 'name') => {
-    onSortChange(newSort)
-  }
-
-  const SortHeader = ({
-    column,
-    label,
-    className,
-  }: {
-    column: 'count' | 'marketCap' | 'name'
-    label: string
-    className?: string
-  }) => (
+}: {
+  column: CompanyRankingTableProps['sort']
+  label: string
+  className?: string
+  sort: CompanyRankingTableProps['sort']
+  order: CompanyRankingTableProps['order']
+  onSortChange: CompanyRankingTableProps['onSortChange']
+}) {
+  return (
     <th
       className={cn(
         'px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-surface-2 transition-colors',
         className
       )}
-      onClick={() => handleSort(column)}
+      onClick={() => onSortChange(column)}
     >
       <div className="flex items-center gap-1">
         {label}
@@ -66,6 +56,21 @@ export function CompanyRankingTable({
       </div>
     </th>
   )
+}
+
+export function CompanyRankingTable({
+  companies,
+  total,
+  page,
+  totalPages,
+  sort,
+  order,
+  onSortChange,
+  onPageChange,
+  onCompanyClick,
+  isLoading,
+}: CompanyRankingTableProps) {
+  const fmt = useCurrencyFormat()
 
   if (isLoading) {
     return (
@@ -89,12 +94,32 @@ export function CompanyRankingTable({
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-12">
                 #
               </th>
-              <SortHeader column="name" label="회사" />
+              <SortHeader
+                column="name"
+                label="회사"
+                sort={sort}
+                order={order}
+                onSortChange={onSortChange}
+              />
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 등장 섹터
               </th>
-              <SortHeader column="count" label="횟수" className="text-center" />
-              <SortHeader column="marketCap" label="시가총액" className="text-right" />
+              <SortHeader
+                column="count"
+                label="횟수"
+                className="text-center"
+                sort={sort}
+                order={order}
+                onSortChange={onSortChange}
+              />
+              <SortHeader
+                column="marketCap"
+                label="시가총액"
+                className="text-right"
+                sort={sort}
+                order={order}
+                onSortChange={onSortChange}
+              />
               <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 등락
               </th>

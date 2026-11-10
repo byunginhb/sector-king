@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { Menu, Newspaper, Info, Trophy, Globe, PieChart, ClipboardCheck, Waves, type LucideIcon } from 'lucide-react'
 import { SectorKingLogo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -45,6 +45,16 @@ interface GlobalTopBarProps {
 // 640px(sm)에선 메뉴·토글이 한 줄에 안 들어가 라벨이 글자 단위로 깨졌음.
 const MOBILE_BREAKPOINT = '(min-width: 1024px)'
 
+function subscribeDesktop(onChange: () => void) {
+  const media = window.matchMedia(MOBILE_BREAKPOINT)
+  media.addEventListener('change', onChange)
+  return () => media.removeEventListener('change', onChange)
+}
+
+function getDesktopSnapshot() {
+  return window.matchMedia(MOBILE_BREAKPOINT).matches
+}
+
 interface NavItem {
   href: string
   label: string
@@ -81,7 +91,7 @@ function NewBadge() {
  * - 우(모바일 ≤sm): 햄버거 → Sheet 패널에서 모든 액션 노출
  * - sticky top-0 z-50, backdrop-blur 톤 일관
  *
- * 데스크탑/모바일 분기는 mounted 후 matchMedia로 결정 — 두 트리가 동시에 마운트되어
+ * 데스크탑/모바일 분기는 hydration 후 matchMedia로 결정 — 두 트리가 동시에 마운트되어
  * useCurrentUser 등 훅이 중복 호출되는 문제를 방지한다. SSR/초기 hydration 동안에는
  * 데스크탑 트리를 기본으로 렌더하고, 마운트 직후 한쪽만 남긴다.
  */
@@ -98,26 +108,14 @@ export function GlobalTopBar({
   const BrandTag = hasPageHeading ? 'span' : 'h1'
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const [isDesktop, setIsDesktop] = useState(true)
+  const isDesktop = useSyncExternalStore(subscribeDesktop, getDesktopSnapshot, () => true)
 
   const isNavActive = (href: string) =>
     pathname === href || pathname?.startsWith(`${href}/`)
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const mql = window.matchMedia(MOBILE_BREAKPOINT)
-    const update = () => setIsDesktop(mql.matches)
-    update()
-    setMounted(true)
-    mql.addEventListener('change', update)
-    return () => mql.removeEventListener('change', update)
-  }, [])
-
-  // SSR + 마운트 직후에는 데스크탑 트리를 보이되 모바일 트리는 hidden 으로 두어
-  // 같은 무거운 컴포넌트(AuthButtonClient 등)가 중복 마운트되지 않도록 한다.
-  const showDesktop = !mounted || isDesktop
-  const showMobile = mounted && !isDesktop
+  // 서버 snapshot은 데스크탑으로 고정하고 hydration 후 한쪽 트리만 마운트한다.
+  const showDesktop = isDesktop
+  const showMobile = !isDesktop
 
   return (
     <header className="sticky top-0 z-50 border-b border-border-subtle backdrop-blur-md">
@@ -299,7 +297,7 @@ function TagLine({
       aria-label={revealed ? '태그라인 보기' : '데이터 기준일 보기'}
       className="eyebrow mt-1.5 line-clamp-1 block text-left transition-colors hover:text-primary"
     >
-      {revealed ? <UpdateTimestamp dateStr={lastUpdated} /> : label}
+      {revealed ? <UpdateTimestamp key={lastUpdated} dateStr={lastUpdated} /> : label}
     </button>
   )
 }
@@ -311,19 +309,10 @@ function CurrencyToggleConnected() {
 }
 
 function UpdateTimestamp({ dateStr }: { dateStr: string }) {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return <span className="text-xs text-muted-foreground tabular-nums">{dateStr} 기준</span>
-  }
-
-  const relative = formatRelativeTime(dateStr)
-  const diffDays = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
-  const isStale = diffDays >= 1
+  const [{ relative, isStale }] = useState(() => ({
+    relative: formatRelativeTime(dateStr),
+    isStale: Date.now() - new Date(dateStr).getTime() >= 1000 * 60 * 60 * 24,
+  }))
 
   return (
     <span

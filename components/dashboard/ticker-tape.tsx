@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { useDailyMovers } from '@/hooks/use-daily-movers'
 import Link from 'next/link'
@@ -20,13 +20,6 @@ interface TickerTapeProps {
   minMarketCapUsd?: number
   /** 얇은 띠(카드 내부용) — 여백과 글자를 줄인다. */
   compact?: boolean
-}
-
-interface TickerItem {
-  ticker: string
-  name: string | null
-  nameKo?: string | null
-  percentChange: number
 }
 
 /**
@@ -73,15 +66,7 @@ export function TickerTape({
     return () => observer.disconnect()
   }, [])
 
-  const items = useMemo<TickerItem[]>(() => {
-    if (!data?.items) return []
-    return data.items.map((c) => ({
-      ticker: c.ticker,
-      name: c.name,
-      nameKo: c.nameKo,
-      percentChange: c.percentChange,
-    }))
-  }, [data?.items])
+  const items = data?.items ?? []
 
   if (isLoading || items.length === 0) {
     // 카드 안 띠는 비어 있으면 아무것도 그리지 않는다 — 빈 껍데기가 카드

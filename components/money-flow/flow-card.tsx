@@ -15,19 +15,22 @@ interface FlowCardProps {
 }
 
 /* ─── Rising / Falling Arrow Animations ─── */
+// Stable index variation avoids hydration changes and jitter on unrelated rerenders.
 
 function RisingArrow({ index, delay, total }: { index: number; delay: number; total: number }) {
-  const x = 5 + (index / total) * 80 + Math.random() * 10
-  const size = 20 + Math.random() * 12
+  const variation = ((index * 7 + 3) % 11) / 11
+  const x = 5 + (index / total) * 80 + variation * 10
+  const size = 20 + variation * 12
 
   return (
     <motion.div
+      aria-hidden
       className="absolute pointer-events-none z-10"
       style={{ left: `${x}%`, bottom: -10 }}
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: -120, opacity: [0, 0.85, 0.85, 0] }}
       transition={{
-        duration: 1.1 + Math.random() * 0.4,
+        duration: 1.1 + variation * 0.4,
         delay: delay + index * 0.3,
         repeat: Infinity,
         ease: 'linear',
@@ -41,17 +44,19 @@ function RisingArrow({ index, delay, total }: { index: number; delay: number; to
 }
 
 function FallingArrow({ index, delay, total }: { index: number; delay: number; total: number }) {
-  const x = 5 + (index / total) * 80 + Math.random() * 10
-  const size = 20 + Math.random() * 12
+  const variation = ((index * 7 + 3) % 11) / 11
+  const x = 5 + (index / total) * 80 + variation * 10
+  const size = 20 + variation * 12
 
   return (
     <motion.div
+      aria-hidden
       className="absolute pointer-events-none z-10"
       style={{ left: `${x}%`, top: -10 }}
       initial={{ y: -30, opacity: 0 }}
       animate={{ y: 120, opacity: [0, 0.85, 0.85, 0] }}
       transition={{
-        duration: 1.1 + Math.random() * 0.4,
+        duration: 1.1 + variation * 0.4,
         delay: delay + index * 0.3,
         repeat: Infinity,
         ease: 'linear',

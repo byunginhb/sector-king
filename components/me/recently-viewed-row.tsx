@@ -37,23 +37,8 @@ export function RecentlyViewedRow({ limit = 12 }: { limit?: number }) {
 
 function RecentlyViewedItem({ item }: { item: RecentlyViewedItemDTO }) {
   const href = hrefFor(item)
-  const Wrapper = href
-    ? ({ children }: { children: React.ReactNode }) => (
-        <Link
-          href={href}
-          className="block sk-card hover:bg-surface-2 transition-colors px-3 py-2 min-w-[140px] shrink-0"
-        >
-          {children}
-        </Link>
-      )
-    : ({ children }: { children: React.ReactNode }) => (
-        <div className="block sk-card px-3 py-2 min-w-[140px] shrink-0">
-          {children}
-        </div>
-      )
-
-  return (
-    <Wrapper>
+  const content = (
+    <>
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground inline-flex items-center gap-1">
         <Clock className="h-2.5 w-2.5" aria-hidden />
         {labelFor(item.itemType)}
@@ -61,7 +46,20 @@ function RecentlyViewedItem({ item }: { item: RecentlyViewedItemDTO }) {
       <p className="text-sm font-medium text-foreground truncate">
         {item.displayName ?? item.itemKey}
       </p>
-    </Wrapper>
+    </>
+  )
+
+  return href ? (
+    <Link
+      href={href}
+      className="block sk-card hover:bg-surface-2 transition-colors px-3 py-2 min-w-[140px] shrink-0"
+    >
+      {content}
+    </Link>
+  ) : (
+    <div className="block sk-card px-3 py-2 min-w-[140px] shrink-0">
+      {content}
+    </div>
   )
 }
 

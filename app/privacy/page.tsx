@@ -7,6 +7,7 @@
  * 제공자마다 다르므로 목록을 뭉뚱그리면 고지 내용이 사실과 어긋난다.
  */
 import { ShieldCheck } from 'lucide-react'
+import Link from 'next/link'
 import { GlobalTopBar } from '@/components/layout/global-top-bar'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://sector-king.com'
@@ -109,9 +110,9 @@ export default function PrivacyPage() {
             <p className="text-muted-foreground">
               이용자는 언제든지 자신의 개인정보에 대한 열람·정정·삭제·처리정지를
               요청할 수 있습니다. 요청은{' '}
-              <a href="/contact" className="text-info hover:underline">
+              <Link href="/contact" className="text-info hover:underline">
                 문의 / 제보
-              </a>{' '}
+              </Link>{' '}
               페이지를 통해 접수합니다.
             </p>
           </section>
