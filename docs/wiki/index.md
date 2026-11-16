@@ -25,6 +25,7 @@ LLM·사람이 함께 읽는 프로젝트 지식 베이스. 코드에서 바로 
 | [주간 섹터 매치 — 초기 수동 운영](features/user-engagement/weekly-match-operations.md) | 초기 절차 | 본인 선택·정산 계약과 수동 재전송. 현재 운영 기준은 아래 후속 문서 참고 |
 | [주간 섹터 매치 — 운영 DB·자동 실행](features/user-engagement/weekly-match-live-operations.md) | 운영 준비·공개 대기 | 운영 DB·단일 주간 Actions·원본 보존·검증 현황·중지 방법 |
 | [주간 섹터 매치 — 운영 연결 검증](features/user-engagement/weekly-match-live-release-2026-11-09.md) | 검증 기록 | 운영 DB·자동 실행·원본 보존의 검사 근거와 미실행 범위 |
+| [주간 섹터 매치 — 게시 확인·다음 대진 준비](features/user-engagement/weekly-match-next-steps-2026-11-16.md) | 정산 대기·다음 후보 비활성 | 최초 게시·12종 원본 대조, OAuth 인계와 다음 대진 전환 조건 |
 | [주간 섹터 매치 — 구현 검증](features/user-engagement/weekly-match-release-2026-11-07.md) | 검증·운영 미활성 | 단위·DB·브라우저·코드/보안 검증과 실제 접수 전 남은 확인 |
 | [사용자 참여·경쟁·자랑 — 검토 의견](features/user-engagement/review.md) | 검토 | 후보 문서 전제의 코드 대조 결과. 미국 보드 정산 불가, 한국 한정 E01 권장, 공통 기반 선행 작업 |
 | [글로벌 자금 지도 — 기획](features/global-flow/plan.md) | 운영 중 | 주식 밖(달러·금·채권·비트코인·현금)까지 포함한 자산군 간 자금 흐름 페이지 `/global-flow`. 설계 원칙·로드맵·결정 로그 |
