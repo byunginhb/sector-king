@@ -3,10 +3,11 @@ import Link from "next/link";
 import { GlobalTopBar } from "@/components/layout/global-top-bar";
 import { WeeklyMatchBoard } from "@/components/weekly-match/weekly-match-board";
 import styles from "./weekly-match.module.css";
+import pilot from "@/config/weekly-match-pilot.json";
 
-const title = "주간 섹터 매치";
+const title = "섹터 매치 · 베타";
 const description =
-  "이번 주 더 높은 가격 변동률을 기록할 국내 섹터를 선택하고, 마감 후 내 결과를 확인하세요.";
+  "대진에 표시된 비교 기간 동안 더 높은 가격 변동률을 기록할 국내 섹터를 선택하고 내 결과를 확인하세요.";
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sector-king.com";
 
 export const metadata: Metadata = {
@@ -20,17 +21,29 @@ export const metadata: Metadata = {
 export default function WeeklyMatchPage() {
   return (
     <div className={`${styles.page} min-h-screen`}>
-      <GlobalTopBar subtitle="주간 섹터 매치" hasPageHeading />
+      <GlobalTopBar subtitle="섹터 매치 · 베타" hasPageHeading />
       <main className="mx-auto max-w-5xl px-4 py-8 sm:py-10">
         <header className="max-w-2xl">
           <h1 className="min-w-0 break-words font-display text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
-            이번 주, 어느 섹터일까요?
+            어느 섹터가 더 강할까요?
           </h1>
           <p className="mt-3 text-base leading-relaxed text-muted-foreground">
             더 높은 가격 변동률을 기록할 국내 섹터를 고르고 내 결과를
             확인하세요.
           </p>
         </header>
+
+        <aside aria-label="베타 운영 안내" className="mt-6 rounded-lg border border-border bg-surface-2 p-4 text-sm leading-relaxed text-muted-foreground">
+          단기 베타는 한 거래일을 비교하는 대진입니다. 대진마다 표시된 비교
+          기간과 마감 시간을 확인해 주세요. 실제 기준 종가가 준비된 대진부터
+          접수를 시작하며, 결과 검증이 끝나면 내 결과가 표시됩니다.
+          {!pilot.enabled && (
+            <p className="mt-2">
+              단기 베타는 가격 기준을 확인 중입니다. 접수 준비가 끝나면 새 대진이
+              표시됩니다.
+            </p>
+          )}
+        </aside>
 
         <div className="mt-8">
           <WeeklyMatchBoard />
@@ -49,7 +62,7 @@ export default function WeeklyMatchPage() {
               결과는 본인에게만 표시됩니다.
             </li>
             <li>
-              직전 주 마지막 거래일 종가부터 해당 주 마지막 거래일 종가까지,
+              각 대진에 표시된 기준일 종가부터 종료일 종가까지,
               고정된 구성 종목의 가격 변동률을 같은 비중으로 평균합니다. 배당
               포함 총수익률이나 순매수가 아닙니다.
             </li>

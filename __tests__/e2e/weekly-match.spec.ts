@@ -152,6 +152,20 @@ test("빈 대진은 섹터 탐색으로 연결한다", async ({ page }) => {
   ).toHaveAttribute("href", "/sectors");
 });
 
+test("모바일 메뉴에서 베타에 접근하고 단기 비교 기간 안내를 확인한다", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await publicRounds(page, [round]);
+  await openPage(page);
+  await expect(page.getByRole('complementary', { name: '베타 운영 안내' })).toContainText('한 거래일');
+  await expect(page.getByRole('complementary', { name: '베타 운영 안내' })).toContainText('가격 기준을 확인 중');
+  await page.getByRole('button', { name: '메뉴 열기' }).click();
+  const menu = page.getByRole('navigation', { name: '모바일 주요 메뉴' });
+  const match = menu.getByRole('link', { name: /섹터 매치.*BETA/ });
+  await expect(match).toHaveAttribute('href', '/weekly-match');
+  await match.click();
+  await expect(page.getByRole('dialog', { name: '메뉴', exact: true })).not.toBeVisible();
+});
+
 test("대진 조회 장애에는 다시 불러오기를 제공한다", async ({ page }) => {
   await publicRounds(page, [], 503);
   await openPage(page);

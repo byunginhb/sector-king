@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useSyncExternalStore } from 'react'
-import { Menu, Newspaper, Info, Trophy, Globe, PieChart, ClipboardCheck, Waves, type LucideIcon } from 'lucide-react'
+import { Menu, Newspaper, Info, Trophy, Globe, PieChart, ClipboardCheck, Waves, Swords, type LucideIcon } from 'lucide-react'
 import { SectorKingLogo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { CurrencyToggle } from '@/components/currency-toggle'
@@ -65,6 +65,7 @@ interface NavItem {
 
 /** 헤더에 항상 노출되는 주요 콘텐츠 진입 메뉴. */
 const NAV_ITEMS: readonly NavItem[] = [
+  { href: '/weekly-match', label: '섹터 매치', icon: Swords, badge: 'BETA' },
   { href: '/about', label: '소개', icon: Info },
   { href: '/news', label: '뉴스', icon: Newspaper },
   { href: '/global-flow', label: '글로벌 자금', icon: Waves, badge: 'NEW' },
@@ -75,10 +76,10 @@ const NAV_ITEMS: readonly NavItem[] = [
 ] as const
 
 /** 신규 기능 강조용 작은 배지. */
-function NewBadge() {
+function FeatureBadge({ label }: { label: string }) {
   return (
     <span className="ml-1 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold leading-none tracking-wide text-primary dark:bg-primary/20">
-      NEW
+      {label}
     </span>
   )
 }
@@ -121,7 +122,7 @@ export function GlobalTopBar({
     <header className="sticky top-0 z-50 border-b border-border-subtle backdrop-blur-md">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex flex-1 items-center gap-3 min-w-0">
             {/* 태그라인은 Link 밖에 둔다 — 이스터에그 클릭이 홈 이동과 겹치지 않도록. */}
             <div className="flex items-baseline gap-3 shrink-0">
               <Link href="/" aria-label="홈으로" className="shrink-0 self-center">
@@ -140,7 +141,7 @@ export function GlobalTopBar({
             {/* 데스크탑 inline 메뉴 — 로고 옆에 자리잡는 콘텐츠 진입 */}
             <nav
               aria-label="주요 메뉴"
-              className="hidden lg:flex items-center gap-1 ml-2 pl-3 border-l border-border-subtle shrink-0"
+              className="hidden lg:flex min-w-0 items-center gap-1 ml-2 pl-3 border-l border-border-subtle overflow-x-auto"
             >
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon
@@ -157,10 +158,10 @@ export function GlobalTopBar({
                         : 'text-foreground/70 hover:bg-surface-2 hover:text-foreground'
                     )}
                   >
-                    {/* 메뉴가 7개라 2xl 미만에선 아이콘을 빼야 한 줄에 들어간다(1328px 실측 744px→오버플로) */}
+                    {/* 좁은 데스크톱에서는 메뉴 영역만 스크롤하고 액션을 보존한다. */}
                     <Icon className="hidden h-4 w-4 2xl:block" aria-hidden />
                     {item.label}
-                    {item.badge && <NewBadge />}
+                    {item.badge && <FeatureBadge label={item.badge} />}
                   </Link>
                 )
               })}
@@ -170,7 +171,7 @@ export function GlobalTopBar({
           {/* 데스크탑 액션 — 마운트 전에는 기본 노출, 마운트 후 데스크탑에만 노출.
               flex-wrap 을 두지 않는다 — 두 번째 줄로 흘러 메뉴와 정렬이 어긋난다. */}
           {showDesktop && (
-            <div className="hidden lg:flex items-center gap-2 lg:gap-3 justify-end">
+            <div className="hidden lg:flex shrink-0 items-center gap-2 lg:gap-3 justify-end">
               {extraActions}
               <SearchTrigger />
               <ShareButton title={shareTitle} description={shareDescription} />
@@ -233,7 +234,7 @@ export function GlobalTopBar({
                           >
                             <Icon className="h-4 w-4" aria-hidden />
                             {item.label}
-                            {item.badge && <NewBadge />}
+                            {item.badge && <FeatureBadge label={item.badge} />}
                           </Link>
                         )
                       })}

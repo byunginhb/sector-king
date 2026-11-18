@@ -79,6 +79,35 @@ class WeeklyMatchRunnerTests(unittest.TestCase):
             prepare(self.doc, self.directory, at("2025-11-10T00:00:00Z"), read=lambda: [], check=self.check, build=build)
         build.assert_not_called()
 
+    def test_pilot_settlement_does_not_replace_or_settle_waiting_weekly_round(self):
+        weekly_dir, pilot_dir = self.directory / 'weekly', self.directory / 'pilot'
+        weekly_dir.mkdir()
+        pilot_dir.mkdir()
+        pilot = copy.deepcopy(self.doc)
+        pilot['round'].update(id='kr-pilot-2025-11-13', endDate='2025-11-13', endsAt='2025-11-13T09:00:00Z')
+        weekly_frozen, pilot_frozen = frozen_payload(self.doc), frozen_payload(pilot)
+        for folder, payload in ((weekly_dir, weekly_frozen), (pilot_dir, pilot_frozen)):
+            (folder / 'publication.json').write_text(json.dumps(payload))
+            (folder / 'publication.sources.json').write_text('[]')
+        original_weekly = (weekly_dir / 'publication.json').read_bytes()
+        read = lambda: [public_payload(pilot_frozen), public_payload(weekly_frozen)]
+        now = at('2025-11-13T09:01:00Z')
+        weekly_build = Mock()
+        weekly_plan = prepare(self.doc, weekly_dir, now, read=read, check=self.check, build=weekly_build)
+        self.assertEqual(weekly_plan['action'], 'waiting-end')
+        weekly_build.assert_not_called()
+        pilot_settlement = {'operation': 'settle', 'roundId': pilot['round']['id'], 'prices': []}
+        pilot_build = Mock(return_value=(pilot_settlement, []))
+        pilot_plan = prepare(pilot, pilot_dir, now, read=read, check=self.check, build=pilot_build)
+        self.assertEqual(pilot_build.call_args.args[1], pilot_frozen)
+        ingest = Mock(return_value={'success': True})
+        self.assertEqual(apply(pilot, pilot_dir, pilot_plan, now, read=read, ingest=ingest), 'accepted-settle')
+        self.assertEqual(ingest.call_args.args[0]['roundId'], pilot['round']['id'])
+        self.assertEqual(apply(self.doc, weekly_dir, weekly_plan, now, read=read, ingest=ingest), 'no-write')
+        ingest.assert_called_once()
+        self.assertEqual((weekly_dir / 'publication.json').read_bytes(), original_weekly)
+        self.assertFalse((weekly_dir / 'settlement').exists())
+
     def test_persists_baseline_before_post_and_replays_exactly_after_timeout(self):
         payload = frozen_payload(self.doc)
         build = Mock(return_value=(payload, [{"response": "raw source"}]))
