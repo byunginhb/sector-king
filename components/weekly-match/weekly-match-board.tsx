@@ -206,6 +206,7 @@ function MatchRound({
           ],
         }),
       );
+      void queryClient.invalidateQueries({ queryKey: ["me", "weekly-match-rewards", userId] });
       setMessage(`${round[saved.side].name} 선택을 저장했습니다.`);
       setChoice(null);
     },

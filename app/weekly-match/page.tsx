@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GlobalTopBar } from "@/components/layout/global-top-bar";
+import { WeeklyMatchPractice } from "@/components/weekly-match/weekly-match-practice";
+import { WeeklyMatchRewardsPanel } from "@/components/weekly-match/weekly-match-rewards";
 import { WeeklyMatchBoard } from "@/components/weekly-match/weekly-match-board";
 import styles from "./weekly-match.module.css";
 import pilot from "@/config/weekly-match-pilot.json";
@@ -48,6 +50,9 @@ export default function WeeklyMatchPage() {
         <div className="mt-8">
           <WeeklyMatchBoard />
         </div>
+
+        <WeeklyMatchPractice />
+        <WeeklyMatchRewardsPanel />
 
         <section
           aria-labelledby="match-rules"

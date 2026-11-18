@@ -14,6 +14,7 @@ import { IndustryIcon } from '@/components/ui/industry-icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IndustryCapChart } from '@/components/dashboard/industry-cap-chart'
 import { OnboardingHintStrip } from '@/components/onboarding/onboarding-hint-strip'
+import { WeeklyMatchHome } from '@/components/weekly-match/weekly-match-home'
 import { useCurrencyFormat, type CurrencyFormat } from '@/hooks/use-currency-format'
 import { cn } from '@/lib/utils'
 import { CompanyStatsCard } from '@/components/dashboard/company-stats-card'
@@ -86,6 +87,10 @@ export function IndustryDashboard() {
 
         <div className="mt-4">
           <OnboardingHintStrip />
+        </div>
+
+        <div className="mt-8">
+          <WeeklyMatchHome />
         </div>
 
         {/* 주식 밖 큰 그림 한 줄 → 바로 아래 주식 안(산업) 자금 흐름으로 좁혀 들어간다 */}

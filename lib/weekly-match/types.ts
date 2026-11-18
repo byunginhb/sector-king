@@ -31,3 +31,30 @@ export interface WeeklyMatchEntry {
   side: WeeklyMatchSide
   updatedAt: string
 }
+
+export interface WeeklyMatchResultCard {
+  roundId: string
+  title: string
+  baseDate: string
+  endDate: string
+  sideName: string
+  outcome: 'hit' | 'miss' | 'tie' | 'void'
+  leftName: string
+  rightName: string
+  leftReturn: number | null
+  rightReturn: number | null
+  version: number
+  settledAt: string
+}
+
+export interface WeeklyMatchRewards {
+  season: string
+  firstPick: boolean
+  participations: number
+  points: number
+  wins: number
+  losses: number
+  excluded: number
+  pending: number
+  cards: WeeklyMatchResultCard[]
+}

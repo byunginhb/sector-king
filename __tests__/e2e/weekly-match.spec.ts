@@ -110,6 +110,7 @@ async function signedInFixture(
     }),
   );
   let entries = initialEntries;
+  await page.route("**/api/me/weekly-match/rewards", (route) => route.fulfill({json:{success:true,data:{rewards:{season:"2026-11",firstPick:entries.length>0,participations:entries.length,points:0,wins:0,losses:0,excluded:0,pending:entries.length,cards:[]}}}}));
   await page.route("**/api/me/weekly-match", async (route) => {
     if (route.request().method() !== "POST")
       return route.fulfill({ json: { success: true, data: { entries } } });
@@ -270,3 +271,60 @@ for (const outcome of ["left", "tie", "void"] as const) {
     ).toBeVisible();
   });
 }
+
+
+test("49명 가상 체험은 로그인이나 실제 선택 저장 없이 이용한다", async ({ page }) => {
+  await publicRounds(page, []);
+  const writes:string[]=[];
+  page.on('request', request=>{if(request.method()==='POST' && request.url().includes('/api/me/weekly-match'))writes.push(request.url())});
+  await openPage(page);
+  const practice=page.locator('#practice');
+  await expect(practice).toContainText('가상 참가자 49명');
+  await practice.getByRole('button',{name:'연습으로 한국 은행 선택'}).click();
+  await expect(practice.getByRole('status')).toContainText('연습 선택: 한국 은행');
+  await expect(practice).toContainText('가상 은행 선택 26명');
+  await practice.getByRole('button',{name:'연습으로 조선 선택'}).click();
+  await expect(practice.getByRole('status')).toContainText('연습 선택: 조선');
+  expect(writes).toEqual([]);
+  await expect(page.getByText(/로그인 후 실제 참여 기록/)).toBeVisible();
+});
+
+test("본인 확정 결과의 PNG 카드와 최신 월별 점수를 확인한다", async ({ page }) => {
+  await signedInFixture(page,[{roundId:round.id,side:'left',updatedAt:'2026-11-01T09:00:00Z'}]);
+  await publicRounds(page,[round]);
+  const card={roundId:round.id,title:'은행 대 조선',baseDate:'2026-11-06',endDate:'2026-11-13',sideName:'은행',outcome:'hit',leftName:'은행',rightName:'조선',leftReturn:1.2,rightReturn:-0.2,version:2,settledAt:'2026-11-13T09:00:00Z'};
+  await page.route('**/api/me/weekly-match/rewards',route=>route.fulfill({json:{success:true,data:{rewards:{season:'2026-11',firstPick:true,participations:1,points:1,wins:1,losses:0,excluded:0,pending:0,cards:[card]}}}}));
+  await openPage(page);
+  await expect(page.getByText('첫 참여 배지 획득')).toBeVisible();
+  await expect(page.getByText('1점',{exact:true})).toBeVisible();
+  await page.getByText('은행 대 조선 · 내 결과 카드 만들기',{exact:true}).click();
+  const preview=page.getByLabel('공유할 결과 미리보기');
+  await expect(preview).toContainText('결과 버전 2');
+  await expect(preview).not.toContainText('fixture@example.test');
+  const downloadPromise=page.waitForEvent('download');
+  await page.getByRole('button',{name:'결과 카드 PNG 내려받기'}).click();
+  const download=await downloadPromise;
+  expect(download.suggestedFilename()).toBe('sector-match-fixture-round-v2.png');
+  await download.saveAs(test.info().outputPath('result-card.png'));
+  await expect(page.getByText('카드 내려받기를 시작했습니다.')).toBeVisible();
+});
+
+test('메인 상단에서 발견하고 스크롤 뒤 플로팅을 접거나 닫는다',async({page})=>{
+  await page.setViewportSize({width:1440,height:900});
+  await publicRounds(page,[round]);
+  await page.goto('/');
+  await page.getByRole('button',{name:'건너뛰기',exact:true}).click();
+  const home=page.locator('section[aria-labelledby="home-weekly-match-title"]');
+  await expect(home).toBeVisible();
+  await expect(home).toContainText('선택 접수 중');
+  await expect(home.getByRole('link',{name:'가상 49명과 체험하기'})).toHaveAttribute('href','/weekly-match#practice');
+  await page.evaluate(()=>window.scrollTo(0,1500));
+  const floating=page.getByRole('complementary',{name:'섹터 매치 빠른 이동'});
+  await expect(floating).toBeVisible();
+  await floating.getByRole('button',{name:'섹터 매치 접기'}).click();
+  await expect(floating.getByRole('button',{name:'섹터 매치 펼치기'})).toHaveAttribute('aria-expanded','false');
+  await floating.getByRole('button',{name:'섹터 매치 펼치기'}).click();
+  await expect(floating.getByRole('link',{name:'선택하러 가기'})).toBeVisible();
+  await floating.getByRole('button',{name:'섹터 매치 닫기'}).click();
+  await expect(floating).not.toBeVisible();
+});
