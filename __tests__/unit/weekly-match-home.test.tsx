@@ -4,7 +4,6 @@ import {
   fireEvent,
   render,
   screen,
-  waitFor,
 } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -132,90 +131,37 @@ describe("home match state", () => {
 });
 
 describe("home match discovery", () => {
-  it("shows a separate virtual practice link without inventing real participation", async () => {
+  it("keeps one entry link without practice or ranking promotions", async () => {
     mount();
-    expect(await screen.findByText("접수 준비 중")).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "연습으로 먼저 골라보기" }),
-    ).toHaveAttribute("href", "/weekly-match#practice");
-    expect(screen.queryByText("선택하러 가기")).not.toBeInTheDocument();
-    expect(
-      screen.getByText(/실제 참여·보상에 합산되지 않습니다/),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("접수 준비 중")).toBeVisible();
+    expect(screen.getAllByRole("link")).toHaveLength(1);
+    expect(screen.getByRole("link", { name: "대진 살펴보기" })).toHaveAttribute("href", "/weekly-match");
+    expect(screen.queryByText("연습으로 먼저 골라보기")).not.toBeInTheDocument();
+    expect(screen.queryByText("시즌 순위 보기")).not.toBeInTheDocument();
   });
-  it("shows actual API participation without inventing49users",async()=>{
-    mount([{...round,participantCount:2}]);
-    expect(await screen.findByText('2명 참여 중')).toBeVisible();
-    expect(screen.queryByText('49명 참여 중')).not.toBeInTheDocument();
-    expect(screen.getByRole('link',{name:'시즌 순위 보기'})).toHaveAttribute('href','/weekly-match#rankings');
+  it.each([0, 2, 39, 40, 49])("shows count %i only once actual participation reaches40", async (count) => {
+    mount([{ ...round, participantCount: count }]);
+    await screen.findByText("선택 접수 중");
+    if (count >= 40) expect(screen.getByText(`${count}명 참여 중`)).toBeVisible();
+    else expect(screen.queryByText(/\d+명 참여/)).not.toBeInTheDocument();
+    if (count !== 49) expect(screen.queryByText("49명 참여 중")).not.toBeInTheDocument();
   });
-  it("preserves query failures and allows retry rather than showing preparation", async () => {
+  it("keeps real failures and retry without inventing a count", async () => {
     mount([], true);
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "대진을 불러오지 못했습니다",
-    );
+    expect(await screen.findByRole("alert")).toHaveTextContent("대진을 불러오지 못했습니다");
     expect(screen.queryByText("접수 준비 중")).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "다시 불러오기" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "연습으로 먼저 골라보기" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "다시 불러오기" })).toBeVisible();
+    expect(screen.queryByText(/\d+명 참여/)).not.toBeInTheDocument();
   });
-  it("floats only after the main card exits above the viewport; collapse and dismissal work", async () => {
+  it("tracks one impression and never floats after scrolling past the entry", async () => {
     mount([round]);
     await screen.findByText("선택 접수 중");
-    act(() => observe(false, 900));
-    expect(
-      screen.queryByRole("complementary", { name: "섹터 매치 빠른 이동" }),
-    ).not.toBeInTheDocument();
     act(() => observe(true, 300));
     act(() => observe(true, 200));
     expect(trackEvent).toHaveBeenCalledTimes(1);
     act(() => observe(false, -1));
-    const floating = screen.getByRole("complementary", {
-      name: "섹터 매치 빠른 이동",
-    });
-    expect(floating.className).toContain("lg:block");
-    fireEvent.click(screen.getByRole("button", { name: "섹터 매치 접기" }));
-    expect(
-      screen.getByRole("button", { name: "섹터 매치 펼치기" }),
-    ).toHaveAttribute("aria-expanded", "false");
-    fireEvent.click(screen.getByRole("button", { name: "섹터 매치 펼치기" }));
-    fireEvent.click(screen.getByRole("button", { name: "섹터 매치 닫기" }));
-    act(() => observe(true, 100));
-    act(() => observe(false, -1));
-    expect(
-      screen.queryByRole("complementary", { name: "섹터 매치 빠른 이동" }),
-    ).not.toBeInTheDocument();
-    expect(trackEvent).toHaveBeenCalledWith("weekly_match_dismiss", {
-      placement: "home_floating",
-    });
-  });
-  it("hides the floating card while a dialog or onboarding overlay is open", async () => {
-    mount([round]);
-    await screen.findByText("선택 접수 중");
-    act(() => observe(false, -1));
-    expect(screen.getByRole("complementary")).toBeInTheDocument();
-    const dialog = document.createElement("div");
-    dialog.setAttribute("role", "dialog");
-    act(() => {
-      document.body.append(dialog);
-    });
-    await waitFor(() =>
-      expect(screen.queryByRole("complementary")).not.toBeInTheDocument(),
-    );
-    act(() => dialog.remove());
-    await waitFor(() =>
-      expect(screen.getByRole("complementary")).toBeInTheDocument(),
-    );
-    const overlay = document.createElement("div");
-    overlay.className = "driver-overlay";
-    act(() => document.body.append(overlay));
-    await waitFor(() =>
-      expect(screen.queryByRole("complementary")).not.toBeInTheDocument(),
-    );
-    await act(async () => overlay.remove());
+    expect(screen.queryByRole("complementary", { name: "섹터 매치 빠른 이동" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "섹터 매치 접기" })).not.toBeInTheDocument();
   });
   it("tracks entering the real match independently from practice", async () => {
     mount([round]);

@@ -89,6 +89,13 @@ afterEach(() => {
 });
 
 describe("주간 매치 화면", () => {
+  it.each([0,39,40,49])("실제 참여 %i명은40명 이상부터 표시한다", async(count) => {
+    rounds[0].participantCount=count;
+    mount();
+    await screen.findByRole("link",{name:"로그인하고 선택하기"});
+    if(count>=40) expect(screen.getByText(`${count}명 참여 중`)).toBeVisible();
+    else expect(screen.queryByText(/\d+명 참여/)).not.toBeInTheDocument();
+  });
   it("비로그인은 개인 API를 요청하지 않고 복귀 주소가 있는 로그인 링크를 제공한다", async () => {
     mount();
     expect(

@@ -318,7 +318,7 @@ test("본인 확정 결과의 PNG 카드와 최신 월별 점수를 확인한다
   await expect(page.getByText('카드 내려받기를 시작했습니다.')).toBeVisible();
 });
 
-test('메인 상단에서 발견하고 스크롤 뒤 플로팅을 접거나 닫는다',async({page})=>{
+test('홈은 작은 진입 카드 하나만 남기고 스크롤해도 플로팅이 없다',async({page})=>{
   await page.setViewportSize({width:1440,height:900});
   await publicRounds(page,[round]);
   await page.goto('/');
@@ -326,28 +326,30 @@ test('메인 상단에서 발견하고 스크롤 뒤 플로팅을 접거나 닫�
   const home=page.locator('section[aria-labelledby="home-weekly-match-title"]');
   await expect(home).toBeVisible();
   await expect(home).toContainText('선택 접수 중');
-  await expect(home.getByRole('link',{name:'연습으로 먼저 골라보기'})).toHaveAttribute('href','/weekly-match#practice');
+  await expect(home.getByRole('link')).toHaveCount(1);
+  await expect(home.getByRole('link',{name:'선택하러 가기'})).toHaveAttribute('href','/weekly-match');
+  expect((await home.boundingBox())!.height).toBeLessThanOrEqual(144);
   await page.evaluate(()=>window.scrollTo(0,1500));
-  const floating=page.getByRole('complementary',{name:'섹터 매치 빠른 이동'});
-  await expect(floating).toBeVisible();
-  await floating.getByRole('button',{name:'섹터 매치 접기'}).click();
-  await expect(floating.getByRole('button',{name:'섹터 매치 펼치기'})).toHaveAttribute('aria-expanded','false');
-  await floating.getByRole('button',{name:'섹터 매치 펼치기'}).click();
-  await expect(floating.getByRole('link',{name:'선택하러 가기'})).toBeVisible();
-  await floating.getByRole('button',{name:'섹터 매치 닫기'}).click();
-  await expect(floating).not.toBeVisible();
+  await expect(page.getByRole('complementary',{name:'섹터 매치 빠른 이동'})).toHaveCount(0);
 });
 
-test('실제 집계 인원과 공개 순위 진입을 확인하고 가상 인원은 합산하지 않는다',async({page})=>{
+test('소규모 참여 숫자는 숨기고 실제 49명일 때만49명을 표시한다',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
  await publicRounds(page,[{...round,participantCount:2}]);
  await page.goto('/');await page.getByRole('button',{name:'건너뛰기',exact:true}).click();
  const home=page.locator('section[aria-labelledby="home-weekly-match-title"]');
- await expect(home.getByText('2명 참여 중',{exact:true})).toBeVisible();
- await home.getByRole('link',{name:'시즌 순위 보기'}).click();
- await page.waitForURL('**/weekly-match#rankings');
- const ranks=page.locator('#rankings');await expect(ranks).toContainText('공개 순위 참여자 0명');
- await expect(ranks).toContainText('아직 공개 순위에 오른 참여자가 없습니다');
- await expect(ranks.getByRole('link',{name:'로그인하고 공개 설정하기'})).toBeVisible();
+ await expect(home).toContainText('선택 접수 중');
+ await expect(home.getByText(/\d+명 참여/)).toHaveCount(0);
+ expect((await home.boundingBox())!.height).toBeLessThanOrEqual(144);
+ await home.getByRole('link',{name:'선택하러 가기'}).click();
+ await page.waitForURL('**/weekly-match');
+ const ranks=page.locator('#rankings');
+ await expect(ranks).toContainText('확정 결과가 모이면 월별 순위를 확인할 수 있습니다');
+ await expect(ranks.getByText('공개 순위 참여자 0명')).toHaveCount(0);
+ await expect(page.getByText('2명 참여 중',{exact:true})).toHaveCount(0);
+ await publicRounds(page,[{...round,participantCount:49}]);
+ await page.reload();
+ await expect(page.getByText('49명 참여 중',{exact:true})).toBeVisible();
 });
 
 test('명시적으로 별명과 성적 공개에 동의한 뒤 철회할 수 있다',async({page})=>{
@@ -366,5 +368,5 @@ test('명시적으로 별명과 성적 공개에 동의한 뒤 철회할 수 있
  await expect(ranks.getByRole('cell',{name:'테스트팬',exact:true})).toBeVisible();
  await consent.uncheck();await ranks.getByRole('button',{name:'공개 설정 저장',exact:true}).click();
  await expect(ranks.getByRole('cell',{name:'테스트팬',exact:true})).toHaveCount(0);
- await expect(ranks).toContainText('공개 순위 참여자 0명');
+ await expect(ranks).toContainText('확정 결과가 모이면 월별 순위를 확인할 수 있습니다');
 });

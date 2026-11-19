@@ -247,7 +247,7 @@ function MatchRound({
           </p>
         </div>
         <div className="text-right">
-          {round.participantCount !== undefined && <p className="mb-1 text-sm text-muted-foreground">{round.participantCount.toLocaleString("ko-KR")}명 {closed || beforeOpen || settled ? "참여" : "참여 중"}</p>}
+          {round.participantCount !== undefined && round.participantCount >= 40 && <p className="mb-1 text-sm text-muted-foreground">{round.participantCount.toLocaleString("ko-KR")}명 {closed || beforeOpen || settled ? "참여" : "참여 중"}</p>}
         <p className="text-sm font-medium">
           {settled
             ? resultLabel

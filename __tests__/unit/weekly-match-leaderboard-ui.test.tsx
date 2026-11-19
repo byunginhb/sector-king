@@ -69,11 +69,12 @@ afterEach(() => {
 });
 
 describe("public monthly ranking", () => {
-  it("shows truthful zero with no private requests while logged out", async () => {
+  it("shows result guidance without a zero participant promotion while logged out", async () => {
     mount();
-    expect(await screen.findByText("공개 순위 참여자 0명")).toBeVisible();
+    expect(await screen.findByText("2026-11 시즌")).toBeVisible();
+    expect(screen.queryByText(/공개 순위 참여자 \d+명/)).not.toBeInTheDocument();
     expect(
-      screen.getByText(/아직 공개 순위에 오른 참여자가 없습니다/),
+      screen.getByText(/확정 결과가 모이면 월별 순위를 확인할 수 있습니다/),
     ).toBeVisible();
     expect(
       screen.getByRole("link", { name: "로그인하고 공개 설정하기" }),
@@ -83,12 +84,12 @@ describe("public monthly ranking", () => {
     );
     expect(screen.getByText(/공개하지 않아도 선택과 보상/)).toBeVisible();
   });
-  it("renders tied ranks and server supplied scores in a semantic table", async () => {
+  it.each([39,40,51])("renders tied scores with participant total %i shown only from40", async (total) => {
     vi.mocked(fetch).mockResolvedValue(
       ok({
         leaderboard: {
           season: "2026-11",
-          total: 51,
+          total,
           entries: [
             {
               rank: 1,
@@ -115,7 +116,8 @@ describe("public monthly ranking", () => {
       await screen.findByRole("table", { name: "2026-11 월별 공개 순위" }),
     ).toBeVisible();
     expect(screen.getAllByRole("cell", { name: "공동 1위" })).toHaveLength(2);
-    expect(screen.getByText("공개 순위 참여자 51명")).toBeVisible();
+    if (total >= 40) expect(screen.getByText(`공개 순위 참여자 ${total}명`)).toBeVisible();
+    else expect(screen.queryByText(/공개 순위 참여자 \d+명/)).not.toBeInTheDocument();
     expect(screen.getByText(/상위 50명/)).toBeVisible();
   });
   it("preserves an outage as unknown and provides retry", async () => {

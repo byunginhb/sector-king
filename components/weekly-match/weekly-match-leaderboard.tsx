@@ -82,13 +82,12 @@ export function WeeklyMatchLeaderboard() {
         ) : (
           <>
             <p className="text-sm font-semibold">{board.data.season} 시즌</p>
-            <p className="mt-1 text-sm tabular-nums">
+            {board.data.total >= 40 && <p className="mt-1 text-sm tabular-nums">
               공개 순위 참여자 {board.data.total.toLocaleString("ko-KR")}명
-            </p>
+            </p>}
             {board.data.entries.length === 0 ? (
               <p className="mt-4 text-sm text-muted-foreground">
-                아직 공개 순위에 오른 참여자가 없습니다. 실제 확정 기록이 쌓이면
-                순위를 표시합니다.
+                확정 결과가 모이면 월별 순위를 확인할 수 있습니다.
               </p>
             ) : (
               <>
