@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GlobalTopBar } from "@/components/layout/global-top-bar";
+import { WeeklyMatchLeaderboard } from "@/components/weekly-match/weekly-match-leaderboard";
 import { WeeklyMatchPractice } from "@/components/weekly-match/weekly-match-practice";
 import { WeeklyMatchRewardsPanel } from "@/components/weekly-match/weekly-match-rewards";
 import { WeeklyMatchBoard } from "@/components/weekly-match/weekly-match-board";
@@ -53,6 +54,7 @@ export default function WeeklyMatchPage() {
 
         <WeeklyMatchPractice />
         <WeeklyMatchRewardsPanel />
+        <WeeklyMatchLeaderboard />
 
         <section
           aria-labelledby="match-rules"

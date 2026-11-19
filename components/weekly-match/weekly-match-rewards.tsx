@@ -42,6 +42,7 @@ export function WeeklyMatchRewardsPanel() {
   return <section aria-labelledby="my-match-rewards" className="mt-10 rounded-xl border border-border bg-surface-2 p-5 sm:p-7">
     <h2 id="my-match-rewards" className="mb-5 flex items-center gap-2 font-display text-2xl font-semibold"><Trophy className="h-5 w-5 text-primary" aria-hidden />나의 참여와 보상</h2>
     {content()}
+    <Link href="/weekly-match#rankings" className="mt-4 inline-flex min-h-11 items-center text-sm text-primary underline underline-offset-4">시즌 순위에서 내 기록 자랑하기</Link>
     <p className="mt-5 text-xs leading-relaxed text-muted-foreground">한국시간 현재 월에 종료되는 대진의 최신 확정 결과로 적중당 1점을 계산합니다. 실패는 0점이며 동률·무효는 적중·실패에서 제외합니다. 정정 시 점수도 바뀔 수 있습니다. 연습은 제외하며 점수는 현금이나 이용권으로 교환되지 않습니다.</p>
   </section>
 }

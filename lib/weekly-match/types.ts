@@ -14,6 +14,7 @@ export interface WeeklyMatchRound {
   opensAt: string
   closesAt: string
   endsAt: string
+  participantCount?: number
   left: WeeklyMatchSector
   right: WeeklyMatchSector
   settlement: {
@@ -57,4 +58,24 @@ export interface WeeklyMatchRewards {
   excluded: number
   pending: number
   cards: WeeklyMatchResultCard[]
+}
+
+export interface WeeklyMatchPublicProfile {
+  nickname: string
+  isPublic: boolean
+}
+
+export interface WeeklyMatchRankingEntry {
+  rank: number
+  nickname: string
+  points: number
+  wins: number
+  losses: number
+  validEntries: number
+}
+
+export interface WeeklyMatchLeaderboard {
+  season: string
+  total: number
+  entries: WeeklyMatchRankingEntry[]
 }

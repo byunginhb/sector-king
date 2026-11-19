@@ -145,6 +145,7 @@ export function WeeklyMatchHome() {
               <br className="hidden lg:block" /> 더 강할까요?
             </h2>
             <p className="mt-3 text-sm font-medium">{label}</p>
+            {state.round && <p className="mt-2 text-sm text-muted-foreground">{state.round.participantCount === undefined ? '참여 인원 확인 중' : `${state.round.participantCount.toLocaleString('ko-KR')}명 ${state.status === 'open' ? '참여 중' : '참여'}`}</p>}
           </div>
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-y border-border-subtle py-5 text-center lg:border-y-0 lg:border-x lg:px-4">
             <p className="min-w-0 break-words font-display text-xl font-semibold sm:text-2xl">
@@ -198,10 +199,11 @@ export function WeeklyMatchHome() {
               onClick={() => visit("home_card", true)}
               className="mt-3 block min-h-11 py-3 text-sm font-medium underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
             >
-              가상 49명과 체험하기
+              연습으로 먼저 골라보기
             </Link>
+            <Link href="/weekly-match#rankings" className="block min-h-11 py-3 text-sm text-primary underline underline-offset-4">시즌 순위 보기</Link>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              가상 체험은 실제 참여·보상에 합산되지 않습니다.
+              연습은 실제 참여·보상에 합산되지 않습니다.
             </p>
           </div>
         </div>
@@ -247,7 +249,7 @@ export function WeeklyMatchHome() {
           </div>
           {!collapsed && (
             <div>
-              <p className="mt-2 text-xs text-muted-foreground">{label}</p>
+              <p className="mt-2 text-xs text-muted-foreground">{label}{state.round?.participantCount !== undefined ? ` · ${state.round.participantCount.toLocaleString('ko-KR')}명 참여` : ''}</p>
               <p className="mt-2 font-display text-lg font-semibold">
                 {state.round?.left.name ?? "한국 은행"}{" "}
                 <span className="px-1 text-xs italic text-primary">VS</span>{" "}
@@ -262,6 +264,9 @@ export function WeeklyMatchHome() {
               >
                 {floatingPractice ? "가상 체험 둘러보기" : currentCopy.action}
                 <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+              <Link href="/weekly-match#rankings" className="flex min-h-11 items-center text-sm text-primary underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
+                월별 순위 보기
               </Link>
             </div>
           )}

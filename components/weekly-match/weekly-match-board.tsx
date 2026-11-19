@@ -246,6 +246,8 @@ function MatchRound({
             비교 기간 {round.baseDate} ~ {round.endDate}
           </p>
         </div>
+        <div className="text-right">
+          {round.participantCount !== undefined && <p className="mb-1 text-sm text-muted-foreground">{round.participantCount.toLocaleString("ko-KR")}명 {closed || beforeOpen || settled ? "참여" : "참여 중"}</p>}
         <p className="text-sm font-medium">
           {settled
             ? resultLabel
@@ -255,6 +257,7 @@ function MatchRound({
                 ? "접수 예정"
                 : "선택 접수 중"}
         </p>
+        </div>
       </div>
 
       <form

@@ -136,12 +136,18 @@ describe("home match discovery", () => {
     mount();
     expect(await screen.findByText("접수 준비 중")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "가상 49명과 체험하기" }),
+      screen.getByRole("link", { name: "연습으로 먼저 골라보기" }),
     ).toHaveAttribute("href", "/weekly-match#practice");
     expect(screen.queryByText("선택하러 가기")).not.toBeInTheDocument();
     expect(
       screen.getByText(/실제 참여·보상에 합산되지 않습니다/),
     ).toBeInTheDocument();
+  });
+  it("shows actual API participation without inventing49users",async()=>{
+    mount([{...round,participantCount:2}]);
+    expect(await screen.findByText('2명 참여 중')).toBeVisible();
+    expect(screen.queryByText('49명 참여 중')).not.toBeInTheDocument();
+    expect(screen.getByRole('link',{name:'시즌 순위 보기'})).toHaveAttribute('href','/weekly-match#rankings');
   });
   it("preserves query failures and allows retry rather than showing preparation", async () => {
     mount([], true);
@@ -153,7 +159,7 @@ describe("home match discovery", () => {
       screen.getByRole("button", { name: "다시 불러오기" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "가상 49명과 체험하기" }),
+      screen.getByRole("link", { name: "연습으로 먼저 골라보기" }),
     ).toBeInTheDocument();
   });
   it("floats only after the main card exits above the viewport; collapse and dismissal work", async () => {

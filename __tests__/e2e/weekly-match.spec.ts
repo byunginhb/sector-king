@@ -25,6 +25,10 @@ const round: WeeklyMatchRound = {
   settlement: null,
 };
 
+test.beforeEach(async ({page}) => {
+  await page.route('**/api/weekly-match/leaderboard', route=>route.fulfill({json:{success:true,data:{leaderboard:{season:'2026-11',total:0,entries:[]}}}}));
+});
+
 test.afterEach(async ({ page }, testInfo) => {
   await page.screenshot({
     path: testInfo.outputPath("weekly-match.png"),
@@ -109,6 +113,11 @@ async function signedInFixture(
       },
     }),
   );
+  let profile: {nickname:string,isPublic:boolean}|null=null;
+  await page.route('**/api/me/weekly-match/profile', async route=>{
+    if(route.request().method()==='PUT')profile=route.request().postDataJSON();
+    return route.fulfill({json:{success:true,data:{profile}}});
+  });
   let entries = initialEntries;
   await page.route("**/api/me/weekly-match/rewards", (route) => route.fulfill({json:{success:true,data:{rewards:{season:"2026-11",firstPick:entries.length>0,participations:entries.length,points:0,wins:0,losses:0,excluded:0,pending:entries.length,cards:[]}}}}));
   await page.route("**/api/me/weekly-match", async (route) => {
@@ -317,7 +326,7 @@ test('메인 상단에서 발견하고 스크롤 뒤 플로팅을 접거나 닫�
   const home=page.locator('section[aria-labelledby="home-weekly-match-title"]');
   await expect(home).toBeVisible();
   await expect(home).toContainText('선택 접수 중');
-  await expect(home.getByRole('link',{name:'가상 49명과 체험하기'})).toHaveAttribute('href','/weekly-match#practice');
+  await expect(home.getByRole('link',{name:'연습으로 먼저 골라보기'})).toHaveAttribute('href','/weekly-match#practice');
   await page.evaluate(()=>window.scrollTo(0,1500));
   const floating=page.getByRole('complementary',{name:'섹터 매치 빠른 이동'});
   await expect(floating).toBeVisible();
@@ -327,4 +336,35 @@ test('메인 상단에서 발견하고 스크롤 뒤 플로팅을 접거나 닫�
   await expect(floating.getByRole('link',{name:'선택하러 가기'})).toBeVisible();
   await floating.getByRole('button',{name:'섹터 매치 닫기'}).click();
   await expect(floating).not.toBeVisible();
+});
+
+test('실제 집계 인원과 공개 순위 진입을 확인하고 가상 인원은 합산하지 않는다',async({page})=>{
+ await publicRounds(page,[{...round,participantCount:2}]);
+ await page.goto('/');await page.getByRole('button',{name:'건너뛰기',exact:true}).click();
+ const home=page.locator('section[aria-labelledby="home-weekly-match-title"]');
+ await expect(home.getByText('2명 참여 중',{exact:true})).toBeVisible();
+ await home.getByRole('link',{name:'시즌 순위 보기'}).click();
+ await page.waitForURL('**/weekly-match#rankings');
+ const ranks=page.locator('#rankings');await expect(ranks).toContainText('공개 순위 참여자 0명');
+ await expect(ranks).toContainText('아직 공개 순위에 오른 참여자가 없습니다');
+ await expect(ranks.getByRole('link',{name:'로그인하고 공개 설정하기'})).toBeVisible();
+});
+
+test('명시적으로 별명과 성적 공개에 동의한 뒤 철회할 수 있다',async({page})=>{
+ await signedInFixture(page);await publicRounds(page,[]);
+ let isPublic=false;let nickname='';
+ await page.route('**/api/me/weekly-match/profile',async route=>{
+  if(route.request().method()==='PUT'){const body=route.request().postDataJSON();isPublic=body.isPublic;nickname=body.nickname;}
+  await route.fulfill({json:{success:true,data:{profile:nickname?{nickname,isPublic}:null}}});
+ });
+ await page.route('**/api/weekly-match/leaderboard',route=>route.fulfill({json:{success:true,data:{leaderboard:{season:'2026-11',total:isPublic?1:0,entries:isPublic?[{rank:1,nickname,points:1,wins:1,losses:0,validEntries:1}]:[]}}}}));
+ await openPage(page);const ranks=page.locator('#rankings');
+ const consent=ranks.getByRole('checkbox',{name:'별명과 월별 성적을 공개 순위에 표시합니다'});
+ await expect(consent).not.toBeChecked();
+ await ranks.getByRole('textbox',{name:'공개 별명'}).fill('테스트팬');await consent.check();
+ await ranks.getByRole('button',{name:'공개 설정 저장',exact:true}).click();
+ await expect(ranks.getByRole('cell',{name:'테스트팬',exact:true})).toBeVisible();
+ await consent.uncheck();await ranks.getByRole('button',{name:'공개 설정 저장',exact:true}).click();
+ await expect(ranks.getByRole('cell',{name:'테스트팬',exact:true})).toHaveCount(0);
+ await expect(ranks).toContainText('공개 순위 참여자 0명');
 });

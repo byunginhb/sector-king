@@ -55,13 +55,20 @@ describe('weekly match API boundaries', () => {
     const rounds = [{ id: 'a', title: 'match', base_date: '2026-11-06', end_date: '2026-11-13', opens_at: 'open', closes_at: 'close', ends_at: 'end', left_sector: sector, right_sector: sector, audit: { private: true } }]
     const settlements = [{ round_id: 'a', version: 2, outcome: 'left', left_return: '2', right_return: '1', reason: null, settled_at: 'settled', audit: { user_id: 'hidden' } }]
     const select = vi.fn().mockReturnValueOnce({ order: () => ({ limit: async () => ({ data: rounds, error: null }) }) }).mockReturnValueOnce({ in: () => ({ order: async () => ({ data: settlements, error: null }) }) })
-    mocks.createAdminClient.mockReturnValue({ from: () => ({ select }) })
+    mocks.createAdminClient.mockReturnValue({ from: () => ({ select }), rpc: vi.fn().mockResolvedValue({data:[{round_id:'a',participant_count:3}],error:null}) })
     const real = await vi.importActual<typeof import('@/lib/weekly-match/server')>('@/lib/weekly-match/server')
     const result = await real.getWeeklyMatchRounds()
+    expect(result[0].participantCount).toBe(3)
     expect(result[0].settlement).toMatchObject({ version: 2, leftReturn: 2, rightReturn: 1 })
     expect(JSON.stringify(result)).not.toMatch(/"close":|audit|private|user_id|10000/)
     expect(select.mock.calls.flat().every((columns) => !columns.includes('*') && !columns.includes('audit'))).toBe(true)
   })
+  it('fails participation aggregation explicitly instead of inventing zero',async()=>{
+    const select=vi.fn().mockReturnValueOnce({order:()=>({limit:async()=>({data:[{id:'a'}],error:null})})}).mockReturnValueOnce({in:()=>({order:async()=>({data:[],error:null})})});
+    mocks.createAdminClient.mockReturnValue({from:()=>({select}),rpc:async()=>({data:[],error:null})});
+    const real=await vi.importActual<typeof import('@/lib/weekly-match/server')>('@/lib/weekly-match/server');
+    await expect(real.getWeeklyMatchRounds()).rejects.toThrow('PARTICIPANT_COUNT_FAILED');
+  });
   it('returns a generic outage without provider or audit leaks', async () => {
     mocks.getWeeklyMatchRounds.mockRejectedValue(new Error('private audit and key'))
     const response = await publicGet()
