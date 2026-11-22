@@ -139,6 +139,13 @@ describe("home match discovery", () => {
     expect(screen.queryByText("연습으로 먼저 골라보기")).not.toBeInTheDocument();
     expect(screen.queryByText("시즌 순위 보기")).not.toBeInTheDocument();
   });
+  it.each(["closed", "settled"] as const)("shows period, readable guidance and a single action for %s", async (phase) => {
+    mount([{ ...round, closesAt: "2026-11-18T09:00:00Z", settlement: phase === "settled" ? {version:2,outcome:"left",leftReturn:-3.21,rightReturn:-7.24,reason:"confirmed",settledAt:round.endsAt} : null }]);
+    expect(await screen.findByRole("link",{name:phase === "settled" ? "결과 확인하기" : "진행 상황 보기"})).toHaveAttribute("href","/weekly-match");
+    expect(screen.getByText("비교 기간 2026-11-18 ~ 2026-11-19")).toBeVisible();
+    expect(screen.getByText(phase === "settled" ? "비교가 끝났습니다. 확정 결과와 내 기록을 확인하세요." : "선택이 마감됐습니다. 확정된 결과를 기다리고 있습니다.")).toBeVisible();
+    expect(screen.getAllByRole("link")).toHaveLength(1);
+  });
   it.each([0, 2, 39, 40, 49])("shows count %i only once actual participation reaches40", async (count) => {
     mount([{ ...round, participantCount: count }]);
     await screen.findByText("선택 접수 중");

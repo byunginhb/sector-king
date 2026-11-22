@@ -318,7 +318,7 @@ test("본인 확정 결과의 PNG 카드와 최신 월별 점수를 확인한다
   await expect(page.getByText('카드 내려받기를 시작했습니다.')).toBeVisible();
 });
 
-test('홈은 작은 진입 카드 하나만 남기고 스크롤해도 플로팅이 없다',async({page})=>{
+test('홈 대진은 중간 크기로 읽기 쉽고 스크롤해도 플로팅이 없다',async({page})=>{
   await page.setViewportSize({width:1440,height:900});
   await publicRounds(page,[round]);
   await page.goto('/');
@@ -328,7 +328,8 @@ test('홈은 작은 진입 카드 하나만 남기고 스크롤해도 플로팅�
   await expect(home).toContainText('선택 접수 중');
   await expect(home.getByRole('link')).toHaveCount(1);
   await expect(home.getByRole('link',{name:'선택하러 가기'})).toHaveAttribute('href','/weekly-match');
-  expect((await home.boundingBox())!.height).toBeLessThanOrEqual(144);
+  expect((await home.boundingBox())!.height).toBeGreaterThanOrEqual(140);
+  expect((await home.boundingBox())!.height).toBeLessThanOrEqual(220);
   await page.evaluate(()=>window.scrollTo(0,1500));
   await expect(page.getByRole('complementary',{name:'섹터 매치 빠른 이동'})).toHaveCount(0);
 });
@@ -340,7 +341,8 @@ test('소규모 참여 숫자는 숨기고 실제 49명일 때만49명을 표시
  const home=page.locator('section[aria-labelledby="home-weekly-match-title"]');
  await expect(home).toContainText('선택 접수 중');
  await expect(home.getByText(/\d+명 참여/)).toHaveCount(0);
- expect((await home.boundingBox())!.height).toBeLessThanOrEqual(144);
+ expect((await home.boundingBox())!.height).toBeGreaterThanOrEqual(180);
+ expect((await home.boundingBox())!.height).toBeLessThanOrEqual(300);
  await home.getByRole('link',{name:'선택하러 가기'}).click();
  await page.waitForURL('**/weekly-match');
  const ranks=page.locator('#rankings');
