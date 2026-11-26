@@ -51,6 +51,30 @@ def parse_chart(raw, ticker, wanted_dates):
     return found, splits
 
 
+def parse_regular_closes(raw, wanted_dates):
+    if (not isinstance(raw, dict) or raw.get("isSuccess") is not True
+            or not isinstance(raw.get("result"), dict) or not isinstance(raw["result"].get("items"), list)):
+        raise ValueError("Regular-session price verification unavailable")
+    found = {}
+    for row in raw["result"]["items"]:
+        if not isinstance(row, dict) or not isinstance(row.get("tradingDateKst"), str):
+            raise ValueError("Invalid regular-session price row")
+        day = row["tradingDateKst"]
+        if day not in wanted_dates:
+            continue
+        if day in found:
+            raise ValueError("Duplicate regular-session price date")
+        # closingPrice includes aftermarket trades; only this field is the regular close.
+        close, volume = row.get("regularMarketClosingPrice"), row.get("tradingVolume")
+        if any(not isinstance(value, str) or not re.fullmatch(r"[0-9]+", value) or int(value) <= 0
+               for value in (close, volume)):
+            raise ValueError("Missing traded regular-session close")
+        found[day] = int(close)
+    if found.keys() != wanted_dates:
+        raise ValueError("Missing regular-session price date")
+    return found
+
+
 def collect(ticker, base_date, end_date):
     if not re.fullmatch(r"[0-9]{6}\.(KS|KQ)", ticker):
         raise ValueError("Only Korean tickers are supported")
@@ -68,6 +92,20 @@ def collect(ticker, base_date, end_date):
     digest = hashlib.sha256(body).hexdigest()
     bars, splits = parse_chart(raw, ticker, {base_date, end_date})
     evidence = {"ticker": ticker, "url": url, "retrievedAt": retrieved_at, "sha256": digest, "response": raw}
+    # shortcut: 60 daily bars cover reviewed weekly rounds; older dates fail closed.
+    verification_url = f"https://m.stock.naver.com/front-api/stock/domestic/price/list?code={ticker[:6]}&size=60"
+    request = urllib.request.Request(verification_url, headers={"User-Agent": "SectorKing/weekly-match"})
+    with urllib.request.urlopen(request, timeout=20) as response:
+        verification_body = response.read(2_000_001)
+    if len(verification_body) > 2_000_000:
+        raise ValueError("Regular-session response exceeds audit size limit")
+    verification_raw = json.loads(verification_body)
+    verified = parse_regular_closes(verification_raw, {base_date, end_date})
+    if any(day not in bars or bars[day]["close"] != close for day, close in verified.items()):
+        raise ValueError(f"{ticker}: regular-session close mismatch")
+    evidence["verification"] = {"url": verification_url, "retrievedAt": datetime.now(UTC).isoformat(),
+                                "sha256": hashlib.sha256(verification_body).hexdigest(),
+                                "field": "regularMarketClosingPrice", "response": verification_raw}
     return bars, splits, url + "#sha256=" + digest, retrieved_at, evidence
 
 

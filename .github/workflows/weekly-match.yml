@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Validate runner
-        run: python3 -m unittest discover -s scripts -p 'test_run_weekly_match.py' -v
+        run: python3 -m unittest discover -s scripts -p 'test*weekly_match.py' -v
       - name: Restore trusted immutable baseline
         id: restore
         env:
