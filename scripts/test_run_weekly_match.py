@@ -1,4 +1,6 @@
 import copy
+import contextlib
+import io
 import json
 import os
 import tempfile
@@ -8,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from run_weekly_match import apply, baseline, prepare, probe, restore
+from run_weekly_match import apply, baseline, main, prepare, probe, restore
 
 
 def at(value):
@@ -173,6 +175,110 @@ class WeeklyMatchRunnerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Cutoff passed"):
             apply(self.doc, self.directory, {"action": "publish"}, at("2025-11-10T00:00:00Z"), read=lambda: [], ingest=ingest)
         ingest.assert_not_called()
+
+    def review(self, approved=True, checked_at='2025-11-08T00:00:00Z'):
+        def check(round_data, directory, now=None):
+            directory.mkdir(parents=True, exist_ok=True)
+            report = {'approved': approved, 'checkedAt': checked_at,
+                      'calendarSource': 'https://global.krx.co.kr/',
+                      'reasons': [] if approved else ['UNVERIFIED_DISCLOSURE'], 'sources': []}
+            (directory / 'review.json').write_text(json.dumps(report))
+            return report
+        return Mock(side_effect=check)
+
+    def test_automatic_publication_requires_a_fresh_positive_review(self):
+        self.doc['automatic'] = True
+        build = Mock(return_value=(frozen_payload(self.doc), []))
+        reviewer = self.review(False)
+        plan = prepare(self.doc, self.directory, at('2025-11-08T00:00:00Z'),
+                       read=lambda: [], check=self.check, build=build, review=reviewer)
+        self.assertEqual(plan['action'], 'review-blocked')
+        build.assert_not_called()
+        self.assertFalse((self.directory / 'publication.json').exists())
+
+    def test_automatic_restore_keeps_the_actual_frozen_calendar_and_universe(self):
+        self.doc['automatic'] = True
+        payload = self.persist()
+        self.doc['round']['calendarVerifiedAt'] = '2025-11-09T00:00:00Z'
+        self.doc['round']['left']['tickers'][0]['name'] = 'New template name'
+        reviewer = self.review()
+        build = Mock()
+        plan = prepare(self.doc, self.directory, at('2025-11-08T00:00:00Z'),
+                       read=lambda: [], check=self.check, build=build, review=reviewer)
+        self.assertEqual(plan['action'], 'publish')
+        self.assertTrue(plan['review_passed'])
+        build.assert_not_called()
+        self.assertEqual(reviewer.call_args.args[0]['left'], public_payload(payload)['left'])
+        ingest = Mock(return_value={'success': True})
+        self.assertEqual(apply(self.doc, self.directory, plan, at('2025-11-08T00:10:00Z'),
+                               read=lambda: [], ingest=ingest), 'accepted-publish')
+        self.assertEqual(ingest.call_args.args[0], payload)
+
+    def test_automatic_apply_refuses_missing_or_stale_review_after_artifact_upload(self):
+        self.doc['automatic'] = True
+        self.persist()
+        ingest = Mock()
+        with self.assertRaisesRegex(ValueError, 'review'):
+            apply(self.doc, self.directory, {'action': 'publish'}, at('2025-11-08T00:00:00Z'), read=lambda: [], ingest=ingest)
+        prepare(self.doc, self.directory, at('2025-11-08T00:00:00Z'), read=lambda: [],
+                check=self.check, review=self.review())
+        with self.assertRaisesRegex(ValueError, 'review'):
+            apply(self.doc, self.directory, {'action': 'publish'}, at('2025-11-08T00:30:01Z'), read=lambda: [], ingest=ingest)
+        ingest.assert_not_called()
+
+    def test_failed_settlement_review_keeps_every_constituent_for_pending_or_expiry(self):
+        self.doc['automatic'] = True
+        payload = self.persist()
+        original = (self.directory / 'publication.json').read_bytes()
+        with patch('run_weekly_match.collect') as collect:
+            plan = prepare(self.doc, self.directory, at('2025-11-21T09:00:00Z'),
+                           read=lambda: [public_payload(payload)], check=self.check,
+                           review=self.review(False, '2025-11-21T09:00:00Z'))
+        collect.assert_not_called()
+        self.assertEqual(plan['action'], 'settle')
+        self.assertFalse(plan['review_passed'])
+        settlement = json.loads((self.directory / 'settlement' / 'settlement.json').read_text())
+        self.assertEqual(len(settlement['prices']), 2)
+        self.assertTrue(all(price['close'] is None and price['volume'] is None and price['corporateAction'] for price in settlement['prices']))
+        self.assertNotIn('voidReason', settlement)
+        self.assertEqual((self.directory / 'publication.json').read_bytes(), original)
+        ingest = Mock(return_value={'success': True, 'data': {'outcome': 'void'}})
+        self.assertEqual(apply(self.doc, self.directory, plan, at('2025-11-21T09:05:00Z'),
+                               read=lambda: [public_payload(payload)], ingest=ingest), 'accepted-settle-review-blocked')
+        self.assertTrue((self.directory / 'receipt.json').exists())
+
+    def test_invalid_saved_review_is_preserved_but_cannot_stop_safe_expiry(self):
+        self.doc['automatic'] = True
+        payload = self.persist()
+        with patch('run_weekly_match.collect') as collect:
+            plan = prepare(self.doc, self.directory, at('2025-11-21T09:00:00Z'),
+                           read=lambda: [public_payload(payload)], check=self.check,
+                           review=self.review(True, '2025-11-20T09:00:00Z'))
+        collect.assert_not_called()
+        original_report = json.loads((self.directory / 'operation-review' / 'review.json').read_text())
+        verdict = json.loads((self.directory / 'operation-review' / 'verdict.json').read_text())
+        self.assertTrue(original_report['approved'])
+        self.assertFalse(verdict['approved'])
+        self.assertEqual(plan['action'], 'settle')
+
+    def test_safe_settlement_review_failure_still_signals_incident_to_actions(self):
+        config = self.directory / 'manifest.json'
+        config.write_text(json.dumps(self.doc))
+        (self.directory / 'plan.json').write_text(json.dumps({'action': 'settle'}))
+        with patch('sys.argv', ['run_weekly_match.py', 'apply', '--manifest', str(config), '--audit-dir', str(self.directory)]), \
+                patch('run_weekly_match.apply', return_value='accepted-settle-review-blocked'), contextlib.redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(main(), 1)
+        self.assertIn('::error::', output.getvalue())
+
+    def test_waiting_and_final_automatic_rounds_do_not_query_disclosures(self):
+        self.doc['automatic'] = True
+        reviewer = Mock(side_effect=AssertionError('No review needed yet'))
+        plan = prepare(self.doc, self.directory, at('2025-11-06T09:00:00Z'), read=lambda: [], check=self.check, review=reviewer)
+        self.assertEqual(plan['action'], 'waiting-base')
+        payload = self.persist()
+        plan = prepare(self.doc, self.directory, at('2025-11-15T09:00:00Z'), read=lambda: [public_payload(payload, 'left')], check=self.check, review=reviewer)
+        self.assertEqual(plan['action'], 'final-skip')
+        reviewer.assert_not_called()
 
     def test_socket_errors_preserve_all_twelve_frozen_constituents(self):
         self.doc["round"]["left"]["tickers"] = [{"ticker": f"{index:06d}.KS", "name": f"Bank {index}"} for index in range(1, 8)]

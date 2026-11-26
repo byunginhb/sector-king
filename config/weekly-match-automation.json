@@ -1,0 +1,5 @@
+{
+  "enabled": true,
+  "firstMonday": "2026-11-30",
+  "template": "config/weekly-match-2026-11-30.json"
+}

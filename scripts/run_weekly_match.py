@@ -141,10 +141,47 @@ def verify_published(public, frozen):
             raise ValueError("Published roster differs from saved baseline")
 
 
-def prepare(document, directory, now=None, read=public_rounds, check=probe, build=build_payload):
+def operating_document(document, directory):
+    if not document.get("automatic") or not (directory / "publication.json").exists():
+        return copy.deepcopy(document)
+    payload = json.loads((directory / "publication.json").read_text())
+    if payload.get("operation") != "publish" or payload["round"]["id"] != document["round"]["id"]:
+        raise ValueError("Automatic baseline identity mismatch")
+    frozen = copy.deepcopy(payload["round"])
+    for side in ("left", "right"):
+        frozen[side]["tickers"] = [{"ticker": quote["ticker"], "name": quote["name"]} for quote in frozen[side]["tickers"]]
+    # The trusted original, not a later template, owns published prices and composition.
+    return {**document, "round": frozen}
+
+
+def automatic_review(document, directory, now, review):
+    if not document.get("automatic"):
+        return {"approved": True}
+    folder = directory / "operation-review"
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / "review.json"
+    try:
+        if review is None:
+            from weekly_match_checks import review_round
+            review = review_round
+        report = review(document["round"], folder, now=now)
+        if not isinstance(report.get("approved"), bool) or not 0 <= (now - instant(report["checkedAt"])).total_seconds() <= 1800:
+            raise ValueError("Invalid or stale automatic review")
+        if path.exists() and json.loads(path.read_text()) != report:
+            raise ValueError("Automatic review evidence differs from verdict")
+    except (OSError, ValueError, KeyError, TypeError, ImportError) as error:
+        report = {"approved": False, "checkedAt": now.isoformat(), "reasons": ["REVIEW_FAILED:" + type(error).__name__], "sources": []}
+    if not path.exists():
+        write_exclusive(path, report)
+    write_exclusive(folder / "verdict.json", report)
+    return report
+
+
+def prepare(document, directory, now=None, read=public_rounds, check=probe, build=build_payload, review=None):
     now = now or datetime.now(timezone.utc)
     if not document["enabled"]:
         return {"action": "disabled"}
+    document = operating_document(document, directory)
     check()
     rounds = read()
     public = next((item for item in rounds if item["id"] == document["round"]["id"]), None)
@@ -158,9 +195,12 @@ def prepare(document, directory, now=None, read=public_rounds, check=probe, buil
             return {"action": "final-skip", "outcome": outcome}
         if now < instant(frozen["round"]["endsAt"]):
             return {"action": "waiting-end"}
+        reviewed = automatic_review(document, directory, now, review)
         # A failed source cannot produce a winning score; preserve all constituent slots.
         def fetch(ticker, base, end):
             try:
+                if not reviewed["approved"]:
+                    raise ValueError("Automatic settlement review did not pass")
                 return collect(ticker, base, end)
             except (OSError, ValueError, KeyError, TypeError) as error:
                 retrieved = datetime.now(timezone.utc).isoformat()
@@ -172,32 +212,47 @@ def prepare(document, directory, now=None, read=public_rounds, check=probe, buil
         settlement_dir.mkdir(parents=True, exist_ok=True)
         write_exclusive(settlement_dir / "settlement.sources.json", sources)
         write_exclusive(settlement_dir / "settlement.json", payload)
-        return {"action": "settle"}
+        return {"action": "settle", "review_passed": bool(document.get("automatic") and reviewed["approved"])}
     close = instant(document["round"]["closesAt"])
     if now >= close:
         raise ValueError("Unpublished round cutoff passed; dates will not be advanced")
     base_ready = datetime.combine(datetime.fromisoformat(document["round"]["baseDate"]).date(), time(18), KST)
     if now < base_ready:
         return {"action": "waiting-base"}
+    reviewed = automatic_review(document, directory, now, review)
+    if not reviewed["approved"]:
+        return {"action": "review-blocked", "reasons": reviewed["reasons"]}
     if frozen:
-        return {"action": "publish", "upload_baseline": False}
+        return {"action": "publish", "upload_baseline": False, "review_passed": bool(document.get("automatic"))}
+    if document.get("automatic"):
+        document["round"]["calendarVerifiedAt"] = reviewed["checkedAt"]
+        document["round"]["calendarSource"] = reviewed["calendarSource"]
     payload, sources = build("publish", copy.deepcopy(document))
     directory.mkdir(parents=True, exist_ok=True)
     write_exclusive(directory / "publication.sources.json", sources)
     write_exclusive(directory / "publication.json", payload)
-    return {"action": "publish", "upload_baseline": True}
+    return {"action": "publish", "upload_baseline": True, "review_passed": bool(document.get("automatic"))}
 
 
 def apply(document, directory, plan, now=None, read=public_rounds, ingest=send):
     if not document["enabled"] or plan["action"] not in {"publish", "settle"}:
         return "no-write"
     now = now or datetime.now(timezone.utc)
+    document = operating_document(document, directory)
     frozen = baseline(document, directory)
     if not frozen:
         raise ValueError("Stored baseline required")
     public = next((item for item in read() if item["id"] == frozen["round"]["id"]), None)
     if public:
         verify_published(public, frozen)
+    if document.get("automatic"):
+        path = directory / "operation-review" / "verdict.json"
+        if not path.is_file():
+            raise ValueError("Automatic review evidence is missing")
+        reviewed = json.loads(path.read_text())
+        age = (now - instant(reviewed["checkedAt"])).total_seconds()
+        if not 0 <= age <= 1800 or (plan["action"] == "publish" and reviewed.get("approved") is not True):
+            raise ValueError("Automatic review is stale or not approved")
     if plan["action"] == "publish":
         if public:
             return "publication-already-confirmed"
@@ -214,6 +269,8 @@ def apply(document, directory, plan, now=None, read=public_rounds, ingest=send):
         payload = json.loads((directory / "settlement" / "settlement.json").read_text())
     receipt = ingest(payload)
     write_exclusive(directory / "receipt.json", receipt)
+    if document.get("automatic") and reviewed.get("approved") is not True:
+        return "accepted-settle-review-blocked"
     return "accepted-" + plan["action"]
 
 
@@ -232,7 +289,8 @@ def main():
             plan = prepare(document, args.audit_dir)
             args.audit_dir.mkdir(parents=True, exist_ok=True)
             write_exclusive(plan_file, plan)
-            emit(action=plan["action"], upload_baseline=str(plan.get("upload_baseline", False)).lower())
+            emit(action=plan["action"], upload_baseline=str(plan.get("upload_baseline", False)).lower(),
+                 review_passed=str(plan.get("review_passed", False)).lower())
             status = plan["action"]
         else:
             status = apply(document, args.audit_dir, json.loads(plan_file.read_text()))
@@ -240,10 +298,17 @@ def main():
         if os.environ.get("GITHUB_STEP_SUMMARY"):
             with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
                 summary.write(f"Weekly match {args.phase}: **{status}**. Only the reviewed round is eligible.\n")
+        if status in {"review-blocked", "accepted-settle-review-blocked"}:
+            print("::error::Weekly match automatic review failed; publication stopped or safe pending/void retained; see evidence")
+            return 1
         return 0
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         # Provider errors and subprocess output must never print request credentials.
         print("Weekly match stopped: " + type(error).__name__, file=sys.stderr)
+        args.audit_dir.mkdir(parents=True, exist_ok=True)
+        failure_path = args.audit_dir / "failure.json"
+        if not failure_path.exists():
+            write_exclusive(failure_path, {"phase": args.phase, "error": type(error).__name__, "failedAt": datetime.now(timezone.utc).isoformat()})
         if os.environ.get("GITHUB_STEP_SUMMARY"):
             with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
                 summary.write(f"Weekly match {args.phase}: **failed** ({type(error).__name__}). No automatic retry or date change.\n")

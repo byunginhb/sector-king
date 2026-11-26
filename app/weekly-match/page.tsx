@@ -6,7 +6,6 @@ import { WeeklyMatchPractice } from "@/components/weekly-match/weekly-match-prac
 import { WeeklyMatchRewardsPanel } from "@/components/weekly-match/weekly-match-rewards";
 import { WeeklyMatchBoard } from "@/components/weekly-match/weekly-match-board";
 import styles from "./weekly-match.module.css";
-import pilot from "@/config/weekly-match-pilot.json";
 
 const title = "섹터 매치 · 베타";
 const description =
@@ -37,15 +36,13 @@ export default function WeeklyMatchPage() {
         </header>
 
         <aside aria-label="베타 운영 안내" className="mt-6 rounded-lg border border-border bg-surface-2 p-4 text-sm leading-relaxed text-muted-foreground">
-          단기 베타는 한 거래일을 비교하는 대진입니다. 대진마다 표시된 비교
-          기간과 마감 시간을 확인해 주세요. 실제 기준 종가가 준비된 대진부터
-          접수를 시작하며, 결과 검증이 끝나면 내 결과가 표시됩니다.
-          {!pilot.enabled && (
-            <p className="mt-2">
-              단기 베타는 가격 기준을 확인 중입니다. 접수 준비가 끝나면 새 대진이
-              표시됩니다.
-            </p>
-          )}
+          대진마다 표시된 비교 기간과 마감 시간을 확인해 주세요. 거래 일정과
+          기준 종가 검증을 마친 대진부터 접수하며, 정상 참여 기록과 확정
+          결과에 따라 점수와 배지가 자동 계산됩니다.
+          <p className="mt-2">
+            휴장이나 공시·가격 확인이 필요한 주에는 새 대진이 열리지 않을 수
+            있습니다.
+          </p>
         </aside>
 
         <div className="mt-8">
